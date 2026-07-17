@@ -18,7 +18,7 @@ offline (Browser-Sicherheitswarnung). Dieser Auftritt ist ein kompletter Neuaufb
 ├── termin.html           Terminanfrage-Formular (validiert), Karte, Öffnungszeiten, FAQ
 ├── impressum.html        Platzhalter-Gerüst (rechtlich prüfen!)
 ├── datenschutz.html      Platzhalter-Gerüst (rechtlich prüfen!)
-├── css/style.css         zentrales Design-System (Carbon/Silber/Signalrot)
+├── css/style.css         zentrales Design-System (Carbon/Silber/Logo-Blau)
 ├── js/script.js          Header, mobiles Menü, Scroll-Reveal, FAQ, Formular-Validierung
 └── assets/
     ├── 3d/autohaus-fahrzeug.glb   drehbares 3D-Automodell (Hero)
