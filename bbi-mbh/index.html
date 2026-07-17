@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BBI mbH – Bauträger &amp; Projektentwicklung an der Ostsee | Timmendorfer Strand</title>
+  <meta name="description" content="BBI Bau- Betriebs- und Immobiliengesellschaft mbH: Seit über 30 Jahren entwickeln und bauen wir hochwertige Wohn- und Gewerbeimmobilien in Norddeutschland und Berlin. Inhabergeführt, verlässlich, direkt an der Ostsee.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="BBI mbH – Bauträger &amp; Projektentwicklung an der Ostsee">
+  <meta property="og:description" content="Seit über 30 Jahren hochwertige Wohn- und Gewerbeimmobilien in Norddeutschland und Berlin – inhabergeführt aus Timmendorfer Strand.">
+  <!-- [PLATZHALTER: og:image nach Deployment auf absolute URL umstellen, z. B. https://www.bbigmbh.com/assets/img/hero-poster.png] -->
+  <meta property="og:image" content="assets/img/hero-poster.png">
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- 3D-Viewer (Google model-viewer, lazy nach Bedarf) -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="BBI mbH – Startseite">
+        <svg class="brand-mark" viewBox="0 0 46 46" aria-hidden="true">
+          <rect width="46" height="46" rx="10" fill="#1a2e44"/>
+          <path d="M12 34V12h10.5c4 0 6.5 2 6.5 5.4 0 2.3-1.2 4-3.2 4.8 2.6.7 4.2 2.7 4.2 5.4 0 4-2.8 6.4-7.2 6.4H12zm4.6-13.2h5.2c1.9 0 3-1 3-2.7 0-1.7-1.1-2.7-3-2.7h-5.2v5.4zm0 9.8h5.8c2.1 0 3.3-1.1 3.3-3 0-1.9-1.2-3-3.3-3h-5.8v6z" fill="#b9975b"/>
+        </svg>
+        <span class="brand-name">
+          <strong>BBI mbH</strong>
+          <span>Bau · Betrieb · Immobilien</span>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Hauptnavigation">
+        <ul>
+          <li><a href="index.html" class="active" aria-current="page">Start</a></li>
+          <li><a href="leistungen.html">Leistungen</a></li>
+          <li><a href="projekte.html">Projekte</a></li>
+          <li><a href="ueber-uns.html">Über uns</a></li>
+          <li><a href="ablauf.html">Ablauf</a></li>
+          <li><a href="karriere.html">Karriere</a></li>
+          <li><a href="kontakt.html" class="nav-cta">Kontakt</a></li>
+        </ul>
+      </nav>
+      <button class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ================= HERO mit interaktivem 3D-Gebäude ================= -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="hero-eyebrow">Bauträger &amp; Projektentwicklung · Ostsee</p>
+          <h1>Werte bauen.<br><em>Zuhause</em> schaffen.</h1>
+          <p class="hero-sub">Seit über 30 Jahren entwickelt und baut die BBI mbH hochwertige Wohn- und Gewerbeimmobilien in Norddeutschland und Berlin – inhabergeführt, persönlich und mit Handschlagqualität, direkt von der Strandallee in Timmendorfer Strand.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="kontakt.html">Projekt anfragen</a>
+            <a class="btn btn-outline" href="projekte.html">Unsere Projekte</a>
+          </div>
+        </div>
+        <div class="hero-3d">
+          <div class="model-frame">
+            <!-- Interaktives 3D-Gebäudemodell (mit Higgsfield generiert).
+                 Poster = Standbild-Fallback, lädt sofort; das GLB lädt lazy. -->
+            <model-viewer
+              src="assets/3d/bbi-gebaeude.glb"
+              poster="assets/img/hero-poster.png"
+              alt="Interaktives 3D-Modell eines modernen BBI-Wohngebäudes mit weißer Fassade und Klinker-Sockel"
+              camera-controls
+              auto-rotate
+              auto-rotate-delay="1500"
+              rotation-per-second="24deg"
+              interaction-prompt="none"
+              camera-orbit="35deg 78deg 105%"
+              min-camera-orbit="auto 55deg auto"
+              max-camera-orbit="auto 92deg auto"
+              disable-zoom
+              loading="lazy"
+              reveal="auto">
+              <!-- Fallback für Browser ohne Web-Components-Unterstützung -->
+              <img class="model-fallback" src="assets/img/hero-poster.png" alt="Modernes BBI-Wohngebäude – Architekturvisualisierung" slot="poster">
+            </model-viewer>
+            <span class="model-hint">3D-Modell · ziehen, um zu drehen</span>
+          </div>
+        </div>
+      </div>
+      <span class="scroll-cue" aria-hidden="true">Scrollen</span>
+    </section>
+
+    <!-- ================= Vertrauen / Zahlen ================= -->
+    <section class="section section-dark" aria-label="BBI in Zahlen">
+      <div class="container">
+        <div class="stats">
+          <div class="reveal">
+            <div class="stat-value"><span data-count="30" data-suffix="+">0</span></div>
+            <div class="stat-label">Jahre am Markt</div>
+          </div>
+          <div class="reveal reveal-delay-1">
+            <div class="stat-value"><span data-count="2">0</span></div>
+            <div class="stat-label">Regionen: Norddeutschland &amp; Berlin</div>
+          </div>
+          <div class="reveal reveal-delay-2">
+            <div class="stat-value"><span data-count="100" data-suffix="%">0</span></div>
+            <div class="stat-label">Inhabergeführt – Familie Lindner</div>
+          </div>
+          <div class="reveal reveal-delay-3">
+            <div class="stat-value">1<span style="font-size:0.55em"> Ansprechpartner</span></div>
+            <div class="stat-label">Von der Idee bis zur Übergabe</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Kurzprofil ================= -->
+    <section class="section">
+      <div class="container split">
+        <div class="split-img reveal">
+          <!-- [ECHTES FOTO EINSETZEN: Referenzobjekt oder Firmensitz Strandallee 77a] -->
+          <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80" alt="Moderne Wohnimmobilie mit heller Fassade" loading="lazy">
+        </div>
+        <div class="reveal reveal-delay-1">
+          <span class="eyebrow">Willkommen bei der BBI</span>
+          <h2>Bauen mit Substanz – seit über drei Jahrzehnten</h2>
+          <p class="lead">Die BBI Bau- Betriebs- und Immobiliengesellschaft mbH steht für durchdachte Projektentwicklung und solide Bauqualität an der Lübecker Bucht.</p>
+          <p>Als inhabergeführtes Unternehmen begleiten wir jedes Projekt persönlich: vom ersten Grundstücksgespräch über Planung und Bau bis zur schlüsselfertigen Übergabe. Unsere Projekte entstehen dort, wo wir zuhause sind – in Norddeutschland – sowie am Standort Berlin.</p>
+          <p>Was uns auszeichnet: kurze Wege, klare Zusagen und ein Anspruch an Qualität, der über den Tag der Übergabe hinausreicht.</p>
+          <a class="btn btn-outline" href="ueber-uns.html">Mehr über uns</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Leistungen ================= -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-head centered">
+          <span class="eyebrow">Was wir tun</span>
+          <h2>Drei Leistungsbereiche, ein Anspruch</h2>
+          <p class="lead">Wir denken Immobilien vom Ende her: als Orte, an denen Menschen gerne wohnen und arbeiten.</p>
+        </div>
+        <div class="grid-3">
+          <article class="card reveal">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 20H5a1 1 0 0 1-1-1v-7l8-7 8 7v7a1 1 0 0 1-1 1h-4"/><path d="M9 20v-6h6v6"/></svg>
+            </div>
+            <h3>Projektentwicklung</h3>
+            <p>Wir erkennen Potenziale: Grundstücksankauf, Machbarkeit, Baurecht und Konzeption – wir entwickeln Flächen zu werthaltigen Wohn- und Gewerbequartieren.</p>
+            <a class="card-link" href="leistungen.html#projektentwicklung">Mehr erfahren →</a>
+          </article>
+          <article class="card reveal reveal-delay-1">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/><path d="M9 11h.01M12 11h.01M15 11h.01M9 14h.01M12 14h.01M15 14h.01"/></svg>
+            </div>
+            <h3>Bauträger &amp; Hochbau</h3>
+            <p>Vom Rohbau bis zur Schlüsselübergabe: Als Bauträger realisieren wir hochwertige Neubauten mit verlässlichen Handwerkspartnern aus der Region.</p>
+            <a class="card-link" href="leistungen.html#bautraeger">Mehr erfahren →</a>
+          </article>
+          <article class="card reveal reveal-delay-2">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h14V9.5"/><path d="M12 21v-6"/><circle cx="12" cy="12" r="1"/></svg>
+            </div>
+            <h3>Immobilien &amp; Bestand</h3>
+            <p>Kauf, Projektierung und Verwertung von Immobilien aller Art – dazu die langfristige Betreuung eigener Objekte mit Blick auf Werterhalt und Rendite.</p>
+            <a class="card-link" href="leistungen.html#immobilien">Mehr erfahren →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Ausgewählte Projekte ================= -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Referenzen</span>
+          <h2>Ausgewählte Projekte</h2>
+          <p class="lead">Ein Einblick in unsere Arbeit zwischen Ostseeküste und Hauptstadt. <br><strong>[PLATZHALTER: Reale Projektfotos und -daten der BBI einsetzen – u. a. das Bauvorhaben Haffkrug von der bisherigen Website.]</strong></p>
+        </div>
+        <div class="project-grid">
+          <figure class="project-card reveal">
+            <span class="project-tag">Wohnen · Ostsee</span>
+            <!-- [ECHTES FOTO EINSETZEN: Bauvorhaben Haffkrug] -->
+            <img src="https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=1000&q=80" alt="Mehrfamilienhaus-Neubau mit Balkonen" loading="lazy">
+            <figcaption>
+              <strong>Bauvorhaben Haffkrug</strong>
+              <span>[PLATZHALTER: Wohneinheiten, Baujahr, Status]</span>
+            </figcaption>
+          </figure>
+          <figure class="project-card reveal reveal-delay-1">
+            <span class="project-tag">Wohnen · Timmendorfer Strand</span>
+            <!-- [ECHTES FOTO EINSETZEN: Referenzprojekt Timmendorfer Strand] -->
+            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80" alt="Hochwertige Wohnimmobilie mit Garten" loading="lazy">
+            <figcaption>
+              <strong>Wohnprojekt Timmendorfer Strand</strong>
+              <span>[PLATZHALTER: Projektname, Wohneinheiten, Baujahr]</span>
+            </figcaption>
+          </figure>
+          <figure class="project-card reveal reveal-delay-2">
+            <span class="project-tag">Gewerbe · Berlin</span>
+            <!-- [ECHTES FOTO EINSETZEN: Gewerbeobjekt Berlin] -->
+            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80" alt="Modernes Gewerbegebäude" loading="lazy">
+            <figcaption>
+              <strong>Gewerbeobjekt Berlin</strong>
+              <span>[PLATZHALTER: Objektart, Fläche, Jahr]</span>
+            </figcaption>
+          </figure>
+        </div>
+        <p style="margin-top:34px"><a class="btn btn-outline" href="projekte.html">Alle Projekte ansehen</a></p>
+      </div>
+    </section>
+
+    <!-- ================= Warum BBI ================= -->
+    <section class="section section-dark">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Warum BBI</span>
+          <h2>Verlässlichkeit ist unser Baustoff</h2>
+        </div>
+        <div class="grid-2">
+          <div class="reveal">
+            <h3>Chefsache statt Konzern</h3>
+            <p>Bei uns sprechen Sie direkt mit der Geschäftsführung. Entscheidungen fallen schnell, Zusagen gelten – über die gesamte Projektlaufzeit.</p>
+          </div>
+          <div class="reveal reveal-delay-1">
+            <h3>Regional verwurzelt</h3>
+            <p>Wir kennen die Lübecker Bucht, ihre Grundstücke, Behörden und Handwerksbetriebe seit Jahrzehnten – ein Vorsprung, der Ihrem Projekt zugutekommt.</p>
+          </div>
+          <div class="reveal">
+            <h3>Qualität im Detail</h3>
+            <p>Hochwertige Materialien, geprüfte Partner und eine Bauleitung, die täglich hinschaut: So entstehen Immobilien, die Bestand haben.</p>
+          </div>
+          <div class="reveal reveal-delay-1">
+            <h3>Über 30 Jahre Erfahrung</h3>
+            <p>Marktzyklen, Baurecht, Finanzierung – wir haben vieles kommen und gehen sehen. Diese Erfahrung macht Projekte planbar und sicher.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Ablauf-Teaser ================= -->
+    <section class="section section-alt">
+      <div class="container split">
+        <div class="reveal">
+          <span class="eyebrow">So arbeiten wir</span>
+          <h2>Vom ersten Gespräch bis zur Übergabe</h2>
+          <p class="lead">Ein klarer, transparenter Ablauf gibt Ihnen in jeder Phase Sicherheit – ob Sie ein Grundstück einbringen, eine Immobilie kaufen oder investieren möchten.</p>
+          <a class="btn btn-primary" href="ablauf.html">Ablauf im Detail</a>
+        </div>
+        <div class="reveal reveal-delay-1">
+          <div class="timeline">
+            <div class="timeline-step">
+              <span class="timeline-num">1</span>
+              <h3>Erstgespräch &amp; Analyse</h3>
+              <p>Wir hören zu, prüfen Lage und Potenzial – ehrlich und unverbindlich.</p>
+            </div>
+            <div class="timeline-step">
+              <span class="timeline-num">2</span>
+              <h3>Konzept &amp; Planung</h3>
+              <p>Architektur, Baurecht und Wirtschaftlichkeit aus einer Hand.</p>
+            </div>
+            <div class="timeline-step">
+              <span class="timeline-num">3</span>
+              <h3>Bau &amp; Qualitätssicherung</h3>
+              <p>Regionale Partner, feste Bauleitung, dokumentierter Fortschritt.</p>
+            </div>
+            <div class="timeline-step">
+              <span class="timeline-num">4</span>
+              <h3>Übergabe &amp; Betreuung</h3>
+              <p>Schlüsselfertig, termintreu – und auch danach für Sie da.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CTA ================= -->
+    <section class="section">
+      <div class="container">
+        <div class="cta-banner reveal">
+          <div>
+            <h2>Grundstück, Kaufinteresse oder Investment?</h2>
+            <p>Sprechen Sie direkt mit uns – wir melden uns innerhalb von 48 Stunden mit einer ehrlichen Einschätzung.</p>
+          </div>
+          <a class="btn btn-light" href="kontakt.html">Jetzt Kontakt aufnehmen</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="index.html" aria-label="BBI mbH – Startseite">
+            <svg class="brand-mark" viewBox="0 0 46 46" aria-hidden="true">
+              <rect width="46" height="46" rx="10" fill="#b9975b"/>
+              <path d="M12 34V12h10.5c4 0 6.5 2 6.5 5.4 0 2.3-1.2 4-3.2 4.8 2.6.7 4.2 2.7 4.2 5.4 0 4-2.8 6.4-7.2 6.4H12zm4.6-13.2h5.2c1.9 0 3-1 3-2.7 0-1.7-1.1-2.7-3-2.7h-5.2v5.4zm0 9.8h5.8c2.1 0 3.3-1.1 3.3-3 0-1.9-1.2-3-3.3-3h-5.8v6z" fill="#10202f"/>
+            </svg>
+            <span class="brand-name">
+              <strong>BBI mbH</strong>
+              <span>Bau · Betrieb · Immobilien</span>
+            </span>
+          </a>
+          <p>BBI Bau- Betriebs- und Immobiliengesellschaft mbH – Bauträger und Projektentwickler für hochwertige Wohn- und Gewerbeimmobilien in Norddeutschland und Berlin.</p>
+          <div class="social-links">
+            <!-- [PLATZHALTER: Social-Media-Profile verlinken, sobald Kanäle angelegt sind.
+                 Aktuell besitzt die BBI keine eigenen Social-Media-Auftritte.] -->
+            <a href="#" aria-label="Instagram (Profil folgt)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#" aria-label="Facebook (Profil folgt)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 8h2.5V4.5H14c-2.2 0-4 1.8-4 4V11H7.5v3.5H10V21h3.5v-6.5h2.6l.6-3.5h-3.2V8.7c0-.4.3-.7.5-.7z"/></svg></a>
+            <a href="#" aria-label="LinkedIn (Profil folgt)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="9" width="4" height="12"/><circle cx="5" cy="5" r="2"/><path d="M11 9h4v2c.7-1.2 2-2 3.5-2 2.5 0 4.5 2 4.5 4.5V21h-4v-6c0-1.1-.9-2-2-2s-2 .9-2 2v6h-4V9z"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="leistungen.html">Leistungen</a></li>
+            <li><a href="projekte.html">Projekte</a></li>
+            <li><a href="ueber-uns.html">Über uns</a></li>
+            <li><a href="ablauf.html">Ablauf</a></li>
+            <li><a href="karriere.html">Karriere</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Leistungen</h4>
+          <ul>
+            <li><a href="leistungen.html#projektentwicklung">Projektentwicklung</a></li>
+            <li><a href="leistungen.html#bautraeger">Bauträger &amp; Hochbau</a></li>
+            <li><a href="leistungen.html#immobilien">Immobilien &amp; Bestand</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Kontakt</h4>
+          <ul>
+            <li>Strandallee 77a<br>23669 Timmendorfer Strand</li>
+            <li><a href="tel:+4945032468">04503 / 2468</a></li>
+            <li><a href="mailto:info@bbigmbh.com">info@bbigmbh.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span data-year>2026</span> BBI Bau- Betriebs- und Immobiliengesellschaft mbH</span>
+        <span><a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
