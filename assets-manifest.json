@@ -1,42 +1,14 @@
 [
   {
-    "url": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=1200&q=80",
-    "path": ".preview-cache/unsplash/photo-1486262715619-67b85e0b08d3.jpg"
+    "url": "https://d3u0tzju9qaucj.cloudfront.net/7d051b5a-7bfe-49fe-a484-24e7b3a9458a/2243cdfb-b05e-40f5-84ac-b5a77f63590d.glb",
+    "path": "autohaus-bad-schwartau/assets/3d/autohaus-fahrzeug.glb"
   },
   {
-    "url": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=1200&q=80",
-    "path": ".preview-cache/unsplash/photo-1487754180451-c456f719a1fc.jpg"
+    "url": "https://images.unsplash.com/photo-1537462715879-360eeb61a0ad?auto=format&fit=crop&w=1200&q=80",
+    "path": ".preview-cache/unsplash/photo-1537462715879-360eeb61a0ad.jpg"
   },
   {
-    "url": "https://images.unsplash.com/photo-1493238792000-8113da705763?auto=format&fit=crop&w=1000&q=80",
-    "path": ".preview-cache/unsplash/photo-1493238792000-8113da705763.jpg"
-  },
-  {
-    "url": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1000&q=80",
-    "path": ".preview-cache/unsplash/photo-1494976388531-d1058494cdd8.jpg"
-  },
-  {
-    "url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
-    "path": ".preview-cache/unsplash/photo-1503376780353-7e6692767b70.jpg"
-  },
-  {
-    "url": "https://images.unsplash.com/photo-1504222490345-c075b6008014?auto=format&fit=crop&w=1200&q=80",
-    "path": ".preview-cache/unsplash/photo-1504222490345-c075b6008014.jpg"
-  },
-  {
-    "url": "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80",
-    "path": ".preview-cache/unsplash/photo-1511919884226-fd3cad34687c.jpg"
-  },
-  {
-    "url": "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&w=1200&q=80",
-    "path": ".preview-cache/unsplash/photo-1517524008697-84bbe3c3fd98.jpg"
-  },
-  {
-    "url": "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=1000&q=80",
-    "path": ".preview-cache/unsplash/photo-1542362567-b07e54358753.jpg"
-  },
-  {
-    "url": "https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=1200&q=80",
-    "path": ".preview-cache/unsplash/photo-1578844251758-2f71da64c96f.jpg"
+    "url": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80",
+    "path": ".preview-cache/unsplash/photo-1449965408869-eaa3f722e40d.jpg"
   }
 ]
