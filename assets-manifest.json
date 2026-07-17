@@ -1,6 +1,14 @@
 [
   {
-    "url": "https://home.mobile.de/home/vip?sb=rel&od=up&customerId=4585814&vc=Car&searchId=8bd6a26a-a86d-23c8-cf68-00c4dd3bedab&ref=srp&id=456799523",
-    "path": ".preview-cache/mobilede/listing.html"
+    "url": "https://r.jina.ai/https://home.mobile.de/home/vip?sb=rel&od=up&customerId=4585814&vc=Car&searchId=8bd6a26a-a86d-23c8-cf68-00c4dd3bedab&ref=srp&id=456799523",
+    "path": ".preview-cache/mobilede/listing-jina.md"
+  },
+  {
+    "url": "https://m.mobile.de/svc/a/456799523",
+    "path": ".preview-cache/mobilede/svc.json"
+  },
+  {
+    "url": "https://suche.mobile.de/fahrzeuge/details.html?id=456799523",
+    "path": ".preview-cache/mobilede/details.html"
   }
 ]
