@@ -4,6 +4,11 @@ name: fetch-assets
 # da die Build-Umgebung keinen direkten Zugriff auf das CDN hat.
 on:
   workflow_dispatch: {}
+  push:
+    branches:
+      - "claude/**"
+    paths:
+      - "assets-manifest.json"
 
 permissions:
   contents: write
