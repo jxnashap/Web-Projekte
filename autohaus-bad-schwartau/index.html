@@ -10,13 +10,12 @@
   <meta property="og:title" content="Autohaus Bad Schwartau – Werkstatt-Termin einfach online anfragen">
   <meta property="og:description" content="Bosch Car Service Partner in Bad Schwartau: Inspektion, HU/AU, Reifen, Klima, Unfallinstandsetzung und Fahrzeugverkauf.">
   <!-- [PLATZHALTER: og:image nach Deployment auf absolute URL umstellen] -->
-  <meta property="og:image" content="assets/img/hero-poster.png">
+  <meta property="og:image" content="assets/img/og-mini.jpg">
   <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
@@ -53,7 +52,7 @@
 
   <main id="main">
 
-    <!-- ================= HERO mit interaktivem 3D-Auto ================= -->
+    <!-- ================= HERO mit Auto-Drehvideo ================= -->
     <section class="hero">
       <div class="container hero-grid">
         <div class="hero-copy">
@@ -72,27 +71,17 @@
           </div>
         </div>
         <div class="hero-3d">
-          <div class="model-frame">
-            <!-- Interaktives 3D-Automodell (mit Higgsfield generiert).
-                 Poster = Standbild-Fallback, lädt sofort; das GLB lädt lazy. -->
-            <model-viewer
-              src="assets/3d/autohaus-fahrzeug.glb"
-              poster="assets/img/hero-poster.png"
-              alt="Interaktives 3D-Modell eines modernen SUV in Metallic-Blau"
-              camera-controls
-              auto-rotate
-              auto-rotate-delay="1500"
-              rotation-per-second="26deg"
-              interaction-prompt="none"
-              camera-orbit="-25deg 80deg 100%"
-              min-camera-orbit="auto 60deg auto"
-              max-camera-orbit="auto 92deg auto"
-              disable-zoom
-              loading="lazy"
-              reveal="auto">
-              <img class="model-fallback" src="assets/img/hero-poster.png" alt="Modernes SUV in Metallic-Blau – Studioaufnahme" slot="poster">
-            </model-viewer>
-            <span class="model-hint">3D-Modell · ziehen, um zu drehen</span>
+          <div class="model-frame video-frame">
+            <!-- Drehvideo: der MINI Cooper C aus dem Bestand rotiert vor dem
+                 Ladenlokal – startet automatisch (stumm, Loop). Poster/Fallback:
+                 Standbild; bei prefers-reduced-motion pausiert das Video (JS). -->
+            <video class="hero-video" autoplay muted loop playsinline preload="auto"
+                   poster="assets/animation/still.webp"
+                   aria-label="Video: Roter MINI Cooper C dreht sich vor dem Autohaus Bad Schwartau">
+              <source src="assets/video/auto-drehung.mp4" type="video/mp4">
+              <img class="model-fallback" src="assets/animation/still.webp" alt="Roter MINI Cooper C vor dem Autohaus Bad Schwartau">
+            </video>
+            <span class="model-hint">Unser MINI Cooper C · live vor Ort</span>
           </div>
         </div>
       </div>

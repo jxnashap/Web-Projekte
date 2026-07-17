@@ -246,3 +246,12 @@
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", resize);
 })();
+
+/* ---------- Hero-Video: bei prefers-reduced-motion pausieren ---------- */
+(function () {
+  var v = document.querySelector(".hero-video");
+  if (v && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    v.removeAttribute("autoplay");
+    v.pause();
+  }
+})();

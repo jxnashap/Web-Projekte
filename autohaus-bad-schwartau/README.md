@@ -1,8 +1,9 @@
 # Autohaus Bad Schwartau – Website-Relaunch
 
 Moderner, mehrseitiger Webauftritt für die **Autohaus Bad Schwartau GmbH & Co. KG**
-(Bosch Car Service) – mit interaktivem 3D-Automodell im Hero (mit Higgsfield generiert)
-und klarem Conversion-Ziel: **Werkstatt-Terminanfrage**.
+(Bosch Car Service) – mit einem sofort startenden Drehvideo des eigenen MINI Cooper C vor dem Ladenlokal
+im Hero (KI-generiert aus dem echten Inseratsfoto) und klarem Conversion-Ziel:
+**Werkstatt-Terminanfrage**.
 
 Hintergrund: Die bisherige Website ist wegen eines defekten SSL-Zertifikats faktisch
 offline (Browser-Sicherheitswarnung). Dieser Auftritt ist ein kompletter Neuaufbau.
@@ -11,7 +12,7 @@ offline (Browser-Sicherheitswarnung). Dieser Auftritt ist ein kompletter Neuaufb
 
 ```
 /
-├── index.html            Startseite mit 3D-Auto-Hero, Leistungen, Bosch-Vertrauen, Termin-CTA
+├── index.html            Startseite mit Auto-Drehvideo im Hero, Scroll-Animation, Leistungen, Termin-CTA
 ├── leistungen.html       Inspektion/Wartung · HU/AU · Reifen & Klima · Unfall · Diagnose
 ├── fahrzeuge.html        Fahrzeugangebote (Platzhalter) + echte Links zu mobile.de/AutoScout24
 ├── ueber-uns.html        Inhaber Arndt & Kaske, Werte, Standort
@@ -21,12 +22,11 @@ offline (Browser-Sicherheitswarnung). Dieser Auftritt ist ein kompletter Neuaufb
 ├── css/style.css         zentrales Design-System (Carbon/Silber/Logo-Blau)
 ├── js/script.js          Header, mobiles Menü, Scroll-Reveal, FAQ, Formular-Validierung
 └── assets/
-    ├── 3d/autohaus-fahrzeug.glb   drehbares 3D-Automodell (Hero)
-    ├── img/hero-poster.png        Standbild-Fallback / Poster des 3D-Modells
+    ├── video/auto-drehung.mp4     Hero-Drehvideo (autoplay, stumm, Loop, 752 KB)
     ├── img/fotos/                 lokal gebündelte Fotos (echte Bestandsfahrzeuge
     │                              von mobile.de + Standort-Fotos + Stock-Motive)
     └── animation/                 60 WebP-Frames der Scroll-Animation (360°-MINI
-                                   vor dem Ladenlokal) + still.webp als Fallback
+                                   vor dem Ladenlokal) + still.webp (auch Video-Poster)
 ```
 
 ## Deployment
@@ -61,7 +61,7 @@ Basis: Original-Inseratsfoto (mobile.de) → 16:9-Outpainting → KI-Turntable-V
 
 ## Technik-Hinweise
 
-- 3D-Viewer: [`<model-viewer>`](https://modelviewer.dev) via CDN, lazy geladen;
-  Poster-Standbild als sofortiger Fallback (auch für schwache Geräte).
+- Hero-Video: H.264, 1280px, ohne Ton, `autoplay muted loop playsinline`,
+  Poster-Standbild als Fallback; bei `prefers-reduced-motion` pausiert es automatisch.
 - Google Fonts: Barlow + Barlow Condensed (bei Bedarf DSGVO-konform lokal einbinden).
 - Responsive (mobile-first), semantisches HTML5, Meta/OG je Seite, SVG-Favicon.
