@@ -156,3 +156,93 @@
     el.textContent = new Date().getFullYear();
   });
 })();
+
+/* ============================================================
+   Standort-Showcase: 360°-Drehung per Scroll-Scrubbing
+   (Frames in assets/animation/, Canvas folgt der Scrollposition)
+   ============================================================ */
+(function () {
+  "use strict";
+  var section = document.querySelector(".showcase");
+  if (!section) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; // Standbild bleibt
+
+  var canvas = section.querySelector(".showcase-canvas");
+  if (!canvas || !canvas.getContext) return;
+  var ctx = canvas.getContext("2d");
+  var total = parseInt(section.getAttribute("data-frames"), 10) || 60;
+  var path = section.getAttribute("data-frame-path") || "assets/animation/";
+  // Mobil: nur jeder 2. Frame -> halbe Datenmenge, bleibt flüssig
+  var step = window.matchMedia("(max-width: 760px)").matches ? 2 : 1;
+  var indices = [];
+  for (var i = 0; i < total; i += step) indices.push(i);
+  var frames = new Array(indices.length).fill(null);
+  var started = false, current = -1, target = 0, ticking = false;
+
+  function pad(n) { return ("00" + n).slice(-3); }
+
+  function load() {
+    if (started) return;
+    started = true;
+    indices.forEach(function (idx, k) {
+      var img = new Image();
+      img.onload = function () {
+        frames[k] = img;
+        if (k === 0) { resize(); section.classList.add("ready"); }
+      };
+      img.src = path + "frame-" + pad(idx) + ".webp";
+    });
+  }
+
+  function nearest(k) {
+    for (var d = 0; d < frames.length; d++) {
+      if (frames[k - d]) return k - d;
+      if (frames[k + d]) return k + d;
+    }
+    return -1;
+  }
+
+  function render(force) {
+    var k = nearest(Math.max(0, Math.min(frames.length - 1, target)));
+    if (k < 0 || (k === current && !force)) return;
+    current = k;
+    var img = frames[k];
+    var cw = canvas.width, ch = canvas.height;
+    var iw = img.naturalWidth, ih = img.naturalHeight;
+    var s = Math.max(cw / iw, ch / ih), w = iw * s, h = ih * s;
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+  }
+
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(canvas.clientWidth * dpr);
+    canvas.height = Math.round(canvas.clientHeight * dpr);
+    render(true);
+  }
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      ticking = false;
+      var rect = section.getBoundingClientRect();
+      var span = section.offsetHeight - window.innerHeight;
+      if (span <= 0) return;
+      var p = Math.min(1, Math.max(0, -rect.top / span));
+      target = Math.round(p * (frames.length - 1));
+      render();
+    });
+  }
+
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { load(); io.disconnect(); } });
+    }, { rootMargin: "100% 0px" });
+    io.observe(section);
+  } else {
+    load();
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", resize);
+})();

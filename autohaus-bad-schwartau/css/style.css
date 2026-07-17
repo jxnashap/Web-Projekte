@@ -431,26 +431,71 @@ ul.ticks li::before {
 .section-dark .hours-table td { border-color: rgba(255,255,255,0.1); }
 .hours-table td:last-child { text-align: right; font-weight: 600; }
 
-/* ---------- Fahrzeug-Karten ---------- */
+/* ---------- Fahrzeug-Karten (kontraststark) ---------- */
 .vehicle-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 .vehicle-card {
+  display: flex;
+  flex-direction: column;
   background: #fff;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 8px 30px rgba(10, 13, 16, 0.08);
+  box-shadow: 0 10px 32px rgba(10, 13, 16, 0.14);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .vehicle-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
-.vehicle-card .vc-img { aspect-ratio: 16 / 10; overflow: hidden; }
-.vehicle-card .vc-img img { width: 100%; height: 100%; object-fit: cover; }
-.vehicle-card .vc-body { padding: 20px 22px 24px; }
-.vehicle-card h3 { margin-bottom: 4px; font-size: 1.25rem; }
-.vehicle-card .vc-meta { font-size: 0.88rem; color: var(--ink-soft); margin-bottom: 12px; }
+.vehicle-card .vc-img {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--steel); /* dunkler Grund: kein "leeres" Weiß beim Laden */
+  position: relative;
+}
+.vehicle-card .vc-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  filter: none; /* volle Deckkraft & Sättigung */
+}
+.vc-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--carbon);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 4px;
+}
+.vehicle-card .vc-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 20px 22px 24px;
+}
+.vehicle-card h3 { margin-bottom: 4px; font-size: 1.3rem; color: var(--carbon); }
+.vehicle-card .vc-meta { font-size: 0.92rem; color: var(--ink); margin-bottom: 14px; }
+.vehicle-card .vc-meta strong { color: var(--carbon); }
+.vc-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
 .vehicle-card .vc-price {
   font-family: var(--font-head);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
+  font-weight: 700;
   color: var(--red);
+  white-space: nowrap;
 }
+.btn-sm { padding: 10px 18px; font-size: 0.85rem; }
 
 /* ---------- FAQ ---------- */
 .faq-item {
@@ -650,13 +695,15 @@ ul.ticks li::before {
 .breadcrumbs a { color: #aab4be; }
 .breadcrumbs a:hover { color: var(--red); }
 
-/* ---------- Scroll-Reveal ---------- */
-.reveal {
+/* ---------- Scroll-Reveal ----------
+   Nur aktiv, wenn JS läuft (html.js) – ohne JS bleibt alles sichtbar,
+   damit Inhalte nie "ungeladen" wirken. */
+html.js .reveal {
   opacity: 0;
   transform: translateY(26px);
   transition: opacity 0.65s ease, transform 0.65s ease;
 }
-.reveal.visible { opacity: 1; transform: none; }
+html.js .reveal.visible { opacity: 1; transform: none; }
 .reveal-delay-1 { transition-delay: 0.12s; }
 .reveal-delay-2 { transition-delay: 0.24s; }
 .reveal-delay-3 { transition-delay: 0.36s; }
@@ -704,4 +751,87 @@ ul.ticks li::before {
   .form-grid { grid-template-columns: 1fr; }
   .cta-banner { padding: 44px 26px; }
   .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+}
+
+/* ---------- Standort-Showcase: 360°-Scroll-Animation ---------- */
+.showcase {
+  position: relative;
+  height: 200vh;
+  background: var(--carbon-deep);
+}
+.showcase-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+.showcase-still,
+.showcase-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.showcase-canvas { opacity: 0; transition: opacity 0.4s ease; }
+.showcase.ready .showcase-canvas { opacity: 1; }
+.showcase-sticky::after {
+  /* Verlauf nur unten – für die Lesbarkeit des Slogans */
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 38%;
+  background: linear-gradient(0deg, rgba(10, 13, 16, 0.78) 0%, transparent 100%);
+  pointer-events: none;
+}
+.showcase-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 6vh;
+  transform: translateX(-50%);
+  width: min(92vw, 820px);
+  text-align: center;
+  color: #fff;
+  z-index: 2;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6);
+}
+.showcase-caption h2 { color: #fff; margin-bottom: 8px; }
+.showcase-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 10px;
+}
+.showcase-hint {
+  color: #cfd6dd;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0;
+  animation: cue 2.4s ease-in-out infinite;
+}
+/* Fallbacks: reduzierte Bewegung oder kein JS -> nur Standbild, keine Scrollstrecke */
+@media (prefers-reduced-motion: reduce) {
+  .showcase { height: 100svh; }
+  .showcase-canvas, .showcase-hint { display: none; }
+}
+html:not(.js) .showcase { height: 100svh; }
+html:not(.js) .showcase-canvas,
+html:not(.js) .showcase-hint { display: none; }
+@media (max-width: 760px) {
+  .showcase { height: 170vh; }
+}
+
+/* ---------- Bild-Look: volle Deckkraft & Sättigung, keine Filter ---------- */
+.split-img img,
+.card img,
+.vc-img img {
+  opacity: 1 !important;
+  filter: none !important;
 }
