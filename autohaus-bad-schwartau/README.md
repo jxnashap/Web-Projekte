@@ -1,9 +1,9 @@
 # Autohaus Bad Schwartau – Website-Relaunch
 
 Moderner, mehrseitiger Webauftritt für die **Autohaus Bad Schwartau GmbH & Co. KG**
-(Bosch Car Service) – mit einem sofort startenden Drehvideo des eigenen MINI Cooper C vor dem Ladenlokal
-im Hero (KI-generiert aus dem echten Inseratsfoto) und klarem Conversion-Ziel:
-**Werkstatt-Terminanfrage**.
+(Bosch Car Service) – mit einer großen 360°-Scroll-Animation des eigenen MINI Cooper C vor dem Ladenlokal
+direkt im Hero (aus dem echten Inseratsfoto, KI-Turntable in **4K**) und klarem
+Conversion-Ziel: **Werkstatt-Terminanfrage**.
 
 Hintergrund: Die bisherige Website ist wegen eines defekten SSL-Zertifikats faktisch
 offline (Browser-Sicherheitswarnung). Dieser Auftritt ist ein kompletter Neuaufbau.
@@ -12,7 +12,7 @@ offline (Browser-Sicherheitswarnung). Dieser Auftritt ist ein kompletter Neuaufb
 
 ```
 /
-├── index.html            Startseite mit Auto-Drehvideo im Hero, Scroll-Animation, Leistungen, Termin-CTA
+├── index.html            Startseite: 360°-Scroll-Animation als Hero (ganz oben), Leistungen, Termin-CTA
 ├── leistungen.html       Inspektion/Wartung · HU/AU · Reifen & Klima · Unfall · Diagnose
 ├── fahrzeuge.html        Fahrzeugangebote (Platzhalter) + echte Links zu mobile.de/AutoScout24
 ├── ueber-uns.html        Inhaber Arndt & Kaske, Werte, Standort
@@ -22,11 +22,10 @@ offline (Browser-Sicherheitswarnung). Dieser Auftritt ist ein kompletter Neuaufb
 ├── css/style.css         zentrales Design-System (Carbon/Silber/Logo-Blau)
 ├── js/script.js          Header, mobiles Menü, Scroll-Reveal, FAQ, Formular-Validierung
 └── assets/
-    ├── video/auto-drehung.mp4     Hero-Drehvideo (autoplay, stumm, Loop, 752 KB)
     ├── img/fotos/                 lokal gebündelte Fotos (echte Bestandsfahrzeuge
     │                              von mobile.de + Standort-Fotos + Stock-Motive)
-    └── animation/                 60 WebP-Frames der Scroll-Animation (360°-MINI
-                                   vor dem Ladenlokal) + still.webp (auch Video-Poster)
+    └── animation/                 60 WebP-Frames der Hero-Scroll-Animation, aus dem
+                                   4K-Master extrahiert (2160px) + still.webp (Poster)
 ```
 
 ## Deployment
@@ -39,13 +38,14 @@ Wichtig: Beim Aufschalten auf die bestehende Domain unbedingt ein **gültiges
 SSL-Zertifikat** einrichten (bei Netlify/Vercel automatisch via Let's Encrypt) –
 der SSL-Defekt war der Hauptgrund für den Neuaufbau.
 
-## Scroll-Animation (Startseite)
+## Hero-Scroll-Animation (Startseite, ganz oben)
 
-Unter dem Hero dreht sich beim Scrollen ein MINI Cooper C aus dem echten Bestand
-um ~360° vor dem realen Ladenlokal (Frame-Sequenz im Apple-Stil, Canvas-Scrubbing).
-Basis: Original-Inseratsfoto (mobile.de) → 16:9-Outpainting → KI-Turntable-Video
-(Higgsfield/Kling) → 60 komprimierte WebP-Frames. Fallbacks: Standbild bei
-`prefers-reduced-motion` und ohne JavaScript; mobil wird nur jeder 2. Frame geladen.
+Der MINI Cooper C aus dem echten Bestand dreht sich beim Scrollen um ~360° vor dem
+realen Ladenlokal – als großer Hero direkt am Seitenanfang (Frame-Sequenz im
+Apple-Stil, Canvas-Scrubbing). Basis: Original-Inseratsfoto (mobile.de) →
+16:9-Outpainting → KI-Turntable-Video (Higgsfield/Kling) → **4K-Upscale** →
+60 WebP-Frames à 2160px. Fallbacks: Standbild bei `prefers-reduced-motion` und
+ohne JavaScript; mobil wird nur jeder 2. Frame geladen.
 
 ## Vor dem Livegang (To-dos)
 
@@ -61,7 +61,7 @@ Basis: Original-Inseratsfoto (mobile.de) → 16:9-Outpainting → KI-Turntable-V
 
 ## Technik-Hinweise
 
-- Hero-Video: H.264, 1280px, ohne Ton, `autoplay muted loop playsinline`,
-  Poster-Standbild als Fallback; bei `prefers-reduced-motion` pausiert es automatisch.
+- Logo: Nachbau des Original-Logos „AUTOHAUS BAD SCHWARTAU" (Barlow Condensed,
+  Logo-Blau #205ca0) als scharfe HTML/CSS-Lockup – skaliert verlustfrei.
 - Google Fonts: Barlow + Barlow Condensed (bei Bedarf DSGVO-konform lokal einbinden).
 - Responsive (mobile-first), semantisches HTML5, Meta/OG je Seite, SVG-Favicon.
