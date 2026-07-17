@@ -1,10 +1,22 @@
 [
   {
-    "url": "http://www.autohaus-badschwartau.de/",
-    "path": ".preview-cache/oldsite/index.html"
+    "url": "http://www.autohaus-badschwartau.de/images/Style/auswahl1.jpg",
+    "path": ".preview-cache/oldsite/auswahl1.jpg"
   },
   {
-    "url": "http://autohaus-badschwartau.de/",
-    "path": ".preview-cache/oldsite/index2.html"
+    "url": "http://www.autohaus-badschwartau.de/images/Style/badschwartau_fahrzeug.jpg",
+    "path": ".preview-cache/oldsite/badschwartau_fahrzeug.jpg"
+  },
+  {
+    "url": "http://www.autohaus-badschwartau.de/images/Style/panthermedia_4692882_800x533.jpg",
+    "path": ".preview-cache/oldsite/panthermedia_4692882_800x533.jpg"
+  },
+  {
+    "url": "http://www.autohaus-badschwartau.de/images/Style/panthermedia_8997124_800x525.jpg",
+    "path": ".preview-cache/oldsite/panthermedia_8997124_800x525.jpg"
+  },
+  {
+    "url": "http://www.autohaus-badschwartau.de/images/Style/schwartau.jpg",
+    "path": ".preview-cache/oldsite/schwartau.jpg"
   }
 ]
