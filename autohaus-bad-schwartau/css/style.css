@@ -12,8 +12,8 @@
   --panel: #f4f6f8;
   --panel-dark: #e6eaee;
   --silver: #9aa6b2;
-  --blue: #1d6fd1;
-  --blue-dark: #1554a4;
+  --blue: #205ca0;
+  --blue-dark: #17457a;
   --ink: #171c21;
   --ink-soft: #4d5763;
   --white: #ffffff;
@@ -184,7 +184,7 @@ a:hover { color: var(--blue); }
   padding: calc(var(--header-h) + 30px) 0 60px;
   color: #fff;
   background:
-    radial-gradient(1100px 520px at 80% 20%, rgba(29, 111, 209, 0.14), transparent 60%),
+    radial-gradient(1100px 520px at 80% 20%, rgba(32, 92, 160, 0.14), transparent 60%),
     linear-gradient(165deg, #161c22 0%, var(--carbon-deep) 70%);
   overflow: hidden;
 }
@@ -261,7 +261,7 @@ model-viewer {
   left: 50%;
   bottom: 14px;
   transform: translateX(-50%);
-  background: rgba(29, 111, 209, 0.92);
+  background: rgba(32, 92, 160, 0.92);
   color: #fff;
   font-size: 0.78rem;
   letter-spacing: 0.08em;
@@ -363,11 +363,11 @@ model-viewer {
   border-radius: 10px;
   display: grid;
   place-items: center;
-  background: rgba(29, 111, 209, 0.1);
+  background: rgba(32, 92, 160, 0.1);
   color: var(--blue);
   margin-bottom: 18px;
 }
-.section-dark .card-icon { background: rgba(29, 111, 209, 0.18); }
+.section-dark .card-icon { background: rgba(32, 92, 160, 0.18); }
 .card-icon svg { width: 26px; height: 26px; }
 .card h3 { margin-bottom: 8px; }
 .card p { color: var(--ink-soft); margin-bottom: 0; }
@@ -561,7 +561,7 @@ ul.ticks li::before {
 .form-field textarea:focus {
   outline: none;
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(29, 111, 209, 0.15);
+  box-shadow: 0 0 0 3px rgba(32, 92, 160, 0.15);
 }
 .form-field.error input,
 .form-field.error textarea,
@@ -616,7 +616,7 @@ ul.ticks li::before {
 .cta-banner {
   border-radius: 18px;
   background:
-    radial-gradient(700px 300px at 90% 0%, rgba(29, 111, 209, 0.45), transparent 65%),
+    radial-gradient(700px 300px at 90% 0%, rgba(32, 92, 160, 0.45), transparent 65%),
     linear-gradient(150deg, var(--steel) 0%, var(--carbon-deep) 100%);
   color: #fff;
   padding: 64px 56px;
@@ -679,7 +679,7 @@ ul.ticks li::before {
 .page-hero {
   padding: calc(var(--header-h) + 64px) 0 64px;
   background:
-    radial-gradient(900px 420px at 88% 10%, rgba(29, 111, 209, 0.2), transparent 60%),
+    radial-gradient(900px 420px at 88% 10%, rgba(32, 92, 160, 0.2), transparent 60%),
     linear-gradient(160deg, var(--steel) 0%, var(--carbon-deep) 100%);
   color: #fff;
 }
@@ -836,14 +836,86 @@ html:not(.js) .showcase-hint { display: none; }
   filter: none !important;
 }
 
-/* ---------- Hero-Video (Auto-Drehung, autoplay) ---------- */
-.model-frame.video-frame { aspect-ratio: 16 / 9; }
-.hero-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+/* ---------- Logo (Nachbau des Original-Logos „AUTOHAUS BAD SCHWARTAU") ---------- */
+.brand { text-decoration: none; }
+.logo-plate {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  line-height: 1;
+  user-select: none;
 }
-@media (max-width: 1000px) {
-  .model-frame.video-frame { aspect-ratio: 16 / 10; }
+.logo-top {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.42rem;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;            /* letztes Spacing rechts ausgleichen -> optisch bündig */
+  text-align: center;
+  color: #fff;                    /* auf dunklem Header/Footer */
+  text-transform: uppercase;
+}
+.logo-bar {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: 0.12em;
+  text-indent: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--blue);
+  padding: 3px 6px 2px;
+  border-radius: 2px;
+}
+.site-header.scrolled .logo-top { font-size: 1.28rem; }
+@media (max-width: 760px) {
+  .logo-top { font-size: 1.15rem; letter-spacing: 0.28em; text-indent: 0.28em; }
+  .logo-bar { font-size: 0.82rem; }
+}
+
+/* ---------- Hero-Showcase (Scroll-Animation ganz oben) ---------- */
+.showcase-hero { height: 230vh; }
+@media (max-width: 760px) { .showcase-hero { height: 190vh; } }
+.showcase-hero .showcase-sticky::after {
+  height: 66%;
+  background: linear-gradient(0deg, rgba(8,11,14,0.92) 0%, rgba(8,11,14,0.45) 48%, transparent 100%);
+}
+.showcase-caption h1 {
+  color: #fff;
+  font-size: clamp(2.6rem, 6.6vw, 4.8rem);
+  margin: 0 0 8px;
+  text-shadow: 0 3px 26px rgba(0,0,0,0.55);
+}
+.showcase-caption h1 em { font-style: normal; color: #6ba3de; }
+.showcase-hero .showcase-eyebrow { color: #8fbce8; }
+.showcase-place {
+  font-family: var(--font-head);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  color: #e6eef6;
+  margin: 0 0 22px;
+}
+.showcase-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* ---------- Intro-Band (unter dem Hero) ---------- */
+.intro-band { padding: 54px 0; }
+.intro-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+.intro-lead { font-size: 1.14rem; color: #c6cfd8; margin: 0; }
+.intro-band .hero-badges { justify-content: flex-end; }
+@media (max-width: 860px) {
+  .intro-grid { grid-template-columns: 1fr; gap: 22px; }
+  .intro-band .hero-badges { justify-content: flex-start; }
 }
