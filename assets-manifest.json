@@ -1,6 +1,22 @@
 [
   {
-    "url": "https://r.jina.ai/https://home.mobile.de/AUTOHAUSBADSCHWARTAU",
-    "path": ".preview-cache/mobilede/dealer-jina.md"
+    "url": "https://img.classistatic.de/api/v1/mo-prod/images/c7/c7e24a6a-5525-4046-960c-45b2d390ca36?rule=mo-1600",
+    "path": "autohaus-bad-schwartau/assets/img/fotos/bmw-x1.jpg"
+  },
+  {
+    "url": "https://img.classistatic.de/api/v1/mo-prod/images/17/17695d82-8b4e-4f17-8084-6c0a1a5db73e?rule=mo-1600",
+    "path": "autohaus-bad-schwartau/assets/img/fotos/bmw-x3.jpg"
+  },
+  {
+    "url": "https://img.classistatic.de/api/v1/mo-prod/images/39/39b0bc2b-471e-4db5-9b29-0252e027811a?rule=mo-1600",
+    "path": "autohaus-bad-schwartau/assets/img/fotos/bmw-318i.jpg"
+  },
+  {
+    "url": "https://img.classistatic.de/api/v1/mo-prod/images/9d/9d868aae-4f8e-4f81-adf9-9b0da0d3f41e?rule=mo-1600",
+    "path": "autohaus-bad-schwartau/assets/img/fotos/mini-cabrio.jpg"
+  },
+  {
+    "url": "https://img.classistatic.de/api/v1/mo-prod/images/80/80e734cb-d734-4393-8849-d9758b20f2d9?rule=mo-1600",
+    "path": "autohaus-bad-schwartau/assets/img/fotos/mini-roadster.jpg"
   }
 ]
