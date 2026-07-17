@@ -22,7 +22,11 @@ offline (Browser-Sicherheitswarnung). Dieser Auftritt ist ein kompletter Neuaufb
 ├── js/script.js          Header, mobiles Menü, Scroll-Reveal, FAQ, Formular-Validierung
 └── assets/
     ├── 3d/autohaus-fahrzeug.glb   drehbares 3D-Automodell (Hero)
-    └── img/hero-poster.png        Standbild-Fallback / Poster des 3D-Modells
+    ├── img/hero-poster.png        Standbild-Fallback / Poster des 3D-Modells
+    ├── img/fotos/                 lokal gebündelte Fotos (echte Bestandsfahrzeuge
+    │                              von mobile.de + Standort-Fotos + Stock-Motive)
+    └── animation/                 60 WebP-Frames der Scroll-Animation (360°-MINI
+                                   vor dem Ladenlokal) + still.webp als Fallback
 ```
 
 ## Deployment
@@ -34,6 +38,14 @@ Projekt („Other") deployen. Kein Build-Schritt nötig.
 Wichtig: Beim Aufschalten auf die bestehende Domain unbedingt ein **gültiges
 SSL-Zertifikat** einrichten (bei Netlify/Vercel automatisch via Let's Encrypt) –
 der SSL-Defekt war der Hauptgrund für den Neuaufbau.
+
+## Scroll-Animation (Startseite)
+
+Unter dem Hero dreht sich beim Scrollen ein MINI Cooper C aus dem echten Bestand
+um ~360° vor dem realen Ladenlokal (Frame-Sequenz im Apple-Stil, Canvas-Scrubbing).
+Basis: Original-Inseratsfoto (mobile.de) → 16:9-Outpainting → KI-Turntable-Video
+(Higgsfield/Kling) → 60 komprimierte WebP-Frames. Fallbacks: Standbild bei
+`prefers-reduced-motion` und ohne JavaScript; mobil wird nur jeder 2. Frame geladen.
 
 ## Vor dem Livegang (To-dos)
 
