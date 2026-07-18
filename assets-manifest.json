@@ -1,6 +1,10 @@
 [
   {
-    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260717_181541_9689b801-49c8-4748-a1b9-6a3eb4c9ebd6.mp4",
-    "path": ".preview-cache/turntable-4k.mp4"
+    "url": "http://www.propp.de/",
+    "path": ".preview-cache/propp/home.html"
+  },
+  {
+    "url": "https://r.jina.ai/http://www.propp.de/",
+    "path": ".preview-cache/propp/home-jina.md"
   }
 ]
