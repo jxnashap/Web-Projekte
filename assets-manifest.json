@@ -1,14 +1,18 @@
 [
   {
-    "url": "https://www.thefontenay.com/",
-    "path": ".preview-cache/fontenay/home-com.html"
+    "url": "https://www.thefontenay.com/assets/media/logos/fontenay-logo-white.svg",
+    "path": ".preview-cache/fontenay/logo-white.svg"
   },
   {
-    "url": "https://www.thefontenay.de/",
-    "path": ".preview-cache/fontenay/home-de.html"
+    "url": "https://www.thefontenay.com/assets/media/logos/fontenay-logo-gray.svg",
+    "path": ".preview-cache/fontenay/logo-gray.svg"
   },
   {
-    "url": "https://r.jina.ai/https://www.thefontenay.de/",
-    "path": ".preview-cache/fontenay/home-jina.md"
+    "url": "https://www.thefontenay.com/assets/scripts/main.css",
+    "path": ".preview-cache/fontenay/main.css"
+  },
+  {
+    "url": "https://www.thefontenay.com/assets/scripts/common.css",
+    "path": ".preview-cache/fontenay/common.css"
   }
 ]
