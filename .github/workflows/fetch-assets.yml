@@ -1,0 +1,39 @@
+name: fetch-assets
+
+# Hilfs-Workflow: laedt extern generierte Medien (Higgsfield-CDN) in das Repo,
+# da die Build-Umgebung keinen direkten Zugriff auf das CDN hat.
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - "claude/**"
+    paths:
+      - "assets-manifest.json"
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download assets from manifest
+        run: |
+          test -f assets-manifest.json || { echo "no manifest"; exit 0; }
+          jq -c '.[]' assets-manifest.json | while read -r item; do
+            url=$(echo "$item" | jq -r '.url')
+            path=$(echo "$item" | jq -r '.path')
+            mkdir -p "$(dirname "$path")"
+            curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -o "$path" "$url"
+            echo "fetched: $path ($(stat -c%s "$path") bytes)"
+          done
+
+      - name: Commit fetched assets
+        run: |
+          git config user.name "asset-fetcher"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Add fetched media assets" || echo "nothing to commit"
+          git push
