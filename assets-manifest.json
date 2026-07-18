@@ -1,6 +1,14 @@
 [
   {
-    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260718_154412_3a1bb41d-98a8-4ac3-bf0e-cc9baebbed0e.mp4",
-    "path": ".preview-cache/iw/hero-4k.mp4"
+    "url": "https://www.thefontenay.com/",
+    "path": ".preview-cache/fontenay/home-com.html"
+  },
+  {
+    "url": "https://www.thefontenay.de/",
+    "path": ".preview-cache/fontenay/home-de.html"
+  },
+  {
+    "url": "https://r.jina.ai/https://www.thefontenay.de/",
+    "path": ".preview-cache/fontenay/home-jina.md"
   }
 ]
