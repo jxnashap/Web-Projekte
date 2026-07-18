@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <script>document.documentElement.classList.add("js");</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kontakt – Projekt anfragen | InnoWeb</title>
+  <meta name="description" content="Projekt anfragen bei InnoWeb: Erzählen Sie uns von Ihrer Marke – wir antworten persönlich. Webdesign für Norddeutschland.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Kontakt – Projekt anfragen | InnoWeb">
+  <meta property="og:description" content="Projekt anfragen bei InnoWeb: Erzählen Sie uns von Ihrer Marke – wir antworten persönlich. Webdesign für Norddeutschland.">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="InnoWeb – Startseite">
+        <!-- [PLATZHALTER: Echtes InnoWeb-Logo einsetzen – bis dahin Wortmarke] -->
+        <span class="bmark">Inno<span class="gold">Web</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Hauptnavigation">
+        <ul>
+          <li><a href="index.html">Start</a></li>
+          <li><a href="leistungen.html">Leistungen</a></li>
+          <li><a href="arbeitsweise.html">Arbeitsweise</a></li>
+          <li><a href="sicherheit.html">Sicherheit</a></li>
+          <li><a href="referenzen.html">Referenzen</a></li>
+          <li><a href="ueber-uns.html">Über uns</a></li>
+          <li><a href="kontakt.html" class="nav-cta">Projekt anfragen</a></li>
+        </ul>
+      </nav>
+      <button class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <section class="page-hero">
+      <div class="container">
+        <p class="breadcrumbs"><a href="index.html">Start</a> &nbsp;/&nbsp; Kontakt</p>
+        <h1>Erzählen Sie uns von Ihrer <em>Marke.</em></h1>
+        <p class="lead">Ein kurzes Formular genügt – wir melden uns persönlich, meist innerhalb eines Werktages.</p>
+      </div>
+    </section>
+
+    <section class="section-tight">
+      <div class="container split" style="align-items:start">
+        <div>
+          <form data-validate novalidate>
+            <div class="form-grid">
+              <div class="field"><label for="f-name">Name *</label><input id="f-name" name="name" type="text" autocomplete="name" required><span class="field-error">Bitte nennen Sie uns Ihren Namen.</span></div>
+              <div class="field"><label for="f-firma">Unternehmen</label><input id="f-firma" name="firma" type="text" autocomplete="organization"></div>
+              <div class="field"><label for="f-email">E-Mail *</label><input id="f-email" name="email" type="email" autocomplete="email" required><span class="field-error">Bitte geben Sie eine gültige E-Mail-Adresse an.</span></div>
+              <div class="field"><label for="f-thema">Anliegen *</label><select id="f-thema" name="thema" required><option value="">Bitte wählen …</option><option>Neue Website</option><option>Relaunch</option><option>Shop</option><option>Pflege &amp; Hosting</option><option>Etwas anderes</option></select><span class="field-error">Bitte wählen Sie ein Anliegen.</span></div>
+              <div class="field full"><label for="f-msg">Ihre Nachricht *</label><textarea id="f-msg" name="nachricht" placeholder="Ein paar Zeilen genügen: Wer sind Sie, was schwebt Ihnen vor?" required></textarea><span class="field-error">Bitte schreiben Sie uns ein paar Zeilen.</span></div>
+              <div class="field full consent-wrap"><label class="consent"><input type="checkbox" name="consent" required><span>Ich habe die <a href="datenschutz.html">Datenschutzerklärung</a> gelesen und bin mit der Verarbeitung meiner Angaben zur Beantwortung der Anfrage einverstanden. *</span></label><span class="field-error">Bitte bestätigen Sie die Datenschutzerklärung.</span></div>
+            </div>
+            <p style="margin-top:30px"><button class="btn btn-solid" type="submit">Anfrage senden</button></p>
+            <div class="form-note" role="status">Vielen Dank. Ihre Nachricht ist angekommen – wir antworten persönlich, meist innerhalb eines Werktages.</div>
+          </form>
+        </div>
+        <div>
+          <ul class="contact-list">
+            <li><div class="cl-label">E-Mail</div><div class="cl-val">[PLATZHALTER: hallo@innoweb.de]</div></li>
+            <li><div class="cl-label">Telefon</div><div class="cl-val">[PLATZHALTER: Rufnummer]</div></li>
+            <li><div class="cl-label">Studio</div><div class="cl-val">[PLATZHALTER: Adresse]<br>Norddeutschland</div></li>
+            <li><div class="cl-label">Antwortzeit</div><div class="cl-val">Meist innerhalb<br>eines Werktages</div></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="bmark">Inno<span class="gold">Web</span></span>
+          <p>Digitale Baukunst aus Norddeutschland. Wir entwerfen und bauen Websites, über die man spricht – ruhig, präzise, sicher.</p>
+        </div>
+        <div>
+          <h4>Studio</h4>
+          <ul>
+            <li><a href="leistungen.html">Leistungen</a></li>
+            <li><a href="arbeitsweise.html">Arbeitsweise</a></li>
+            <li><a href="sicherheit.html">Sicherheit</a></li>
+            <li><a href="referenzen.html">Referenzen</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Kontakt</h4>
+          <ul>
+            <li><a href="kontakt.html">Projekt anfragen</a></li>
+            <li><a href="mailto:hallo@innoweb.de">[PLATZHALTER: hallo@innoweb.de]</a></li>
+            <li>[PLATZHALTER: Telefon]</li>
+            <li>[PLATZHALTER: Adresse, Norddeutschland]</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Region</h4>
+          <ul>
+            <li>Hamburg</li>
+            <li>Lübeck &amp; Lübecker Bucht</li>
+            <li>Kiel</li>
+            <li>Schleswig-Holstein</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span data-year>2026</span> InnoWeb · Digitale Baukunst</span>
+        <span><a href="impressum.html">Impressum</a> &nbsp;·&nbsp; <a href="datenschutz.html">Datenschutz</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
