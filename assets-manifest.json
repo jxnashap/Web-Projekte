@@ -1,10 +1,46 @@
 [
   {
-    "url": "http://www.propp.de/",
-    "path": ".preview-cache/propp/home.html"
+    "url": "http://www.propp.de/uploads/JkGJtoqn/propp_logo_hks47.png",
+    "path": "propp-elektrotechnik/assets/propp-logo.png"
   },
   {
-    "url": "https://r.jina.ai/http://www.propp.de/",
-    "path": ".preview-cache/propp/home-jina.md"
+    "url": "http://www.propp.de/uploads/cz8pOPH9/75-propp.svg",
+    "path": "propp-elektrotechnik/assets/75-jahre.svg"
+  },
+  {
+    "url": "http://www.propp.de/uploads/5T1fnlR2/320x0_320x0/Logo-zertifizierte-Blitzschutz-Fachkraft.png",
+    "path": "propp-elektrotechnik/assets/cert-blitzschutz-fachkraft.png"
+  },
+  {
+    "url": "http://www.propp.de/uploads/O9Tmaox6/169x0_169x0/e-innung_logo.png",
+    "path": "propp-elektrotechnik/assets/cert-e-innung.png"
+  },
+  {
+    "url": "http://www.propp.de/uploads/c4iofNXv/167x0_167x0/zert-bau-logo.jpg",
+    "path": "propp-elektrotechnik/assets/cert-zert-bau.jpg"
+  },
+  {
+    "url": "http://www.propp.de/uploads/dNjPYGl3/320x0_320x0/VDB-Logo-Farbe.png",
+    "path": "propp-elektrotechnik/assets/cert-vdb.png"
+  },
+  {
+    "url": "https://r.jina.ai/http://www.propp.de/elektroinstallation",
+    "path": ".preview-cache/propp/elektroinstallation.md"
+  },
+  {
+    "url": "https://r.jina.ai/http://www.propp.de/blitzschutz--und-erdungsanlagen",
+    "path": ".preview-cache/propp/blitzschutz.md"
+  },
+  {
+    "url": "https://r.jina.ai/http://www.propp.de/ueber-uns",
+    "path": ".preview-cache/propp/ueber-uns.md"
+  },
+  {
+    "url": "https://r.jina.ai/http://www.propp.de/kontakt",
+    "path": ".preview-cache/propp/kontakt.md"
+  },
+  {
+    "url": "https://r.jina.ai/http://www.propp.de/impressum",
+    "path": ".preview-cache/propp/impressum.md"
   }
 ]
