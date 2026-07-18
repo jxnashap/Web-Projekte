@@ -1,14 +1,9 @@
 [
-  {
-    "url": "https://r.jina.ai/https://www.instagram.com/room23.tattoo.art/",
-    "path": ".preview-cache/r23/profil-jina.md"
-  },
-  {
-    "url": "https://www.instagram.com/room23.tattoo.art/",
-    "path": ".preview-cache/r23/profil.html"
-  },
-  {
-    "url": "https://r.jina.ai/https://www.instagram.com/room23.tattoo.art/reels/",
-    "path": ".preview-cache/r23/reels-jina.md"
-  }
+  { "url": "https://www.picuki.com/profile/room23.tattoo.art", "path": ".preview-cache/r23/picuki.html" },
+  { "url": "https://imginn.com/room23.tattoo.art/", "path": ".preview-cache/r23/imginn.html" },
+  { "url": "https://www.pixwox.com/profile/room23.tattoo.art/", "path": ".preview-cache/r23/pixwox.html" },
+  { "url": "https://greatfon.com/v/room23.tattoo.art", "path": ".preview-cache/r23/greatfon.html" },
+  { "url": "https://html.duckduckgo.com/html/?q=room23.tattoo.art+instagram+tattoo+studio", "path": ".preview-cache/r23/ddg.html" },
+  { "url": "https://r.jina.ai/https://www.bing.com/search?q=%22room23.tattoo.art%22+OR+%22room23+tattoo%22+studio", "path": ".preview-cache/r23/bing-jina.md" },
+  { "url": "https://r.jina.ai/https://greatfon.com/v/room23.tattoo.art", "path": ".preview-cache/r23/greatfon-jina.md" }
 ]
