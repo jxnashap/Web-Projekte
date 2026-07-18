@@ -6,25 +6,27 @@ wurden von der bestehenden Seite `propp.de` übernommen. Kern-Feature ist eine
 **Kabel-Scroll-Animation**: Beim Herunterscrollen zeichnet sich ein Stromkabel (SVG),
 ein leuchtender Funke wandert daran entlang, und die Leistungen erscheinen nacheinander.
 
-## Struktur
+## Struktur (mehrseitig)
 
 ```
 /
-├── index.html            One-Pager: Hero · Leistungen (Kabel) · Über uns · Karriere · Kontakt
-├── impressum.html        Impressum (echte Registerdaten übernommen)
-├── datenschutz.html      Datenschutz (Platzhalter-Gerüst – juristisch prüfen)
-├── css/style.css         Design-System (Azur / Navy / Gold)
-├── js/script.js          Header, Menü, Kabel-Animation, Reveals, Formular-Validierung
-├── assets/
-│   ├── propp-logo.png            Original-Logo (von propp.de)
-│   ├── 75-jahre.svg              Original 75-Jahre-Jubiläumslogo
-│   ├── cert-*.png/.jpg           VDB, Blitzschutz-Fachkraft, E-Innung, zert-bau
-│   ├── favicon.svg               Blitz-Favicon in Markenfarbe
-│   └── img/elektro-arbeit.jpg    Platzhalterfoto Über-uns
+├── index.html               Startseite: Hero, Kurzprofil, Leistungen am Kabel, Zertifikate, CTA
+├── elektroinstallation.html Detailseite: Energie-/Gebäudetechnik, E-Check, E-Mobilität, Referenzen
+├── blitzschutz.html         Detailseite: äußerer/innerer Blitzschutz, DIN EN 62305, Erder, Referenzen
+├── ueber-uns.html           Firmengeschichte 1949–2024 (Timeline), Team, Zertifikate
+├── karriere.html            Alle Stellen + Bewerbungsformular + Ausbildungstext
+├── kontakt.html             Kontaktformular, Ansprechpartner, Öffnungszeiten, Karte
+├── impressum.html           Impressum (echte Registerdaten übernommen)
+├── datenschutz.html         Datenschutz (Platzhalter-Gerüst – juristisch prüfen)
+├── css/style.css · js/script.js
+├── assets/  (Logo, 75-Jahre-SVG, Zertifikat-Logos, Favicon, Foto)
 └── README.md
 ```
 
-## Kabel-Scroll-Animation
+Navigation: Start · Leistungen (Dropdown: Elektroinstallation / Blitzschutz) · Über uns ·
+Karriere · Kontakt. Header/Footer auf allen Seiten identisch, aktiver Menüpunkt markiert.
+
+## Kabel-Scroll-Animation (Startseite)
 
 Ein SVG-Pfad (`.cable-line`) mit `stroke-dasharray/‑dashoffset`, gebunden an die
 Scrollposition der Leistungs-Sektion – das Kabel „zeichnet" sich von oben nach unten.
