@@ -73,28 +73,25 @@
     drawEls.forEach(function (el) { el.classList.add("draw"); });
   }
 
-  /* ---------- Hero: 4K-Video laden & einblenden ----------
+  /* ---------- Hero-Videos laden & einblenden ----------
      AV1-WebM bevorzugt (deutlich kleiner), H.264-MP4 als Fallback. */
-  var hv = document.querySelector(".hero-video");
-  if (hv) {
+  document.querySelectorAll(".hero-video").forEach(function (hv) {
     var hbg = hv.closest(".hero-bg");
-    if (!reduce) {
-      var saveData = navigator.connection && navigator.connection.saveData === true;
-      var use4k = window.innerWidth > 960 && !saveData;
-      var src = use4k ? hv.getAttribute("data-src-4k") : hv.getAttribute("data-src-hd");
-      if (src) {
-        if (hv.canPlayType('video/webm; codecs="av01.0.08M.08"') !== "") {
-          src = src.replace(/\.mp4$/, ".webm");
-        }
-        hv.addEventListener("canplay", function () {
-          hbg.classList.add("playing");
-          var p = hv.play(); if (p && p.catch) p.catch(function () {});
-        });
-        hv.src = src;
-        hv.load();
-      }
+    if (reduce || !hbg) return;
+    var saveData = navigator.connection && navigator.connection.saveData === true;
+    var useBig = window.innerWidth > 960 && !saveData;
+    var src = useBig ? hv.getAttribute("data-src-4k") : hv.getAttribute("data-src-hd");
+    if (!src) return;
+    if (hv.canPlayType('video/webm; codecs="av01.0.08M.08"') !== "") {
+      src = src.replace(/\.mp4$/, ".webm");
     }
-  }
+    hv.addEventListener("canplay", function () {
+      hbg.classList.add("playing");
+      var p = hv.play(); if (p && p.catch) p.catch(function () {});
+    });
+    hv.src = src;
+    hv.load();
+  });
 
   /* ---------- Arbeitsweise: wachsende Gold-Linie ---------- */
   var timelines = document.querySelectorAll("[data-timeline]");

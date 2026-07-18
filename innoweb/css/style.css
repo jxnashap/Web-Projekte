@@ -581,6 +581,30 @@ body.nav-open { overflow: hidden; }
 }
 @keyframes cue { 0% { top: -45%; } 65%, 100% { top: 110%; } }
 
+/* ---------- Unterseiten: eigener Cinematic-Hero mit Video ---------- */
+.page-hero-cine {
+  position: relative; min-height: 72vh; display: flex; align-items: flex-end;
+  padding: calc(var(--header-h) + 70px) 0 clamp(48px, 7vw, 88px);
+  background: var(--night); overflow: hidden;
+}
+.page-hero-cine .container { position: relative; z-index: 1; }
+.page-hero-cine .breadcrumbs { color: rgba(246, 243, 238, 0.55) !important; }
+.page-hero-cine .breadcrumbs a { color: rgba(246, 243, 238, 0.75); }
+.page-hero-cine .breadcrumbs a:hover { color: var(--gold-2); }
+.page-hero-cine h1 { color: var(--paper); }
+.page-hero-cine h1 em { color: var(--gold-2); }
+.page-hero-cine .lead { color: rgba(246, 243, 238, 0.82); }
+.page-hero-cine .hero-veil {
+  background: linear-gradient(100deg, rgba(17, 24, 32, 0.8) 0%, rgba(17, 24, 32, 0.52) 45%, rgba(17, 24, 32, 0.14) 82%, rgba(17, 24, 32, 0.05) 100%);
+}
+.page-hero-cine .hero-veil::after {
+  content: ""; position: absolute; inset: auto 0 0 0; height: 120px;
+  background: linear-gradient(rgba(246, 243, 238, 0), var(--paper));
+}
+.page-hero-cine.fade-night .hero-veil::after {
+  background: linear-gradient(rgba(17, 24, 32, 0), var(--night));
+}
+
 /* Header über dem dunklen Video hell */
 body.cine .site-header:not(.solid) .brand { color: var(--paper); }
 body.cine .site-header:not(.solid) .mono-svg .m-ink { stroke: var(--paper); }

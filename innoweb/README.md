@@ -32,18 +32,26 @@ Quiet-Luxury-Stil: Wirkung durch Weite, Ruhe und Präzision statt Effekte.
 4. **Sicherheit sichtbar:** sich zeichnendes Schild + „Verschlüsselungs"-Scramble
    (Buchstaben lösen sich zu „VERSCHLÜSSELT" auf) in der dunklen Sektion.
 
-## Eine Animation pro Seite
+## Eigener Cinematic-Hero + Animation pro Seite
 
-| Seite | Signature-Animation |
-|---|---|
-| Start | 4K-Video-Hero + selbstzeichnendes Wireframe |
-| Leistungen | Blueprint-Icons zeichnen sich beim Scrollen (Browser, Relaunch-Pfeile, Tasche, Schild) |
-| Arbeitsweise | Gold-Linie wächst mit dem Scrollen an der Prozess-Leiste entlang, Rauten leuchten auf |
-| Sicherheit | Schild zeichnet sich + „VERSCHLÜSSELT"-Scramble |
-| Über uns | Sanfter Parallax auf dem Studiobild + selbstzeichnende Ostsee-Welle |
-| Referenzen | Vorhang-Reveal: Bilder werden seitlich aufgedeckt und zoomen sanft aus |
-| Kontakt | Briefumschlag zeichnet sich, Gold-Linie fliegt davon |
-| Impressum/Datenschutz | §-Siegel zeichnet sich |
+Jede Hauptseite hat einen eigenen Hintergrund-Hero (Thema Web · Creative · Design,
+Higgsfield-generiert) plus eine Signature-Animation:
+
+| Seite | Hero (Hintergrund) | Signature-Animation |
+|---|---|---|
+| Start | 4K-Video: Ostsee-Buhnen im Morgennebel | selbstzeichnendes Wireframe |
+| Leistungen | Video: Hand zeichnet Wireframe mit Füllfederhalter | Blueprint-Icons zeichnen sich |
+| Arbeitsweise | Video: Blaupausen-Skizzen mit Lineal & Bleistift | wachsende Gold-Prozesslinie |
+| Sicherheit | Video: Tresor-Mechanik aus Messing (dunkel) | Schild + „VERSCHLÜSSELT"-Scramble |
+| Über uns | Bild + Ken-Burns: Hanseatisches Studio | Parallax + Ostsee-Welle |
+| Referenzen | Bild + Ken-Burns: Galerie gerahmter Designs | Vorhang-Reveal-Galerie |
+| Kontakt | Bild + Ken-Burns: Espresso am Ostsee-Fenster | selbstzeichnender Briefumschlag |
+| Impressum/Datenschutz | ruhig, ohne Video | §-Siegel zeichnet sich |
+
+Die Videos liegen als AV1-WebM + H.264-MP4 in 1080p („-2k") und 720p („-hd") vor,
+jeweils nahtlos geloopt, mit Poster-JPG. Bei den drei Ken-Burns-Seiten kann später
+per `video=True` im Generator ein Video nachgerüstet werden (Dateien ins
+`assets/hero/`-Schema legen genügt).
 
 Alle Effekte mit Fallback: bei `prefers-reduced-motion` und ohne JavaScript werden
 Inhalte statisch angezeigt (Video bleibt aus, Poster-Bild erscheint).
