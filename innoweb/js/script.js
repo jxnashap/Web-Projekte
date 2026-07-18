@@ -48,12 +48,92 @@
 
   /* ---------- Selbstzeichnende Linien vorbereiten ----------
      Für jede .draw-line die echte Pfadlänge als CSS-Var setzen. */
-  document.querySelectorAll(".draw-line, .s-draw, .s-check").forEach(function (el) {
+  document.querySelectorAll(".draw-line, .s-draw, .s-check, .icon-draw .dl").forEach(function (el) {
     try {
       var len = el.getTotalLength();
       el.style.setProperty("--len", len);
     } catch (e) { /* Nicht-Pfad-Elemente ignorieren */ }
   });
+
+  /* ---------- Generisch: [data-draw] zeichnet sich, wenn sichtbar ---------- */
+  var drawEls = document.querySelectorAll("[data-draw]");
+  if ("IntersectionObserver" in window && drawEls.length && !reduce) {
+    var dio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("draw"); dio.unobserve(e.target); }
+      });
+    }, { threshold: 0.35 });
+    drawEls.forEach(function (el) { dio.observe(el); });
+  } else {
+    drawEls.forEach(function (el) { el.classList.add("draw"); });
+  }
+
+  /* ---------- Hero: 4K-Video laden & einblenden ----------
+     AV1-WebM bevorzugt (deutlich kleiner), H.264-MP4 als Fallback. */
+  var hv = document.querySelector(".hero-video");
+  if (hv) {
+    var hbg = hv.closest(".hero-bg");
+    if (!reduce) {
+      var saveData = navigator.connection && navigator.connection.saveData === true;
+      var use4k = window.innerWidth > 960 && !saveData;
+      var src = use4k ? hv.getAttribute("data-src-4k") : hv.getAttribute("data-src-hd");
+      if (src) {
+        if (hv.canPlayType('video/webm; codecs="av01.0.08M.08"') !== "") {
+          src = src.replace(/\.mp4$/, ".webm");
+        }
+        hv.addEventListener("canplay", function () {
+          hbg.classList.add("playing");
+          var p = hv.play(); if (p && p.catch) p.catch(function () {});
+        });
+        hv.src = src;
+        hv.load();
+      }
+    }
+  }
+
+  /* ---------- Arbeitsweise: wachsende Gold-Linie ---------- */
+  var timelines = document.querySelectorAll("[data-timeline]");
+  if (timelines.length) {
+    var updTl = function () {
+      timelines.forEach(function (tl) {
+        var r = tl.getBoundingClientRect();
+        var p = (window.innerHeight * 0.78 - r.top) / r.height;
+        p = Math.max(0, Math.min(1, p));
+        if (reduce) p = 1;
+        tl.style.setProperty("--p", p);
+        tl.querySelectorAll(".layer").forEach(function (l) {
+          var lr = l.getBoundingClientRect();
+          var mid = lr.top + lr.height * 0.5 - r.top;
+          l.classList.toggle("lit", mid <= p * r.height);
+        });
+      });
+    };
+    var tlTick = false;
+    window.addEventListener("scroll", function () {
+      if (tlTick) return; tlTick = true;
+      requestAnimationFrame(function () { updTl(); tlTick = false; });
+    }, { passive: true });
+    updTl();
+  }
+
+  /* ---------- Über uns: sanfter Parallax ---------- */
+  var parEls = document.querySelectorAll(".parallax img");
+  if (parEls.length && !reduce) {
+    var updPar = function () {
+      parEls.forEach(function (img) {
+        var r = img.parentElement.getBoundingClientRect();
+        var center = r.top + r.height / 2 - window.innerHeight / 2;
+        var shift = Math.max(-34, Math.min(34, center * -0.06));
+        img.style.setProperty("--par", shift.toFixed(1) + "px");
+      });
+    };
+    var parTick = false;
+    window.addEventListener("scroll", function () {
+      if (parTick) return; parTick = true;
+      requestAnimationFrame(function () { updPar(); parTick = false; });
+    }, { passive: true });
+    updPar();
+  }
 
   /* ---------- Hero-Wireframe: beim Laden zeichnen ---------- */
   var wire = document.querySelector(".wire-svg");

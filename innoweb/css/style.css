@@ -414,11 +414,157 @@ a:hover { color: var(--gold); }
 .reveal.d3 { transition-delay: 0.36s; }
 .reveal.d4 { transition-delay: 0.48s; }
 
+/* ============================================================
+   Signature-Animationen pro Seite
+   ============================================================ */
+
+/* ---------- Start: Cinematic-Hero (4K-Video) ---------- */
+.hero-cine {
+  min-height: 100svh; display: flex; align-items: center;
+  padding: calc(var(--header-h) + 48px) 0 110px;
+  background: var(--night); overflow: hidden;
+}
+.hero-bg { position: absolute; inset: 0; }
+.hero-bg img, .hero-bg video {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+}
+.hero-bg video { opacity: 0; transition: opacity 1.8s var(--ease); }
+.hero-bg.playing video { opacity: 1; }
+.hero-bg img { animation: hero-drift 26s var(--ease) infinite alternate; transform-origin: 60% 45%; }
+.hero-bg.playing img { animation: none; }
+@keyframes hero-drift { from { transform: scale(1); } to { transform: scale(1.07); } }
+.hero-veil {
+  position: absolute; inset: 0;
+  background: linear-gradient(102deg, rgba(17,24,32,0.82) 0%, rgba(17,24,32,0.58) 40%, rgba(17,24,32,0.16) 78%, rgba(17,24,32,0.06) 100%);
+}
+.hero-veil::after {
+  content: ""; position: absolute; inset: auto 0 0 0; height: 160px;
+  background: linear-gradient(rgba(246,243,238,0), var(--paper));
+}
+.hero-cine .hero-grid { position: relative; z-index: 1; }
+.hero-cine .eyebrow { color: var(--gold-2); }
+.hero-cine h1 { color: var(--paper); }
+.hero-cine h1 em { color: var(--gold-2); }
+.hero-cine .hero-sub { color: rgba(246,243,238,0.85); }
+.hero-cine .trust-row span { color: rgba(246,243,238,0.75); }
+.hero-cine .btn-solid { background: var(--paper); color: var(--night); }
+.hero-cine .btn-solid:hover { background: var(--gold); color: var(--night); }
+.hero-cine .btn-line { border-color: rgba(246,243,238,0.35); color: var(--paper); }
+.hero-cine .btn-line:hover { border-color: var(--gold-2); color: var(--gold-2); }
+.hero-cine .wire-frame {
+  background: rgba(246,243,238,0.94); backdrop-filter: blur(10px) saturate(1.05);
+  border-color: rgba(246,243,238,0.35); box-shadow: 0 60px 120px -50px rgba(0,0,0,0.75);
+}
+.scroll-cue {
+  position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%);
+  width: 1px; height: 68px; overflow: hidden; z-index: 1;
+}
+.scroll-cue span {
+  position: absolute; left: 0; top: -45%; width: 1px; height: 45%;
+  background: linear-gradient(rgba(201,169,106,0), var(--gold-2));
+  animation: cue 2.8s cubic-bezier(0.6, 0.05, 0.35, 1) infinite;
+}
+@keyframes cue { 0% { top: -45%; } 65%, 100% { top: 110%; } }
+
+/* Header über dem dunklen Video hell */
+body.cine .site-header:not(.solid) .brand .bmark { color: var(--paper); }
+body.cine .site-header:not(.solid) .main-nav a { color: rgba(246,243,238,0.82); }
+body.cine .site-header:not(.solid) .main-nav a:hover,
+body.cine .site-header:not(.solid) .main-nav a.active { color: #fff; }
+body.cine .site-header:not(.solid) .nav-cta { border-color: rgba(246,243,238,0.55); color: var(--paper) !important; }
+body.cine .site-header:not(.solid) .nav-cta:hover { background: var(--paper); color: var(--night) !important; }
+body.cine .site-header:not(.solid) .nav-toggle span { background: var(--paper); }
+
+/* ---------- Selbstzeichnende Icons (data-draw) ---------- */
+.icon-draw .dl {
+  fill: none; stroke: currentColor; stroke-width: 1.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.icon-draw .dl-gold { stroke: var(--gold); }
+.js .icon-draw .dl { stroke-dasharray: var(--len, 160); stroke-dashoffset: var(--len, 160); }
+.js .icon-draw.draw .dl { animation: draw 1.3s var(--ease) forwards; }
+.js .icon-draw.draw .dl:nth-of-type(2) { animation-delay: 0.18s; }
+.js .icon-draw.draw .dl:nth-of-type(3) { animation-delay: 0.36s; }
+.js .icon-draw.draw .dl:nth-of-type(4) { animation-delay: 0.54s; }
+.js .icon-draw.draw .dl:nth-of-type(5) { animation-delay: 0.72s; }
+
+/* ---------- Leistungen: Blueprint-Icons ---------- */
+.flist li { grid-template-columns: 44px 64px 1fr; }
+.fl-ico { width: 56px; height: 56px; color: var(--night); opacity: 0.9; margin-top: 2px; }
+.fl-ico svg { width: 100%; height: 100%; display: block; }
+@media (max-width: 600px) {
+  .flist li { grid-template-columns: 44px 1fr; }
+  .fl-ico { display: none; }
+}
+
+/* ---------- Arbeitsweise: wachsende Gold-Linie ---------- */
+.tl { position: relative; padding-left: 40px; }
+.tl::before {
+  content: ""; position: absolute; left: 11px; top: 8px; bottom: 8px;
+  width: 1px; background: var(--line);
+}
+.tl .tl-line {
+  position: absolute; left: 11px; top: 8px; width: 1px;
+  height: calc(var(--p, 0) * (100% - 16px));
+  background: linear-gradient(180deg, var(--gold-2), var(--gold));
+}
+.tl .layer { position: relative; }
+.tl .layer::before {
+  content: ""; position: absolute; left: -34px; top: 50%;
+  width: 9px; height: 9px; transform: translate(-50%, -50%) rotate(45deg);
+  border: 1px solid var(--line); background: var(--paper);
+  transition: border-color 0.5s var(--ease), background 0.5s var(--ease), box-shadow 0.5s var(--ease);
+}
+.tl .layer.lit { border-color: var(--line-gold); }
+.tl .layer.lit::before { border-color: var(--gold); background: var(--gold); box-shadow: 0 0 0 5px rgba(176,141,87,0.15); }
+@media (max-width: 720px) {
+  .tl { padding-left: 26px; }
+  .tl::before, .tl .tl-line { left: 5px; }
+  .tl .layer::before { left: -21px; }
+}
+
+/* ---------- Über uns: Parallax + Wellenlinie ---------- */
+.parallax { overflow: hidden; }
+.js .parallax img { transform: translateY(var(--par, 0px)) scale(1.12); transition: none; will-change: transform; }
+.parallax:hover img { transform: translateY(var(--par, 0px)) scale(1.12); }
+.wave-svg { width: min(230px, 56%); margin: 0 auto 40px; display: block; color: var(--night); opacity: 0.8; }
+
+/* ---------- Referenzen: Vorhang-Reveal ---------- */
+.js .gcard .gimg { position: relative; }
+.js .gcard .gimg::after {
+  content: ""; position: absolute; inset: 0; background: var(--paper-2);
+  transform: scaleX(1); transform-origin: right;
+  transition: transform 1.15s var(--ease) 0.1s;
+}
+.js .gcard.d1 .gimg::after { transition-delay: 0.28s; }
+.js .gcard.d2 .gimg::after { transition-delay: 0.46s; }
+.js .gcard.in .gimg::after { transform: scaleX(0); }
+.js .gcard .gimg img { transform: scale(1.14); transition: transform 1.7s var(--ease) 0.1s; }
+.js .gcard.in .gimg img { transform: scale(1); }
+.js .gcard.in:hover .gimg img { transform: scale(1.045); transition-duration: 0.9s; transition-delay: 0s; }
+
+/* ---------- Kontakt: selbstzeichnender Briefumschlag ---------- */
+.mail-sig { width: min(300px, 78%); color: var(--night); margin: 4px 0 40px; }
+.mail-sig svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+/* ---------- Impressum/Datenschutz: §-Siegel ---------- */
+.seal { width: 74px; margin-bottom: 28px; color: var(--night); }
+.seal svg { width: 100%; height: auto; display: block; }
+.seal .seal-p {
+  font-family: var(--serif); font-size: 34px; fill: var(--night);
+  opacity: 0; transition: opacity 1s var(--ease) 1.1s;
+}
+.js .icon-draw.draw .seal-p, html:not(.js) .seal .seal-p { opacity: 1; }
+
 /* Fallback: kein JS -> alles sichtbar; Animationen aus */
 html:not(.js) .reveal { opacity: 1; transform: none; }
 html:not(.js) .draw-line { stroke-dashoffset: 0; }
 html:not(.js) .wire-svg .wfill { opacity: 1; }
 html:not(.js) .shield-svg .s-draw, html:not(.js) .shield-svg .s-check { stroke-dashoffset: 0; }
+html:not(.js) .icon-draw .dl { stroke-dashoffset: 0; }
+html:not(.js) .tl .tl-line { height: calc(100% - 16px); }
+html:not(.js) .tl .layer::before { border-color: var(--gold); background: var(--gold); }
+html:not(.js) .hero-bg img { animation: none; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -426,6 +572,15 @@ html:not(.js) .shield-svg .s-draw, html:not(.js) .shield-svg .s-check { stroke-d
   .draw-line, .shield-svg .s-draw, .shield-svg .s-check { stroke-dashoffset: 0 !important; animation: none !important; }
   .wire-svg .wfill { opacity: 1 !important; transition: none; }
   .split-media img, .gcard .gimg img { transition: none; }
+  .icon-draw .dl { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; animation: none !important; }
+  .seal .seal-p { opacity: 1 !important; transition: none; }
+  .tl .tl-line { height: calc(100% - 16px) !important; }
+  .tl .layer::before { border-color: var(--gold) !important; background: var(--gold) !important; }
+  .gcard .gimg::after { display: none !important; }
+  .gcard .gimg img, .parallax img { transform: none !important; }
+  .scroll-cue { display: none; }
+  .hero-bg video { display: none; }
+  .hero-bg img { animation: none !important; }
 }
 
 /* ============================================================

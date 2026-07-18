@@ -16,15 +16,31 @@ Quiet-Luxury-Stil: Wirkung durch Weite, Ruhe und Präzision statt Effekte.
 
 ## Signature-Elemente
 
-1. **Hero-Wireframe:** ein SVG-Website-Layout zeichnet sich beim Laden selbst
+1. **4K-Cinematic-Hero:** vollflächiges, nahtlos geloopte Hyperreal-Video
+   (Ostsee-Buhnen im Morgennebel, Higgsfield-generiert + 4K-Upscale) hinter dem
+   Hero – AV1-WebM (klein) mit H.264-MP4-Fallback, Poster-JPG als Sofortbild.
+2. **Hero-Wireframe:** ein SVG-Website-Layout zeichnet sich beim Laden selbst
    (stroke-dashoffset) und füllt sich anschließend dezent mit Flächen + Gold-Akzent.
-2. **Vier Schichten** (Fundament → Gestalt → Bewegung → Schutz), die beim Scrollen
+3. **Vier Schichten** (Fundament → Gestalt → Bewegung → Schutz), die beim Scrollen
    nacheinander erscheinen.
-3. **Sicherheit sichtbar:** sich zeichnendes Schild + „Verschlüsselungs"-Scramble
+4. **Sicherheit sichtbar:** sich zeichnendes Schild + „Verschlüsselungs"-Scramble
    (Buchstaben lösen sich zu „VERSCHLÜSSELT" auf) in der dunklen Sektion.
 
+## Eine Animation pro Seite
+
+| Seite | Signature-Animation |
+|---|---|
+| Start | 4K-Video-Hero + selbstzeichnendes Wireframe |
+| Leistungen | Blueprint-Icons zeichnen sich beim Scrollen (Browser, Relaunch-Pfeile, Tasche, Schild) |
+| Arbeitsweise | Gold-Linie wächst mit dem Scrollen an der Prozess-Leiste entlang, Rauten leuchten auf |
+| Sicherheit | Schild zeichnet sich + „VERSCHLÜSSELT"-Scramble |
+| Über uns | Sanfter Parallax auf dem Studiobild + selbstzeichnende Ostsee-Welle |
+| Referenzen | Vorhang-Reveal: Bilder werden seitlich aufgedeckt und zoomen sanft aus |
+| Kontakt | Briefumschlag zeichnet sich, Gold-Linie fliegt davon |
+| Impressum/Datenschutz | §-Siegel zeichnet sich |
+
 Alle Effekte mit Fallback: bei `prefers-reduced-motion` und ohne JavaScript werden
-Inhalte statisch angezeigt.
+Inhalte statisch angezeigt (Video bleibt aus, Poster-Bild erscheint).
 
 ## Struktur
 
@@ -39,7 +55,9 @@ Inhalte statisch angezeigt.
 ├── kontakt.html        Anfrageformular + Kontakt
 ├── impressum.html · datenschutz.html   (Platzhalter-Gerüste)
 ├── css/style.css · js/script.js
-└── assets/  (Favicon, Bilder)
+└── assets/
+    ├── favicon.svg · img/  (Higgsfield-Hyperrealbilder)
+    └── hero/  innoweb-hero-4k.webm|mp4 · innoweb-hero-hd.webm|mp4 · hero-poster.jpg
 ```
 
 ## Deployment
