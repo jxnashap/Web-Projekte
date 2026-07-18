@@ -15,21 +15,26 @@
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
-  /* ---------- Mobiles Menü ---------- */
-  var toggle = document.querySelector(".nav-toggle");
-  var nav = document.querySelector(".main-nav");
-  if (toggle && nav) {
-    toggle.addEventListener("click", function () {
-      var open = nav.classList.toggle("open");
+  /* ---------- Fullscreen-Overlay-Menü (Fontenay-Stil) ---------- */
+  var menuBtn = document.querySelector(".menu-btn");
+  var overlay = document.querySelector(".nav-overlay");
+  if (menuBtn && overlay) {
+    var setMenu = function (open) {
       document.body.classList.toggle("nav-open", open);
-      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      menuBtn.setAttribute("aria-label", open ? "Menü schließen" : "Menü öffnen");
+      overlay.setAttribute("aria-hidden", open ? "false" : "true");
+      var lbl = menuBtn.querySelector(".mb-label");
+      if (lbl) lbl.textContent = open ? "Schließen" : "Menü";
+    };
+    menuBtn.addEventListener("click", function () {
+      setMenu(!document.body.classList.contains("nav-open"));
     });
-    nav.querySelectorAll("a").forEach(function (a) {
-      a.addEventListener("click", function () {
-        nav.classList.remove("open");
-        document.body.classList.remove("nav-open");
-        toggle.setAttribute("aria-expanded", "false");
-      });
+    overlay.querySelectorAll("a").forEach(function (a) {
+      a.addEventListener("click", function () { setMenu(false); });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && document.body.classList.contains("nav-open")) setMenu(false);
     });
   }
 

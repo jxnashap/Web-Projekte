@@ -11,6 +11,12 @@ Quiet-Luxury-Stil: Wirkung durch Weite, Ruhe und Präzision statt Effekte.
   (nur für feine Linien, Zahlen, aktive Zustände)
 - **Typografie:** Cormorant Garamond (Serif-Display, wichtige Wörter kursiv in Gold) +
   Inter 300/400 (Fließtext); Labels/Menü in Großbuchstaben mit weiter Sperrung
+- **Logo:** eigenes I/W-Monogramm – ein goldenes „I" mit Serifen, durch die geöffnete
+  Spitze des „W" gefädelt (SVG, im Header/Footer eingebettet; Favicon passend)
+- **Header (Fontenay-Stil):** Logo-Lockup (Monogramm + INNOWEB + Unterzeile) exakt
+  mittig, Kreis-Burger mit „Menü"-Label links, Pill-CTA rechts; beim Scrollen wird
+  die Bar schmaler, papierfarben und unten abgerundet; Menü = Fullscreen-Overlay
+  (Nachtblau) mit nummerierten Serif-Links + Ostsee-Motiv
 - **Animation:** langsam & weich (0.6–1.1s), sanfte gestaffelte Scroll-Reveals,
   dezente Hover – nichts Ruckartiges
 
@@ -67,7 +73,7 @@ app.netlify.com) oder **Vercel** (vercel.com/new, „Other") deploybar.
 
 ## To-dos
 
-- **[PLATZHALTER]** Echtes InnoWeb-Logo einsetzen (aktuell Wortmarke „InnoWeb", „Web" in Gold)
+- Logo: I/W-Monogramm ist gesetzt – bei Bedarf durch eine finale Reinzeichnung ersetzen
 - **[PLATZHALTER]** Echte Kontaktdaten (E-Mail/Telefon/Adresse) – aktuell `hallo@innoweb.de` als Platzhalter
 - **[PLATZHALTER]** Impressum & Datenschutz befüllen und rechtlich prüfen
 - Kontaktformular an Backend/Mail-Dienst anbinden (z. B. Netlify Forms)

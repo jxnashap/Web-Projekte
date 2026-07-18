@@ -19,25 +19,51 @@
   <a class="skip-link" href="#main">Zum Inhalt springen</a>
 
   <header class="site-header">
-    <div class="container header-inner">
+    <div class="header-bar">
+      <button class="menu-btn" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav-overlay">
+        <span class="mb-circle" aria-hidden="true"><span></span><span></span></span>
+        <span class="mb-label">Menü</span>
+      </button>
       <a class="brand" href="index.html" aria-label="InnoWeb – Startseite">
-        <!-- [PLATZHALTER: Echtes InnoWeb-Logo einsetzen – bis dahin Wortmarke] -->
-        <span class="bmark">Inno<span class="gold">Web</span></span>
+        <svg class="mono-svg" viewBox="0 0 128 128" fill="none" aria-hidden="true" focusable="false">
+          <path class="m-ink" d="M18 30 L40 100 L60.5 35"/>
+          <path class="m-ink" d="M67.5 35 L88 100 L110 30"/>
+          <path class="m-gold" d="M64 12 V116"/>
+          <path class="m-gold" d="M52 12 H76"/>
+          <path class="m-gold" d="M52 116 H76"/>
+        </svg>
+        <span class="brand-word">InnoWeb</span>
+        <span class="brand-sub">Digitale Baukunst</span>
       </a>
-      <nav class="main-nav" aria-label="Hauptnavigation">
-        <ul>
-          <li><a href="index.html">Start</a></li>
-          <li><a href="leistungen.html">Leistungen</a></li>
-          <li><a href="arbeitsweise.html">Arbeitsweise</a></li>
-          <li><a href="sicherheit.html">Sicherheit</a></li>
-          <li><a href="referenzen.html">Referenzen</a></li>
-          <li><a href="ueber-uns.html">Über uns</a></li>
-          <li><a href="kontakt.html" class="nav-cta">Projekt anfragen</a></li>
-        </ul>
-      </nav>
-      <button class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false"><span></span><span></span><span></span></button>
+      <a class="header-cta" href="kontakt.html">
+        <span>Projekt anfragen</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+      </a>
     </div>
   </header>
+
+  <div class="nav-overlay" id="nav-overlay" aria-hidden="true">
+    <div class="nav-overlay-inner">
+      <nav class="main-nav" aria-label="Hauptnavigation">
+        <ul>
+        <li><a href="index.html"><span class="nl-num">01</span><span class="nl-label">Start</span></a></li>
+        <li><a href="leistungen.html"><span class="nl-num">02</span><span class="nl-label">Leistungen</span></a></li>
+        <li><a href="arbeitsweise.html"><span class="nl-num">03</span><span class="nl-label">Arbeitsweise</span></a></li>
+        <li><a href="sicherheit.html"><span class="nl-num">04</span><span class="nl-label">Sicherheit</span></a></li>
+        <li><a href="referenzen.html"><span class="nl-num">05</span><span class="nl-label">Referenzen</span></a></li>
+        <li><a href="ueber-uns.html"><span class="nl-num">06</span><span class="nl-label">Über uns</span></a></li>
+        <li class="nav-contact-li"><a href="kontakt.html"><span class="nl-num">·</span><span class="nl-label">Projekt anfragen</span></a></li>
+        </ul>
+        <div class="nav-overlay-foot">
+          <span>[PLATZHALTER: hallo@innoweb.de]</span>
+          <span><a href="impressum.html">Impressum</a> &nbsp;·&nbsp; <a href="datenschutz.html">Datenschutz</a></span>
+        </div>
+      </nav>
+      <div class="nav-visual" aria-hidden="true">
+        <img src="assets/img/norden.jpg" alt="" loading="lazy">
+      </div>
+    </div>
+  </div>
 
   <main id="main">
 
@@ -90,7 +116,13 @@
     <div class="container">
       <div class="footer-top">
         <div class="footer-brand">
-          <span class="bmark">Inno<span class="gold">Web</span></span>
+          <span class="footer-lockup"><svg class="mono-svg" viewBox="0 0 128 128" fill="none" aria-hidden="true" focusable="false">
+          <path class="m-ink" d="M18 30 L40 100 L60.5 35"/>
+          <path class="m-ink" d="M67.5 35 L88 100 L110 30"/>
+          <path class="m-gold" d="M64 12 V116"/>
+          <path class="m-gold" d="M52 12 H76"/>
+          <path class="m-gold" d="M52 116 H76"/>
+        </svg><span class="bmark">InnoWeb</span></span>
           <p>Digitale Baukunst aus Norddeutschland. Wir entwerfen und bauen Websites, über die man spricht – ruhig, präzise, sicher.</p>
         </div>
         <div>
