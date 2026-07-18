@@ -26,7 +26,12 @@ jobs:
             url=$(echo "$item" | jq -r '.url')
             path=$(echo "$item" | jq -r '.path')
             mkdir -p "$(dirname "$path")"
-            curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -o "$path" "$url"
+            headers=$(echo "$item" | jq -r '.headers // empty')
+            if [ -n "$headers" ]; then
+              curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -H "$headers" -o "$path" "$url"
+            else
+              curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -o "$path" "$url"
+            fi
             echo "fetched: $path ($(stat -c%s "$path") bytes)"
           done
 
