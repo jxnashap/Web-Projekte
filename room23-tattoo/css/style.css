@@ -865,3 +865,21 @@ html:not(.js) .hero-bg img { animation: none; }
 }
 html:not(.js) .dotline span { opacity: 1; transform: none; }
 html:not(.js) .needle-line::after { width: 100%; }
+
+/* Echtes Instagram-Logo (Avatar) als Marke */
+.logo-img {
+  width: 46px; height: 46px; border-radius: 50%; object-fit: cover; display: block;
+  background: #fff; box-shadow: 0 0 0 1px rgba(27, 39, 33, 0.1);
+  transition: width 0.45s var(--ease), height 0.45s var(--ease);
+}
+.site-header.solid .logo-img { width: 34px; height: 34px; }
+body.cine .site-header:not(.solid) .logo-img,
+body.nav-open .logo-img { box-shadow: 0 0 0 2px rgba(245, 240, 234, 0.55); }
+.footer-lockup .logo-img { width: 36px; height: 36px; }
+
+/* Team-Portraits (echte IG-Avatare) */
+.portrait {
+  width: 88px; height: 88px; border-radius: 50%; object-fit: cover;
+  border: 2px solid var(--line-gold); padding: 3px; background: #fff;
+  margin-bottom: 20px; display: block;
+}

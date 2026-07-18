@@ -13,8 +13,9 @@ Hauttönen, tiefgrüner Satin, elegante Schreibschrift):
 - **Farben:** warmes Porzellan `#F5F0EA` (Basis) · Tannen-/Samtgrün `#1B2721`/`#243229`
   (dunkle Sektionen) · Bronze-Rosé `#B58B72`/`#D0AE97` (feine Linien & Akzente)
 - **Typografie:** Cormorant Garamond (Serif-Display, kursive Akzente) + Inter 300/400
-- **Logo:** selbstgezeichnetes Fineline-Blumen-Monogramm (Stiel/Blätter in Ink,
-  Blüte in Bronze) – eingebettet als zentriertes Lockup „ROOM 23 · TATTOO · ART"
+- **Logo:** das echte Instagram-Profilbild von @room23.tattoo.art (Serifen-Monogramm,
+  rund wie auf Instagram) – zentriertes Lockup „ROOM 23 · TATTOO · ART"; das
+  Fineline-Blumen-Monogramm bleibt als Signature-Element im Hero
 - **Header (Fontenay-Stil):** Kreis-Burger links, Logo mittig, Pill-CTA „Termin
   anfragen" rechts; beim Scrollen schwebende Papier-Bar mit runden Ecken;
   Fullscreen-Overlay-Menü in Tannengrün mit Floral-Motiv
@@ -48,9 +49,10 @@ Ken-Burns-Drift) plus Signature-Animation:
 
 ## To-dos
 
-- **[PLATZHALTER]** Studio-Adresse, Öffnungszeiten, zentrale Studio-E-Mail
+- Studio-Adresse aus Gründerin-Bio übernommen: Mühlenstraße 83, 23552 Lübeck
+- **[PLATZHALTER]** Öffnungszeiten, zentrale Studio-E-Mail
 - **[PLATZHALTER]** Jaqueline: Vita, Instagram-Profil, Portrait
-- **[ECHTES FOTO EINSETZEN]** Team-Portraits (aktuell Arbeiten als Platzhalter)
+- Team-Portraits: echte IG-Avatare von Sophia & Jessi eingebunden ([PLATZHALTER: Jaqueline])
 - **[PLATZHALTER]** Bildfreigaben der Kund:innen für die Galerie prüfen
 - Impressum & Datenschutz befüllen und rechtlich prüfen
 - Formular an Backend/Mail-Dienst anbinden (z. B. Netlify Forms)
@@ -60,3 +62,19 @@ Ken-Burns-Drift) plus Signature-Animation:
 
 Statischer Ordner – ohne Build-Schritt bei **Netlify** (Drag & Drop) oder
 **Vercel** („Other") deploybar.
+
+## Moderne Tattoo-Animationen pro Reiter
+
+| Reiter | Animation |
+|---|---|
+| Start | Ink-Bleed-Headline (Tinte zieht ins Papier) + selbstzeichnende Fineline-Blume |
+| Stile | Dotwork-Linie füllt sich Punkt für Punkt + Icons zeichnen sich |
+| Team | Selbstzeichnende Schnörkel unter den Namen + echte IG-Portraits |
+| Galerie | Polaroid-Tilt + Ink-Wash beim Hover, Vorhang-Reveal |
+| Studio | Selbstzeichnendes Dotwork-Mandala im CTA |
+| Termin | Nadel zieht die Goldlinie übers Formular + Ink-Sweep-Buttons |
+
+Recherche-Update: Jessi ist lt. Instagram-Bio **Gründerin** von Room 23
+(„SINCE AUGUST 2022 | FOUNDER"), Sophia **Resident Artist**; Studio-Slogan
+„Not just a space – a feeling of home …" aus der offiziellen Bio übernommen;
+Online-Buchung über tatme.com (Jessi & Sophia).
