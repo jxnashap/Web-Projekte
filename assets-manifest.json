@@ -1,26 +1,5 @@
 [
-  {
-    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260718_194423_4c8afc66-c979-4fd8-a0ec-109e4701cc4e.png",
-    "path": ".preview-cache/iw/ueber-uns.png"
-  },
-  {
-    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260718_194426_9fe0ef4f-815b-4d75-b24f-33c1798b0158.png",
-    "path": ".preview-cache/iw/referenzen.png"
-  },
-  {
-    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260718_194433_851cf9ec-076a-416e-8a2f-82e3ef20c51e.png",
-    "path": ".preview-cache/iw/kontakt.png"
-  },
-  {
-    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260718_194609_d2da7a1d-400f-4cc8-aefb-d6c1a65cbf77.mp4",
-    "path": ".preview-cache/iw/leistungen.mp4"
-  },
-  {
-    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260718_194612_6257c83a-bb0d-4050-981b-1eae683e0374.mp4",
-    "path": ".preview-cache/iw/arbeitsweise.mp4"
-  },
-  {
-    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260718_194622_4e5f90e2-4ae5-44ec-8bf0-9090219e6b70.mp4",
-    "path": ".preview-cache/iw/sicherheit.mp4"
-  }
+  { "url": "https://image.thum.io/get/width/1280/crop/960/https://spiess-theta.vercel.app/", "path": ".preview-cache/ref/spiess-thumio.png" },
+  { "url": "https://s.wordpress.com/mshots/v1/https%3A%2F%2Fspiess-theta.vercel.app%2F?w=1280&h=960", "path": ".preview-cache/ref/spiess-mshots.png" },
+  { "url": "https://r.jina.ai/https://spiess-theta.vercel.app/", "path": ".preview-cache/ref/spiess-jina.md" }
 ]
