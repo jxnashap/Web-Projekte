@@ -758,3 +758,28 @@ html:not(.js) .hero-bg img { animation: none; }
   .form-grid { grid-template-columns: 1fr; }
   .footer-top { grid-template-columns: 1fr; gap: 28px; }
 }
+
+/* ---------- Referenzen: große 2-spaltige Projektkarten ---------- */
+.gallery-ref { grid-template-columns: 1fr 1fr; gap: clamp(24px, 3vw, 44px); }
+@media (max-width: 760px){ .gallery-ref { grid-template-columns: 1fr; } }
+.ref-card { background: var(--white); }
+.ref-link { display: block; color: inherit; }
+.ref-card .gimg { aspect-ratio: 4/3; }
+.ref-card .gbody { padding: 30px clamp(26px,3vw,38px) 34px; }
+.ref-card h3 { display: flex; align-items: center; gap: 12px; }
+.ref-card .ref-go {
+  font-family: var(--sans); font-size: 1.1rem; color: var(--gold);
+  transform: translateX(-4px); opacity: 0; transition: transform .5s var(--ease), opacity .5s var(--ease);
+}
+.ref-card:hover .ref-go { transform: translateX(0); opacity: 1; }
+.ref-card .ref-url {
+  display: inline-block; margin-top: 16px; font-family: var(--sans);
+  font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-2);
+  position: relative; padding-bottom: 3px;
+}
+.ref-card .ref-url::after {
+  content: ""; position: absolute; left: 0; bottom: 0; height: 1px; width: 0; background: var(--gold);
+  transition: width .5s var(--ease);
+}
+.ref-card:hover .ref-url { color: var(--gold); }
+.ref-card:hover .ref-url::after { width: 100%; }
