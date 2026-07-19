@@ -1,5 +1,5 @@
 [
-  { "url": "https://image.thum.io/get/width/1280/crop/960/https://spiess-theta.vercel.app/", "path": ".preview-cache/ref/spiess-thumio.png" },
-  { "url": "https://s.wordpress.com/mshots/v1/https%3A%2F%2Fspiess-theta.vercel.app%2F?w=1280&h=960", "path": ".preview-cache/ref/spiess-mshots.png" },
-  { "url": "https://r.jina.ai/https://spiess-theta.vercel.app/", "path": ".preview-cache/ref/spiess-jina.md" }
+  { "url": "https://image.thum.io/get/width/1400/crop/1050/noanimate/https://spiess-theta.vercel.app/", "path": ".preview-cache/ref/spiess-1.png" },
+  { "url": "https://s.wordpress.com/mshots/v1/https%3A%2F%2Fspiess-theta.vercel.app%2F?w=1400&h=1050", "path": ".preview-cache/ref/spiess-2.png" },
+  { "url": "https://api.microlink.io/?url=https://spiess-theta.vercel.app/&screenshot=true&meta=false&embed=screenshot.url", "path": ".preview-cache/ref/spiess-3.png" }
 ]
