@@ -13,8 +13,7 @@ Hauttönen, tiefgrüner Satin, elegante Schreibschrift):
 - **Farben:** warmes Porzellan `#F5F0EA` (Basis) · Tannen-/Samtgrün `#1B2721`/`#243229`
   (dunkle Sektionen) · Bronze-Rosé `#B58B72`/`#D0AE97` (feine Linien & Akzente)
 - **Typografie:** Cormorant Garamond (Serif-Display, kursive Akzente) + Inter 300/400
-- **Logo:** das echte Instagram-Profilbild von @room23.tattoo.art (Serifen-Monogramm,
-  rund wie auf Instagram) – zentriertes Lockup „ROOM 23 · TATTOO · ART"; das
+- **Logo:** das echte Room-23-Logo (scharfes R-Monogramm, aus den Studio-Fotos) – zentriertes Lockup „ROOM 23 · TATTOO · ART"; das
   Fineline-Blumen-Monogramm bleibt als Signature-Element im Hero
 - **Header (Fontenay-Stil):** Kreis-Burger links, Logo mittig, Pill-CTA „Termin
   anfragen" rechts; beim Scrollen schwebende Papier-Bar mit runden Ecken;
@@ -53,7 +52,8 @@ Ken-Burns-Drift) plus Signature-Animation:
 - **[PLATZHALTER]** Öffnungszeiten, zentrale Studio-E-Mail
 - **[PLATZHALTER]** Jaqueline: Vita, Instagram-Profil, Portrait
 - Team-Portraits: echte IG-Avatare von Sophia & Jessi eingebunden ([PLATZHALTER: Jaqueline])
-- **[PLATZHALTER]** Bildfreigaben der Kund:innen für die Galerie prüfen
+- Echte Studio-Fotos eingebaut (Schaufenster, Behandlungsräume, Details, Leitbild-Fenster)
+- **[PLATZHALTER]** Bildfreigaben der Kund:innen für die Werk-Galerie prüfen
 - Impressum & Datenschutz befüllen und rechtlich prüfen
 - Formular an Backend/Mail-Dienst anbinden (z. B. Netlify Forms)
 - Optional: Video-Heros nachrüsten (Higgsfield-Credits vorausgesetzt)
