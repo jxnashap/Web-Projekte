@@ -1,4 +1,5 @@
 [
-  { "url": "https://www.dropbox.com/t/CeySoSZV2xY9gtdO", "path": ".preview-cache/dropbox/page.html" },
-  { "url": "https://r.jina.ai/https://www.dropbox.com/t/CeySoSZV2xY9gtdO", "path": ".preview-cache/dropbox/page-jina.md" }
+  { "url": "https://www.dropbox.com/t/CeySoSZV2xY9gtdO?dl=1", "path": ".preview-cache/dropbox/transfer-dl1.zip" },
+  { "url": "https://dl.dropbox.com/t/CeySoSZV2xY9gtdO", "path": ".preview-cache/dropbox/transfer-dl.bin" },
+  { "url": "https://www.dropbox.com/transfer/download/CeySoSZV2xY9gtdO", "path": ".preview-cache/dropbox/transfer-api.bin" }
 ]
