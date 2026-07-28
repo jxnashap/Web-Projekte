@@ -7,8 +7,9 @@ Unbelegtes als `[PLATZHALTER]` markiert.
 
 ## Design-System (Farben vom Original)
 
-- **Farben:** warmes Creme `#F7F1EB` (Logo-Platte) · Slate-Navy `#1D2035` (Original-
-  Textfarbe) · Blau `#0F62FE`/`#4589FF` (Original-Akzente) · Weiß (Karten)
+- **Farben:** warmer Sand `#F2E8D8`/`#EADDC6` (Basis – Strandgefühl) · tiefes
+  Nautik-Marine `#1E3A4C` (dunkle Sektionen & Text) · dezentes Küstenblau
+  `#3E6E8E`/`#7FA6BD` (feine Linien & Akzente) · Weiß (Karten)
 - **Logo:** das echte Buchtquartier-Logo (Wellen-Swoosh + Serifen-Wortmarke
   „zwischen Bucht und Ruhe") als zentrierte Creme-Platte im Fontenay-Header
 - **Typografie:** Cormorant Garamond + Inter (Bauweise-Standard)
