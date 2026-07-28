@@ -1,6 +1,18 @@
 [
-  { "url": "https://www.buchtquartier.de/", "path": ".preview-cache/bq/home.html" },
-  { "url": "https://r.jina.ai/https://www.buchtquartier.de/", "path": ".preview-cache/bq/home-jina.md" },
-  { "url": "https://api.microlink.io/?url=https://www.buchtquartier.de/&screenshot=true&meta=false&embed=screenshot.url", "path": ".preview-cache/bq/shot.png" },
-  { "url": "https://s.wordpress.com/mshots/v1/https%3A%2F%2Fwww.buchtquartier.de%2F?w=1400&h=2000", "path": ".preview-cache/bq/shot2.png" }
+  {
+    "url": "https://www.buchtquartier.de/",
+    "path": ".preview-cache/bq/home.html"
+  },
+  {
+    "url": "https://r.jina.ai/https://www.buchtquartier.de/",
+    "path": ".preview-cache/bq/home-jina.md"
+  },
+  {
+    "url": "https://api.microlink.io/?url=https://www.buchtquartier.de/&screenshot=true&meta=false&embed=screenshot.url",
+    "path": ".preview-cache/bq/shot.png"
+  },
+  {
+    "url": "https://s.wordpress.com/mshots/v1/https%3A%2F%2Fwww.buchtquartier.de%2F?w=1400&h=2000",
+    "path": ".preview-cache/bq/shot2.png"
+  }
 ]

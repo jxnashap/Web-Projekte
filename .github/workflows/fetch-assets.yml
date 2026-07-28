@@ -30,6 +30,13 @@ jobs:
             echo "fetched: $path ($(stat -c%s "$path") bytes)"
           done
 
+      - name: Redact secrets from fetched text files
+        run: |
+          # Verhindert Push-Protection-Blocks: Tokens in gescannten Seiten schwaerzen
+          find .preview-cache -type f \( -name "*.html" -o -name "*.md" -o -name "*.json" -o -name "*.css" -o -name "*.js" \) 2>/dev/null | while read -r f; do
+            sed -i -E 's/(sk|pk)\.eyJ[A-Za-z0-9._-]+/REDACTED_TOKEN/g; s/AIza[0-9A-Za-z_-]{35}/REDACTED_TOKEN/g; s/gh[pousr]_[A-Za-z0-9]{30,}/REDACTED_TOKEN/g' "$f" || true
+          done
+
       - name: Commit fetched assets
         run: |
           git config user.name "asset-fetcher"
