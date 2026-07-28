@@ -1,0 +1,2856 @@
+<!doctype html >
+<html xmlns="http://www.w3.org/1999/xhtml" lang="de"
+      class="ios-preview-native-scroll">
+<head>
+    <meta charset="utf-8">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+    window._currentDevice = 'desktop';
+    window.Parameters = window.Parameters || {
+        HomeUrl: 'https://www.buchtquartier.de/',
+
+        SystemID: 'EU_PRODUCTION',
+        SiteAlias: 'f6da787c73c447b48b2212b22ac715e9',
+        SiteType: atob('RFVEQU9ORQ=='),
+        PublicationDate: 'Jul 10, 2026',
+        ExternalUid: null,
+        IsSiteMultilingual: false,
+        InitialPostAlias: '',
+        InitialPostPageUuid: '',
+        InitialDynamicItem: '',
+        DynamicPageInfo: {
+            isDynamicPage: false,
+            base64JsonRowData: 'null',
+        },
+        InitialPageAlias: 'new-page09b1e3bb',
+        InitialPageUuid: 'ffe2f0fc82c945eaad7efd8e0857057b',
+        InitialPageId: '37090399',
+        InitialEncodedPageAlias: 'bmV3LXBhZ2UwOWIxZTNiYg==',
+        InitialHeaderUuid: 'eb213d3256e0446389f96a25b2d9025c',
+        CurrentPageUrl: '',
+        IsCurrentHomePage: false,
+        AllowAjax: false,
+        AfterAjaxCommand: null,
+        HomeLinkText: 'Back To Home',
+        UseGalleryModule: false,
+        CurrentThemeName: 'Layout Theme',
+        ThemeVersion: '500000',
+        DefaultPageAlias: '',
+        RemoveDID: true,
+        WidgetStyleID: null,
+        IsHeaderFixed: false,
+        IsHeaderSkinny: false,
+        IsBfs: true,
+        StorePageAlias: 'null',
+        StorePagesUrls: 'e30=',
+        IsNewStore: 'false',
+        StorePath: '',
+        StoreId: 'null',
+        StoreVersion: 0,
+        StoreBaseUrl: '',
+        StoreCleanUrl: true,
+        StoreDisableScrolling: true,
+        IsStoreSuspended: false,
+        HasCustomDomain: true,
+        SimpleSite: false,
+        showCookieNotification: false,
+        cookiesNotificationMarkup: 'null',
+        translatedPageUrl: '',
+        isFastMigrationSite: false,
+        sidebarPosition: 'NA',
+        currentLanguage: 'de',
+        currentLocale: 'de',
+        NavItems: '{}',
+        errors: {
+            general: 'Fehler beim Herstellen der Verbindung zur Webseite.<br/> Stellen Sie sicher, dass Sie online sind.',
+            password: 'Benutzername oder Passwort falsch',
+            tryAgain: 'Erneut versuchen'
+        },
+        NavigationAreaParams: {
+            ShowBackToHomeOnInnerPages: true,
+            NavbarSize: -1,
+            NavbarLiveHomePage: 'https://www.buchtquartier.de/',
+            BlockContainerSelector: '.dmBody',
+            NavbarSelector: '#dmNav:has(a)',
+            SubNavbarSelector: '#subnav_main'
+        },
+        hasCustomCode: false,
+        planID: '3500',
+        customTemplateId: 'null',
+        siteTemplateId: 'null',
+        productId: 'DM_DIRECT',
+        disableTracking: false,
+        pageType: 'FROM_SCRATCH',
+        isRuntimeServer: true,
+        isInEditor: false,
+        isInPreview: false,
+        hasNativeStore: false,
+        defaultLang: 'de',
+        hamburgerMigration: null,
+        isFlexSite: true
+    };
+
+    window.Parameters.LayoutID = {};
+    window.Parameters.LayoutID[window._currentDevice] = 30;
+    window.Parameters.LayoutVariationID = {};
+    window.Parameters.LayoutVariationID[window._currentDevice] = 5;
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Injecting site-wide to the head -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="d_track_campaign">
+    (function() {
+        if (!window.location.search) {
+            return;
+        }
+        const cleanParams = window.location.search.substring(1); // Strip ?
+        const queryParams = cleanParams.split('&');
+
+        const expires = 'expires=' + new Date().getTime() + 24 * 60 * 60 * 1000;
+        const domain = 'domain=' + window.location.hostname;
+        const path = "path=/";
+
+        queryParams.forEach((param) => {
+            const [key, value = ''] = param.split('=');
+            if (key.startsWith('utm_')) {
+                const cookieName = "_dm_rt_" + key.substring(4);
+                const cookie = cookieName + "=" + value;
+                const joined = [cookie, expires, domain, path].join(";");
+                document.cookie = joined;
+            }
+        });
+    }());
+</script>
+<script type="text/javascript" >
+    var _dm_gaq = {};
+    var _gaq = _gaq || [];
+    var _dm_insite = [];
+</script>
+
+
+
+
+
+
+<!-- End Injecting site-wide to the head -->
+
+<!-- Inject secured cdn script -->
+
+
+<!-- ========= Meta Tags ========= -->
+<!-- PWA settings -->
+<script>
+    function toHash(str) {
+        var hash = 5381, i = str.length;
+        while (i) {
+            hash = hash * 33 ^ str.charCodeAt(--i)
+        }
+        return hash >>> 0
+    }
+</script>
+<script>
+    (function (global) {
+    //const cacheKey = global.cacheKey;
+    const isOffline = 'onLine' in navigator && navigator.onLine === false;
+    const hasServiceWorkerSupport = 'serviceWorker' in navigator;
+    if (isOffline) {
+        console.log('offline mode');
+    }
+    if (!hasServiceWorkerSupport) {
+        console.log('service worker is not supported');
+    }
+    if (hasServiceWorkerSupport && !isOffline) {
+        window.addEventListener('load', function () {
+            const serviceWorkerPath = '/runtime-service-worker.js?v=3';
+            navigator.serviceWorker
+                .register(serviceWorkerPath, { scope: './' })
+                .then(
+                    function (registration) {
+                        // Registration was successful
+                        console.log(
+                            'ServiceWorker registration successful with scope: ',
+                            registration.scope
+                        );
+                    },
+                    function (err) {
+                        // registration failed :(
+                        console.log('ServiceWorker registration failed: ', err);
+                    }
+                )
+                .catch(function (err) {
+                    console.log(err);
+                });
+        });
+
+        // helper function to refresh the page
+        var refreshPage = (function () {
+            var refreshing;
+            return function () {
+                if (refreshing) return;
+                // prevent multiple refreshes
+                var refreshkey = 'refreshed' + location.href;
+                var prevRefresh = localStorage.getItem(refreshkey);
+                if (prevRefresh) {
+                    localStorage.removeItem(refreshkey);
+                    if (Date.now() - prevRefresh < 30000) {
+                        return; // dont go into a refresh loop
+                    }
+                }
+                refreshing = true;
+                localStorage.setItem(refreshkey, Date.now());
+                console.log('refereshing page');
+                window.location.reload();
+            };
+        })();
+
+        function messageServiceWorker(data) {
+            return new Promise(function (resolve, reject) {
+                if (navigator.serviceWorker.controller) {
+                    var worker = navigator.serviceWorker.controller;
+                    var messageChannel = new MessageChannel();
+                    messageChannel.port1.onmessage = replyHandler;
+                    worker.postMessage(data, [messageChannel.port2]);
+                    function replyHandler(event) {
+                        resolve(event.data);
+                    }
+                } else {
+                    resolve();
+                }
+            });
+        }
+    }
+})(window);
+</script>
+<!-- Add manifest -->
+<!-- End PWA settings -->
+
+
+
+<link rel="canonical" href="https://www.buchtquartier.de/new-page09b1e3bb">
+
+<meta id="view" name="viewport" content="initial-scale=1, minimum-scale=1, maximum-scale=5, viewport-fit=cover">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>&Uuml;ber Uns
+</title>
+
+<!--Add favorites icons-->
+
+<link rel="icon" type="image/x-icon" href="https://static.cdn-website.com/runtime/favicon_d1_res.ico"/>
+
+<!-- End favorite icons -->
+<link rel="preconnect" href="https://le-de.cdn-website.com"/>
+<link rel="preconnect" href="https://de.cdn-website.com" crossorigin/>
+<link rel="preconnect" href="https://static.cdn-website.com"/>
+<link rel="preconnect" href="https://de.cdn-website.com"/>
+
+
+
+<!-- render the required CSS and JS in the head section -->
+<script id='d-js-dmapi'>
+    window.SystemID = 'EU_PRODUCTION';
+
+    if (!window.dmAPI) {
+        window.dmAPI = {
+            registerExternalRuntimeComponent: function () {
+            },
+            getCurrentDeviceType: function () {
+                return window._currentDevice;
+            },
+            runOnReady: (ns, fn) => {
+                const safeFn = dmAPI.toSafeFn(fn);
+                ns = ns || 'global_' + Math.random().toString(36).slice(2, 11);
+                const eventName = 'afterAjax.' + ns;
+
+                if (document.readyState === 'complete') {
+                    $.DM.events.off(eventName).on(eventName, safeFn);
+                    setTimeout(function () {
+                        safeFn({
+                            isAjax: false,
+                        });
+                    }, 0);
+                } else {
+                    window?.waitForDeferred?.('dmAjax', () => {
+                        $.DM.events.off(eventName).on(eventName, safeFn);
+                        safeFn({
+                            isAjax: false,
+                        });
+                    });
+                }
+            },
+            toSafeFn: (fn) => {
+                if (fn?.safe) {
+                    return fn;
+                }
+                const safeFn = function (...args) {
+                    try {
+                        return fn?.apply(null, args);
+                    } catch (e) {
+                        console.log('function failed ' + e.message);
+                    }
+                };
+                safeFn.safe = true;
+                return safeFn;
+            }
+        };
+    }
+
+    if (!window.requestIdleCallback) {
+        window.requestIdleCallback = function (fn) {
+            setTimeout(fn, 0);
+        }
+    }
+</script>
+
+<!-- loadCSS function header.jsp-->
+
+
+
+
+
+
+<script id="d-js-load-css">
+/**
+ * There are a few <link> tags with CSS resource in them that are preloaded in the page
+ * in each of those there is a "onload" handler which invokes the loadCSS callback
+ * defined here.
+ * We are monitoring 3 main CSS files - the runtime, the global and the page.
+ * When each load we check to see if we can append them all in a batch. If threre
+ * is no page css (which may happen on inner pages) then we do not wait for it
+ */
+(function () {
+  let cssLinks = {};
+  function loadCssLink(link) {
+    link.onload = null;
+    link.rel = "stylesheet";
+    link.type = "text/css";
+  }
+  
+    function checkCss() {
+      const pageCssLink = document.querySelector("[id*='CssLink']");
+      const widgetCssLink = document.querySelector("[id*='widgetCSS']");
+
+        if (cssLinks && cssLinks.runtime && cssLinks.global && (!pageCssLink || cssLinks.page) && (!widgetCssLink || cssLinks.widget)) {
+            const storedRuntimeCssLink = cssLinks.runtime;
+            const storedPageCssLink = cssLinks.page;
+            const storedGlobalCssLink = cssLinks.global;
+            const storedWidgetCssLink = cssLinks.widget;
+
+            storedGlobalCssLink.disabled = true;
+            loadCssLink(storedGlobalCssLink);
+
+            if (storedPageCssLink) {
+                storedPageCssLink.disabled = true;
+                loadCssLink(storedPageCssLink);
+            }
+
+            if(storedWidgetCssLink) {
+                storedWidgetCssLink.disabled = true;
+                loadCssLink(storedWidgetCssLink);
+            }
+
+            storedRuntimeCssLink.disabled = true;
+            loadCssLink(storedRuntimeCssLink);
+
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    storedRuntimeCssLink.disabled = false;
+                    storedGlobalCssLink.disabled = false;
+                    if (storedPageCssLink) {
+                      storedPageCssLink.disabled = false;
+                    }
+                    if (storedWidgetCssLink) {
+                      storedWidgetCssLink.disabled = false;
+                    }
+                    // (SUP-4179) Clear the accumulated cssLinks only when we're
+                    // sure that the document has finished loading and the document 
+                    // has been parsed.
+                    if(document.readyState === 'interactive') {
+                      cssLinks = null;
+                    }
+                }, 0);
+            });
+        }
+    }
+  
+
+  function loadCSS(link) {
+    try {
+      var urlParams = new URLSearchParams(window.location.search);
+      var noCSS = !!urlParams.get("nocss");
+      var cssTimeout = urlParams.get("cssTimeout") || 0;
+
+      if (noCSS) {
+        return;
+      }
+      if (link.href && link.href.includes("d-css-runtime")) {
+        cssLinks.runtime = link;
+        checkCss();
+      } else if (link.id === "siteGlobalCss") {
+        cssLinks.global = link;
+        checkCss();
+      } 
+      
+      else if (link.id && link.id.includes("CssLink")) {
+        cssLinks.page = link;
+        checkCss();
+      } else if (link.id && link.id.includes("widgetCSS")) {
+        cssLinks.widget = link;
+        checkCss();
+      }
+      
+      else {
+        requestIdleCallback(function () {
+          window.setTimeout(function () {
+            loadCssLink(link);
+          }, parseInt(cssTimeout, 10));
+        });
+      }
+    } catch (e) {
+      throw e
+    }
+  }
+  window.loadCSS = window.loadCSS || loadCSS;
+})();
+</script>
+
+
+
+<script data-role="deferred-init" type="text/javascript">
+    /* usage: window.getDeferred(<deferred name>).resolve() or window.getDeferred(<deferred name>).promise.then(...)*/
+    function Def() {
+        this.promise = new Promise((function (a, b) {
+            this.resolve = a, this.reject = b
+        }).bind(this))
+    }
+
+    const defs = {};
+    window.getDeferred = function (a) {
+        return null == defs[a] && (defs[a] = new Def), defs[a]
+    }
+    window.waitForDeferred = function (b, a, c) {
+        let d = window?.getDeferred?.(b);
+        d
+            ? d.promise.then(a)
+            : c && ["complete", "interactive"].includes(document.readyState)
+                ? setTimeout(a, 1)
+                : c
+                    ? document.addEventListener("DOMContentLoaded", a)
+                    : console.error(`Deferred  does not exist`);
+    };
+</script>
+<style id="forceCssIncludes">
+    /* This file is auto-generated from a `scss` file with the same name */
+
+.videobgwrapper{overflow:hidden;position:absolute;z-index:0;width:100%;height:100%;top:0;left:0;pointer-events:none;border-radius:inherit}.videobgframe{position:absolute;width:101%;height:100%;top:50%;left:50%;transform:translateY(-50%) translateX(-50%);object-fit:fill}#dm video.videobgframe{margin:0}@media (max-width:767px){.dmRoot .dmPhotoGallery.newPhotoGallery:not(.photo-gallery-done){min-height:80vh}}@media (min-width:1025px){.dmRoot .dmPhotoGallery.newPhotoGallery:not(.photo-gallery-done){min-height:45vh}}@media (min-width:768px) and (max-width:1024px){.responsiveTablet .dmPhotoGallery.newPhotoGallery:not(.photo-gallery-done){min-height:45vh}}#dm [data-show-on-page-only]{display:none!important}#dmRoot div.stickyHeaderFix div.site_content{margin-top:0!important}#dmRoot div.stickyHeaderFix div.hamburger-header-container{position:relative}@media (min-width:768px) and (max-width:1024px){.responsiveTablet #dm .dmInner .hide-for-medium,[data-hidden-on-tablet]{display:none!important}}
+    
+
+</style>
+<style id="cssVariables" type="text/css">
+    :root {
+  --color_1: rgba(20, 20, 20, 1);
+  --color_2: rgba(15, 98, 254, 1);
+  --color_3: rgba(255, 255, 255, 1);
+  --color_4: rgba(29, 32, 53, 1);
+  --color_5: rgba(69, 137, 255, 1);
+  --color_6: rgba(229, 229, 229, 1);
+  --color_7: rgba(120, 169, 255, 1);
+  --color_8: rgba(235, 243, 251, 1);
+  --max-content-width_1: 1200px;
+}
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Google Fonts Include -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- loadCSS function fonts.jsp-->
+
+
+
+<link type="text/css" rel="stylesheet" href="https://de.cdn-website.com/fonts/css2?family=Manrope:ital,wght@0,200..800;1,200..800&family=Epilogue:ital,wght@0,100..900;1,100..900&family=DM+Serif+Display:ital,wght@0,400;1,400&amp;subset=latin-ext&amp;display=swap"  />
+
+<style>
+@font-face {
+  font-family: "DudaSansVF";
+  src: url("https://de.cdn-website.com/f6da787c73c447b48b2212b22ac715e9/fonts/DudaSansVF-edd7_400.ttf");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+</style>
+
+
+
+
+
+
+<!-- RT CSS Include d-css-runtime-flex-new-nav-->
+<link rel="stylesheet" type="text/css" href="https://static.cdn-website.com/mnlt/production/6655/_dm/s/rt/dist/css/d-css-runtime-flex-new-nav.min.css" />
+
+<!-- End of RT CSS Include -->
+
+<link type="text/css" rel="stylesheet" href="https://de.cdn-website.com/WIDGET_CSS/24f289e799624b782b179182d20b6b50.css" id="widgetCSS" />
+
+<!-- Support `img` size attributes -->
+<style>img[width][height] {
+  height: auto;
+}</style>
+
+<!-- Support showing sticky element on page only -->
+<style>
+  body[data-page-alias="new-page09b1e3bb"] #dm [data-show-on-page-only="new-page09b1e3bb"] {
+    display: block !important;
+  }
+</style>
+
+<!-- This is populated in Ajax navigation -->
+<style id="pageAdditionalWidgetsCss" type="text/css">
+</style>
+
+
+
+
+<!-- Site CSS -->
+<link type="text/css" rel="stylesheet" href="https://de.cdn-website.com/f6da787c73c447b48b2212b22ac715e9/files/f6da787c73c447b48b2212b22ac715e9_1.min.css?v=6fb2068ab3294f54b9d7f19570a6061e" id="siteGlobalCss" />
+
+
+
+<style id="customWidgetStyle" type="text/css">
+    
+</style>
+<style id="innerPagesStyle" type="text/css">
+    
+</style>
+
+
+<style
+        id="additionalGlobalCss" type="text/css"
+>
+</style>
+
+<style id="pagestyle" type="text/css">
+    *#dm *.dmBody a.span.textonly
+{
+	color:rgb(255,255,255) !important;
+}
+*#dm *.dmBody div.dmform-error
+{
+	font-style:normal !important;
+}
+*#dm *.dmBody div.dmforminput textarea
+{
+	font-style:italic !important;
+}
+*#dm *.dmBody div.dmforminput *.fileUploadLink
+{
+	font-style:italic !important;
+}
+*#dm *.dmBody div.checkboxwrapper span
+{
+	font-style:italic !important;
+}
+*#dm *.dmBody div.radiowrapper span
+{
+	font-style:italic !important;
+}
+*#dm *.dmBody nav.u_1144820115
+{
+	color:black !important;
+}
+@media all {
+  *#dm .dmInner nav.u_1998592992 { color:black !important; }
+
+  *#dm .dmInner div.u_1747668004 p {
+    font-family:Manrope !important;
+    font-size:18px !important;
+  }
+
+  *#dm .dmInner div.u_1747668004 li {
+    font-family:Manrope !important;
+    font-size:18px !important;
+  }
+
+  *#dm .dmInner div.u_1747668004 {
+    font-family:Manrope !important;
+    font-size:18px !important;
+  }
+
+  *#dm .dmInner div.u_1392524138 p {
+    font-family:Manrope !important;
+    font-size:18px !important;
+  }
+
+  *#dm .dmInner div.u_1392524138 li {
+    font-family:Manrope !important;
+    font-size:18px !important;
+  }
+
+  *#dm .dmInner div.u_1392524138 {
+    font-family:Manrope !important;
+    font-size:18px !important;
+  }
+}
+
+</style>
+
+<style id="pagestyleDevice" type="text/css">
+    *#dm *.d-page-1716942098 DIV.dmInner{
+background-repeat:no-repeat !important;
+background-size:cover !important;
+background-attachment:fixed !important;
+background-position:50% 50% !important}
+*#dm *.d-page-1716942098 DIV#dmSlideRightNavRight{
+background-repeat:no-repeat !important;
+background-image:none !important;
+background-size:cover !important;
+background-attachment:fixed !important;
+background-position:50% 50% !important}
+*#dm *.dmBody div.u_1243667655{
+margin-left:0 !important;
+padding-top:100px !important;
+padding-left:40px !important;
+padding-bottom:100px !important;
+margin-top:0 !important;
+margin-bottom:0 !important;
+padding-right:40px !important;
+margin-right:0 !important;
+float:none !important;
+top:0 !important;
+left:0 !important;
+width:auto !important;
+position:relative !important;
+height:auto !important;
+max-width:none !important;
+min-width:0 !important;
+text-align:center !important}
+</style>
+
+<!-- Flex Sections CSS -->
+
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-common-fe046669-ffe2f0fc82c945eaad7efd8e0857057b">@media all {
+    
+#\33 9b98792 {
+    margin: 0px 0px 0px 0px;
+}
+    
+#\36 ee9f115 {
+    width: 543px;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    order: 1;
+    margin: 0px 0% 5% 0%;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\35 f530a93 {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    order: 0;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#d0f59b27 {
+    background-color: rgba(0, 0, 0, 0);
+    background-image: initial;
+}
+    
+#d4259b57 {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 16px;
+    width: 48%;
+    min-width: 4%;
+    order: 1;
+    padding: 10% 16px 10% 16px;
+    margin: 0px 0% 0px 0%;
+}
+    
+#fc94a968 {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 48%;
+    min-width: 4%;
+    background-image: url("https://le-de.cdn-website.com/f6da787c73c447b48b2212b22ac715e9/dms3rep/multi/opt/pexels-photo-1974657-2880w.jpeg");
+    order: 0;
+    border-radius: 20px;
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0% 0px 0%;
+}
+    
+#b84ecd62 {
+    min-height: 475px;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 100%;
+    flex-wrap: nowrap;
+    padding: 4% 0% 4% 0%;
+    margin: 0px 0% 0px 0%;
+    grid-area: 1 / 1 / span 1 / span 1;
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-common-f1f6abdb-ffe2f0fc82c945eaad7efd8e0857057b">@media all {
+    
+#\33 bfbec4b {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 2px;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    min-width: 4%;
+    padding: 16px 16px 16px 16px;
+    margin: 0px 0% 0px 0%;
+}
+    
+#a1a38297 {
+    min-height: 320px;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 100%;
+    padding: 4% 0% 4% 0%;
+    margin: 0px 0% 0px 0%;
+    grid-area: 1 / 1 / span 1 / span 1;
+}
+    
+#\33 357c941 {
+    background-color: rgba(225, 237, 245, 1);
+    background-image: none;
+}
+    
+#e1b1507b {
+    margin: 0px 0% 0px 0%;
+}
+    
+#\36 8894f4f {
+    width: 69.81%;
+    height: auto;
+    max-width: 100%;
+    order: 0;
+    margin: 0px 0% 3% 0%;
+}
+    
+#widget_5b7 {
+    width: 60px;
+    height: auto;
+    position: relative;
+    min-width: 10px;
+    min-height: 10px;
+    max-width: 100%;
+    order: 2;
+}
+    
+#widget_d8e {
+    width: 60px;
+    height: auto;
+    position: relative;
+    min-width: 10px;
+    min-height: 10px;
+    max-width: 100%;
+    order: 1;
+    justify-self: auto;
+    align-self: auto;
+    margin: 0px 0% 0px 0%;
+    grid-area: auto / auto / auto / auto;
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-common-fa5e915f-ffe2f0fc82c945eaad7efd8e0857057b">@media all {
+    
+#\34 781b7ce {
+    width: 543px;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    order: 1;
+    margin: 0px 0% 5% 0%;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#f547957f {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 16px;
+    width: 48%;
+    min-width: 4%;
+    order: 1;
+    padding: 10% 16px 10% 16px;
+    margin: 0px 0% 0px 0%;
+}
+    
+#cc2d380f {
+    margin: 0px 0px 0px 0px;
+}
+    
+#e271b93c {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 48%;
+    min-width: 4%;
+    background-image: url("https://le-de.cdn-website.com/f6da787c73c447b48b2212b22ac715e9/dms3rep/multi/opt/IMG_6417-2880w.JPG");
+    order: 0;
+    border-radius: 20px;
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0% 0px 0%;
+}
+    
+#ebddc8f5 {
+    min-height: 475px;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 100%;
+    flex-wrap: nowrap;
+    padding: 4% 0% 4% 0%;
+    margin: 0px 0% 0px 0%;
+    grid-area: 1 / 1 / span 1 / span 1;
+}
+    
+#\30 f47ca56 {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    order: 0;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#aca7f018 {
+    background-color: rgba(0, 0, 0, 0);
+    background-image: initial;
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-common-12c6887c-ffe2f0fc82c945eaad7efd8e0857057b">@media all {
+    
+#e5e0e44f {
+    width: 543px;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    order: 1;
+    margin: 0px 0% 5% 0%;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\31 b3d1822::before, #\31 b3d1822 > .bgExtraLayerOverlay {
+    
+}
+#\31 b3d1822 {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 48%;
+    min-width: 4%;
+    background-image: url("https://le-de.cdn-website.com/f6da787c73c447b48b2212b22ac715e9/dms3rep/multi/opt/02D80272-E3F6-43D8-8C3D-366FCE93967F-2880w.png");
+    order: 1;
+    border-radius: 20px;
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0% 0px 0%;
+}
+    
+#\37 85b4909 {
+    margin: 0px 0px 0px 0px;
+}
+    
+#\31 e69de8a {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    order: 0;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\33 b009059 {
+    background-color: rgba(0, 0, 0, 0);
+    background-image: initial;
+}
+    
+#f821179a {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 16px;
+    width: 48%;
+    min-width: 4%;
+    order: 0;
+    padding: 10% 16px 10% 16px;
+    margin: 0px 0% 0px 0%;
+}
+    
+#\38 1443b25 {
+    min-height: 475px;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 100%;
+    flex-wrap: nowrap;
+    padding: 4% 0% 4% 0%;
+    margin: 0px 0% 0px 0%;
+    grid-area: 1 / 1 / span 1 / span 1;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-common-flex-footer-eb213d3256e0446389f96a25b2d9025c">@media all {
+    
+#flex-footer {
+    background-color: rgba(0, 0, 0, 0);
+    background-image: initial;
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-common-flex-header-eb213d3256e0446389f96a25b2d9025c">@media all {
+    
+#flex-header[data-changeable-on-scroll][data-scrolling] [data-widget-type="image"] img {
+    transform: scale(0.66);
+}
+#flex-header::before, #flex-header > .bgExtraLayerOverlay {
+    
+}
+#flex-header {
+    background-color: rgba(0, 0, 0, 0);
+    
+    padding-top: 8px;
+    padding-bottom: 8px;
+    border-style: solid;
+    border-color: #000000 #000000 #000000 #000000;
+    border-width: 0px 0px 0px 0px;
+    background-image: none;
+    box-shadow: none;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+#flex-header[data-changeable-on-scroll][data-scrolling] {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    background-color: var(--color_3);
+    background-image: none;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-common-4326a578-eb213d3256e0446389f96a25b2d9025c">@media all {
+    
+#e08c28e3 {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 24px;
+    flex-direction: row;
+    width: 9.6%;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 4%;
+    order: 2;
+    padding: 16px 16px 16px 16px;
+    margin: 0% 0% 0% 0%;
+}
+    
+#de678ea5 {
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    width: 82.18%;
+    min-width: 4%;
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 24px;
+    order: 1;
+    padding: 6px 16px 6px 16px;
+    margin: 0% 0% 0% 0%;
+}
+    
+#\33 9bcb42b {
+    width: 30px;
+    height: 30px;
+    max-width: 100%;
+    order: 0;
+}
+    
+#\37 25e62d2 {
+    min-height: 0px;
+    column-gap: 0%;
+    row-gap: 0px;
+    width: 100%;
+    padding: 10px 2% 10px 2%;
+    margin: 0% 0% 0% 0%;
+}
+    
+#b4bf4fa8 {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    order: 0;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#dbf0cc8a {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    width: 17.77%;
+    min-width: 4%;
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 24px;
+    order: 0;
+    padding: 6px 16px 6px 16px;
+    margin: 0% 0% 0% 0%;
+}
+    
+#widget_0d0 {
+    width: 137px;
+    height: 55px;
+    position: relative;
+    min-width: 10px;
+    min-height: 10px;
+    max-width: 100%;
+    margin-left: 27px;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-common-8a15d2c2-eb213d3256e0446389f96a25b2d9025c">@media all {
+    
+#e368942a::before, #e368942a > .bgExtraLayerOverlay {
+    
+}
+#e368942a {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 100%;
+    min-width: 4%;
+    align-items: flex-end;
+    background-image: none;
+    padding: 16px 16px 16px 16px;
+    margin: 0% 0% 0% 0%;
+}
+    
+#fb1ce72a {
+    min-height: 100px;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 100%;
+    padding: 2% 0% 2% 0%;
+    margin: 0% 0% 0% 0%;
+}
+    
+#\36 d79979a svg {
+    fill: var(--color_1);
+}
+#\36 d79979a .hamburgerButton {
+    background-color: rgba(0,0,0,0);
+}
+#\36 d79979a {
+    width: 30px;
+    height: 30px;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-common-63a049320d35b55b4ef2a372-eb213d3256e0446389f96a25b2d9025c">@media all {
+    
+#\36 3a049320d35b55b4ef2a374 {
+    align-self: stretch;
+    background-size: cover;
+    display: flex;
+    min-height: 8px;
+    background-position: 50% 50%;
+    column-gap: 4%;
+    row-gap: 24px;
+    background-repeat: no-repeat;
+    flex-direction: column;
+    max-width: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+    min-width: 4%;
+    background-color: rgba(0, 0, 0, 0);
+    padding: 16px 16px 16px 16px;
+    margin-bottom: 0%;
+    margin-left: 0%;
+    margin-top: 0%;
+    margin-right: 0%;
+}
+    
+#\36 3a049320d35b55b4ef2a376 {
+    background-repeat: no-repeat;
+    background-size: cover;
+    grid-template-columns: minmax(0px, 1fr);
+    grid-template-rows: minmax(8px, max-content);
+    display: grid;
+    justify-content: start;
+    background-position: 50% 50%;
+    align-items: start;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0);
+}
+    
+#\36 3a049320d35b55b4ef2a377 {
+    align-self: start;
+    background-size: cover;
+    min-height: 200px;
+    background-repeat: no-repeat;
+    flex-direction: row;
+    order: 0;
+    padding-top: 2%;
+    display: flex;
+    padding-bottom: 2%;
+    background-position: 50% 50%;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    justify-self: center;
+    padding-left: 0%;
+    padding-right: 0%;
+    margin-bottom: 0%;
+    margin-left: 0%;
+    margin-top: 0%;
+    margin-right: 0%;
+}
+    
+#\36 3a049ca0d35b55b4ef2a5c3 {
+    position: relative;
+    width: 544px;
+    height: auto;
+    min-width: 10px;
+    min-height: 10px;
+    max-width: 100%;
+    justify-self: auto;
+    align-self: auto;
+    order: 0;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\36 2d6a167a824ca526194d9a5 {
+    background-color: rgba(232, 255, 133, 1);
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-common-6406026c90e1521f6ecb0eca-eb213d3256e0446389f96a25b2d9025c">@media all {
+    
+#\36 406026c90e1521f6ecb0ecd {
+    align-self: stretch;
+    background-size: cover;
+    display: flex;
+    min-height: 8px;
+    background-position: 50% 50%;
+    column-gap: 4%;
+    row-gap: 24px;
+    background-repeat: no-repeat;
+    flex-direction: column;
+    max-width: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+    min-width: 4%;
+    padding: 16px 16px 16px 16px;
+    margin-bottom: 0%;
+    margin-left: 0%;
+    margin-top: 0%;
+    margin-right: 0%;
+}
+    
+#\36 406026c90e1521f6ecb0ecb {
+    background-repeat: no-repeat;
+    background-size: cover;
+    grid-template-columns: minmax(0px, 1fr);
+    grid-template-rows: minmax(8px, max-content);
+    display: grid;
+    justify-content: start;
+    background-position: 50% 50%;
+    align-items: start;
+    position: relative;
+}
+    
+#\36 406026c90e1521f6ecb0ecc {
+    align-self: start;
+    background-size: cover;
+    min-height: 460px;
+    background-repeat: no-repeat;
+    flex-direction: row;
+    order: 0;
+    padding-top: 4%;
+    display: flex;
+    padding-bottom: 4%;
+    background-position: 50% 50%;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    justify-self: center;
+    padding-left: 0%;
+    padding-right: 0%;
+    margin-bottom: 0%;
+    margin-left: 0%;
+    margin-top: 0%;
+    margin-right: 0%;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-common-8e42e1de-eb213d3256e0446389f96a25b2d9025c">@media all {
+    
+#\37 5620882 {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    order: 0;
+}
+    
+#\30 77f8e9d {
+    min-height: 240px;
+    column-gap: 1%;
+    row-gap: 6px;
+    max-width: none;
+    width: 100%;
+    flex-wrap: nowrap;
+    padding: 64px 8% 0% 8%;
+    margin: 0% 0% 0% 0%;
+}
+    
+#a29b7b51 {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 12px;
+    width: 49.5%;
+    min-width: 4%;
+    justify-content: flex-start;
+    padding: 16px 16px 16px 16px;
+    margin: 0% 0% 0% 0%;
+}
+    
+#\39 8018ad4 {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 12px;
+    width: 49.5%;
+    min-width: 4%;
+    padding: 16px 16px 16px 16px;
+    margin: 0% 0% 0% 0%;
+}
+    
+#\30 663fe75 {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    align-self: auto;
+    order: 1;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\36 416bb4b {
+    border-radius: 0px 0px 0px 0px;
+    background-color: rgba(0, 0, 0, 1);
+    background-image: none;
+}
+    
+#\37 01ecf9f {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    align-self: auto;
+    order: 2;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\37 2b595a7 {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    align-self: auto;
+    order: 3;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\39 7aa2a7f {
+    width: 99.99%;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    align-self: auto;
+    order: 3;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#dd650c68 {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    align-self: auto;
+    order: 4;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\33 1597da8 {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    align-self: auto;
+    order: 5;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\33 60527eb {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    align-self: auto;
+    order: 5;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#d46c06a8 {
+    width: 99.99%;
+    height: auto;
+    max-width: 100%;
+    align-self: auto;
+    order: 4;
+    justify-self: auto;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\30 4e67feb {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    align-self: auto;
+    order: 5;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#widget_cf9 {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    order: 1;
+}
+    
+#widget_7kc {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    order: 6;
+}
+    
+#widget_s3o {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    order: 7;
+    justify-self: auto;
+    align-self: auto;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#widget_5kc {
+    width: 269px;
+    height: auto;
+    max-width: 100%;
+    justify-self: auto;
+    align-self: auto;
+    order: 1;
+    margin: 0px 0% 0px 0%;
+    grid-area: auto / auto / auto / auto;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-common-d86a47eb-eb213d3256e0446389f96a25b2d9025c">@media all {
+    
+#\36 3c7b8b76c596a2813341bc5 {
+    height: auto;
+}
+    
+#a4215776 {
+    align-items: center;
+    width: 100%;
+    min-width: 4%;
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 32px;
+    order: 0;
+    padding: 16px 16px 16px 16px;
+    margin-bottom: 0%;
+    margin-left: 0%;
+    margin-top: 0%;
+    margin-right: 0%;
+}
+    
+#\31 c667d6d {
+    background-color: rgba(0, 0, 0, 1);
+    background-image: initial;
+}
+    
+#b99ec92b {
+    min-height: 160px;
+    column-gap: 1%;
+    row-gap: 6px;
+    width: 100%;
+    flex-wrap: nowrap;
+    padding: 3% 2% 6% 2%;
+    margin-bottom: 0%;
+    margin-left: 0%;
+    margin-top: 0%;
+    margin-right: 0%;
+}
+    
+#widget_ihg {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-common-52fcd3b9-eb213d3256e0446389f96a25b2d9025c">@media all {
+    
+#\38 8b752ea {
+    min-height: 240px;
+    column-gap: 4%;
+    row-gap: 24px;
+    max-width: none;
+    width: 100%;
+    flex-wrap: nowrap;
+    padding-left: 0%;
+    padding-top: 0%;
+    padding-right: 0%;
+    padding-bottom: 0%;
+    margin-bottom: 0%;
+    margin-left: 0%;
+    margin-top: 0%;
+    margin-right: 0%;
+}
+    
+#f2a52f09 {
+    grid-template-rows: minmax(300px, max-content);
+    width: 100%;
+    max-width: 100%;
+}
+    
+#c7cccae1 {
+    min-height: 8px;
+    column-gap: 4%;
+    row-gap: 24px;
+    width: 100%;
+    min-width: 4%;
+    padding-left: 0%;
+    padding-top: 0%;
+    padding-right: 0%;
+    padding-bottom: 0%;
+    margin-bottom: 0%;
+    margin-left: 0%;
+    margin-top: 0%;
+    margin-right: 0%;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-desktop-flex-header-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 1025px) {
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-tablet_implicit-flex-header-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 768px) and (max-width: 1024px) {
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-tablet-fe046669-ffe2f0fc82c945eaad7efd8e0857057b">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#\36 ee9f115 {
+    align-self: auto;
+    width: 100%;
+    max-width: none;
+    justify-self: auto;
+    order: 1;
+    margin: 0px 0% 5% 0%;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\35 f530a93 {
+    align-self: flex-start;
+    margin-left: 0%;
+    margin-right: 0%;
+    width: 100%;
+    max-width: none;
+    order: 0;
+}
+    
+#d4259b57 {
+    row-gap: 16px;
+    width: 51.70%;
+    min-height: 8px;
+    justify-content: center;
+    padding: 4% 16px 4% 16px;
+}
+    
+#fc94a968 {
+    border-radius: 20px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 44.2%;
+    min-height: 8px;
+}
+    
+#b84ecd62 {
+    min-height: 460px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    row-gap: 16px;
+    column-gap: 4%;
+    padding: 6% 4% 6% 4%;
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-tablet-f1f6abdb-ffe2f0fc82c945eaad7efd8e0857057b">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#a1a38297 {
+    padding-left: 4%;
+    padding-right: 4%;
+}
+    
+#\36 8894f4f {
+    width: 93.27%;
+    margin-bottom: 5%;
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-tablet-fa5e915f-ffe2f0fc82c945eaad7efd8e0857057b">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#\34 781b7ce {
+    align-self: auto;
+    width: 100%;
+    max-width: none;
+    justify-self: auto;
+    order: 1;
+    margin: 0px 0% 5% 0%;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#f547957f {
+    row-gap: 16px;
+    width: 51.70%;
+    min-height: 8px;
+    justify-content: center;
+    padding: 4% 16px 4% 16px;
+}
+    
+#e271b93c {
+    border-radius: 20px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 44.2%;
+    min-height: 8px;
+}
+    
+#ebddc8f5 {
+    min-height: 460px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    row-gap: 16px;
+    column-gap: 4%;
+    padding: 6% 4% 6% 4%;
+}
+    
+#\30 f47ca56 {
+    align-self: flex-start;
+    margin-left: 0%;
+    margin-right: 0%;
+    width: 100%;
+    max-width: none;
+    order: 0;
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-tablet-12c6887c-ffe2f0fc82c945eaad7efd8e0857057b">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#e5e0e44f {
+    align-self: auto;
+    width: 100%;
+    max-width: none;
+    justify-self: auto;
+    order: 1;
+    margin: 0px 0% 5% 0%;
+    grid-area: auto / auto / auto / auto;
+}
+    
+#\31 b3d1822::before, #\31 b3d1822 > .bgExtraLayerOverlay {
+    
+}
+#\31 b3d1822 {
+    border-radius: 20px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 44.2%;
+    min-height: 8px;
+}
+    
+#\31 e69de8a {
+    align-self: flex-start;
+    margin-left: 0%;
+    margin-right: 0%;
+    width: 100%;
+    max-width: none;
+    order: 0;
+}
+    
+#f821179a {
+    row-gap: 16px;
+    width: 51.70%;
+    min-height: 8px;
+    justify-content: center;
+    padding: 4% 16px 4% 16px;
+}
+    
+#\38 1443b25 {
+    min-height: 460px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    row-gap: 16px;
+    column-gap: 4%;
+    padding: 6% 4% 6% 4%;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-tablet-flex-footer-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#flex-footer {
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-tablet-flex-header-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#flex-header::before, #flex-header > .bgExtraLayerOverlay {
+    
+}
+#flex-header {
+    
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-tablet-4326a578-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#\37 25e62d2 {
+    padding-left: 2%;
+    padding-right: 2%;
+}
+    
+#dbf0cc8a {
+    width: 100%;
+    justify-content: flex-start;
+}
+    
+#widget_0d0 {
+    height: auto;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-tablet-8a15d2c2-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#e368942a::before, #e368942a > .bgExtraLayerOverlay {
+    
+}
+#e368942a {
+    background-repeat: no-repeat;
+    background-size: cover;
+    padding: 0px 0px 0px 0px;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-tablet-63a049320d35b55b4ef2a372-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#\36 3a049320d35b55b4ef2a374 {
+    justify-content: space-between;
+    padding: 6% 2% 12% 2%;
+}
+    
+#\36 3a049320d35b55b4ef2a377 {
+    min-height: 710px;
+    padding: 0% 6% 0% 6%;
+}
+    
+#\36 3a049ca0d35b55b4ef2a5c3 {
+    order: 1;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-tablet-6406026c90e1521f6ecb0eca-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#\36 406026c90e1521f6ecb0ecc {
+    min-height: 92px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    column-gap: 2%;
+    padding: 0px 0px 0px 0px;
+}
+    
+#\36 406026c90e1521f6ecb0ecd {
+    justify-content: flex-end;
+    padding-bottom: 100px;
+    width: 100%;
+    min-height: 8px;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-tablet-8e42e1de-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#\37 01ecf9f {
+    width: 99.74%;
+}
+    
+#\30 77f8e9d {
+    padding-left: 4%;
+    padding-right: 4%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    min-height: 93px;
+    column-gap: 3%;
+    padding-top: 4%;
+}
+    
+#a29b7b51 {
+    width: 48.5%;
+    min-height: 8px;
+    padding: 0px 0px 0px 0px;
+}
+    
+#\39 8018ad4 {
+    width: 48.5%;
+    min-height: 8px;
+    padding: 0px 0px 0px 0px;
+}
+    
+#\30 663fe75 {
+    width: 99.74%;
+}
+    
+#\37 2b595a7 {
+    width: 99.74%;
+}
+    
+#\39 7aa2a7f {
+    width: 99.74%;
+}
+    
+#dd650c68 {
+    width: 99.74%;
+}
+    
+#\33 1597da8 {
+    width: 99.74%;
+}
+    
+#\33 60527eb {
+    width: 99.74%;
+}
+    
+#d46c06a8 {
+    width: 99.74%;
+}
+    
+#\30 4e67feb {
+    width: 99.74%;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-tablet-d86a47eb-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#a4215776 {
+    order: 1;
+    width: 100%;
+    min-height: 8px;
+    padding: 0px 0px 0px 0px;
+}
+    
+#b99ec92b {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    min-height: auto;
+    padding-left: 3%;
+    padding-right: 3%;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-tablet-52fcd3b9-eb213d3256e0446389f96a25b2d9025c">@media (min-width: 768px) and (max-width: 1024px) {
+    
+#\38 8b752ea {
+    padding-left: 2%;
+    padding-right: 2%;
+}
+}</style> 
+
+
+
+
+
+
+<style id="globalFontSizeStyle" type="text/css">
+    @media (min-width: 1025px) {  }@media (min-width: 768px) and (max-width: 1024px) {  }@media (max-width: 767px) {  }
+</style>
+<style id="pageFontSizeStyle" type="text/css">
+</style>
+
+
+
+
+<style id="hideAnimFix">
+  .dmDesktopBody:not(.editGrid) [data-anim-desktop]:not([data-anim-desktop='none']), .dmDesktopBody:not(.editGrid) [data-anim-extended] {
+    visibility: hidden;
+  }
+
+  .dmDesktopBody:not(.editGrid) .dmNewParagraph[data-anim-desktop]:not([data-anim-desktop='none']), .dmDesktopBody:not(.editGrid) .dmNewParagraph[data-anim-extended] {
+    visibility: hidden !important;
+  }
+
+  #dmRoot:not(.editGrid) .flex-element [data-anim-extended] {
+    visibility: hidden;
+  }
+
+</style>
+
+
+
+
+<style id="fontFallbacks">
+    @font-face {
+  font-family: "Manrope Fallback";
+  src: local('Arial');
+  ascent-override: 102.9626%;
+  descent-override: 28.9763%;
+  size-adjust: 103.5327%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "Epilogue Fallback";
+  src: local('Arial');
+  ascent-override: 70.2338%;
+  descent-override: 20.8923%;
+  size-adjust: 112.4814%;
+  line-gap-override: 0%;
+ }@font-face {
+  font-family: "DM Serif Display Fallback";
+  src: local('Arial');
+  ascent-override: 103.2273%;
+  descent-override: 33.3795%;
+  size-adjust: 100.3611%;
+  line-gap-override: 0%;
+ }
+</style>
+
+
+<!-- End render the required css and JS in the head section -->
+
+
+
+
+
+
+
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.buchtquartier.de/new-page09b1e3bb">
+
+  <meta name="twitter:card" content="summary"/>
+
+
+
+
+<!-- SYS- RVVfUFJPRFVDVElPTg== -->
+</head>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<body id="dmRoot" data-page-alias="new-page09b1e3bb"  class="dmRoot fix-mobile-scrolling flex-site dmResellerSite "
+      style="padding:0;margin:0;"
+      
+     data-flex-site >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ========= Site Content ========= -->
+<div id="dm" class='dmwr'>
+    
+    <div class="dm_wrapper -var5 null ">
+         <div dmwrapped="true" id="1901957768" class="dm-home-page" themewaschanged="true"> <div dmtemplateid="FlexHeader" data-responsive-name="FlexLayout" class="runtime-module-container dm-bfs dm-layout-sec hasAnimations hasStickyHeader inMiniHeaderMode rows-1200 page-34b404a7 page-3f15ac24 hamburger-reverse dmPageBody d-page-1716942098 inputs-css-clean dmDHeader" id="dm-outer-wrapper" data-page-class="1716942098" data-soch="true" data-background-parallax-selector=".dmHomeSection1, .dmSectionParallex"> <div id="dmStyle_outerContainer" class="dmOuter"> <div id="dmStyle_innerContainer" class="dmInner"> <div class="dmLayoutWrapper standard-var dmStandardDesktop"> <div id="site_content"> <div id="dmFlexHeaderContainer" class="flex_hfcontainer"> <div id="flex-header" data-variation-id="variation0" data-sticky="true" data-changeable-on-scroll="true" role="banner"> <div data-auto="flex-section" id="1380437475" data-flex-id="4326a578" data-layout-section="" data-page-element-type="section" data-page-element-id="1916757717"> <div class="flex-widgets-container" id="1325044420"></div> 
+ <section id="d870947a" class="flex-element section" data-auto="flex-element-section"> <div id="032e4596" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid=""> <div id="725e62d2" class="flex-element group" data-auto="flex-element-group"> <div id="dbf0cc8a" class="flex-element group" data-auto="flex-element-group"> <div id="widget_0d0" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="image" data-external-id="1413594311"> <div class="imageWidget align-center" data-element-type="image" data-widget-type="image" id="1413594311"><img src="https://le-de.cdn-website.com/f6da787c73c447b48b2212b22ac715e9/dms3rep/multi/opt/Buchtquartier+Logo-b494d44c-1920w.PNG" alt="" id="1219899348" class="" width="1536" height="1024" data-dm-image-path="https://de.cdn-website.com/f6da787c73c447b48b2212b22ac715e9/dms3rep/multi/Buchtquartier+Logo-b494d44c.PNG" onerror="handleImageLoadError(this)"/></div> 
+</div> 
+</div> 
+ <div id="de678ea5" class="flex-element group" data-auto="flex-element-group" data-hidden-on-tablet="" data-hidden-on-mobile=""> <div id="b4bf4fa8" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="ONELinksMenu" data-external-id="1832356651"> <nav class="effect-bottom2 u_1836483380 u_1832356651 main-navigation unifiednav dmLinksMenu" role="navigation" layout-main="horizontal_nav_layout_1" layout-sub="submenu_horizontal_1" data-show-vertical-sub-items="HOVER" id="1832356651" dmle_extension="onelinksmenu" data-element-type="onelinksmenu" data-logo-src="" alt="" data-nav-structure="HORIZONTAL" wr="true" icon="true" surround="true" adwords="" navigation-id="unifiedNav"> <ul role="menubar" class="unifiednav__container unav-top  " data-auto="navigation-pages"> <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/" class="unifiednav__item unav-item unav-top-item    " target="" data-target-page-alias="home"> <span class="nav-item-text " data-link-text="
+         Home
+        " data-auto="page-text-style">Home<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/properties" class="unifiednav__item unav-item unav-top-item    " target="" data-target-page-alias="properties"> <span class="nav-item-text " data-link-text="Apartments" data-auto="page-text-style">Apartments<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/new-page09b1e3bb" class="unifiednav__item unav-item unav-top-item  dmNavItemSelected    " target="" data-target-page-alias="new-page09b1e3bb" aria-current="page" data-auto="selected-page"> <span class="nav-item-text " data-link-text="Über Uns" data-auto="page-text-style">&Uuml;ber Uns<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/new-page" class="unifiednav__item unav-item unav-top-item    " target="" data-target-page-alias="new-page"> <span class="nav-item-text " data-link-text="Kontakt" data-auto="page-text-style">Kontakt<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/book-now" class="unifiednav__item unav-item unav-top-item    " target="" data-target-page-alias="book-now"> <span class="nav-item-text " data-link-text="Buche Jetzt" data-auto="page-text-style">Buche Jetzt<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+</ul> 
+</nav> 
+</div> 
+</div> 
+ <div id="e08c28e3" class="flex-element group" data-auto="flex-element-group" data-hidden-on-desktop=""> <div id="39bcb42b" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="hamburgerButton" data-external-id="1972163195"> <button class="hamburgerButton" data-element-type="hamburgerButton" id="1972163195" aria-label="Open menu" aria-controls="hamburger-drawer" aria-expanded="false"> <svg width="100pt" height="100pt" version="1.1" viewbox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" id="1424547546"> <path d="m3.6172 10.754h-0.050782c-1.9727 0-3.5703 1.5977-3.5703 3.5703 0 1.9727 1.5977 3.5703 3.5703 3.5703h0.054688 92.758 0.050782c1.9727 0 3.5703-1.5977 3.5703-3.5703 0-1.9727-1.5977-3.5703-3.5703-3.5703h-0.054688zm0 35.676h-0.050782c-1.9727 0-3.5703 1.5977-3.5703 3.5703s1.5977 3.5703 3.5703 3.5703h0.054688 92.758 0.050782c1.9727 0 3.5703-1.5977 3.5703-3.5703s-1.5977-3.5703-3.5703-3.5703h-0.054688zm0 35.68h-0.050782c-1.9727 0-3.5703 1.5977-3.5703 3.5703 0 1.9727 1.5977 3.5703 3.5703 3.5703h0.054688 92.758 0.050782c1.9727 0 3.5703-1.5977 3.5703-3.5703 0-1.9727-1.5977-3.5703-3.5703-3.5703h-0.054688z"></path> 
+</svg> 
+</button> 
+</div> 
+</div> 
+</div> 
+</div> 
+</section> 
+</div> 
+</div> 
+ <div id="hamburger-drawer" class="hamburger-drawer layout-drawer" layout="5ff40d2f36ae4e5ea1bc96b2e2fcf67e===header" data-origin="top" data-auto-height="true"> <div data-layout-section="" data-auto="flex-section" id="1073327761" data-flex-id="8a15d2c2"> <div class="flex-widgets-container" id="1689169650"></div> 
+ <section id="1b6f885f" class="flex-element section" data-auto="flex-element-section"> <div id="1732daad" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid=""> <div id="fb1ce72a" class="flex-element group" data-auto="flex-element-group"> <div id="e368942a" class="flex-element group" data-auto="flex-element-group"> <div id="6d79979a" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="hamburgerButton" data-external-id="1021548843"> <button class="hamburgerButton" data-element-type="hamburgerButton" id="1021548843" aria-label="Close menu" aria-controls="hamburger-drawer" aria-expanded="false"> <svg width="100pt" height="100pt" version="1.1" viewbox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" id="1255419433"> <path d="m82 87.883c1.625 1.625 4.2656 1.625 5.8906 0 1.6289-1.6289 1.6289-4.2656 0-5.8945l-32.414-32.41 32.406-32.406c1.6289-1.625 1.6289-4.2656
+ 0-5.8906-1.6289-1.6289-4.2656-1.6289-5.8906 0l-32.406 32.402-32.406-32.406c-1.625-1.625-4.2656-1.625-5.8906 0-1.6289 1.6289-1.6289 4.2656 0
+ 5.8945l32.402 32.406-32.41 32.414c-1.6289 1.625-1.6289 4.2617 0 5.8906 1.625 1.6289 4.2656 1.6289 5.8906 0l32.414-32.414z" fill-rule="evenodd"></path> 
+</svg> 
+</button> 
+</div> 
+</div> 
+</div> 
+</div> 
+</section> 
+</div> 
+ <div data-auto="flex-section" id="1099442592" data-flex-id="63a049320d35b55b4ef2a372" data-layout-section=""> <div class="flex-widgets-container" id="1247649854"></div> 
+ <section id="63a049320d35b55b4ef2a373" class="flex-element section" data-auto="flex-element-section"> <div id="63a049320d35b55b4ef2a376" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid=""> <div id="63a049320d35b55b4ef2a377" class="flex-element group" data-auto="flex-element-group"> <div id="63a049320d35b55b4ef2a374" class="flex-element group" data-auto="flex-element-group"> <div id="63a049ca0d35b55b4ef2a5c3" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="ONELinksMenu" data-external-id="1998592992"> <nav class="u_1998592992 effect-bottom main-navigation unifiednav dmLinksMenu" role="navigation" layout-main="vertical_nav_layout_2" layout-sub="" data-show-vertical-sub-items="HIDE" id="1998592992" dmle_extension="onelinksmenu" data-element-type="onelinksmenu" data-logo-src="" alt="" data-nav-structure="VERTICAL" wr="true" icon="true" surround="true" adwords="" navigation-id="unifiedNav"> <ul role="menubar" class="unifiednav__container unav-top  " data-auto="navigation-pages"> <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/" class="unifiednav__item unav-item unav-top-item    " target="" data-target-page-alias="home"> <span class="nav-item-text " data-link-text="
+         Home
+        " data-auto="page-text-style">Home<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/properties" class="unifiednav__item unav-item unav-top-item    " target="" data-target-page-alias="properties"> <span class="nav-item-text " data-link-text="Apartments" data-auto="page-text-style">Apartments<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/new-page" class="unifiednav__item unav-item unav-top-item    " target="" data-target-page-alias="new-page"> <span class="nav-item-text " data-link-text="Kontakt" data-auto="page-text-style">Kontakt<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/new-page09b1e3bb" class="unifiednav__item unav-item unav-top-item  dmNavItemSelected    " target="" data-target-page-alias="new-page09b1e3bb" aria-current="page" data-auto="selected-page"> <span class="nav-item-text " data-link-text="Über Uns" data-auto="page-text-style">&Uuml;ber Uns<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+ <li role="menuitem" class=" unifiednav__item-wrap " data-auto="more-pages" data-depth="0"> <a href="/book-now" class="unifiednav__item unav-item unav-top-item    " target="" data-target-page-alias="book-now"> <span class="nav-item-text " data-link-text="Buche Jetzt" data-auto="page-text-style">Buche Jetzt<span class="icon icon-angle-down" data-hidden-on-mobile="" data-hidden-on-desktop="" data-hidden-on-tablet=""></span> 
+</span> 
+</a> 
+</li> 
+</ul> 
+</nav> 
+</div> 
+</div> 
+</div> 
+</div> 
+</section> 
+</div> 
+ <div data-auto="flex-section" id="1029527021" data-flex-id="6406026c90e1521f6ecb0eca" data-layout-section=""> <div class="flex-widgets-container" id="1659590659"></div> 
+ <section id="6406026c90e1521f6ecb0ec9" class="flex-element section" data-auto="flex-element-section"> <div id="6406026c90e1521f6ecb0ecb" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid=""> <div id="6406026c90e1521f6ecb0ecc" class="flex-element group" data-auto="flex-element-group"> <div id="6406026c90e1521f6ecb0ecd" class="flex-element group" data-auto="flex-element-group"></div> 
+</div> 
+</div> 
+</section> 
+</div> 
+</div> 
+ <div class="layout-drawer-overlay" id="layout-drawer-overlay"></div> 
+</div> 
+ <div dmwrapped="true" id="dmFirstContainer" class="dmBody u_dmStyle_template_new-page09b1e3bb dm-home-page" themewaschanged="true"> <div id="allWrapper" class="allWrapper"><!-- navigation placeholders --> <div id="dm_content" class="dmContent" role="main"> <div dm:templateorder="170" class="dmHomeRespTmpl mainBorder dmRespRowsWrapper dmFullRowRespTmpl" id="1716942098"> <div data-flex-id="fe046669" data-auto="flex-section" id="1279587728" data-layout-section="" data-page-element-type="section" data-page-element-id="1179030713"> <div class="flex-widgets-container" id="1912121598"></div> 
+ <section id="39b98792" class="flex-element section" data-auto="flex-element-section"> <div id="d0f59b27" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid=""> <div id="b84ecd62" class="flex-element group" data-auto="flex-element-group"> <div id="d4259b57" class="flex-element group" data-auto="flex-element-group"> <div id="5f530a93" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1505667564"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1505667564" data-ai-tag="Short title for section" style=""> <h2><span style="display: unset;"><span style="display: unset;">&Uuml;ber Uns</span> 
+</span></h2> 
+</div> 
+</div> 
+ <div id="6ee9f115" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1747668004"> <div class="dmNewParagraph u_1747668004" data-element-type="paragraph" data-version="5" id="1747668004" data-ai-tag="Paragraph" style="" data-diy-text="" data-binding="W3siYmluZGluZ05hbWUiOiJ0ZXh0IiwidmFsdWUiOiJTVEFUSUNfUEFHRV9DT0xMRUNUSU9OLntcImNuXCI6XCJ3ZWJzaXRlY29udGVudFwiLFwiZm5cIjpcImFib3V0VXNcIn0ifV0="><p>Hinter der Ferienvermietung Buchtquartier steht mehr als nur die Vermietung einer Unterkunft. Es ist ein durchdachtes Gastgeberkonzept mit fachlicher Kompetenz und regionaler Verbundenheit der L&uuml;becker Bucht.</p> 
+<p><br/></p><p>Als ausgebildete Fachkr&auml;fte im Bereich Tourismus und Freizeit verbinden wir fundiertes Fachwissen mit ausgepr&auml;gter Serviceorientierung und einem klaren Qualit&auml;tsanspruch. Unsere Praxiserfahrung zeigt uns t&auml;glich, worauf es wirklich ankommt: Organisation, Transparenz, Verl&auml;sslichkeit und ein authentisches G&auml;steerlebnis.</p> 
+<p><br/></p><p>Buchtquartier steht f&uuml;r moderne Gastfreundschaft mit pers&ouml;nlichem Anspruch. Unser Ziel ist es, eine Unterkunft zu schaffen, in der sich unsere G&auml;ste ab dem ersten Moment willkommen f&uuml;hlen.</p><p><br/></p><p>Besonderen Wert legen wir auf:</p> 
+ <ul><li>Professionelle Reinigung &amp; Hygienestandard<br/></li><li>eine hochwertig ausgestattete und gepflegte Unterkunft</li> 
+<li>klare Kommunikation und verl&auml;ssliche Erreichbarkeit</li> 
+<li>transparente und faire Preisgestaltung</li> 
+<li>einen reibungslosen Ablauf vom Check-in bis zur Abreise</li> 
+</ul> 
+<p><br/></p><p>Unser Anspruch ist es, langfristiges Vertrauen aufzubauen und Aufenthalte zu erm&ouml;glichen, die in positiver Erinnerung bleiben und gerne weiterempfohlen werden.</p> <p></p> 
+<p><br/></p><p>Wir freuen uns darauf, Sie bald bei Buchtquartier an der L&uuml;becker Bucht als Gast begr&uuml;&szlig;en zu d&uuml;rfen.<br/></p></div> 
+</div> 
+</div> 
+ <div id="fc94a968" class="flex-element group" data-auto="flex-element-group"></div> 
+</div> 
+</div> 
+</section> 
+</div> 
+ <div data-flex-id="f1f6abdb" data-auto="flex-section" id="1066609635" data-layout-section="" data-page-element-type="section" data-page-element-id="1265308944"> <div class="flex-widgets-container" id="1237940153"></div> 
+ <section id="e1b1507b" class="flex-element section" data-auto="flex-element-section"> <div id="3357c941" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid=""> <div id="a1a38297" class="flex-element group" data-auto="flex-element-group"> <div id="3bfbec4b" class="flex-element group" data-auto="flex-element-group"> <div id="68894f4f" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1392524138"> <div class="dmNewParagraph u_1392524138" data-element-type="paragraph" data-version="5" id="1392524138" data-ai-tag="Short paragraph" style="" data-diy-text="" data-binding="W3siYmluZGluZ05hbWUiOiJ0ZXh0IiwidmFsdWUiOiJTVEFUSUNfUEFHRV9DT0xMRUNUSU9OLntcImNuXCI6XCJ3ZWJzaXRlY29udGVudFwiLFwiZm5cIjpcImluZm9ybWF0aW9uXCJ9In1d"><p><b>Sie Sind Eigent&uuml;mer ?</b></p><p>Als Eigent&uuml;mer einer Ferienimmobilie an der L&uuml;becker Bucht &nbsp;oder Umland m&ouml;chten Sie sicherstellen, dass Ihr Objekt professionell betreut wird und gleichzeitig attraktive Einnahmen erzielt.</p> 
+<p>Bei Buchtquartier k&uuml;mmern wir uns um alles &ndash; von der Vermarktung &uuml;ber G&auml;stekommunikation bis hin zu Reinigung und Instandhaltung.</p> 
+<p>Unser Ziel ist es, Ihre Immobilie optimal auszulasten und Ihnen einen stressfreien Vermietungsprozess zu erm&ouml;glichen.</p> 
+<p>Profitieren Sie von unserer Erfahrung, Transparenz und regionalen Expertise, w&auml;hrend wir daf&uuml;r sorgen, dass Ihre G&auml;ste einen unvergesslichen Aufenthalt genie&szlig;en.<br/></p></div> 
+</div> 
+ <div id="widget_d8e" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="graphic" data-keep-proportion="true" data-external-id="185965200"> <div class="graphicWidget graphicWidgetV2 graphicWidgetV3" data-element-type="graphic" data-widget-type="graphic" id="185965200"> <a href="mailto:info@buchtquartier.de" id="1749941451" file="false"> <svg width="100%" height="100%" version="1.1" viewbox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" id="1395674599" class="svg u_1395674599" data-icon-custom="true"> <path d="m15.691 22.492h68.617c1.6406 0 3.125 0.70312 4.1641 1.8242-0.035156 0.023438-0.070312 0.050782-0.10156 0.078125l-29.309 24.438-0.042969 0.039063-5.1367 4.2812c-1.0508 0.87891-2.4531 1.3203-3.8594 1.3281-1.4023 0.007812-2.793-0.41797-3.8242-1.2812l-5.1953-4.332-0.042968-0.035157-29.324-24.453c-0.03125-0.027344-0.066407-0.050781-0.097657-0.074218 1.0391-1.1172 2.5195-1.8125 4.1523-1.8125zm74.188 4.5312-27.555 22.977 27.555 22.977c0.078125-0.375 0.12109-0.76172 0.12109-1.1602v-43.633c0-0.39844-0.042969-0.78516-0.12109-1.1602zm-1.4062 48.664c-0.035156-0.023438-0.070312-0.050781-0.10156-0.078125l-28.379-23.664-4.1992 3.5039c-1.6016 1.3359-3.6875 2.0078-5.7578 2.0195-2.0742 0.011719-4.1562-0.64844-5.7461-1.9727l-4.2578-3.5508-28.395 23.676c-0.03125 0.027344-0.066407 0.050781-0.097657 0.074218 1.0391 1.1133 2.5195 1.8125 4.1562 1.8125h68.617c1.6367 0 3.1211-0.70312 4.1602-1.8203zm-78.348-2.6953 27.574-22.992-27.574-22.992c-0.082031 0.37891-0.125 0.77344-0.125 1.1758v43.637c0 0.39844 0.042969 0.79297 0.125 1.1719z" fill-rule="evenodd"></path> 
+</svg> 
+</a> 
+</div> 
+</div> 
+ <div id="widget_5b7" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="graphic" data-keep-proportion="true" data-external-id="2213691601"> <div class="graphicWidget graphicWidgetV2 graphicWidgetV3" data-element-type="graphic" data-widget-type="graphic" id="2213691601"> <a id="1660715313" file="false" class="" href="tel:0177 3195332" aria-label="Telephone_5139050.svg"> <svg width="100%" height="100%" version="1.1" viewbox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" id="1752723081" class="svg u_1752723081" data-icon-custom="true" data-icon-name="Telephone_5139050.svg" aria-labelledby="1983092510"> <title id="1983092510"></title> 
+ <g> <path d="m80.199 66.453c-2.168-3.1055-5.7578-4.9062-9.5469-4.7852-3.7656 0.074219-7.2578 2-9.3281 5.1484l-0.89844 1.3594c-0.34766 0.53906-0.91797 0.89844-1.5547 0.97656-0.625 0.074218-1.2539-0.125-1.7227-0.54688-4.4453-4.4414-8.5547-9.2031-12.293-14.25-3.5938-5.1602-6.7969-10.578-9.5859-16.215-0.25781-0.57422-0.24609-1.2383 0.035157-1.8047 0.27734-0.57813 0.79297-1.0039 1.4102-1.1641l1.5742-0.41797h0.003907c3.6445-0.95703 6.5859-3.6445 7.8672-7.1875 1.2812-3.543 0.73828-7.4883-1.4531-10.555l-5.4688-7.625c-2.0352-2.8398-5.2539-4.5938-8.7422-4.7695-3.4922-0.17188-6.8672 1.2539-9.1758 3.8789l-3.6875 4.168c-3.3555 3.8281-5.6133 8.4961-6.5352 13.5-0.92578 5.0078-0.47656 10.172 1.2891 14.949 3.4336 9.4062 8.1328 18.305 13.969 26.441 5.7773 8.0391 12.609 15.266 20.312 21.488 5.0703 4.0977 11.395 6.3359 17.914 6.3398 3.5859 0 7.1406-0.6875 10.465-2.0312l5.457-2.1992v-0.003906c3.2578-1.3164 5.7305-4.0586 6.707-7.4375 0.97656-3.3789 0.34766-7.0156-1.707-9.8711z"></path> 
+ <path d="m71.164 52.242c0.17188 0.027343 0.34375 0.042968 0.51953 0.042968 1.5234-0.003906 2.8242-1.1055 3.0742-2.6055 0.22656-1.3242 0.35156-2.6641 0.37109-4.0039 0.054688-4.8281-1.3203-9.5664-3.9531-13.617-2.6289-4.0469-6.3984-7.2305-10.836-9.1406-1.582-0.69141-3.4258 0.03125-4.1133 1.6172-0.69141 1.582 0.03125 3.4258 1.6133 4.1133 3.3047 1.4258 6.1133 3.793 8.0781 6.8086 1.9609 3.0156 2.9883 6.543 2.9492 10.141-0.015626 1.0195-0.10938 2.0352-0.28125 3.0391-0.13672 0.82031 0.054687 1.6641 0.53906 2.3398 0.48438 0.67578 1.2148 1.1328 2.0391 1.2656z"></path> 
+ <path d="m65.914 9.8555c-1.582-0.65625-3.3984 0.082031-4.0742 1.6562-0.67188 1.5742 0.046875 3.3984 1.6133 4.0898 5.8984 2.5117 10.914 6.7227 14.414 12.094 3.5 5.3711 5.3203 11.66 5.2383 18.07-0.023438 1.7812-0.19531 3.5547-0.51562 5.3047-0.30469 1.6992 0.82422 3.3242 2.5234 3.6328 0.18359 0.035156 0.375 0.050781 0.5625 0.050781 1.5078-0.003906 2.8008-1.0859 3.0703-2.5703 0.38281-2.0977 0.58594-4.2188 0.60938-6.3516 0.097656-7.6445-2.0781-15.148-6.25-21.555-4.1758-6.4062-10.16-11.426-17.191-14.422z"></path> 
+</g> 
+</svg> 
+</a> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</section> 
+</div> 
+ <div data-flex-id="fa5e915f" data-auto="flex-section" id="1959063918" data-layout-section="" data-page-element-type="section" data-page-element-id="1517353472"> <div class="flex-widgets-container" id="1110606567"></div> 
+ <section id="cc2d380f" class="flex-element section" data-auto="flex-element-section"> <div id="aca7f018" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid=""> <div id="ebddc8f5" class="flex-element group" data-auto="flex-element-group"> <div id="f547957f" class="flex-element group" data-auto="flex-element-group"> <div id="0f47ca56" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1628070977"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1628070977" data-ai-tag="Short title for section" style=""> <h2 class="t-text-align-left m-text-align-left"><span style="display: unset;">Unsere Motivation</span></h2> 
+</div> 
+</div> 
+ <div id="4781b7ce" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1735429510"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1735429510" data-ai-tag="Paragraph" style=""><p><span style="display: unset;"><span style="display: unset;">Die Gr&uuml;ndung unserer Ferienvermietungsagentur entstand aus einer klaren Erkenntnis: In vielen bestehenden Vermietungen werden entscheidende Qualit&auml;tsfaktoren wie</span> 
+</span><strong style="display: unset; font-weight: bold;">Sauberkeit</strong><span style="display: unset;"><span style="display: unset;">,</span> 
+</span><strong style="display: unset; font-weight: bold;">Zuverl&auml;ssigkeit</strong><span style="display: unset;"> <span style="display: unset;">und professionelle</span> 
+</span><strong style="display: unset; font-weight: bold;">Organisation</strong><span style="display: unset;"> <span style="display: unset;">nicht konsequent priorisiert. Genau hier setzen wir an.</span></span></p><p><span style="display: unset;">Unser Ziel ist es, Ferienimmobilien auf einem konstant hohen Standard zu betreuen. Daf&uuml;r setzten wir auf strukturierten Abl&auml;ufe, klare Kommunikation und einen kompromisslosen Anspruch an Hygiene und Verl&auml;sslichkeit. Sowohl Eigent&uuml;mer als auch G&auml;ste sollen sich darauf verl<span class="ql-cursor">﻿</span>assen k&ouml;nnen, dass jedes Detail stimmt.</span></p><p><span style="display: unset;">Wir verstehen Ferienvermietung nicht nur als Schl&uuml;ssel&uuml;bergabe, sondern als Dienstleistung mit Verantwortung. Dazu geh&ouml;ren transparente Prozesse, professionelle Reinigungskonzepte, eine zuverl&auml;ssige Betreuung sowie eine nachhaltige Wertsteigerung der Immobilie.</span></p><p class="t-text-align-left m-text-align-left" style="line-height: 1.5;"><span style="display: unset;">Unsere Agentur steht f&uuml;r Qualit&auml;t statt Masse &ndash; denn ein gelungener Aufenthalt beginnt mit Vertrauen, Organisation und einem klaren Qualit&auml;tsversprechen.</span></p></div> 
+</div> 
+</div> 
+ <div id="e271b93c" class="flex-element group" data-auto="flex-element-group"></div> 
+</div> 
+</div> 
+</section> 
+</div> 
+ <div data-flex-id="12c6887c" data-auto="flex-section" id="1616916721" data-layout-section="" data-page-element-type="section" data-page-element-id="1307209320"> <div class="flex-widgets-container" id="1272157019"></div> 
+ <section id="785b4909" class="flex-element section" data-auto="flex-element-section"> <div id="3b009059" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid=""> <div id="81443b25" class="flex-element group" data-auto="flex-element-group"> <div id="f821179a" class="flex-element group" data-auto="flex-element-group"> <div id="1e69de8a" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1866998237"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1866998237" data-ai-tag="Short title for section" style=""> <h2 class="m-text-align-left t-text-align-left"><span style="display: unset;"><span style="display: unset;">Unser Team</span> 
+</span></h2> 
+</div> 
+</div> 
+ <div id="e5e0e44f" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1020615997"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1020615997" data-ai-tag="Paragraph" style=""><p><span style="display: unset;"><span style="display: unset;">Hinter unserer Agentur steht ein engagiertes Team mit klarem Qualit&auml;tsanspruch.</span> 
+</span></p><p><span style="display: unset;">Gr&uuml;nder Philip Martin ist ausgebildeter Kaufmann f&uuml;r Tourismus und Freizeit und verbindet fundiertes Fachwissen mit praktischer Erfahrung in der Tourismusbranche.Sein Verst&auml;ndnis f&uuml;r G&auml;stebed&uuml;rfnisse, betriebswirtschaftliche Abl&auml;ufe und professionelle Vermarktung bildet die Grundlage unserer Arbeit. Gemeinsam setzen wir auf strukturierte Prozesse, Zuverl&auml;ssigkeit und h&ouml;chste Standards in der Betreuung von Ferienimmobilien.</span></p><p class="t-text-align-left m-text-align-left" style="line-height: 1.5;"><br/></p><p class="t-text-align-left m-text-align-left" style="line-height: 1.5;"><span style="display: unset;">Unser Ziel: Eigent&uuml;mern eine sorgenfreie Vermietung zu erm&ouml;glichen und G&auml;sten einen rundum gelungenen Aufenthalt zu bieten.</span></p></div> 
+</div> 
+</div> 
+ <div id="1b3d1822" class="flex-element group" data-auto="flex-element-group"></div> 
+</div> 
+</div> 
+</section> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+ <div class="dmFooterContainer flex_hfcontainer"> <div id="flex-footer" role="contentinfo"> <div data-layout-section="" data-auto="flex-section" id="1737901890" data-flex-id="8e42e1de"> <div class="flex-widgets-container" id="1799556969"></div> 
+ <section id="ca3f5510" class="flex-element section" data-auto="flex-element-section"> <div id="6416bb4b" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid=""> <div id="077f8e9d" class="flex-element group" data-auto="flex-element-group"> <div id="98018ad4" class="flex-element group" data-auto="flex-element-group"> <div id="widget_5kc" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="image" data-keep-proportion="true" data-external-id="148080381"> <div class="imageWidget align-center" data-element-type="image" data-widget-type="image" id="148080381"><img src="https://le-de.cdn-website.com/f6da787c73c447b48b2212b22ac715e9/dms3rep/multi/opt/Buchtquartier-Logo-982816e4-36faf031-1920w.png" alt="" id="1727094153" class="" width="1390" height="782" data-dm-image-path="https://de.cdn-website.com/f6da787c73c447b48b2212b22ac715e9/dms3rep/multi/Buchtquartier-Logo-982816e4-36faf031.png" onerror="handleImageLoadError(this)"/></div> 
+</div> 
+ <div id="0663fe75" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1110115138"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1110115138" style=""> <h6><a href="/new-page09b1e3bb" runtime_url="/new-page09b1e3bb" type="page" style="font-weight: bold; color: var(--color_3); display: initial;"><strong>&Uuml;</strong></a><strong style="font-weight: bold; color: var(--color_3); display: initial;">ber Uns</strong> 
+ </h6> 
+</div> 
+</div> 
+ <div id="97aa2a7f" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1706257105"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1706257105" style=""> <h6>Hausregeln<span style="display: initial;"><span class="ql-cursor">﻿</span></span></h6> 
+</div> 
+</div> 
+ <div id="dd650c68" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1193884172"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1193884172" style=""> <h6><a href="/terms---conditions" runtime_url="/terms---conditions" type="page" style="color: var(--color_3); display: unset;">A</a><span style="display: unset; color: var(--color_3);"><span style="display: unset; color: var(--color_3);">llgemeine Gesch&auml;ftsbedingungen</span> 
+</span></h6> 
+</div> 
+</div> 
+ <div id="31597da8" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1182562767"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1182562767" style=""> <h6><a href="/new-page70a58969" runtime_url="/new-page70a58969" type="page" style="color: var(--color_3); display: unset;">D</a><span style="display: unset; color: var(--color_3);"><span style="display: unset; color: var(--color_3);">atenschutzerkl&auml;rung</span> 
+</span></h6> 
+</div> 
+</div> 
+ <div id="360527eb" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1452659595"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1452659595" style=""> <h6><a href="/cancellation-policy" runtime_url="/cancellation-policy" type="page" style="color: var(--color_3); display: unset;">S</a><span style="display: unset; color: var(--color_3);"><span style="display: unset; color: var(--color_3);">tornierungsbedingungen</span> 
+</span></h6> 
+</div> 
+</div> 
+</div> 
+ <div id="a29b7b51" class="flex-element group" data-auto="flex-element-group"> <div id="75620882" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1633145888"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1633145888" style=""> <h6><a href="/new-page" runtime_url="/new-page" type="page" style="color: var(--color_3); font-weight: bold; display: initial;"><strong>K</strong></a><strong style="color: var(--color_3); font-weight: bold; display: initial;">ontakt</strong></h6> 
+</div> 
+</div> 
+ <div id="widget_cf9" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" lock-element-for-editing="true" data-external-id="1970206576"> <div class="dmNewParagraph u_1970206576" data-element-type="paragraph" data-version="5" id="1970206576" data-binding="W3siYmluZGluZ05hbWUiOiJ0ZXh0IiwidmFsdWUiOiJTVEFUSUNfUEFHRV9DT0xMRUNUSU9OLntcImNuXCI6XCJ3ZWJzaXRlY29udGVudFwiLFwiZm5cIjpcImNvbnRhY3RGdWxsTmFtZVwifSJ9XQ==" data-diy-text="">Philip Ferry Martin</div> 
+</div> 
+ <div id="701ecf9f" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" lock-element-for-editing="true" data-external-id="1353877854"> <div class="dmNewParagraph u_1353877854" data-element-type="paragraph" data-version="5" id="1353877854" style="" data-binding="W3siYmluZGluZ05hbWUiOiJ0ZXh0IiwidmFsdWUiOiJTVEFUSUNfUEFHRV9DT0xMRUNUSU9OLntcImNuXCI6XCJ3ZWJzaXRlY29udGVudFwiLFwiZm5cIjpcImNvbnRhY3RDb21wYW55TmFtZVwifSJ9XQ==" data-diy-text="">Buchtquartier</div> 
+</div> 
+ <div id="72b595a7" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" lock-element-for-editing="true" data-external-id="1718971146"> <div class="dmNewParagraph u_1718971146" data-element-type="paragraph" data-version="5" id="1718971146" style="" data-binding="W3siYmluZGluZ05hbWUiOiJ0ZXh0IiwidmFsdWUiOiJTVEFUSUNfUEFHRV9DT0xMRUNUSU9OLntcImNuXCI6XCJ3ZWJzaXRlY29udGVudFwiLFwiZm5cIjpcImNvbnRhY3RQaG9uZVwifSJ9XQ==" data-diy-text="">04504 2158670</div> 
+</div> 
+ <div id="d46c06a8" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" lock-element-for-editing="true" data-external-id="1276798166"> <div class="dmNewParagraph u_1276798166" data-element-type="paragraph" data-version="5" id="1276798166" style="" data-binding="W3siYmluZGluZ05hbWUiOiJ0ZXh0IiwidmFsdWUiOiJTVEFUSUNfUEFHRV9DT0xMRUNUSU9OLntcImNuXCI6XCJ3ZWJzaXRlY29udGVudFwiLFwiZm5cIjpcImNvbnRhY3RNb2JpbGVcIn0ifV0=" data-diy-text="">0177 3195332</div> 
+</div> 
+ <div id="04e67feb" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" lock-element-for-editing="true" data-external-id="1118356945"> <div class="dmNewParagraph u_1118356945" data-element-type="paragraph" data-version="5" id="1118356945" style="" data-binding="W3siYmluZGluZ05hbWUiOiJ0ZXh0IiwidmFsdWUiOiJTVEFUSUNfUEFHRV9DT0xMRUNUSU9OLntcImNuXCI6XCJ3ZWJzaXRlY29udGVudFwiLFwiZm5cIjpcImNvbnRhY3RFbWFpbFwifSJ9XQ==" data-diy-text="">info@buchtquartier.de</div> 
+</div> 
+ <div id="widget_7kc" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" lock-element-for-editing="true" data-external-id="1868667694"> <div class="dmNewParagraph u_1868667694" data-element-type="paragraph" data-version="5" id="1868667694" data-binding="W3siYmluZGluZ05hbWUiOiJ0ZXh0IiwidmFsdWUiOiJTVEFUSUNfUEFHRV9DT0xMRUNUSU9OLntcImNuXCI6XCJ3ZWJzaXRlY29udGVudFwiLFwiZm5cIjpcImNvbnRhY3RBZGRyZXNzRmlyc3RMaW5lXCJ9In1d" data-diy-text="">Zeiss-Stra&szlig;e 28 Ratekau</div> 
+</div> 
+ <div id="widget_s3o" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" lock-element-for-editing="true" data-external-id="1965701095"> <div class="dmNewParagraph u_1965701095" data-element-type="paragraph" data-version="5" id="1965701095" data-binding="W3siYmluZGluZ05hbWUiOiJ0ZXh0IiwidmFsdWUiOiJTVEFUSUNfUEFHRV9DT0xMRUNUSU9OLntcImNuXCI6XCJ3ZWJzaXRlY29udGVudFwiLFwiZm5cIjpcImNvbnRhY3RBZGRyZXNzU2Vjb25kTGluZVwifSJ9XQ==" data-diy-text="">23626 Schleswig-Holstein  Deutschland</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</section> 
+</div> 
+ <div data-auto="flex-section" id="1570648642" data-flex-id="d86a47eb" data-layout-section=""> <div class="flex-widgets-container" id="1742200172"></div> 
+ <section id="876e3d90" class="flex-element section" data-auto="flex-element-section"> <div id="1c667d6d" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid="" lock-element-for-editing="true"> <div id="b99ec92b" class="flex-element group" data-auto="flex-element-group"> <div id="a4215776" class="flex-element group" data-auto="flex-element-group"> <div id="widget_ihg" class="flex-element widget-wrapper" data-auto="flex-element-widget-wrapper" data-widget-type="paragraph" data-external-id="1382295404"> <div class="dmNewParagraph" data-element-type="paragraph" data-version="5" id="1382295404" style=""> <h6 class="text-align-center"><span style="display: unset;">Copyright &copy;2024&nbsp; |&nbsp; &nbsp;Powered by&nbsp;</span><a href="https://smoobu.com/" target="_blank" runtime_url="https://smoobu.com/" type="url" style="display: unset; color: var(--color_3);">Smoobu</a></h6> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</section> 
+</div> 
+</div> 
+</div> 
+ <div id="dmFlexStickyContainer" class="flex_hfcontainer"> <div id="flex-sticky"> <div data-layout-section="" data-auto="flex-section" id="1691394132" data-flex-id="52fcd3b9"> <div class="flex-widgets-container" id="1585626873"></div> 
+ <section id="caa42067" class="flex-element section" data-auto="flex-element-section"> <div id="59d132ee" class="flex-element grid" data-auto="flex-element-grid" data-layout-grid=""> <div id="88b752ea" class="flex-element group" data-auto="flex-element-group"> <div id="c7cccae1" class="flex-element group" data-auto="flex-element-group"> <div id="f2a52f09" class="flex-element inner-grid" data-auto="flex-element-inner-grid"></div> 
+</div> 
+</div> 
+</div> 
+</section> 
+</div> 
+</div> 
+</div> 
+ <div id="dmFlexMegaMenuContainer" class="flex_hfcontainer"> <div id="multi-mega-menu"></div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+
+    </div>
+</div>
+<!--  Add full CSS and Javascript before the close tag of the body if needed -->
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-mobile_implicit-fe046669-ffe2f0fc82c945eaad7efd8e0857057b">@media (max-width: 767px) {
+    
+#d0f59b27 {
+    grid-template-rows: minmax(8px, max-content);
+}
+    
+#b84ecd62 {
+    grid-area: 1 / 1 / span 1 / span 1;
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-mobile_implicit-f1f6abdb-ffe2f0fc82c945eaad7efd8e0857057b">@media (max-width: 767px) {
+    
+#a1a38297 {
+    grid-area: 1 / 1 / span 1 / span 1;
+}
+    
+#\33 357c941 {
+    grid-template-rows: minmax(8px, max-content);
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-mobile_implicit-fa5e915f-ffe2f0fc82c945eaad7efd8e0857057b">@media (max-width: 767px) {
+    
+#ebddc8f5 {
+    grid-area: 1 / 1 / span 1 / span 1;
+}
+    
+#aca7f018 {
+    grid-template-rows: minmax(8px, max-content);
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-mobile_implicit-12c6887c-ffe2f0fc82c945eaad7efd8e0857057b">@media (max-width: 767px) {
+    
+#\33 b009059 {
+    grid-template-rows: minmax(8px, max-content);
+}
+    
+#\38 1443b25 {
+    grid-area: 1 / 1 / span 1 / span 1;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-mobile_implicit-flex-header-eb213d3256e0446389f96a25b2d9025c">@media (max-width: 767px) {
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-mobile-fe046669-ffe2f0fc82c945eaad7efd8e0857057b">@media (max-width: 767px) {
+    
+#\36 ee9f115 {
+    margin-left: 0%;
+    margin-right: 0%;
+    width: 100%;
+    max-width: none;
+    margin-bottom: 3%;
+}
+    
+#d4259b57 {
+    width: 100%;
+    min-height: 240px;
+    align-items: flex-start;
+    order: 1;
+    justify-content: flex-start;
+    padding-top: 4%;
+    padding-bottom: 4%;
+    row-gap: 20px;
+}
+    
+#fc94a968 {
+    width: 100%;
+    min-height: 247px;
+    align-items: center;
+    order: 0;
+    border-radius: 20px;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+    
+#b84ecd62 {
+    min-height: unset;
+    flex-direction: column;
+    row-gap: 16px;
+    padding: 12% 4% 12% 4%;
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-mobile-f1f6abdb-ffe2f0fc82c945eaad7efd8e0857057b">@media (max-width: 767px) {
+    
+#\33 bfbec4b {
+    width: 100%;
+    min-height: 240px;
+    align-items: center;
+    padding-left: 6px;
+    padding-right: 6px;
+    row-gap: 7px;
+}
+    
+#a1a38297 {
+    min-height: unset;
+    flex-direction: column;
+    padding: 12% 4% 12% 4%;
+}
+    
+#\36 8894f4f {
+    width: 100%;
+    margin-left: 0%;
+    margin-right: 0%;
+    max-width: none;
+    margin-bottom: 5%;
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-mobile-fa5e915f-ffe2f0fc82c945eaad7efd8e0857057b">@media (max-width: 767px) {
+    
+#\34 781b7ce {
+    margin-left: 0%;
+    margin-right: 0%;
+    width: 100%;
+    max-width: none;
+    margin-bottom: 3%;
+}
+    
+#f547957f {
+    width: 100%;
+    min-height: 240px;
+    align-items: flex-start;
+    order: 1;
+    justify-content: flex-start;
+    padding-top: 4%;
+    padding-bottom: 4%;
+    row-gap: 20px;
+}
+    
+#e271b93c {
+    width: 100%;
+    min-height: 247px;
+    align-items: center;
+    order: 0;
+    border-radius: 20px;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+    
+#ebddc8f5 {
+    min-height: unset;
+    flex-direction: column;
+    row-gap: 16px;
+    padding: 12% 4% 12% 4%;
+}
+}</style> 
+ <style data-page-uuid="ffe2f0fc82c945eaad7efd8e0857057b" id="grid-styles-mobile-12c6887c-ffe2f0fc82c945eaad7efd8e0857057b">@media (max-width: 767px) {
+    
+#e5e0e44f {
+    margin-left: 0%;
+    margin-right: 0%;
+    width: 100%;
+    max-width: none;
+    margin-bottom: 3%;
+}
+    
+#\31 b3d1822::before, #\31 b3d1822 > .bgExtraLayerOverlay {
+    
+}
+#\31 b3d1822 {
+    width: 100%;
+    min-height: 247px;
+    align-items: center;
+    order: 0;
+    border-radius: 20px;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+    
+#f821179a {
+    width: 100%;
+    min-height: 240px;
+    align-items: flex-start;
+    order: 1;
+    justify-content: flex-start;
+    padding-top: 4%;
+    padding-bottom: 4%;
+    row-gap: 20px;
+}
+    
+#\38 1443b25 {
+    min-height: unset;
+    flex-direction: column;
+    row-gap: 16px;
+    padding: 12% 4% 12% 4%;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-mobile-flex-footer-eb213d3256e0446389f96a25b2d9025c">@media (max-width: 767px) {
+    
+#flex-footer {
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-mobile-flex-header-eb213d3256e0446389f96a25b2d9025c">@media (max-width: 767px) {
+    
+#flex-header::before, #flex-header > .bgExtraLayerOverlay {
+    
+}
+#flex-header {
+    
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-mobile-4326a578-eb213d3256e0446389f96a25b2d9025c">@media (max-width: 767px) {
+    
+#e08c28e3 {
+    align-items: center;
+    width: 17.28%;
+}
+    
+#de678ea5 {
+    width: 78.72%;
+}
+    
+#\37 25e62d2 {
+    min-height: 0px;
+    padding: 6px 2% 6px 2%;
+}
+    
+#dbf0cc8a {
+    width: 78.72%;
+    justify-content: flex-start;
+}
+    
+#widget_0d0 {
+    height: auto;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-mobile-8a15d2c2-eb213d3256e0446389f96a25b2d9025c">@media (max-width: 767px) {
+    
+#e368942a::before, #e368942a > .bgExtraLayerOverlay {
+    
+}
+#e368942a {
+    width: 100%;
+    min-height: 80px;
+}
+    
+#fb1ce72a {
+    min-height: unset;
+    flex-direction: column;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-mobile-63a049320d35b55b4ef2a372-eb213d3256e0446389f96a25b2d9025c">@media (max-width: 767px) {
+    
+#\36 3a049320d35b55b4ef2a374 {
+    min-height: 32px;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 0px 0px 0px 0px;
+}
+    
+#\36 3a049320d35b55b4ef2a377 {
+    min-height: unset;
+    flex-direction: column;
+    padding: 16% 8% 0% 8%;
+}
+    
+#\36 3a049ca0d35b55b4ef2a5c3.flex-element.widget-wrapper > [data-element-type] {
+    padding-left: 2%;
+}
+#\36 3a049ca0d35b55b4ef2a5c3 {
+    align-self: flex-start;
+    margin-left: 0px;
+    margin-right: 0px;
+    order: 1;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-mobile-6406026c90e1521f6ecb0eca-eb213d3256e0446389f96a25b2d9025c">@media (max-width: 767px) {
+    
+#\36 406026c90e1521f6ecb0ecd {
+    min-height: 32px;
+    justify-content: flex-end;
+    padding-bottom: 100px;
+    width: 100%;
+}
+    
+#\36 406026c90e1521f6ecb0ecc {
+    min-height: unset;
+    flex-direction: column;
+    padding: 0px 0px 0px 0px;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-mobile-8e42e1de-eb213d3256e0446389f96a25b2d9025c">@media (max-width: 767px) {
+    
+#\37 01ecf9f {
+    align-self: center;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+    
+#\30 77f8e9d {
+    min-height: 0;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    row-gap: 24px;
+    padding: 12% 6% 4% 6%;
+}
+    
+#a29b7b51 {
+    width: 100%;
+    min-height: 80px;
+    align-items: center;
+    padding: 0px 0px 0px 0px;
+}
+    
+#\39 8018ad4 {
+    width: 100%;
+    min-height: 80px;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 0px 0px 0px;
+}
+    
+#\37 2b595a7 {
+    align-self: center;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+    
+#d46c06a8 {
+    align-self: center;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+    
+#\30 4e67feb {
+    align-self: center;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-mobile-d86a47eb-eb213d3256e0446389f96a25b2d9025c">@media (max-width: 767px) {
+    
+#a4215776 {
+    width: 100%;
+    min-height: 48px;
+    order: 2;
+    padding: 0px 0px 0px 0px;
+}
+    
+#b99ec92b {
+    min-height: 0;
+    flex-direction: column;
+    row-gap: 0px;
+    flex-wrap: nowrap;
+    padding: 8% 6% 12% 6%;
+}
+}</style> 
+ <style data-page-uuid="eb213d3256e0446389f96a25b2d9025c" data-is-header="true" id="grid-styles-mobile-52fcd3b9-eb213d3256e0446389f96a25b2d9025c">@media (max-width: 767px) {
+    
+#\38 8b752ea {
+    min-height: 0;
+    flex-direction: column;
+    padding-left: 4%;
+    padding-right: 4%;
+    flex-wrap: nowrap;
+}
+    
+#c7cccae1 {
+    width: 100%;
+    min-height: 80px;
+    align-items: center;
+}
+}</style> 
+<!-- ========= JS Section ========= -->
+<script>
+    var isWLR = true;
+
+    window.customWidgetsFunctions = {};
+    window.customWidgetsStrings = {};
+    window.collections = {};
+    window.currentLanguage = "GERMAN"
+    window.isSitePreview = false;
+</script>
+<script type="text/javascript">
+
+    var d_version = "production_6655";
+    var build = "2026-07-27T12_49_31";
+    window['v' + 'ersion'] = d_version;
+
+    function buildEditorParent() {
+        window.isMultiScreen = true;
+        window.editorParent = {};
+        window.previewParent = {};
+        window.assetsCacheQueryParam = "?version=2026-07-27T12_49_31";
+        try {
+            var _p = window.parent;
+            if (_p && _p.document && _p.$ && _p.$.dmfw) {
+                window.editorParent = _p;
+            } else if (_p.isSitePreview) {
+                window.previewParent = _p;
+            }
+        } catch (e) {
+
+        }
+    }
+
+    buildEditorParent();
+</script>
+
+<!-- Injecting site-wide before scripts -->
+<!-- End Injecting site-wide to the head -->
+
+
+<script>
+    window.cookiesNotificationMarkupPreview = 'null';
+</script>
+
+<!-- HEAD RT JS Include -->
+<script id='d-js-params'>
+    window.INSITE = window.INSITE || {};
+    window.INSITE.device = "desktop";
+
+    window.rtCommonProps = {};
+    rtCommonProps["rt.ajax.ajaxScriptsFix"] =true;
+    rtCommonProps["rt.pushnotifs.sslframe.encoded"] = 'aHR0cHM6Ly97c3ViZG9tYWlufS5wdXNoLW5vdGlmcy5jb20=';
+    rtCommonProps["runtimecollector.url"] = 'https://rtc.eu-multiscreensite.com';
+    rtCommonProps["performance.tabletPreview.removeScroll"] = 'false';
+    rtCommonProps["inlineEditGrid.snap"] =true;
+    rtCommonProps["popup.insite.cookie.ttl"] = '0.5';
+    rtCommonProps["rt.pushnotifs.force.button"] =true;
+    rtCommonProps["common.mapbox.token"] = 'REDACTED_TOKEN';
+    rtCommonProps["common.mapbox.js.override"] =false;
+    rtCommonProps["common.here.appId"] = 'iYvDjIQ2quyEu0rg0hLo';
+    rtCommonProps["common.here.appCode"] = '1hcIxLJcbybmtBYTD9Z1UA';
+    rtCommonProps["isCoverage.test"] =false;
+    rtCommonProps["ecommerce.ecwid.script"] = 'https://app.multiscreenstore.com/script.js';
+    rtCommonProps["common.resources.dist.cdn"] =true;
+    rtCommonProps["common.build.dist.folder"] = 'production/6655';
+    rtCommonProps["common.resources.cdn.host"] = 'https://static.cdn-website.com';
+    rtCommonProps["common.resources.folder"] = 'https://static.cdn-website.com/mnlt/production/6655';
+    rtCommonProps["common.fonts.api.v2.url"] = 'https://de.cdn-website.com/fonts/css2?family=';
+    rtCommonProps["feature.flag.runtime.backgroundSlider.preload.slowly"] =true;
+    rtCommonProps["feature.flag.runtime.newAnimation.enabled"] =true;
+    rtCommonProps["feature.flag.runtime.newAnimation.jitAnimation.enabled"] =true;
+    rtCommonProps["feature.flag.sites.google.analytics.gtag"] =true;
+    rtCommonProps["feature.flag.runOnReadyNewTask"] =true;
+    rtCommonProps["isAutomation.test"] =false;
+    rtCommonProps["booking.cal.api.domain"] = 'api.cal.eu';
+
+    
+    rtCommonProps['common.mapsProvider'] = 'mapbox';
+    
+    rtCommonProps['common.mapsProvider.version'] = '0.52.0';
+    rtCommonProps['common.geocodeProvider'] = 'mapbox';
+    rtCommonProps['server.for.resources'] = '';
+    rtCommonProps['feature.flag.lazy.widgets'] = true;
+    rtCommonProps['feature.flag.single.wow'] = false;
+    rtCommonProps['feature.flag.disallowPopupsInEditor'] = true;
+    rtCommonProps['feature.flag.mark.anchors'] = true;
+    rtCommonProps['captcha.public.key'] = '6LffcBsUAAAAAMU-MYacU-6QHY4iDtUEYv_Ppwlz';
+    rtCommonProps['captcha.invisible.public.key'] = '6LeiWB8UAAAAAHYnVJM7_-7ap6bXCUNGiv7bBPME';
+    rtCommonProps["images.sizes.small"] =160;
+    rtCommonProps["images.sizes.mobile"] =640;
+    rtCommonProps["images.sizes.tablet"] =1280;
+    rtCommonProps["images.sizes.desktop"] =1920;
+    rtCommonProps["modules.resources.cdn"] =true;
+    rtCommonProps["import.images.storage.imageCDN"] = 'https://le-de.cdn-website.com/';
+    rtCommonProps["feature.flag.runtime.inp.threshold"] =150;
+    rtCommonProps["feature.flag.performance.logs"] =false;
+    rtCommonProps["site.widget.form.captcha.type"] = 'g_recaptcha';
+    rtCommonProps["friendly.captcha.site.key"] = 'FCMGSQG9GVNMFS8K';
+    rtCommonProps["cookiebot.mapbox.consent.category"] = 'marketing';
+    rtCommonProps["termly.mapbox.consent.category"] = 'performance';
+    // feature flags that's used out of runtime module (in  legacy files)
+    rtCommonProps["platform.monolith.personalization.dateTimeCondition.popupMsgAction.moveToclient.enabled"] =true;
+
+    window.rtFlags = {};
+    rtFlags["unsuspendEcwidStoreOnRuntime.enabled"] =false;
+    rtFlags["scripts.widgetCount.enabled"] =true;
+    rtFlags["fnb.animations.tracking.enabled"] =true;
+    rtFlags["ecom.ecwidNewUrlStructure.enabled"] = false;
+    rtFlags["ecom.ecwid.accountPage.emptyBaseUrl.enabled"] = true;
+    rtFlags["ecom.ecwid.accountPage.repeatOrderRedirect.enabled"] = false;
+    rtFlags["ecom.ecwid.pages.links.disable.listeners"] = true;
+    rtFlags["ecom.ecwid.storefrontV3.enabled"] = false;
+    rtFlags["ecom.ecwid.old.store.fix.facebook.share"] = true;
+    rtFlags["ecom.monolith.legacy.js.api.disabled.for.new.sites"] = false;
+    rtFlags["feature.flag.photo.gallery.exact.size"] =true;
+    rtFlags["geocode.search.localize"] =false;
+    rtFlags["feature.flag.runtime.newAnimation.asyncInit.setTimeout.enabled"] =false;
+    rtFlags["twitter.heightLimit.enabled"] = true;
+    rtFlags["runtime.lottieOverflow"] =false;
+    rtFlags["runtime.monitoring.sentry.ignoreErrors"] = "";
+    rtFlags["streamline.monolith.personalization.supportMultipleConditions.enabled"] =false;
+    rtFlags["flex.animation.design.panel.layout"] =true;
+    rtFlags["runtime.cwv.report.cls.enabled"] =false;
+    rtFlags["runtime.cwv.report.lcp.enabled"] =false;
+    rtFlags["runtime.lcp.preload.selfheal.enabled"] =true;
+    rtFlags["runtime.lcp.preload.bootstrap.enabled"] =true;
+    rtFlags["runtime.lcp.preload.monitor.enabled"] =false;
+    rtFlags["runtime.customwidget.heightpin.enabled"] =true;
+    rtFlags["contact.form.useActiveForm"] =true;
+    rtFlags["contact.form.custom.errors.enabled"] =false;
+    rtFlags["runtime.ssr.productStore.internal.observer"] =true;
+    rtFlags["runtime.ssr.productCustomizations"] =true;
+    rtFlags["runtime.ssr.runtime.filter-sort.newFilterSortWidgetWithOptions.enabled"] =true;
+    rtFlags["runtime.ssr.ssrSlider.jumpThreshold.enabled"] =true;
+    rtFlags["runtime.ssr.native.booker.enabled"] =false;
+</script>
+<script src="https://static.cdn-website.com/mnlt/production/6655/_dm/s/rt/dist/scripts/d-js-runtime-flex-package.min.js"  id="d-js-core" defer></script>
+<!-- End of HEAD RT JS Include -->
+<script>
+    document.addEventListener('DOMContentLoaded', () =>
+        window.runtime.initLayout()
+    );
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div style="display:none;" id="P6iryBW0Wu"></div>
+
+<!-- photoswipe markup -->
+
+
+
+
+
+
+
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Schließen (ESC)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Teilen"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Vollbild ein-/ausschalten"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Vergrößern/verkleinern"></button>
+
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Zurück (Pfeil nach links)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Weiter (Pfeil nach rechts)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<div id="fb-root"
+        data-locale="de_DE"></div>
+<!-- Alias: f6da787c73c447b48b2212b22ac715e9 -->
+<script type="text/javascript">
+    
+    Parameters.NavigationAreaParams.MoreButtonText = 'MORE';
+    
+    Parameters.NavigationAreaParams.LessButtonText = 'LESS';
+    Parameters.HomeLinkText = 'Home';
+    </script>
+<!--  End Script tags -->
+<!--  Site Wide Html Markup -->
+<!--  Site Wide Html Markup -->
+</body>
+</html>
