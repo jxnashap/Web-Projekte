@@ -1,4 +1,6 @@
 [
-  { "url": "https://www.golfresort-strandgruen.de/gc-timmendorf-wAssets/img/Golf-Simulationsraum/weblication/wThumbnails/Golfschule_2025_5-a00c4e39-6c98ac18@2048w2x.jpg", "path": ".preview-cache/sg-assets/simulator-raum-1.jpg" },
-  { "url": "https://www.golfresort-strandgruen.de/gc-timmendorf-wAssets/img/Golf-Simulationsraum/weblication/wThumbnails/Golfschule_2025_4-d78befc9-6c98ac18@2048w2x.jpg", "path": ".preview-cache/sg-assets/simulator-raum-2.jpg" }
+  { "url": "https://www.myimmoapp.de/", "path": ".preview-cache/mia/home.html" },
+  { "url": "https://r.jina.ai/https://www.myimmoapp.de/", "path": ".preview-cache/mia/home-jina.md" },
+  { "url": "https://www.myimmoapp.de/sitemap.xml", "path": ".preview-cache/mia/sitemap.xml" },
+  { "url": "https://api.microlink.io/?url=https%3A%2F%2Fwww.myimmoapp.de&screenshot=true&meta=false&viewport.width=1600&viewport.height=2400&embed=screenshot.url", "path": ".preview-cache/mia/shot.png" }
 ]
