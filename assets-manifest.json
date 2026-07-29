@@ -1,0 +1,8 @@
+[
+  { "url": "https://www.era-residence.com/", "path": ".preview-cache/era/home.html" },
+  { "url": "https://r.jina.ai/https://www.era-residence.com/", "path": ".preview-cache/era/home-jina.md" },
+  { "url": "https://api.microlink.io/?url=https://www.era-residence.com/&screenshot=true&meta=false&embed=screenshot.url", "path": ".preview-cache/era/shot.png" },
+  { "url": "https://www.golfresort-strandgruen.de/", "path": ".preview-cache/sg/home.html" },
+  { "url": "https://r.jina.ai/https://www.golfresort-strandgruen.de/", "path": ".preview-cache/sg/home-jina.md" },
+  { "url": "https://api.microlink.io/?url=https://www.golfresort-strandgruen.de/&screenshot=true&meta=false&embed=screenshot.url", "path": ".preview-cache/sg/shot.png" }
+]
