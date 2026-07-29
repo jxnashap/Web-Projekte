@@ -509,3 +509,91 @@ html:not(.js) .preloader,html:not(.js) .curtain{display:none}
   .mq-track{animation:none}
   .plx{transform:none!important}
 }
+
+/* ============================================================
+   v2 · HYPERREAL-ARSENAL
+   Zeichen-Masken, Scrub-Kapitel, Video-Scrub, 3D-Tilt,
+   Spotlight, Video-Hero. Weiterhin nur transform/opacity/
+   clip-path (+ filter:blur auf Text) — GPU-freundlich.
+   ============================================================ */
+
+/* Zeichen-Masken: Blur-zu-scharf + Hochschieben */
+.split .c{display:inline-block;transform:translateY(115%);
+  filter:blur(10px);opacity:0;
+  transition:transform 1s var(--ease),filter .9s ease,opacity .6s ease}
+.split.in .c{transform:none;filter:blur(0);opacity:1}
+
+/* Lebendiger Hero: langsamer Dauer-Zoom nach der Ankunft */
+body.loaded .hero-media img{animation:heroLive 26s ease-in-out 2.8s infinite alternate}
+@keyframes heroLive{from{transform:scale(1.02)}to{transform:scale(1.08)}}
+.hero-media video{object-fit:cover;width:100%;height:100%}
+
+/* Scroll-Scrub-Kapitel: Sektion setzt --p (0…1) via JS */
+.scrub{position:relative;height:320vh}
+.scrub-stage{position:sticky;top:0;height:100svh;overflow:hidden;
+  display:grid;place-items:center;isolation:isolate}
+.scrub-media{position:absolute;inset:0;z-index:-2}
+.scrub-media img,.scrub-media video{width:100%;height:100%;object-fit:cover;
+  transform:scale(calc(1.35 - var(--p,0) * .33));
+  will-change:transform}
+.scrub-stage::before{content:"";position:absolute;inset:0;z-index:-1;
+  background:var(--bg);opacity:calc(.72 - var(--p,0) * .5)}
+.scrub-step{position:absolute;inset:auto var(--pad) clamp(2.5rem,9vh,6rem);
+  max-width:640px;opacity:0;transform:translateY(30px);
+  transition:opacity .6s ease,transform .8s var(--ease)}
+.scrub-step.on{opacity:1;transform:none}
+.scrub-step.center{inset:auto auto 50% 50%;transform:translate(-50%,50%) translateY(30px);text-align:center}
+.scrub-step.center.on{transform:translate(-50%,50%)}
+html:not(.js) .scrub{height:auto}
+html:not(.js) .scrub-stage{position:relative;height:70svh}
+html:not(.js) .scrub-step{position:relative;inset:auto;opacity:1;transform:none;margin:1.5rem var(--pad)}
+
+/* Video-Scrub-Sektion (Apple-Stil) */
+[data-video-scrub] video{pointer-events:none}
+
+/* 3D-Tilt-Karten mit Glanzlicht */
+.tilt3d{position:relative;transform-style:preserve-3d;will-change:transform}
+.tilt3d::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(420px circle at var(--gx,50%) var(--gy,50%),
+    rgba(255,255,255,.14),transparent 62%);
+  opacity:0;transition:opacity .4s ease}
+.tilt3d:hover::after{opacity:1}
+
+/* Cursor-Spotlight für dunkle Sektionen */
+.spot{position:relative}
+.spot::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:radial-gradient(560px circle at var(--sx,50%) var(--sy,38%),
+    rgba(255,255,255,.05),transparent 65%);
+}
+
+/* Gerät-Rahmen für App-Screens (Browser-Chrome-Andeutung) */
+.device{position:relative;border-radius:14px;overflow:hidden;
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.55),0 0 0 1px var(--line);
+  background:var(--bg-2)}
+.device::before{content:"";display:block;height:2.1rem;
+  background:color-mix(in srgb,var(--bg-2) 82%,white 6%);
+  border-bottom:1px solid var(--line)}
+.device::after{content:"";position:absolute;top:.78rem;left:1rem;width:.55rem;height:.55rem;
+  border-radius:50%;background:var(--accent);opacity:.85;
+  box-shadow:1rem 0 0 rgba(241,237,226,.28),2rem 0 0 rgba(241,237,226,.18)}
+.device img,.device video{width:100%;height:auto;display:block}
+
+/* Schwebende Chips/Badges über Medien */
+.float-chip{position:absolute;padding:.65rem 1.1rem;border-radius:.35rem;
+  background:color-mix(in srgb,var(--bg) 78%,transparent);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid var(--line);font:500 .78rem/1.5 var(--sans);color:var(--ivory);
+  box-shadow:0 18px 40px -18px rgba(0,0,0,.5)}
+.float-chip b{color:var(--accent-2);font-weight:600}
+body.loaded .float-chip{animation:chipFloat 7s ease-in-out infinite alternate}
+.float-chip:nth-child(odd){animation-delay:-3.5s}
+@keyframes chipFloat{from{transform:translateY(-6px)}to{transform:translateY(8px)}}
+
+@media(prefers-reduced-motion:reduce){
+  body.loaded .hero-media img,.float-chip{animation:none!important}
+  .scrub{height:auto}
+  .scrub-stage{position:relative;height:70svh}
+  .scrub-step{position:relative;inset:auto;opacity:1;transform:none;margin:1.5rem var(--pad)}
+  .scrub-media img,.scrub-media video{transform:none}
+  .split .c{transform:none;filter:none;opacity:1;transition:none}
+}
