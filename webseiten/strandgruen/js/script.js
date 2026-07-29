@@ -146,13 +146,16 @@
     var dec = (el.getAttribute('data-count').split('.')[1] || '').length;
     var suf = el.getAttribute('data-suffix') || '';
     var dur = 1400, t0 = null;
-    if (prm) { el.textContent = el.getAttribute('data-count').replace('.', ',') + suf; return; }
+    function fmt(v) { /* deutsches Zahlenformat: 32.444 bzw. 6,1 */
+      return dec > 0 ? v.toFixed(dec).replace('.', ',')
+                     : Math.round(v).toLocaleString('de-DE');
+    }
+    if (prm) { el.textContent = fmt(target) + suf; return; }
     function tick(t) {
       if (!t0) t0 = t;
       var p = Math.min((t - t0) / dur, 1);
       var e = 1 - Math.pow(1 - p, 3);
-      var val = (target * e).toFixed(dec).replace('.', ',');
-      el.textContent = val + suf;
+      el.textContent = fmt(target * e) + suf;
       if (p < 1) requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
