@@ -40,6 +40,31 @@ Timmendorfer Strand). Generator: `generatoren/build_strandgruen.py`.
 `unobserve` nach Enthüllung). Hero-Inhalte enthüllen auf `pe:arrived`
 (nach Preloader), nicht erst beim Scrollen.
 
+## v2 · Hyperreal-Arsenal
+
+- **Lerp-Engine**: EIN zentraler rAF-Loop glättet alle scrollgebundenen Werte
+  mit Nachlauf (Faktor ~0.12–0.22) — der „GSAP-Feel" ohne Smooth-Scroll-Hijack.
+  Loop schläft, sobald alle Werte eingerastet sind (CPU-schonend).
+- **Zeichen-Masken** `data-split="chars"`: Buchstaben schieben sich hoch und
+  werden von Blur scharf (`filter:blur(10px)→0`) — nur auf Text einsetzen.
+- **Scroll-Scrub-Kapitel** `[data-scrub]` (Höhe ~320vh, `.scrub-stage` sticky):
+  JS setzt `--p` (0…1); CSS rechnet damit Zoom/Veil (`calc(1.35 - var(--p)*.33)`).
+  `.scrub-step` mit `data-at`/`data-until` blendet Text-Stationen ein.
+- **Video-Scrub** `[data-video-scrub]`: `currentTime` folgt dem Scrollfortschritt
+  geglättet (Apple-Stil). Video mit dichten Keyframes encodieren: `ffmpeg -g 1`.
+- **Video-Hero**: `<video muted loop playsinline data-webm="…" data-mp4="…">` —
+  JS wählt AV1-WebM (klein) oder H.264-MP4 per `canPlayType`.
+- **3D-Tilt** `.tilt3d`: ±7° rotateX/Y + wanderndes Glanzlicht (`--gx/--gy`).
+- **Spotlight** `.spot`: Radial-Licht folgt dem Cursor (nur `pointer:fine`).
+- **Gerät-Rahmen** `.device`: Browser-Chrome-Andeutung für App-Screens.
+- **Float-Chips** `.float-chip`: schwebende Glas-Badges über Medien.
+- **Lebendiger Hero**: Dauerzoom 1.02→1.08 über 26 s nach der Ankunft.
+
+Higgsfield-Rezept (Qualität günstig): erst Nano-Banana-Still (2 Cr.) mit
+exakter Art-Direction, dann Kling 3.0 Turbo als Bild-zu-Video animieren
+(7,5–10 Cr.) — fotorealistische Szene für unter 10 Credits. Loops per
+ffmpeg-xfade, Auslieferung AV1-WebM + H.264-MP4.
+
 ## Fallbacks (Pflicht)
 
 - `html:not(.js)` — alles sichtbar, Preloader/Vorhang weg.
