@@ -1,0 +1,63 @@
+# Propp Elektrotechnik GmbH – Website-Relaunch
+
+Moderner, deploy-fertiger One-Pager für die **Propp Elektrotechnik GmbH** (Lübeck,
+seit 1949). Alle Inhalte, das Logo und die Markenfarbe (**Azur #009EE3 / HKS 47**)
+wurden von der bestehenden Seite `propp.de` übernommen. Kern-Feature ist eine
+**Kabel-Scroll-Animation**: Beim Herunterscrollen zeichnet sich ein Stromkabel (SVG),
+ein leuchtender Funke wandert daran entlang, und die Leistungen erscheinen nacheinander.
+
+## Struktur (mehrseitig)
+
+```
+/
+├── index.html               Startseite: Hero, Kurzprofil, Leistungen am Kabel, Zertifikate, CTA
+├── elektroinstallation.html Detailseite: Energie-/Gebäudetechnik, E-Check, E-Mobilität, Referenzen
+├── blitzschutz.html         Detailseite: äußerer/innerer Blitzschutz, DIN EN 62305, Erder, Referenzen
+├── ueber-uns.html           Firmengeschichte 1949–2024 (Timeline), Team, Zertifikate
+├── karriere.html            Alle Stellen + Bewerbungsformular + Ausbildungstext
+├── kontakt.html             Kontaktformular, Ansprechpartner, Öffnungszeiten, Karte
+├── impressum.html           Impressum (echte Registerdaten übernommen)
+├── datenschutz.html         Datenschutz (Platzhalter-Gerüst – juristisch prüfen)
+├── css/style.css · js/script.js
+├── assets/  (Logo, 75-Jahre-SVG, Zertifikat-Logos, Favicon, Foto)
+└── README.md
+```
+
+Navigation: Start · Leistungen (Dropdown: Elektroinstallation / Blitzschutz) · Über uns ·
+Karriere · Kontakt. Header/Footer auf allen Seiten identisch, aktiver Menüpunkt markiert.
+
+## Kabel-Scroll-Animation (Startseite)
+
+Ein SVG-Pfad (`.cable-line`) mit `stroke-dasharray/‑dashoffset`, gebunden an die
+Scrollposition der Leistungs-Sektion – das Kabel „zeichnet" sich von oben nach unten.
+Ein Funke (`.spark`) folgt via `getPointAtLength(progress · Länge)`. Die Stations-
+Knoten leuchten (Gold), sobald der Funke sie passiert. Die Leistungskarten fahren per
+`IntersectionObserver` nacheinander ein, die Detailpunkte gestaffelt (transition-delay).
+**Fallbacks:** bei `prefers-reduced-motion` und ohne JavaScript werden alle Inhalte
+statisch angezeigt (Kabel-Grafik ausgeblendet); mobil bleibt alles flüssig.
+
+## Deployment (Netlify / Vercel)
+
+Statischer Ordner, kein Build-Schritt. **Netlify:** app.netlify.com → „Add new site" →
+„Deploy manually" → Ordner hineinziehen. **Vercel:** vercel.com/new → als statisches
+Projekt deployen.
+
+## To-dos vor dem Livegang
+
+- **[To-do] SSL erneuern:** Das Zertifikat der aktuellen Domain `propp.de` ist
+  abgelaufen (Seite läuft nur über http). Beim Aufschalten ein gültiges Zertifikat
+  einrichten (bei Netlify/Vercel automatisch via Let's Encrypt).
+- **[PLATZHALTER] Google-Maps-Karte:** aktuell Standard-Embed der Adresse – ggf. durch
+  offizielles Maps-Embed/Place-ID ersetzen und DSGVO-konform (Consent) laden.
+- **[PLATZHALTER] Bewerbungs-/Kontaktformular an Backend anbinden** (z. B. Netlify Forms
+  oder Formspree) – aktuell nur Client-Validierung + Erfolgsmeldung (siehe `js/script.js`).
+- **[ECHTES FOTO EINSETZEN]** Über-uns-Bild gegen ein echtes Team-/Firmenfoto tauschen.
+- **[PLATZHALTER] Datenschutz** juristisch finalisieren; Impressum-Angaben gegenprüfen.
+- Google Fonts bei Bedarf DSGVO-konform lokal einbinden.
+
+## Farben & Logo
+
+- Markenfarbe **Azur #009EE3** (exakt aus Logo/CSS der Originalseite, HKS 47).
+- Ergänzend Navy (#0c2233) für Kontrast-Sektionen, Gold (#d7b469, aus dem 75-Jahre-Logo).
+- Original-Logo (`propp-logo.png`, transparentes PNG) unverändert übernommen.
+- Schrift: Barlow / Barlow Condensed.
