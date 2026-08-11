@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <script>document.documentElement.classList.add("js");</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termin anfragen | Room 23 Tattoo</title>
+  <meta name="description" content="Termin bei Room 23 anfragen: Erzähl uns von deinem Motiv – wir melden uns persönlich. Auch per E-Mail oder WhatsApp.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Termin anfragen | Room 23 Tattoo">
+  <meta property="og:description" content="Termin bei Room 23 anfragen: Erzähl uns von deinem Motiv – wir melden uns persönlich. Auch per E-Mail oder WhatsApp.">
+  <link rel="icon" type="image/jpeg" href="assets/img/logo.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="cine">
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+  <header class="site-header">
+    <div class="header-bar">
+      <button class="menu-btn" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav-overlay">
+        <span class="mb-circle" aria-hidden="true"><span></span><span></span></span>
+        <span class="mb-label">Menü</span>
+      </button>
+      <a class="brand" href="index.html" aria-label="Room23 – Startseite">
+        <img class="logo-img" src="assets/img/logo.jpg" alt="" width="150" height="150">
+        <span class="brand-word">Room 23</span>
+        <span class="brand-sub">Tattoo · Art</span>
+      </a>
+      <a class="header-cta" href="termin.html">
+        <span>Termin anfragen</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <div class="nav-overlay" id="nav-overlay" aria-hidden="true">
+    <div class="nav-overlay-inner">
+      <nav class="main-nav" aria-label="Hauptnavigation">
+        <ul>
+        <li><a href="index.html"><span class="nl-num">01</span><span class="nl-label">Start</span></a></li>
+        <li><a href="stile.html"><span class="nl-num">02</span><span class="nl-label">Stile</span></a></li>
+        <li><a href="team.html"><span class="nl-num">03</span><span class="nl-label">Team</span></a></li>
+        <li><a href="galerie.html"><span class="nl-num">04</span><span class="nl-label">Galerie</span></a></li>
+        <li><a href="studio.html"><span class="nl-num">05</span><span class="nl-label">Studio</span></a></li>
+        <li class="nav-contact-li"><a href="termin.html"><span class="nl-num">·</span><span class="nl-label">Termin anfragen</span></a></li>
+        </ul>
+        <div class="nav-overlay-foot">
+          <span><a href="https://www.instagram.com/room23.tattoo.art/" rel="noopener">@room23.tattoo.art</a></span>
+          <span><a href="impressum.html">Impressum</a> &nbsp;·&nbsp; <a href="datenschutz.html">Datenschutz</a></span>
+        </div>
+      </nav>
+      <div class="nav-visual" aria-hidden="true">
+        <img src="assets/img/werk-floral-1.jpg" alt="" loading="lazy">
+      </div>
+    </div>
+  </div>
+
+  <main id="main">
+
+    <section class="page-hero page-hero-cine">
+      <div class="hero-bg" aria-hidden="true">
+        <img src="assets/hero/termin-poster.jpg" alt="">
+        <div class="hero-veil"></div>
+      </div>
+      <div class="container">
+        <p class="breadcrumbs"><a href="index.html">Start</a> &nbsp;/&nbsp; Termin</p>
+        <h1>Erzähl uns von deinem <em>Motiv.</em></h1>
+        <p class="lead">Ein paar Zeilen genügen: Motiv, Körperstelle, ungefähre Größe – gern mit Referenzbildern. Wir melden uns persönlich.</p>
+      </div>
+    </section>
+
+    <section class="section-tight">
+      <div class="container split" style="align-items:start">
+        <div>
+          <div class="needle-line" data-draw aria-hidden="true"><span></span></div>
+          <form data-validate novalidate>
+            <div class="form-grid">
+              <div class="field"><label for="f-name">Name *</label><input id="f-name" name="name" type="text" autocomplete="name" required><span class="field-error">Bitte nenn uns deinen Namen.</span></div>
+              <div class="field"><label for="f-email">E-Mail *</label><input id="f-email" name="email" type="email" autocomplete="email" required><span class="field-error">Bitte gib eine gültige E-Mail-Adresse an.</span></div>
+              <div class="field"><label for="f-artist">Wunsch-Künstlerin</label><select id="f-artist" name="artist"><option value="">Egal / offen</option><option>Sophia</option><option>Jessi</option><option>Jaqueline</option></select></div>
+              <div class="field"><label for="f-stelle">Körperstelle &amp; Größe</label><input id="f-stelle" name="stelle" type="text" placeholder="z. B. Unterarm, ca. 10 cm"></div>
+              <div class="field full"><label for="f-msg">Dein Motiv *</label><textarea id="f-msg" name="motiv" placeholder="Beschreib dein Motiv, seine Geschichte und was es dir bedeutet …" required></textarea><span class="field-error">Bitte beschreib dein Wunschmotiv.</span></div>
+              <div class="field full consent-wrap"><label class="consent"><input type="checkbox" name="consent" required><span>Ich habe die <a href="datenschutz.html">Datenschutzerklärung</a> gelesen und bin mit der Verarbeitung meiner Angaben zur Beantwortung der Anfrage einverstanden. *</span></label><span class="field-error">Bitte bestätige die Datenschutzerklärung.</span></div>
+            </div>
+            <p style="margin-top:30px"><button class="btn btn-solid" type="submit">Anfrage senden</button></p>
+            <div class="form-note" role="status">Danke dir! Deine Anfrage ist angekommen – wir melden uns persönlich.</div>
+          </form>
+        </div>
+        <div>
+          <div class="mail-sig icon-draw" data-draw aria-hidden="true">
+          <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
+            <rect class="dl" x="16" y="38" width="180" height="92" rx="3"/>
+            <path class="dl" d="M16 42l90 56 90-56"/>
+            <path class="dl dl-gold" d="M208 84 C 244 74, 266 52, 296 22"/>
+            <path class="dl dl-gold" d="M284 34 C 290 28, 294 22, 296 14 M288 40 C 296 38, 302 34, 308 28"/>
+          </svg>
+        </div>
+          <ul class="contact-list">
+            <li><div class="cl-label">E-Mail</div><div class="cl-val"><a href="mailto:jaquelinefrehley@gmail.com" style="color:inherit">jaquelinefrehley@gmail.com</a></div></li>
+            <li><div class="cl-label">WhatsApp</div><div class="cl-val">+49 4521 8451521</div></li>
+            <li><div class="cl-label">Online buchen</div><div class="cl-val"><a href="https://jessiart.tatme.com/" rel="noopener" style="color:inherit">Jessi · tatme</a><br><a href="https://tatme.com/sophiaivy.art" rel="noopener" style="color:inherit">Sophia · tatme</a></div></li>
+            <li><div class="cl-label">Instagram</div><div class="cl-val"><a href="https://www.instagram.com/room23.tattoo.art/" rel="noopener" style="color:inherit">@room23.tattoo.art</a></div></li>
+            <li><div class="cl-label">Studio</div><div class="cl-val">Mühlenstraße 83<br>23552 Lübeck</div></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="footer-lockup"><img class="logo-img" src="assets/img/logo.jpg" alt="" width="150" height="150"><span class="bmark">Room 23</span></span>
+          <p>Privates Tattoo-Studio in der Lübecker Altstadt – Fineline, Florals und Motive mit Geschichte. Ruhig, persönlich, mit Liebe zum feinen Strich.</p>
+        </div>
+        <div>
+          <h4>Studio</h4>
+          <ul>
+            <li><a href="stile.html">Stile</a></li>
+            <li><a href="team.html">Team</a></li>
+            <li><a href="galerie.html">Galerie</a></li>
+            <li><a href="studio.html">Studio</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Termine</h4>
+          <ul>
+            <li><a href="termin.html">Termin anfragen</a></li>
+            <li><a href="mailto:jaquelinefrehley@gmail.com">jaquelinefrehley@gmail.com</a></li>
+            <li>WhatsApp: +49 4521 8451521</li>
+            <li>Buchung: <a href="https://jessiart.tatme.com/" rel="noopener">jessiart.tatme.com</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Folgen</h4>
+          <ul>
+            <li><a href="https://www.instagram.com/room23.tattoo.art/" rel="noopener">@room23.tattoo.art</a></li>
+            <li><a href="https://www.instagram.com/sophia_ivy.art/" rel="noopener">@sophia_ivy.art</a></li>
+            <li><a href="https://www.instagram.com/jessi.art.tattoo/" rel="noopener">@jessi.art.tattoo</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span data-year>2026</span> Room 23 · Tattoo Art · Mühlenstraße 83 · 23552 Lübeck</span>
+        <span><a href="impressum.html">Impressum</a> &nbsp;·&nbsp; <a href="datenschutz.html">Datenschutz</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
