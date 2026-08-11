@@ -440,7 +440,7 @@ section{position:relative}
 .cta-panel{position:relative;min-height:82svh;display:grid;place-items:center;
   overflow:hidden;isolation:isolate;text-align:center;padding:var(--gap) var(--pad)}
 .cta-panel .cp-bg{position:absolute;inset:-8% 0;z-index:-2}
-.cta-panel .cp-bg img{width:100%;height:100%;object-fit:cover}
+.cta-panel .cp-bg img,.cta-panel .cp-bg video{width:100%;height:100%;object-fit:cover}
 .cta-panel::before{content:"";position:absolute;inset:0;z-index:-1;
   background:rgba(14,33,25,.62)}
 .cp-inner{display:flex;flex-direction:column;align-items:center;gap:1.8rem;max-width:900px}
