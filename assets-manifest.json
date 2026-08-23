@@ -1,12 +1,5 @@
 [
-  { "url": "https://www.das-auto-wischnat.de/gebrauchtwagen", "path": ".preview-cache/wi/gebrauchtwagen.html" },
-  { "url": "https://www.das-auto-wischnat.de/ueber", "path": ".preview-cache/wi/ueber.html" },
-  { "url": "https://www.das-auto-wischnat.de/partner", "path": ".preview-cache/wi/partner.html" },
-  { "url": "https://www.das-auto-wischnat.de/impressum", "path": ".preview-cache/wi/impressum.html" },
-  { "url": "https://www.das-auto-wischnat.de/datenschutzerklaerung", "path": ".preview-cache/wi/datenschutz.html" },
-  { "url": "https://home.mobile.de/DASAUTOGERDWISCHNAT", "path": ".preview-cache/wi/mobile-de.html" },
-  { "url": "https://r.jina.ai/https://home.mobile.de/DASAUTOGERDWISCHNAT", "path": ".preview-cache/wi/mobile-de-jina.md" },
-  { "url": "https://www.mobile.de/bewertungen/DASAUTOGERDWISCHNAT", "path": ".preview-cache/wi/bewertungen.html" },
-  { "url": "https://api.microlink.io/?url=https%3A%2F%2Fwww.das-auto-wischnat.de%2Fueber&screenshot=true&meta=false&viewport.width=1600&viewport.height=2400&embed=screenshot.url", "path": ".preview-cache/wi/shot-ueber.png" },
-  { "url": "https://api.microlink.io/?url=https%3A%2F%2Fwww.das-auto-wischnat.de%2Fgebrauchtwagen&screenshot=true&meta=false&viewport.width=1600&viewport.height=2400&embed=screenshot.url", "path": ".preview-cache/wi/shot-gebrauchtwagen.png" }
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260823_162849_d15ff885-1287-42ed-b668-eeb5468ace3f.png", "path": ".preview-cache/wi-assets/studio-still.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260823_162903_276abeef-34e8-4f65-94a6-6930a13fc3a3.png", "path": ".preview-cache/wi-assets/hof-still.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260823_162911_f7661a91-2e39-4626-9711-0e7d29792596.png", "path": ".preview-cache/wi-assets/key-still.png" }
 ]
