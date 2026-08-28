@@ -11,6 +11,10 @@ Repo für alle Website-Projekte. Struktur:
 - `webseiten/myimmoapp/` – MyImmo-SaaS für private Vermieter (Premium-Estate v2,
   Fraunces/Outfit, Gold/Charcoal, Higgsfield-Video-Hero + Scroll-Scrub,
   echte App-Screenshots) · PR #8
+- `webseiten/wischnat/` – Gebrauchtwagenhändler „das auto" Gerd Wischnat, Alt Mölln
+  (Ferrari-Style-Referenz: schwarzes Void, Rosso nur Hover, Versalien-Flüstern,
+  0px-Radius; v2-Motion; Higgsfield-Studio/Hof-Videos; Generator
+  `baukaesten/premium-estate/generatoren/build_wischnat.py`)
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
