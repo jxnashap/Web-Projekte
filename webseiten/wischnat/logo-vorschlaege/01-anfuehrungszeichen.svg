@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+  <style>text{font-family:Inter,'Helvetica Neue',Arial,sans-serif}</style>
+  <text x="300" y="102" text-anchor="middle" font-size="58" font-weight="500" fill="#ffffff" letter-spacing="1">
+    <tspan fill="#da291c">&#8222;</tspan>das auto<tspan fill="#da291c">&#8220;</tspan></text>
+  <line x1="150" y1="139" x2="228" y2="139" stroke="#303030" stroke-width="1"/>
+  <line x1="372" y1="139" x2="450" y2="139" stroke="#303030" stroke-width="1"/>
+  <text x="300" y="143" text-anchor="middle" font-size="12" font-weight="400" fill="#8f8f8f" letter-spacing="5">GERD WISCHNAT</text>
+</svg>

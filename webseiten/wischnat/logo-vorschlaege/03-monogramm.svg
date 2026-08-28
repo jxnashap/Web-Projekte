@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+  <style>text{font-family:Inter,'Helvetica Neue',Arial,sans-serif}</style>
+  <g transform="translate(120,40)">
+    <path d="M0 0 H120 V120 H0 Z" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+    <path d="M120 0 H104 V16 H120 Z" fill="#da291c" stroke="none"/>
+    <text x="60" y="86" text-anchor="middle" font-size="64" font-weight="500" fill="#ffffff">da</text>
+  </g>
+  <g transform="translate(280,0)">
+    <text x="0" y="102" font-size="44" font-weight="500" fill="#ffffff" letter-spacing="1">das auto</text>
+    <line x1="2" y1="122" x2="196" y2="122" stroke="#303030" stroke-width="1"/>
+    <text x="0" y="146" font-size="11" font-weight="400" fill="#8f8f8f" letter-spacing="4.5">GERD WISCHNAT · SEIT 1975</text>
+  </g>
+</svg>
