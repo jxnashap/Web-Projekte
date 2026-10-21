@@ -339,7 +339,8 @@
     if (!vReady) { if (vQueue.indexOf(v) < 0) vQueue.push(v); return; }
     if (v.dataset.loaded) return;
     v.dataset.loaded = '1';
-    if (v.querySelector('source')) { v.preload = 'auto'; v.load(); return; }
+    // Statische Quellen (Referenzvideos): nicht neu laden, sonst holt der Browser die Datei doppelt. play() lädt nach.
+    if (v.querySelector('source')) { if (v.preload === 'none') v.preload = 'metadata'; return; }
     var s = document.createElement('source');
     if (canAv1 && v.dataset.webm) { s.src = v.dataset.webm; s.type = 'video/webm'; }
     else { s.src = v.dataset.mp4; s.type = 'video/mp4'; }

@@ -722,7 +722,7 @@ def build_home():
     </div>
   </div>
 </section>
-<div class="marquee" role="region" aria-label="Kunden"><a href="/referenzen" aria-label="Alle Referenzen ansehen"><div class="mq-track">{mq}</div></a></div>
+<div class="marquee" role="region" aria-label="Kunden"><a href="/referenzen"><span class="sr-only">Alle Referenzen ansehen: </span><div class="mq-track">{mq}</div></a></div>
 
 <section class="sec panel" data-scene="SZENE 02 · REFERENZEN">
   <div class="wrap">{sec_head("02", "Referenzen", "Von der Förde<br><em>bis an die Bucht.</em>", "Eine Auswahl aktueller Videos für unsere Kunden in Kiel und Travemünde. Wählt ein Video, um zu sehen, wie es aufgebaut ist.", ("/referenzen", "Alle Referenzen"))}</div>

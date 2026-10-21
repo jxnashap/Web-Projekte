@@ -290,7 +290,7 @@ section{position:relative}
 /* Aussage mit Wort-Aufhellung beim Scrollen */
 .say{font:800 clamp(2rem,5.2vw,4.8rem)/1.02 var(--display);font-stretch:76%;text-transform:uppercase;color:var(--fg);
   max-width:15em}
-.say .sw{opacity:.3;transition:opacity .25s linear}
+.say .sw{opacity:.4;transition:opacity .25s linear}
 .say .sw.on{opacity:1}
 .say em{font-style:normal;color:var(--red)}
 html:not(.js) .say .sw{opacity:1}
