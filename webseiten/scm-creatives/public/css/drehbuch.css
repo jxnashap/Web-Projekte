@@ -734,6 +734,7 @@ html.still *,html.still *::before,html.still *::after{animation-play-state:pause
 
 /* Lange Wörter, kleine Viewports, große Schrift */
 .d1,.d2,.d3,h3,.say{-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word}
+.split [data-c]::before{content:attr(data-c)}
 .split .hy:not(.on){display:none}
 /* Seitenköpfe mit Video daneben: kleinere Display-Größe, damit lange Wörter ganz bleiben */
 .head-grid .d1,.case-head .d1{font-size:clamp(3rem,6vw,6.6rem)}

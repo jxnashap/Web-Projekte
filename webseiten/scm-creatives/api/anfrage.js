@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 const LABELS = {
   branche: { gastronomie: 'Gastronomie', immobilien: 'Immobilien', handwerk: 'Handwerk', unternehmen: 'Unternehmen', andere: 'Andere Branche' },
   ziel: { gaeste: 'Mehr Gäste oder Kunden', anfragen: 'Mehr Anfragen', mitarbeiter: 'Mitarbeitende finden', bekanntheit: 'Bekannter werden in der Region', mehreres: 'Mehreres davon' },
-  paket: { '4': '4 Videos im Monat (Starter)', '8': '8 Videos im Monat (Wachstum)', '12': '12 Videos im Monat (Pro)', offen: 'Weiß ich noch nicht' },
+  paket: { '4': '4 Videos im Monat', '8': '8 Videos im Monat', '12': '12 Videos im Monat', offen: 'Wissen wir noch nicht' },
   extras: { posting: 'Posting und Community', ads: 'Werbeanzeigen', recruiting: 'Recruiting-Videos', fotos: 'Fotos oder Imagefilm' },
   start: { sofort: 'So bald wie möglich', '1-3': 'In 1 bis 3 Monaten', spaeter: 'Später, erst mal informieren' },
   region: { kiel: 'Kiel und Umgebung', luebeck: 'Lübeck und Lübecker Bucht', woanders: 'Woanders' },
@@ -17,11 +17,14 @@ const SHORT = {
   start: { sofort: 'sofort', '1-3': '1 bis 3 Monate', spaeter: 'später' },
 };
 const MAX_ITEMS = 8;
-const MAIL_RE = /^[^\s@,;<>"()]+@[^\s@,;<>"()]+\.[a-z]{2,}$/i;
+// Nur übliche Zeichen: verhindert z. B. mailto-Parameter (?subject=…) im Antworten-Knopf.
+const MAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 const list = (v) => [].concat(v == null ? [] : v).slice(0, MAX_ITEMS);
 const clean = (v, max = 1500) => String(Array.isArray(v) ? list(v).join(', ') : (v == null ? '' : v)).replace(/[\r\n]+/g, ' ').trim().slice(0, max);
-const label = (k, v) => list(v).map((x) => (LABELS[k] && LABELS[k][x]) || clean(x, 80)).filter(Boolean).join(', ');
+// Nur eigene Schlüssel nachschlagen (sonst liefert z. B. "toString" eine Funktion).
+const known = (k, x) => !!LABELS[k] && Object.prototype.hasOwnProperty.call(LABELS[k], x);
+const label = (k, v) => list(v).map((x) => (known(k, x) ? LABELS[k][x] : clean(x, 80))).filter(Boolean).join(', ');
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const one = (v) => clean(Array.isArray(v) ? v[0] : v, 40);
 
@@ -43,6 +46,7 @@ function phone(tel) {
   if (d.startsWith('00')) d = '+' + d.slice(2);
   else if (d.startsWith('0')) d = '+49' + d.slice(1);
   else if (!d.startsWith('+')) d = '+49' + d;
+  if (d.startsWith('+490')) d = '+49' + d.slice(4); // „+49 (0) 431 …“
   return d;
 }
 
@@ -64,16 +68,15 @@ module.exports = async (req, res) => {
   if (!d || typeof d !== 'object') d = {};
   const reply = (status, ok, msg) => (wantsJson
     ? res.status(status).json({ ok, msg })
-    : res.redirect(303, ok ? '/danke' + (LABELS.branche[one(d.branche)] ? '?b=' + one(d.branche) : '') : '/kontakt?fehler=1#fehler'));
+    : res.redirect(303, ok ? '/danke' + (known('branche', one(d.branche)) ? '?b=' + one(d.branche) : '') : '/kontakt?fehler=1#fehler'));
 
-  // Nur Anfragen von der eigenen Seite annehmen.
-  const origin = req.headers.origin;
+  // Nur Anfragen von der eigenen Seite annehmen. Browser senden bei POST den Origin-Header,
+  // ersatzweise zählt der Referer. Fehlt beides, ist es kein Formular aus dem Browser.
+  const from = req.headers.origin || req.headers.referer || '';
   const host = req.headers['x-forwarded-host'] || req.headers.host;
-  if (origin) {
-    let ok = false;
-    try { ok = new URL(origin).host === host; } catch (e) { ok = false; }
-    if (!ok) return reply(403, false, 'Unzulässige Herkunft.');
-  }
+  let sameSite = false;
+  try { sameSite = !!from && new URL(from).host === host; } catch (e) { sameSite = false; }
+  if (!sameSite) return reply(403, false, 'Unzulässige Herkunft.');
 
   // Spam-Schutz: Honeypot-Feld und Mindestzeit (Bots füllen in Sekundenbruchteilen aus).
   if (clean(d.website)) return reply(200, true);
@@ -122,7 +125,8 @@ module.exports = async (req, res) => {
   ].filter(([, v]) => v);
 
   const brancheTxt = clean(d.andere, 60) || label('branche', d.branche);
-  const meta = [brancheTxt, SHORT.paket[paket], SHORT.start[start], ort || label('region', d.region)].filter(Boolean).join(' · ');
+  const short = (k, x) => (Object.prototype.hasOwnProperty.call(SHORT[k], x) ? SHORT[k][x] : '');
+  const meta = [brancheTxt, short('paket', paket), short('start', start), ort || label('region', d.region)].filter(Boolean).join(' · ');
   const subject = `[${tier}] 3 Testvideos: ${name}${betrieb ? ', ' + betrieb : ''}${meta ? ' (' + meta + ')' : ''}`.slice(0, 200);
   const text = `${tierText}\n\n` + rows.map(([k, v]) => `${k}: ${v}`).join('\n') + '\n\nGesendet über scm-creatives.de/anfrage';
 
@@ -146,7 +150,9 @@ ${actions ? `<p style="margin:0 0 16px">${actions}</p>` : ''}
       host: SMTP_HOST,
       port: Number(SMTP_PORT) || 465,
       secure: (Number(SMTP_PORT) || 465) === 465,
+      requireTLS: (Number(SMTP_PORT) || 465) !== 465, // 587: nur mit STARTTLS anmelden
       auth: { user: SMTP_USER, pass: SMTP_PASS },
+      connectionTimeout: 5000, greetingTimeout: 5000, socketTimeout: 8000,
     });
   try {
     const info = await transport.sendMail({

@@ -135,17 +135,17 @@
         segs(word).forEach(function (seg) {
           var w = document.createElement('span'); w.className = 'w';
           var hy = null;
-          if (seg.shy) { hy = document.createElement('span'); hy.textContent = '-'; shys.push(hy); }
+          if (seg.shy) { hy = document.createElement('span'); hy.setAttribute('data-c', '-'); shys.push(hy); }
           if (mode === 'chars') {
             Array.from(seg.t).forEach(function (ch) {
               var c = document.createElement('span'); c.className = 'c';
-              if (keep) { var k = keep.cloneNode(false); k.textContent = ch; c.appendChild(k); } else c.textContent = ch;
+              if (keep) { var k = keep.cloneNode(false); k.setAttribute('data-c', ch); c.appendChild(k); } else c.setAttribute('data-c', ch);
               w.appendChild(c);
             });
             if (hy) { hy.className = 'c hy'; w.appendChild(hy); }
           } else {
             var inner = document.createElement('span');
-            if (keep) { var k2 = keep.cloneNode(false); k2.textContent = seg.t; inner.appendChild(k2); } else inner.textContent = seg.t;
+            if (keep) { var k2 = keep.cloneNode(false); k2.setAttribute('data-c', seg.t); inner.appendChild(k2); } else inner.setAttribute('data-c', seg.t);
             if (hy) { hy.className = 'hy'; inner.appendChild(hy); }
             w.appendChild(inner);
           }
@@ -331,7 +331,8 @@
   })();
   var vReady = document.readyState === 'complete', vQueue = [];
   function play(v) {
-    if ((prm || still) && !v.hasAttribute('data-force')) return;
+    if ((prm || still || lowData) && !v.hasAttribute('data-force')) return;
+    if (!vReady && !v.hasAttribute('data-force')) return; // der load-Handler startet sichtbare Videos nach
     var p = v.play(); if (p && p.catch) p.catch(function () {});
   }
   function loadVideo(v) {
@@ -422,6 +423,7 @@
      ============================================================ */
   var form = document.querySelector('form.quiz');
   if (form) {
+    form.noValidate = true; // eigene Prüfung je Schritt; ohne JS greift die Browser-Prüfung
     var stepsQ = Array.prototype.slice.call(form.querySelectorAll('.q-step'));
     var cur = 0, t0 = Date.now(), byPointer = false;
     var bar = form.querySelector('.q-bar'), cnt = form.querySelector('.q-count');
@@ -429,7 +431,7 @@
     var msg = form.querySelector('.q-msg');
     var tField = form.querySelector('input[name="t"]');
     var other = form.querySelector('.field-andere');
-    var MAIL_RE = /^[^\s@,;<>"()]+@[^\s@,;<>"()]+\.[a-z]{2,}$/i;
+    var MAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
     function val(n) { var c = form.querySelector('[name="' + n + '"]:checked'); return c ? c.value : ''; }
     function syncOther() { if (other) other.hidden = val('branche') !== 'andere'; }
     function show(i, focus) {
@@ -533,9 +535,9 @@
       var data = {};
       new FormData(form).forEach(function (v, k) { if (data[k]) data[k] = [].concat(data[k], v); else data[k] = v; });
       try {
-        var ref = document.referrer && new URL(document.referrer);
-        if (ref && ref.host === location.host) data.quelle = ref.pathname;
-        var utm = new URLSearchParams(location.search).get('utm_source');
+        var ref = document.referrer && new URL(document.referrer), same = !!ref && ref.host === location.host;
+        if (same) data.quelle = ref.pathname + ref.search;
+        var utm = new URLSearchParams(location.search).get('utm_source') || (same ? new URLSearchParams(ref.search).get('utm_source') : null);
         if (utm) data.utm = utm;
       } catch (x) {}
       send.disabled = true; send.querySelector('span').textContent = 'Wird gesendet …';

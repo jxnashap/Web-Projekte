@@ -38,11 +38,20 @@ const server = http.createServer((req, res) => {
         const out = [];
         document.querySelectorAll('.split .w').forEach(w => {
           // Zeichen (.c) bzw. Wort-Innenteil einzeln vermessen: unterschiedliche Zeilen = Bruch im Wort
-          const parts = w.querySelectorAll('.c').length ? [...w.querySelectorAll('.c')] : [...w.children];
-          const tops = new Set();
-          parts.forEach(el => { const r = document.createRange(); r.selectNodeContents(el);
-            [...r.getClientRects()].filter(x => x.width > 1).forEach(x => tops.add(Math.round(x.top / 8))); });
-          if (tops.size > 1) out.push(w.textContent);
+          // Zeichenmodus: Zeichen auf verschiedenen Zeilen. Wortmodus: Wort-Box höher als eine Zeile.
+          // Der sichtbare Text steht in ::before (data-c), deshalb Element-Boxen statt Text-Ranges.
+          const chars = [...w.querySelectorAll('.c')].filter(el => !el.classList.contains('hy'));
+          const word = [...chars.map(el => el.getAttribute('data-c') || (el.firstElementChild && el.firstElementChild.getAttribute('data-c')) || '')].join('')
+            || [...w.querySelectorAll('[data-c]')].map(el => el.getAttribute('data-c')).join('');
+          let broken = false;
+          if (chars.length) {
+            const tops = new Set(chars.map(el => Math.round(el.getBoundingClientRect().top / 8)));
+            broken = tops.size > 1;
+          } else {
+            const inner = w.firstElementChild, fs = parseFloat(getComputedStyle(w).fontSize);
+            broken = !!inner && inner.getBoundingClientRect().height > fs * 1.6;
+          }
+          if (broken) out.push(word);
         });
         return out;
       });

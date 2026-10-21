@@ -34,16 +34,15 @@ webseiten/scm-creatives/
 | Darsteller, wenn das Team nicht vor die Kamera will | `FAQ_OBJ`, Branchen-FAQ | 4× |
 | Dauer eines Drehtermins, Vorlauf für Aktionen | `FAQ_*`, `BRANCHEN["gastronomie"]` | |
 | Einwilligungsvorlage für Mitarbeitende im Video | `FAQ_*` | |
+| Einwilligung aller gezeigten Personen (Darsteller, Marc und Leon von BS, Mitarbeitende der Kunden) für die Nutzung der Videos auf dieser Website | schriftlich bei SCM ablegen, das Briefing belegt nur die Freigabe durch die Kunden | |
+| Auf der Seite mit „von SCM bestätigen" markiert: Freigabe der Videos vor Veröffentlichung, Schritt 6 „Auswerten und nachschärfen", Plattformen für Werbeanzeigen, Verzicht auf Verbraucherschlichtung (Impressum), Vertrag zur Auftragsverarbeitung mit Vercel (Datenschutz) | jeweilige Stelle im Generator (`STEPS`, `FAQ_*`, `build_leistungen()`, `build_legal()`) | 6× |
 | Logo als Vektordatei (Normalversion) | `public/img/logo.svg`, `logo-dark.svg` ersetzen (aktuell nachgebaute Wortmarke), danach `favicon.svg`, `favicon-96.png`, `favicon.ico`, `apple-touch-icon.png`, `og*.jpg` neu erzeugen | |
 
 ## 2. Von SCM zu bestätigen (steht so auf der Seite, ist aber nicht belegt)
 
 Diese Aussagen sind sinnvolle Annahmen aus Gespräch und Instagram, aber nicht ausdrücklich bestätigt. Bitte einmal lesen und Bescheid geben, was nicht stimmt.
 
-- **Freigabe:** „Ihr seht jedes Video vor der Veröffentlichung" (Ablauf Schritt 4, FAQ).
-- **Schritt 6 „Auswerten und nachschärfen"** gehört zum Ablauf (So arbeiten wir, Startseite).
-- **Paketnamen** Starter, Wachstum, Pro und das Etikett „Unsere Empfehlung" beim 8er-Paket.
-- **Werbeanzeigen** auf Instagram und Facebook (Leistungen). Andere Plattformen ergänzen oder streichen.
+- **Pakete:** Die Pakete heißen nach ihrem Rhythmus („Einmal pro Woche", „Zweimal pro Woche", „Dreimal pro Woche"), das 8er-Paket trägt das Etikett „Der Mittelweg". Eigene Paketnamen oder eine echte Empfehlung von SCM hier eintragen (`packs()`).
 - **Gäste im Bild** nur mit Einverständnis (Branche Gastronomie, FAQ).
 - **Zahlen von Instagram, Stand 21.10.2026:** 209 Likes und 24 Kommentare beim Maler-Sketch, 20 Kommentare beim Mittagstisch-Sketch. Vor dem Livegang aktualisieren oder Stand-Datum anpassen (`build_home()`, `BRANCHEN[...]["proof"]`).
 - **KI-Hinweis bei BS Immobiliengruppe:** Auf der Seite steht, dass Teile der beiden BS-Videos mithilfe von KI erstellt wurden (wie im Original auf Instagram gekennzeichnet). Bitte bestätigen, sonst Feld `ki` in `REELS` entfernen.
@@ -68,7 +67,6 @@ Alle Dateien heißen `ki-platzhalter-*` und tragen auf der Seite das Etikett „
 | `img/ki-platzhalter-skript` | Vision |
 | `img/ki-platzhalter-kiel-foerde` + Video | Angebots-Block auf vielen Seiten, 3 Testvideos (Kopf-Video), Über uns |
 | `img/ki-platzhalter-luebecker-bucht` | Vision (Kopf) |
-| `img/ki-platzhalter-weinbar` | Referenz Die Drei |
 
 ## 5. Vercel einrichten (von Hand, im SCM-Konto)
 
@@ -88,13 +86,14 @@ Das Projekt konnte aus dieser Umgebung nicht direkt angelegt werden (fehlende Be
 5. Deploy, dann auf der Vorschau-Adresse (`*.vercel.app`) eine Testanfrage über `/anfrage` schicken und den Eingang prüfen. Vorschau-Adressen senden `noindex`, Google nimmt sie nicht auf.
 6. **Domains:** `scm-creatives.de` als Hauptdomain hinzufügen, DNS beim Registrar wie von Vercel angezeigt eintragen. `www.scm-creatives.de` und (falls gekauft) `scmcreatives.de` ebenfalls hinzufügen, die Weiterleitung auf die Hauptdomain steht schon in `vercel.json`.
 7. Nach dem Livegang in den Domain-Einstellungen die Produktions-Adresse `*.vercel.app` auf `scm-creatives.de` umleiten.
-8. **Firewall → Rate Limiting:** Regel für Pfad `/api/anfrage`, Methode POST, z. B. 5 Anfragen je IP in 10 Minuten, Aktion „Deny" oder „Challenge". Die Function drosselt zusätzlich selbst, aber nur pro Instanz.
+8. **Pflicht vor dem Livegang · Firewall → Rate Limiting:** Regel für Pfad `/api/anfrage`, Methode POST, 5 Anfragen je IP in 10 Minuten, Aktion „Deny". Die Function prüft zusätzlich Herkunft, Honeypot, Ausfülldauer und drosselt selbst, aber nur pro Instanz.
 
 ## 6. Nach dem Livegang
 
 - [ ] Google Search Console: Domain-Property per DNS-TXT bestätigen, `https://scm-creatives.de/sitemap.xml` einreichen, Startseite und Referenzseiten zur Indexierung anmelden
 - [ ] Google-Unternehmensprofil als Servicegebiet (Kiel, Lübecker Bucht) ohne Adresse anlegen
-- [ ] Instagram-Bio auf `https://scm-creatives.de/testvideos?utm_source=instagram` verlinken (die Quelle steht dann in jeder Anfrage-Mail)
+- [ ] Firewall-Regel aus Schritt 5.8 aktiv und mit einer Testanfrage geprüft
+- [ ] Instagram-Bio auf `https://scm-creatives.de/testvideos?utm_source=instagram` verlinken. Die Kampagnenquelle steht in der Anfrage-Mail, wenn die Anfrage auf dieser Seite oder direkt von ihr aus gestartet wird (eine Seite weiter geht sie verloren, dafür wird bewusst nichts im Browser gespeichert).
 - [ ] Optional: Vercel Web Analytics (cookielos) aktivieren, dann Absatz in der Datenschutzerklärung ergänzen
 - [ ] Impressum und Datenschutz rechtlich prüfen lassen
 

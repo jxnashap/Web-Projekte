@@ -1,50 +1,50 @@
 {
  "/": {
-  "h": "8c25f9c43b54",
+  "h": "a461985be9be",
   "d": "2026-10-21"
  },
  "/leistungen": {
-  "h": "c71aa62bf3ca",
+  "h": "e740f7b2bfa3",
   "d": "2026-10-21"
  },
  "/branchen": {
-  "h": "e5e865ddde6e",
+  "h": "7ec6a07fa4d0",
   "d": "2026-10-21"
  },
  "/branchen/gastronomie": {
-  "h": "2b6decc154b1",
+  "h": "3b39f38769d3",
   "d": "2026-10-21"
  },
  "/branchen/immobilien": {
-  "h": "24d83fa3008e",
+  "h": "81631e4fb836",
   "d": "2026-10-21"
  },
  "/branchen/handwerk": {
-  "h": "b5fcd62fc12c",
+  "h": "9b795459cbc7",
   "d": "2026-10-21"
  },
  "/branchen/unternehmen": {
-  "h": "20ee8f8fd8b9",
+  "h": "b5eae6d3775f",
   "d": "2026-10-21"
  },
  "/referenzen": {
-  "h": "2fee7919b804",
+  "h": "f0583a137e60",
   "d": "2026-10-21"
  },
  "/referenzen/bs-immobiliengruppe": {
-  "h": "597ea3621de2",
+  "h": "519624959286",
   "d": "2026-10-21"
  },
  "/referenzen/maler-rohwer": {
-  "h": "bd1546d36502",
+  "h": "28b3811f00b2",
   "d": "2026-10-21"
  },
  "/referenzen/jan-hein-klaas-pit": {
-  "h": "404ea4d7c671",
+  "h": "76784f87a838",
   "d": "2026-10-21"
  },
  "/referenzen/das-kleine-steakhouse": {
-  "h": "95b2ae519318",
+  "h": "6e980e48c291",
   "d": "2026-10-21"
  },
  "/referenzen/kletterwald-travemuende": {
@@ -52,19 +52,19 @@
   "d": "2026-10-21"
  },
  "/referenzen/die-drei": {
-  "h": "c56b85af0e91",
+  "h": "6fc2e83ec1cd",
   "d": "2026-10-21"
  },
  "/so-arbeiten-wir": {
-  "h": "ddf95fe87fc5",
+  "h": "46d8e780312a",
   "d": "2026-10-21"
  },
  "/pakete": {
-  "h": "4f0546766cf4",
+  "h": "d86e31ee7bd4",
   "d": "2026-10-21"
  },
  "/testvideos": {
-  "h": "750e98685174",
+  "h": "4b453968762f",
   "d": "2026-10-21"
  },
  "/vision": {
@@ -76,19 +76,19 @@
   "d": "2026-10-21"
  },
  "/faq": {
-  "h": "9c1efaaec31b",
+  "h": "5a767d33cc32",
   "d": "2026-10-21"
  },
  "/kontakt": {
-  "h": "41a8a0cc8057",
+  "h": "69d96784882d",
   "d": "2026-10-21"
  },
  "/anfrage": {
-  "h": "4ad6d01fb648",
+  "h": "3f543aafd8c4",
   "d": "2026-10-21"
  },
  "/danke": {
-  "h": "84104f352f47",
+  "h": "ad54a3c719e6",
   "d": "2026-10-21"
  },
  "/404": {
@@ -96,11 +96,11 @@
   "d": "2026-10-21"
  },
  "/impressum": {
-  "h": "c948e1d72862",
+  "h": "b217a7984b73",
   "d": "2026-10-21"
  },
  "/datenschutz": {
-  "h": "8016b11a0d03",
+  "h": "35c4ee9bca28",
   "d": "2026-10-21"
  }
 }

@@ -107,7 +107,7 @@ REELS = {
         titel="„Manche Gespräche muss man einfach für einen guten Mittagstisch opfern“",
         hook="POV: Du bist mit den Augen mal wieder ganz woanders",
         beats=[("00:00", "Hook", "Text im Bild: „POV: Du bist mit den Augen mal wieder ganz woanders“, dazu der volle Teller."),
-               ("00:00", "Wiedererkennen", "Einer erzählt am Tisch von seinem letzten Date. Alle kennen diesen Freund."),
+               ("00:01", "Wiedererkennen", "Einer erzählt am Tisch von seinem letzten Date. Alle kennen diesen Freund."),
                ("00:11", "Steigerung", "Die anderen müssen plötzlich „kurz aufs Klo“."),
                ("00:17", "Pointe", "Ein Fremder fragt nach dem freien Platz und bekommt ihn sofort. Prioritäten sind Prioritäten."),
                ("Unterm Video", "Aufruf", "„Wen würdest du für unseren Mittagstisch in Kiel sitzen lassen?“")],
@@ -144,7 +144,7 @@ REELS = {
         beats=[("00:00", "Hook", "„Du suchst eine Immobilie rund um Kiel? Dann solltest du diese Orte auf dem Schirm haben.“"),
                ("00:04", "Struktur", "Drei Orte, eingeblendet mit Karten-Pins: Kronshagen, Schwentinental, Eckernförde."),
                ("00:07", "Nutzen", "Zwei Orte im Detail, die Argumente als Einblendung: Preise, Minuten bis in die Innenstadt, Kitas und Schulen, Einkauf, Ärzte."),
-               ("00:26", "Aufruf", "„Schreibt uns jetzt in die Kommentare, welchen Ort ihr als nächstes analysiert haben wollt.“ Daraus wird eine Serie.")],
+               ("00:26", "Aufruf", "„Schreibt uns jetzt in die Kommentare, welchen Ort ihr als nächstes analysiert haben wollt.“ So kann daraus eine Serie werden.")],
         stats=None, ki=True),
     "bs-entweder-oder": dict(
         kunde="BS Immobiliengruppe", kurz="BS Immobiliengruppe", client="bs-immobiliengruppe",
@@ -182,7 +182,7 @@ CLIENTS = {
 }
 
 BRANCHEN = {
-    "gastronomie": dict(name="Gastronomie", short="Gastro", img="gastro-dreh", im="in der Gastronomie", aus="aus der Gastronomie",
+    "gastronomie": dict(name="Gastronomie", short="Gastro", fuer="euren Gastrobetrieb", img="gastro-dreh", im="in der Gastronomie", aus="aus der Gastronomie",
         head_reel="jan-hein-klaas-pit",
         seo_h1="Social-Media-Videos und Reels für die Gastronomie in Kiel und an der Lübecker Bucht",
         h1="Volle Tische.<br><em>Volle Kommentare.</em>",
@@ -202,18 +202,18 @@ BRANCHEN = {
              ("Können wir Aktionen kurzfristig bewerben?", f"Ja, wenn wir den Termin früh genug kennen. Sagt uns Aktionen am besten {ph('nötiger Vorlauf, z. B. zwei Wochen')} vorher.")],
         title="Reels für Restaurants und Gastro in Kiel | SCM Creatives",
         desc="Reels für Restaurants, Bars und Mittagstische in Kiel und an der Lübecker Bucht: Sketche am Tisch, Aktionen, Küche von innen. Nach Skript, vor Ort gedreht."),
-    "immobilien": dict(name="Immobilien", short="Immobilien", img="immobilien-dreh", im="bei Maklern", aus="aus der Immobilienbranche",
+    "immobilien": dict(name="Immobilien", short="Immobilien", fuer="euer Maklerbüro", img="immobilien-dreh", im="bei Maklern", aus="aus der Immobilienbranche",
         head_reel="bs-entweder-oder",
         seo_h1="Social-Media-Videos und Reels für Immobilienmakler in Kiel und Umgebung",
         h1="Makler, die man kennt,<br><em>bevor man anruft.</em>",
-        lead="Für Immobilienmakler, Verwalter und Bauträger. Wir machen aus Objekten, Orten und euren Köpfen Videos, die zeigen, wer hinter den Objekten steckt.",
+        lead="Für Immobilienmakler, Verwalter und Bauträger. Wir machen aus Objekten, Orten und euren Köpfen Videos, die zeigen, wer dahintersteckt.",
         card="Entweder oder, Ortsanalysen, Objekte, Blick ins Büro.",
         chips=["Ortsanalyse", "Entweder oder", "Objekt-Rundgang"],
         pain_h2="Gute Objekte.<br><em>Gleiche Fotos.</em>",
         pains=["Objektfotos sehen bei allen Maklern gleich aus.", "Eigentümer entscheiden nach Vertrauen, nicht nach Exposé.", "Videos ohne Plan bekommen kaum Aufrufe."],
         formats=[("Ortsanalyse", "Mehrere Orte, die wichtigsten Argumente als Einblendung, am Ende ein Aufruf für die nächste Folge. Zeigt Marktwissen ohne Verkaufsdruck.", "„Drei Orte, die ihr bei der Suche rund um Kiel kennen solltet.“"),
                  ("Entweder oder", "Zwei Makler, schnelle Entscheidungen, viel Persönlichkeit. Funktioniert auch ohne Sprache.", "„Altbau oder Neubau? Balkon oder Garten?“"),
-                 ("Objekt-Rundgang mit Hook", "Nicht Raum für Raum, sondern mit dem einen Detail, das neugierig macht.", "„In dieser Wohnung gibt es einen Raum, mit dem keiner rechnet.“"),
+                 ("Objekt-Rundgang mit Aufhänger", "Nicht Raum für Raum, sondern mit dem einen Detail, das neugierig macht.", "„In dieser Wohnung gibt es einen Raum, mit dem keiner rechnet.“"),
                  ("Blick ins Büro", "Wer arbeitet hier, wie läuft ein Termin ab? Nähe schafft Vertrauen.", "„Was liegt bei Maklern eigentlich auf dem Schreibtisch?“")],
         refs=["bs-immobiliengruppe"],
         proof=None,
@@ -221,8 +221,8 @@ BRANCHEN = {
              ("Müssen wir selbst vor die Kamera?", "Nicht zwingend, aber es lohnt sich: Bei Maklern wirkt Persönlichkeit am stärksten. Wir schreiben die Skripte so, dass ihr nichts auswendig lernen müsst."),
              ("Für welche Kanäle sind die Videos?", "Alle Videos sind im Hochformat und eignen sich für Instagram Reels, TikTok und YouTube Shorts.")],
         title="Reels für Immobilienmakler in Kiel | SCM Creatives",
-        desc="Videos für Immobilienmakler in Kiel: Ortsanalysen, Entweder oder, Objekte mit Hook. Für mehr Vertrauen bei Eigentümern und Käufern in der Region."),
-    "handwerk": dict(name="Handwerk", short="Handwerk", img="handwerk-dreh", im="im Handwerk", aus="aus dem Handwerk",
+        desc="Videos für Immobilienmakler in Kiel: Ortsanalysen, Entweder oder, Objekte mit Aufhänger. Für mehr Vertrauen bei Eigentümern und Käufern in der Region."),
+    "handwerk": dict(name="Handwerk", short="Handwerk", fuer="euren Handwerksbetrieb", img="handwerk-dreh", im="im Handwerk", aus="aus dem Handwerk",
         head_reel="maler-rohwer",
         seo_h1="Social-Media- und Recruiting-Videos für Handwerksbetriebe in Kiel und an der Lübecker Bucht",
         h1="Handwerk, das man<br><em>gern anschaut.</em>",
@@ -233,7 +233,7 @@ BRANCHEN = {
         pains=["Ihr habt volle Auftragsbücher, aber keine Bewerber.", "Fotos von fertigen Wänden zeigen nicht, wer ihr seid.", "Auf der Baustelle ist keine Zeit zum Filmen."],
         formats=[("Kunden-Sketch", "Die Sprüche, die jeder Handwerker kennt, als kurze Szene. Hohe Wiedererkennung, viele Kommentare. Schon umgesetzt für Maler Rohwer.", "„Also mein Nachbar hätte das anders gemacht …“"),
                  ("Ein Tag als Azubi", "Ein ehrliches Recruiting-Format: Bewerber sehen, wie euer Alltag wirklich aussieht.", "„6:45 Uhr, erster Kaffee. So startet mein Tag als Azubi.“"),
-                 ("Vorher und Nachher", "Der Unterschied in Sekunden. Mit Hook statt nur mit Musik.", "„Diese Wand hat drei Tapetenschichten versteckt.“"),
+                 ("Vorher und Nachher", "Der Unterschied in Sekunden. Mit einem Aufhänger statt nur mit Musik.", "„Diese Wand hat drei Tapetenschichten versteckt.“"),
                  ("Fachfrage in 30 Sekunden", "Eine Frage, die Kunden immer stellen, kurz beantwortet. Zeigt Kompetenz.", "„Wie oft kann man Raufaser eigentlich überstreichen?“")],
         refs=["maler-rohwer"],
         proof="<strong>209 Likes und 24 Kommentare</strong> für einen Malerbetrieb mit 377 Followern, einen Tag nach Veröffentlichung. Instagram, Stand 21.10.2026.",
@@ -242,7 +242,7 @@ BRANCHEN = {
              ("Was, wenn wir keine lustigen Typen sind?", "Nicht jedes Video muss ein Sketch sein. Fachfragen und Vorher-Nachher-Formate funktionieren auch ruhig erzählt.")],
         title="Reels und Recruiting-Videos für Handwerker | SCM Creatives",
         desc="Kurzvideos für Handwerksbetriebe: Kunden-Sketche, Azubi-Formate, Vorher und Nachher. Für mehr Aufträge und mehr Bewerbungen. Kiel und Lübecker Bucht."),
-    "unternehmen": dict(name="Unternehmen", short="Unternehmen", img="unternehmen-dreh", im="bei Unternehmen", aus="von Unternehmen",
+    "unternehmen": dict(name="Unternehmen", short="Unternehmen", fuer="euer Unternehmen", img="unternehmen-dreh", im="bei Unternehmen", aus="von Unternehmen",
         head_reel="kletterwald-travemuende",
         seo_h1="Social-Media-Videos für Unternehmen und Freizeitbetriebe in Kiel und an der Lübecker Bucht",
         h1="Euer Unternehmen,<br><em>in 30 Sekunden erzählt.</em>",
@@ -251,7 +251,7 @@ BRANCHEN = {
         chips=["Angebot mit Frist", "Event", "Recruiting"],
         pain_h2="Gute Angebote.<br><em>Kein Echo.</em>",
         pains=["Eure Angebote gehen im Feed unter.", "Ihr habt spannende Menschen, aber niemand sieht sie.", "Euer Imagefilm ist gut, aber für den Feed zu lang."],
-        formats=[("Angebot mit Frist", "Zielgruppe direkt ansprechen, Angebot nennen, Termin setzen. In 15 Sekunden gesagt. Schon umgesetzt für den Kletterwald Travemünde.", "„Liebe Lehrerinnen, liebe Lehrer …“"),
+        formats=[("Angebot mit Frist", "Zielgruppe direkt ansprechen, Angebot nennen, Termin setzen. In 13 Sekunden gesagt. Schon umgesetzt für den Kletterwald Travemünde.", "„Liebe Lehrerinnen, liebe Lehrer …“"),
                  ("Event-Ankündigung", "Halloween, Saisonstart, Tag der offenen Tür. Spannung aufbauen statt Plakat abfilmen.", "„Am 31. Oktober sieht es hier anders aus.“"),
                  ("Menschen im Unternehmen", "Mitarbeitende stellen ihren Job vor. Stark für Marke und Recruiting.", "„Ich erkläre euch in 20 Sekunden, was ich hier mache.“"),
                  ("Hinter den Kulissen", "Was Kunden nie sehen, aber spannend finden.", "„So sieht es hier aus, bevor die Tür aufgeht.“")],
@@ -284,7 +284,7 @@ FAQ_CORE = [
 FAQ_MORE = [
     ("Wer postet die Videos?", "Das könnt ihr selbst machen oder uns überlassen. Posting und Community-Management gehören zu unseren Zusatzleistungen."),
     ("Macht ihr auch Werbeanzeigen?", "Ja. Auf Wunsch spielen wir eure Videos als Werbeanzeigen aus, gezielt in eurer Region."),
-    ("Wie läuft die Abstimmung?", "Ihr lest das Skript vor dem Dreh und seht die fertigen Videos vor der Veröffentlichung."),
+    ("Wie läuft die Abstimmung?", f"Ihr lest das Skript vor dem Dreh. Die fertigen Videos seht ihr vor der Veröffentlichung {ph('von SCM bestätigen')}."),
     ("Für welche Kanäle sind die Videos?", "Alle Videos sind im Hochformat 9:16 und eignen sich für Instagram Reels, TikTok und YouTube Shorts."),
     ("Wie schnell können wir starten?", f"Nach dem Erstgespräch planen wir die {NB}. {ph('Wie viele Wochen vom Erstgespräch bis zu den fertigen Testvideos')}"),
     ("Wem gehören die Videos?", ph("Wer welche Rechte an den Videos hat: wo ihr sie nutzen dürft, wie lange, ob ihr Rohmaterial bekommt")),
@@ -292,7 +292,7 @@ FAQ_MORE = [
 FAQ_OBJ = {
     "bindung": ("Wie lange binden wir uns?", f"{ph('Mindestlaufzeit und Kündigungsfrist')} Vor den Testvideos unterschreibt ihr nichts."),
     "gefallen": ("Was, wenn uns die Testvideos nicht gefallen?", "Dann sagt ihr Nein, und es kostet euch nichts. Ein Vertrag entsteht erst, wenn ihr weitermachen wollt."),
-    "garantie": ("Könnt ihr garantieren, dass die Videos mehr Gäste oder Bewerbungen bringen?", "Nein, das kann ehrlicherweise niemand. Was wir zusagen: Jedes Video folgt einem Skript mit Hook und klarem Aufruf, und ihr seht alles vor der Veröffentlichung."),
+    "garantie": ("Könnt ihr garantieren, dass die Videos mehr Gäste oder Bewerbungen bringen?", "Nein, das kann ehrlicherweise niemand. Was wir zusagen: Jedes Video folgt einem Skript mit starkem ersten Satz und klarem Aufruf, und ihr seht alles vor der Veröffentlichung."),
     "gefilmt": ("Was ist, wenn jemand nicht gefilmt werden möchte?", f"Dann filmen wir die Person nicht. Gäste filmen wir nur, wenn sie einverstanden sind. {ph('Einwilligung für euer Team: Vorlage von SCM, ja oder nein')}"),
     "selbst": ("Wir posten schon selbst. Lohnt sich das trotzdem?", "Ihr könnt weiter selbst posten. Wir liefern die Videos mit Skript, Dreh und Schnitt, und auf Wunsch übernehmen wir auch das Posten."),
     "dauer": ("Wie lange dauert ein Drehtermin?", f"{ph('typische Dauer, z. B. pro 4 Videos')} Den Termin stimmen wir mit euch ab, zum Beispiel vor der Öffnung."),
@@ -351,7 +351,7 @@ def head(path, title, desc, og=None, og_alt=None, noindex=False, ld=None, lcp=No
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{title}</title>
 <meta name="description" content="{html.escape(desc, quote=True)}">
-<link rel="canonical" href="{url(path)}">
+{'' if path == '/404' else f'<link rel="canonical" href="{url(path)}">'}
 {robots}<meta name="theme-color" content="#0B0B0C">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
@@ -474,7 +474,8 @@ def phone(slug, kind="loop", cls="", eager=False, sound=False, ui=True, label=Tr
     b = BRANCHEN[r["branche"]]["name"]
     snd = f'<button class="sound" type="button" aria-pressed="false" aria-label="Ton">{I_SOUND}</button>' if sound else ""
     p = f' data-plx="{plx}"' if plx else ""
-    aria = f'aria-label="Video: {html.escape(r["titel"])}, {html.escape(r["kunde"])}"'
+    kit = " · mit KI-Elementen" if r.get("ki") else ""
+    aria = f'aria-label="Video: {html.escape(r["titel"])}, {html.escape(r["kunde"])}{kit}"'
     trk = f'<track kind="captions" srclang="de" label="Deutsch" src="/media/{slug}.de.vtt">' if (kind == "full" and os.path.exists(f"{SITE}/media/{slug}.de.vtt")) else ""
     if watch:
         video = (f'<video muted playsinline loop controls preload="none" width="720" height="1280" poster="{poster}" data-auto {aria}>'
@@ -488,7 +489,7 @@ def phone(slug, kind="loop", cls="", eager=False, sound=False, ui=True, label=Tr
         video = f'<video muted playsinline loop preload="none" data-auto data-mp4="{src}.mp4" data-webm="{src}.webm" {aria}>{trk}</video>'
     uihtml = ""
     if ui:
-        bot = f'<div class="pu-bot"><b>{r["kurz"]}</b><span>{b} · {r["format"]}</span></div>' if label else '<div></div>'
+        bot = f'<div class="pu-bot"><b>{r["kurz"]}</b><span>{b} · {r["format"]}{kit}</span></div>' if label else '<div></div>'
         uihtml = f"""<div class="phone-ui" aria-hidden="true"><div class="pu-top"><span class="pu-rec"><i></i>REC</span><span class="pu-tc">00:00:00:00</span></div>{bot}</div>"""
     return f"""<div class="phone vf {cls}"{p}>{img}{video}{uihtml}{snd}</div>"""
 
@@ -499,7 +500,7 @@ def reel_card(slug, d=None, rv=True):
     b = BRANCHEN[r['branche']]['name']
     ki = ' <span class="ki">· mit KI-Elementen</span>' if r.get("ki") else ""
     return f"""<article class="reel{' rv' if rv else ''}"{dd} data-branche="{r['branche']}">
-      <a href="/referenzen/{r['client']}" aria-label="{html.escape(r['kurz'])}, {b}, {html.escape(r['format'])}: Aufbau ansehen">
+      <a href="/referenzen/{r['client']}" aria-label="{html.escape(r['kurz'])}, {b}, {html.escape(r['format'])}{' · mit KI-Elementen' if r.get('ki') else ''}: Aufbau ansehen">
         {phone(slug, label=False)}
         <div class="reel-meta" style="margin-top:.9rem"><b>{r['kurz']}</b><span>{b} · {r['format']}{ki}</span></div>
       </a></article>"""
@@ -533,11 +534,11 @@ def bcard_any(d=None):
 
 STEPS = [
     ("01", "Erstgespräch", "Wir lernen euch, euer Angebot und eure Zielgruppe kennen. Was soll das Video erreichen: mehr Gäste, mehr Anfragen, neue Mitarbeitende?", "Ein Gespräch"),
-    ("02", "Skript", "Wir schreiben Hooks, Szenen und Aufrufe. Jedes Video folgt einem Plan, bevor die Kamera läuft. Ihr lest das Skript vorab.", "Skript lesen"),
+    ("02", "Skript", "Wir schreiben den ersten Satz, die Szenen und den Aufruf. Jedes Video folgt einem Plan, bevor die Kamera läuft. Ihr lest das Skript vorab.", "Skript lesen"),
     ("03", "Dreh vor Ort", "Wir kommen zu euch in den Laden, ins Büro oder auf die Baustelle. Mit Kamera, Mikrofonen und einem klaren Ablauf.", "Ein Termin bei euch"),
-    ("04", "Schnitt", "Tempo, Untertitel, Texte im Bild, Musik. Wir schneiden, bis es sitzt, und ihr seht die Videos vor der Veröffentlichung.", "Videos ansehen"),
+    ("04", "Schnitt", "Tempo, Untertitel, Texte im Bild, Musik. Wir schneiden, bis es sitzt.", "Videos ansehen"),
     ("05", "Veröffentlichen", "Ihr postet selbst oder wir übernehmen Posting und Community. Auf Wunsch auch als Werbeanzeige in der Region.", "Nichts, wenn wir posten"),
-    ("06", "Auswerten und nachschärfen", "Was hat funktioniert? Daraus entstehen die nächsten Skripte.", "Ein kurzer Austausch"),
+    ("06", "Auswerten und nachschärfen", f"Was hat funktioniert? Daraus entstehen die nächsten Skripte. {ph('von SCM bestätigen')}", "Ein kurzer Austausch"),
 ]
 
 
@@ -549,21 +550,21 @@ def drehplan(steps=STEPS, head_lbl=("Nr.", "Schritt", "Was passiert", "Euer Aufw
 
 
 PACK_INC = ["Konzept und Skripte", "Dreh bei euch vor Ort", "Schnitt mit Untertiteln und Texten im Bild",
-            "Hochformat für Reels, TikTok und Shorts", "Ihr seht jedes Video vor der Veröffentlichung"]
+            "Hochformat für Reels, TikTok und Shorts"]
 
 
 def packs(compact=False):
-    data = [("4", "Starter", "Etwa ein Video pro Woche.", "Passt, wenn ihr mit einem festen Format regelmäßig sichtbar sein wollt, zum Beispiel dem Mittagstisch der Woche.", False),
-            ("8", "Wachstum", "Etwa zwei Videos pro Woche.", "Passt, wenn eine eigene Serie entstehen soll und daneben Aktionen oder Recruiting laufen.", True),
-            ("12", "Pro", "Etwa drei Videos pro Woche.", "Passt, wenn ihr mehrere Formate parallel zeigen wollt, zum Beispiel Objekte, Ortsanalysen und Persönlichkeit.", False)]
+    data = [("4", "Einmal pro Woche", "Etwa ein Video pro Woche.", "Passt, wenn ihr mit einem festen Format regelmäßig sichtbar sein wollt, zum Beispiel dem Mittagstisch der Woche.", False),
+            ("8", "Zweimal pro Woche", "Etwa zwei Videos pro Woche.", "Passt, wenn eine eigene Serie entstehen soll und daneben Platz für Aktionen bleibt.", True),
+            ("12", "Dreimal pro Woche", "Etwa drei Videos pro Woche.", "Passt, wenn ihr mehrere Formate parallel zeigen wollt, zum Beispiel Objekte, Ortsanalysen und Persönlichkeit.", False)]
     out = ""
     for i, (n, name, rhythm, fit, hot) in enumerate(data):
-        tag = '<span class="tag">Unsere Empfehlung</span>' if hot else ""
+        tag = '<span class="tag">Der Mittelweg</span>' if hot else ""
         why = '<p class="meta">Bei zwei Videos pro Woche entsteht eine Serie mit festem Rhythmus.</p>' if (hot and not compact) else ""
         extra = "" if compact else f'<p class="fit">{fit}</p><p class="meta">Drehtermine im Monat: {ph("Anzahl")}</p>{why}'
         out += f"""<article class="pack{' hot' if hot else ''} rv" data-d="{i+1}">{tag}
           <div class="pack-num"><strong>{n}</strong><span>Videos<br>pro Monat</span></div>
-          <h3>{name}</h3><p>{rhythm}</p>{extra}
+          <h3>{name}</h3>{extra}
           <a class="btn{'' if hot else ' btn-ghost'}" href="/anfrage?paket={n}">Mit {n} Videos starten</a></article>"""
     inc = "" if compact else '<div class="pack-inc rv"><b>In jedem Paket enthalten</b>' + "".join(f"<span>{x}</span>" for x in PACK_INC) + "</div>"
     return f'{inc}<div class="packs">{out}</div><p class="pack-note rv">Vor dem ersten Paket stehen {NB}, kostenlos. Ihr entscheidet erst danach.</p>'
@@ -774,8 +775,8 @@ def build_home():
 
 def build_leistungen():
     items = [
-        ("02", "Posting und Community", "Wir veröffentlichen eure Videos mit Caption und Hashtags und kümmern uns um Kommentare und Nachrichten. Ihr bleibt sichtbar, ohne selbst am Handy zu hängen.", ["Veröffentlichung nach Plan", "Captions und Hashtags", "Kommentare und Nachrichten"], "posting", None),
-        ("03", "Werbeanzeigen", "Gute Videos verdienen mehr Reichweite. Wir spielen sie als Werbeanzeigen auf Instagram und Facebook aus, gezielt in eurer Region.", ["Anzeigen aus euren Videos", "Zielgruppe in der Region", "Auswertung und Anpassung"], "ads", None),
+        ("02", "Posting und Community", "Wir veröffentlichen eure Videos mit Text und Hashtags und kümmern uns um Kommentare und Nachrichten. Ihr bleibt sichtbar, ohne selbst am Handy zu hängen.", ["Veröffentlichung nach Plan", "Texte und Hashtags", "Kommentare und Nachrichten"], "posting", None),
+        ("03", "Werbeanzeigen", f"Gute Videos verdienen mehr Reichweite. Wir spielen sie als Werbeanzeigen aus, gezielt in eurer Region. Plattformen: {ph('z. B. Instagram und Facebook, von SCM bestätigen')}.", ["Anzeigen aus euren Videos", "Zielgruppe in der Region"], "ads", None),
         ("04", "Recruiting-Videos", "Mitarbeitende und Azubis findet man dort, wo sie scrollen. Wir zeigen, wie es bei euch wirklich ist.", ["Ein Tag als Azubi", "Team stellt sich vor", "Stellenanzeigen als Video"], "recruiting", ("/branchen/handwerk#formate", "Beispiele im Handwerk")),
         ("05", "Fotos und Imagefilm", "Neben Kurzvideos entstehen Fotos für Website und Profile oder ein längerer Film über euer Unternehmen.", ["Fotos vom Drehtag", "Imagefilm", "Material für Website und Profile"], "fotos", None),
     ]
@@ -820,7 +821,7 @@ def build_branchen():
                      crumbs=[("/", "Start"), ("/branchen", "Branchen")],
                      seo_h1="Social-Media-Videos für Gastronomie, Immobilien, Handwerk und Unternehmen") + f"""
 <section class="sec-sm" data-scene="SZENE 02 · REFERENZBRANCHEN"><div class="wrap">
-  <h2 class="sr-only">Unsere Referenzbranchen</h2>
+  <div class="rv" style="margin-bottom:1.6rem">{lbl("Szene 02 · Referenzbranchen")}</div><h2 class="sr-only">Unsere Referenzbranchen</h2>
   <div class="bcards">{bcard('gastronomie', 1, wide=True)}{bcard('immobilien', 2, wide=True)}{bcard('handwerk', 1, wide=True)}{bcard('unternehmen', 2, wide=True)}</div>
 </div></section>
 <section class="sec" data-scene="SZENE 03 · AUCH FÜR EUCH"><div class="wrap">
@@ -854,7 +855,7 @@ def build_branche(key):
     proof = f'<p class="proof rv">{b["proof"]}</p>' if b.get("proof") else ""
     body = page_head(b["name"], b["h1"], b["lead"], crumbs=[("/", "Start"), ("/branchen", "Branchen"), (f"/branchen/{key}", b["name"])],
                      media=f"ki-platzhalter-{b['img']}", seo_h1=b["seo_h1"], head_reel=b["head_reel"],
-                     extra=f'<div class="btn-row rv" data-d="2"><a class="btn" href="/anfrage">{NB} für {b["short"]} anfragen</a><a class="btn btn-ghost" href="#formate">Formate ansehen</a></div>') + f"""
+                     extra=f'<div class="btn-row rv" data-d="2"><a class="btn" href="/anfrage?branche={key}">{NB} für {b["short"]} anfragen</a><a class="btn btn-ghost" href="#formate">Formate ansehen</a></div>') + f"""
 <section class="sec" data-scene="SZENE 02 · AUSGANGSLAGE"><div class="wrap"><div class="split2" style="align-items:start">
   <div class="stack">{lbl("Szene 02 · Kennt ihr das?")}<h2 class="d2 split">{b['pain_h2']}</h2></div>
   <ul class="pains">{pains}</ul>
@@ -871,7 +872,7 @@ def build_branche(key):
   {sec_head("05", "Ablauf", "So läuft es<br><em>bei euch.</em>", None, ("/so-arbeiten-wir", "Ablauf im Detail"))}
   {drehplan(STEPS[:4])}
 </div></section>
-{offer_strip("06", text=f"{NB} für eure {b['short'] if key != 'unternehmen' else 'Firma'}: kostenlos, bei euch vor Ort gedreht. Ein Vertrag erst, wenn ihr weitermachen wollt.")}
+{offer_strip("06", text=f"{NB} für {b['fuer']}: kostenlos, bei euch vor Ort gedreht. Ein Vertrag erst, wenn ihr weitermachen wollt.")}
 <section class="sec" data-scene="SZENE 07 · FRAGEN"><div class="wrap wrap--narrow">
   {sec_head("07", "Fragen", f"Fragen<br><em>{b['aus']}.</em>")}
   {faq_block(b['faq'] + FAQ_CORE[:2])}
@@ -900,7 +901,7 @@ def build_referenzen():
                      crumbs=[("/", "Start"), ("/referenzen", "Referenzen")],
                      seo_h1="Referenzen: Social-Media-Videos aus Kiel und von der Lübecker Bucht") + f"""
 <section class="sec-sm" data-scene="SZENE 02 · VIDEOS"><div class="wrap">
-  <h2 class="sr-only">Alle Videos</h2>
+  <div class="rv" style="margin-bottom:1.6rem">{lbl("Szene 02 · Alle Videos")}</div><h2 class="sr-only">Alle Videos</h2>
   <div class="filter" role="group" aria-label="Nach Branche filtern">{filt}</div>
   <p class="sr-only" role="status" id="filter-status"></p>
   <div class="reel-grid">{tiles}</div>
@@ -911,7 +912,7 @@ def build_referenzen():
   <div class="drehplan">{rows}</div>
 </div></section>
 {offer_strip("04", title=f"Euer Video<br><em>könnte das nächste sein.</em>")}
-{cta_band(title="So ein Video<br><em>für euren Betrieb?</em>", text="Wir schreiben das Skript, ihr spielt die Hauptrolle. Oder wir finden jemanden, der sie spielt.")}"""
+{cta_band(title="So ein Video<br><em>für euren Betrieb?</em>", text="Wir schreiben das Skript, ihr spielt die Hauptrolle. Wer vor die Kamera geht, klären wir gemeinsam.")}"""
     page("/referenzen", "Referenzen: Social-Media-Videos aus Kiel | SCM Creatives",
          "Videos für BS Immobiliengruppe, Maler Rohwer, Jan & Hein & Klaas & Pit, Das kleine Steakhouse und Kletterwald Travemünde. Mit Aufbau und Erklärung.",
          body, ld=[crumbs_ld([("/", "Start"), ("/referenzen", "Referenzen")])])
@@ -926,9 +927,22 @@ def vtt_text(slug):
     return "\n".join(txt)
 
 
+def upload_ts(slug):
+    """Veröffentlichungszeit aus den Instagram-Metadaten (yt-dlp info.json), sonst nur das Datum."""
+    r = REELS[slug]
+    code = r["ig"].rstrip("/").split("/")[-1]
+    f = f"{ROOT}/.preview-cache/scm/video-{code}.info.json"
+    if os.path.exists(f):
+        ts = json.load(open(f, encoding="utf-8")).get("timestamp")
+        if ts:
+            return datetime.datetime.fromtimestamp(ts, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    return r["upload"]
+
+
 def video_desc(slug):
     r = REELS[slug]
-    return f"{r['format']} für {r['kunde']} ({BRANCHEN[r['branche']]['name']}), produziert von SCM Creatives. Erster Satz: {r['hook']}"
+    ki = " Teile des Videos wurden mithilfe von KI erstellt." if r.get("ki") else ""
+    return f"{r['format']} für {r['kunde']} ({BRANCHEN[r['branche']]['name']}), produziert von SCM Creatives. Erster Satz: „{r['hook']}“.{ki}"
 
 
 def case_details(slug, c, b, with_quote=True):
@@ -944,7 +958,8 @@ def case_details(slug, c, b, with_quote=True):
         stat = f"""<div class="facts" style="margin:2rem 0 .6rem"><div class="fact"><strong>{r['stats'][0]}</strong><span>Likes</span></div>
           <div class="fact"><strong>{r['stats'][1]}</strong><span>Kommentare</span></div></div><p class="q-note">Instagram, Stand 21.10.2026.</p>"""
     tr = vtt_text(slug)
-    trans = (f'<details class="faq transcript"><summary>Transkript lesen<i aria-hidden="true"></i></summary><div class="ans"><p>{html.escape(tr)}</p></div></details>'
+    chk = f'<p class="q-note">{ph("Transkript von SCM gegenlesen lassen, einzelne Sätze sind unsicher")}</p>' if slug == "das-kleine-steakhouse" else ""
+    trans = (f'<details class="faq transcript"><summary>Transkript lesen<i aria-hidden="true"></i></summary><div class="ans"><p>{html.escape(tr)}</p>{chk}</div></details>'
              if tr else '<p class="q-note" style="margin-top:1.4rem">Dieses Video kommt ohne Sprache aus: nur Musik und Texte im Bild.</p>')
     quote = f'<div class="quote" style="margin-top:2.4rem"><p>{ph("Zitat von " + c["name"] + ", 1 bis 2 Sätze, mit Name und Funktion, schriftlich freigegeben")}</p><cite>{c["name"]}</cite></div>' if with_quote else ""
     return f"""<dl class="case-facts">{fx}</dl>
@@ -968,7 +983,7 @@ def build_case(key):
 <section class="sec" data-scene="SZENE 02 · VIDEO FOLGT"><div class="wrap wrap--narrow"><div class="stack">
   {lbl("Szene 02 · Video folgt", True)}<h2 class="d2">Video folgt.</h2>
   <p class="lead">{ph("Videos, Format und Kundenstimme der Weinbar „Die Drei“, Instagram-Profil")}</p>
-  <a class="btn" href="/referenzen">Alle Referenzen</a>{nav}
+  {nav}
 </div></div></section>{cta_band()}"""
         page(f"/referenzen/{key}", "Weinbar „Die Drei“, Kiel | Referenz | SCM Creatives",
              "Referenz von SCM Creatives: Weinbar „Die Drei“ in Kiel. Die Videos zeigen wir hier, sobald sie online sind.", body,
@@ -984,7 +999,7 @@ def build_case(key):
   {crumb_nav(crumbs)}
   <div class="case-grid case-grid--head" style="margin-top:1.4rem">
     <div class="case-video">{head_video}
-      <p class="q-note" style="margin-top:1rem"><a href="{main['ig']}" target="_blank" rel="noopener">{main['format']} auf Instagram ansehen{NEWTAB}</a></p></div>
+      <p class="q-note" style="margin-top:1rem"><a href="{main['ig']}" target="_blank" rel="noopener">{main['format']} auf Instagram ansehen{NEWTAB}</a>{'<br>Teile dieses Videos wurden mithilfe von KI erstellt, so ist es auch im Original gekennzeichnet.' if main.get('ki') else ''}</p></div>
     <div class="stack">{lbl(f"Szene 01 · Referenz · {b['name']}", True)}
       <h1 class="d1 split" data-split="chars">{c['h1']}</h1>
       <p class="h1-kicker">{fmt_all} als Reel</p>
@@ -1003,7 +1018,7 @@ def build_case(key):
 <section class="sec panel" data-scene="SZENE {n:02d} · {r['format'].upper()}"><div class="wrap">
   <div class="case-grid">
     <div class="case-video">{phone(slug, kind='full', sound=True, label=False)}
-      <p class="q-note" style="margin-top:1rem"><a href="{r['ig']}" target="_blank" rel="noopener">{r['format']} auf Instagram ansehen{NEWTAB}</a></p></div>
+      <p class="q-note" style="margin-top:1rem"><a href="{r['ig']}" target="_blank" rel="noopener">{r['format']} auf Instagram ansehen{NEWTAB}</a>{'<br>Teile dieses Videos wurden mithilfe von KI erstellt, so ist es auch im Original gekennzeichnet.' if r.get('ki') else ''}</p></div>
     <div>{lbl(f"Szene {n:02d} · {r['format']}")}
       <h2 class="d2 split" style="margin:.9rem 0 1.6rem">{r['titel']}</h2>
       {case_details(slug, c, b, with_quote=False)}</div>
@@ -1014,12 +1029,14 @@ def build_case(key):
     lds = [crumbs_ld(crumbs),
            {"@context": "https://schema.org", "@type": "VideoObject", "@id": f"{BASE}/referenzen/{key}#video",
             "name": f"{main['kunde']}: {main['format']}", "description": video_desc(main_slug),
-            "thumbnailUrl": [f"{BASE}/media/{main_slug}.webp"], "uploadDate": main["upload"] + "T12:00:00+02:00",
+            "thumbnailUrl": [f"{BASE}/media/{main_slug}.webp"], "uploadDate": upload_ts(main_slug),
             "duration": f"PT{main['dauer']}S", "contentUrl": f"{BASE}/media/{main_slug}.mp4",
             "inLanguage": "de", "publisher": ORG_MIN}]
     short = "Maler Rohwer" if key == "maler-rohwer" else c["name"]
-    title = f"{short}: {fmt_all} als Reel | Referenz SCM Creatives"
-    desc = f"{fmt_all} für {c['name']}: So ist das Video aufgebaut, vom ersten Satz bis zum Aufruf. Gedreht von SCM Creatives in {c['ort'] or 'der Region'}."
+    title = f"{short}: {fmt_all} als Reel | SCM Creatives"
+    if len(title) > 62:
+        title = f"{short}: {fmt_all} | SCM Creatives"
+    desc = f"{fmt_all} für {c['name']}: So ist das Video aufgebaut, vom ersten Satz bis zum Aufruf. Gedreht in {c['ort'] or 'der Region'}."
     page(f"/referenzen/{key}", title, desc, body, ld=lds, og=f"/img/og-{key}.jpg",
          og_alt=f"{c['name']}: {main['format']} von SCM Creatives", anfrage_qs=f"branche={c['branche']}",
          lcp=f"/media/{main_slug}.webp")
@@ -1048,14 +1065,14 @@ def build_ablauf():
   {sec_head("06", "Fragen", "Fragen zum<br><em>Ablauf.</em>")}
   {faq_block([FAQ_CORE[3], FAQ_CORE[2], FAQ_MORE[2], FAQ_OBJ["dauer"], FAQ_MORE[4]])}
 </div></section>
-{cta_band(title="Fangen wir<br><em>mit dem Gespräch an.</em>", text=f"Euer Aufwand: ein Gespräch, ein Skript lesen, ein Termin bei euch. Wir melden uns {ANTWORTZEIT}.")}"""
+{cta_band(title="Fangen wir<br><em>mit dem Gespräch an.</em>", text=f"Euer Aufwand: ein Gespräch, die Skripte lesen, ein Termin bei euch. Wir melden uns {ANTWORTZEIT}.")}"""
     page("/so-arbeiten-wir", "Ablauf: Vom Skript zum fertigen Reel | SCM Creatives",
          "Erstgespräch, Skript, Dreh vor Ort, Schnitt, Veröffentlichung, Auswertung. So entstehen Social-Media-Videos bei SCM Creatives, mit wenig Aufwand für euch.",
          body, ld=[crumbs_ld([("/", "Start"), ("/so-arbeiten-wir", "Ablauf")])], lcp="/img/ki-platzhalter-gastro-dreh.webp")
 
 
 def build_pakete():
-    addons = [("Posting und Community", "Veröffentlichung, Captions, Hashtags, Kommentare.", "posting"),
+    addons = [("Posting und Community", "Veröffentlichung, Texte, Hashtags, Kommentare.", "posting"),
               ("Werbeanzeigen", "Eure Videos als Anzeigen in der Region.", "ads"),
               ("Recruiting-Videos", "Formate für Mitarbeitende und Azubis.", "recruiting"),
               ("Fotos und Imagefilm", "Fotos vom Drehtag oder ein längerer Film.", "fotos")]
@@ -1069,7 +1086,7 @@ def build_pakete():
                      crumbs=[("/", "Start"), ("/pakete", "Pakete")],
                      seo_h1="Pakete: 4, 8 oder 12 Social-Media-Videos im Monat") + f"""
 <section class="sec-sm" data-scene="SZENE 02 · PAKETE"><div class="wrap">
-  <h2 class="sr-only">Die drei Pakete</h2>
+  <div class="rv" style="margin-bottom:1.6rem">{lbl("Szene 02 · Die Pakete")}</div><h2 class="sr-only">Die drei Pakete</h2>
   {packs()}
 </div></section>
 <section class="sec panel" data-scene="SZENE 03 · PREIS"><div class="wrap">
@@ -1099,8 +1116,8 @@ def build_testvideos():
              ("04", "3 fertige Videos", "Ihr bekommt drei geschnittene Videos und seht, wie es werden kann.", "Ansehen"),
              ("05", "Entscheidung", "Gefällt es euch, geht es mit einem Paket weiter. Wenn nicht, kostet es euch nichts.", "Ja oder Nein")]
     blocks = [("Was ihr bekommt", "3 fertig geschnittene Videos im Hochformat, mit Skripten für euren Betrieb, gedreht bei euch vor Ort. " + ph("Nutzung: Dürft ihr die 3 Testvideos posten, auch wenn danach kein Vertrag folgt?")),
-              ("Warum kostenlos?", "Weil ihr erst nach drei echten Videos wisst, ob es passt. Und weil wir lieber zeigen als versprechen."),
-              ("Für wen", "Für Betriebe in Kiel und an der Lübecker Bucht, die danach regelmäßig Videos planen. " + ph("weitere Bedingungen, z. B. einmal pro Betrieb"))]
+              ("Warum kostenlos?", "Weil ihr erst nach drei fertigen Videos wisst, ob es passt. Und weil wir lieber zeigen als versprechen."),
+              ("Für wen", "Für Betriebe in Kiel und an der Lübecker Bucht. " + ph("weitere Bedingungen, z. B. einmal pro Betrieb, regelmäßige Videos danach geplant"))]
     bl = "".join(f'<article class="svc-item rv" data-d="{i+1}"><span class="lbl">Gut zu wissen</span><h3>{t}</h3><p>{x}</p></article>' for i, (t, x) in enumerate(blocks))
     body = page_head("Das Angebot", f"{NB}.<br><em>Kostenlos.</em>",
                      "Bevor ihr euch für ein Paket entscheidet, zeigen wir euch, wie es werden kann. Drei fertige Videos, in eurem Betrieb, nach unserem Skript. Erst sehen, dann entscheiden.",
@@ -1216,7 +1233,7 @@ def build_kontakt():
                      extra=f'<div class="btn-row rv" data-d="2"><a class="btn" href="/anfrage">Anfrage starten (2 Minuten)</a></div>') + f"""
 <section class="sec-sm" data-scene="SZENE 02 · KONTAKTWEGE"><div class="wrap">
   <div class="q-msg" id="fehler" role="alert"><p><strong>Eure Anfrage konnte nicht gesendet werden.</strong> Bitte meldet euch direkt per WhatsApp, Telefon oder E-Mail.</p></div>
-  <h2 class="sr-only">Kontaktwege</h2>
+  <div class="rv" style="margin-bottom:1.6rem">{lbl("Szene 02 · Kontaktwege")}</div><h2 class="sr-only">Kontaktwege</h2>
   <div class="ways" style="margin-top:1rem">
     <a class="way rv" id="whatsapp" href="{wa_href()}"{ext(wa_href())}>{I_WA}<b>WhatsApp</b><p>{wa_txt}</p>{ext_txt(wa_href())}</a>
     <a class="way rv" data-d="1" id="telefon" href="{tel_href()}">{I_TEL}<b>Anrufen</b><p>{tel_txt}</p></a>
@@ -1248,8 +1265,8 @@ def build_anfrage():
     z_opts = (opt("ziel", "gaeste", "Mehr Gäste oder Kunden") + opt("ziel", "anfragen", "Mehr Anfragen") +
               opt("ziel", "mitarbeiter", "Mitarbeitende finden") + opt("ziel", "bekanntheit", "Bekannter werden in der Region") +
               opt("ziel", "mehreres", "Mehreres davon", "Beraten wir gemeinsam"))
-    p_opts = (opt("paket", "4", "4 Videos im Monat", "Starter") + opt("paket", "8", "8 Videos im Monat", "Wachstum") +
-              opt("paket", "12", "12 Videos im Monat", "Pro") + opt("paket", "offen", "Wissen wir noch nicht", "Wir beraten euch"))
+    p_opts = (opt("paket", "4", "4 Videos im Monat", "Etwa einmal pro Woche") + opt("paket", "8", "8 Videos im Monat", "Etwa zweimal pro Woche") +
+              opt("paket", "12", "12 Videos im Monat", "Etwa dreimal pro Woche") + opt("paket", "offen", "Wissen wir noch nicht", "Wir beraten euch"))
     x_opts = (opt("extras", "posting", "Posting und Community", kind="checkbox") + opt("extras", "ads", "Werbeanzeigen", kind="checkbox") +
               opt("extras", "recruiting", "Recruiting-Videos", kind="checkbox") + opt("extras", "fotos", "Fotos oder Imagefilm", kind="checkbox"))
     s_opts = (opt("start", "sofort", "So bald wie möglich") + opt("start", "1-3", "In 1 bis 3 Monaten") + opt("start", "spaeter", "Später, erst mal informieren"))
@@ -1265,7 +1282,7 @@ def build_anfrage():
 </div></section>
 <section class="sec-sm" data-scene="SZENE 02 · FRAGEN" style="padding-top:1rem"><div class="wrap">
 <p class="assure"><span>Kostenlos und unverbindlich</span><span>Ein Vertrag erst, wenn ihr nach den Testvideos weitermachen wollt</span><span>Antwort {ANTWORTZEIT}</span></p>
-<form class="quiz" action="/api/anfrage" method="post" novalidate>
+<form class="quiz" action="/api/anfrage" method="post">
   <div class="q-progress" aria-hidden="true"><span class="q-count">Schritt 1 von 5</span><span class="q-bar"><i></i></span></div>
   <fieldset class="q-step" data-req="branche" data-auto><legend><small>Frage 1 von 5</small>In welcher Branche seid ihr?</legend>{q_err("branche")}<div class="opts">{b_opts}</div></fieldset>
   <fieldset class="q-step" data-req="ziel" data-auto><legend><small>Frage 2 von 5</small>Was sollen die Videos bringen?</legend>{q_err("ziel")}<div class="opts">{z_opts}</div></fieldset>
@@ -1317,7 +1334,7 @@ def build_danke():
 </div></section>
 <section class="sec-sm"><div class="wrap">
   {sec_head(None, "Wie es weitergeht", "Die nächsten<br><em>Szenen.</em>")}
-  {drehplan([("01", "Wir melden uns", "Per Anruf oder WhatsApp, wenn ihr eine Nummer angegeben habt, sonst per E-Mail.", "Antworten"), ("02", "Kennenlernen", "Ein Gespräch über euren Betrieb und eure Ziele.", "Ein Gespräch"), ("03", NB, "Skripte, Dreh bei euch, Schnitt. Kostenlos.", "Ein Termin")])}
+  {drehplan([("01", "Wir melden uns", "So, wie ihr es angegeben habt: per Anruf, WhatsApp oder E-Mail.", "Antworten"), ("02", "Kennenlernen", "Ein Gespräch über euren Betrieb und eure Ziele.", "Ein Gespräch"), ("03", NB, "Skripte, Dreh bei euch, Schnitt. Kostenlos.", "Ein Termin")])}
 </div></section>
 <section class="sec-sm panel"><div class="wrap">
   {sec_head(None, "Zum Vorbereiten", "Was ihr schon mal<br><em>überlegen könnt.</em>")}
@@ -1352,7 +1369,7 @@ def build_legal():
 <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
 <p>{ph("Name und Anschrift der verantwortlichen Person")}</p>
 <h2>Verbraucherstreitbeilegung</h2>
-<p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+<p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen. {ph('von SCM bestätigen')}</p>
 <h2>Haftung für Links</h2>
 <p>Unsere Website enthält Links zu externen Websites Dritter, zum Beispiel zu Instagram. Auf deren Inhalte haben wir keinen Einfluss. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber verantwortlich.</p>
 <h2>Bildnachweise</h2>
@@ -1367,13 +1384,13 @@ def build_legal():
 <h2>1. Verantwortlicher</h2>
 <p>SCM Creatives, {ph("Inhaber, Anschrift")}<br>E-Mail: {MAIL or ph("E-Mail-Adresse")}, Telefon: {TEL or ph("Telefonnummer")}</p>
 <h2>2. Hosting</h2>
-<p>Diese Website wird bei Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA gehostet. Beim Aufruf verarbeitet Vercel technisch notwendige Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite, Browser und Betriebssystem in Server-Logfiles, um die Website auszuliefern und vor Angriffen zu schützen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse liegt in einer sicheren und stabilen Bereitstellung. Die Logfiles werden {ph("Speicherdauer der Server-Logs bei Vercel")} gespeichert. Mit Vercel besteht ein Vertrag zur Auftragsverarbeitung. Vercel ist unter dem EU-US Data Privacy Framework zertifiziert; zusätzlich gelten Standardvertragsklauseln.</p>
+<p>Diese Website wird bei Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA gehostet. Beim Aufruf verarbeitet Vercel technisch notwendige Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite, Browser und Betriebssystem in Server-Logfiles, um die Website auszuliefern und vor Angriffen zu schützen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse liegt in einer sicheren und stabilen Bereitstellung. Die Logfiles werden {ph("Speicherdauer der Server-Logs bei Vercel")} gespeichert. Mit Vercel besteht ein Vertrag zur Auftragsverarbeitung {ph('mit dem eigenen Vercel-Konto abschließen')}. Vercel ist unter dem EU-US Data Privacy Framework zertifiziert; zusätzlich gelten Standardvertragsklauseln.</p>
 <h2>3. Keine Cookies, kein Tracking</h2>
 <p>Diese Website setzt keine Cookies und verwendet keine Tracking- oder Werbedienste. Im Browser wird lediglich für die Dauer der Sitzung gespeichert, ob die Eröffnungsanimation bereits gezeigt wurde und ob ihr Videos und Animationen angehalten habt (Session Storage). Diese Informationen verlassen euer Gerät nicht und werden beim Schließen des Browsers gelöscht. Rechtsgrundlage ist § 25 Abs. 2 Nr. 2 TDDDG, da die Speicherung für die von euch gewünschte Darstellung der Seite erforderlich ist. {ph("Rechtlich prüfen lassen; falls Vercel Web Analytics aktiviert wird: Absatz zu cookieloser Reichweitenmessung ergänzen")}</p>
 <h2>4. Schriften und Videos</h2>
 <p>Schriftarten und Videos werden direkt von unserem Server geladen. Es werden keine Verbindungen zu Google Fonts, YouTube oder Instagram aufgebaut, solange ihr nicht selbst auf einen Link zu diesen Diensten klickt.</p>
 <h2>5. Anfrageformular</h2>
-<p>Wenn ihr uns über das Anfrageformular kontaktiert, verarbeiten wir die Angaben, die ihr macht (zum Beispiel Name, Betrieb oder Instagram-Profil, Telefon, E-Mail, Branche, Wünsche, Region, Ort, gewünschter Kontaktweg und Nachricht), um eure Anfrage zu beantworten und ein Angebot vorzubereiten. Zusätzlich übermitteln wir, von welcher Seite dieser Website ihr zur Anfrage gekommen seid. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen). Das Formular wird über eine Funktion unseres Hosters Vercel in einem Rechenzentrum in Frankfurt am Main verarbeitet und per E-Mail an unser Postfach bei {ph("E-Mail-Anbieter, z. B. IONOS")} übermittelt. Zum Schutz vor Spam prüfen wir ein verstecktes Feld und die Ausfülldauer; Rechtsgrundlage dafür ist Art. 6 Abs. 1 lit. f DSGVO. Wir speichern die Anfrage, solange es für die Bearbeitung nötig ist, und löschen sie, wenn kein Vertrag zustande kommt, spätestens nach {ph("Löschfrist, z. B. 6 Monaten")}, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.</p>
+<p>Wenn ihr uns über das Anfrageformular kontaktiert, verarbeiten wir die Angaben, die ihr macht (zum Beispiel Name, Betrieb oder Instagram-Profil, Telefon, E-Mail, Branche, Wünsche, Region, Ort, gewünschter Kontaktweg und Nachricht), um eure Anfrage zu beantworten und ein Angebot vorzubereiten. Zusätzlich übermitteln wir, von welcher Seite dieser Website ihr zur Anfrage gekommen seid und, falls der Link eine Kampagnenkennung enthielt (utm_source, zum Beispiel „instagram“), diese Kennung. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen). Das Formular wird über eine Funktion unseres Hosters Vercel in einem Rechenzentrum in Frankfurt am Main verarbeitet und per E-Mail an unser Postfach bei {ph("E-Mail-Anbieter, z. B. IONOS")} übermittelt. Zum Schutz vor Spam prüfen wir ein verstecktes Feld, die Ausfülldauer und die Herkunft der Anfrage und halten die IP-Adresse höchstens zehn Minuten im Arbeitsspeicher, um massenhafte Anfragen zu begrenzen; Rechtsgrundlage dafür ist Art. 6 Abs. 1 lit. f DSGVO. Wir speichern die Anfrage, solange es für die Bearbeitung nötig ist, und löschen sie, wenn kein Vertrag zustande kommt, spätestens nach {ph("Löschfrist, z. B. 6 Monaten")}, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.</p>
 <h2>6. Kontakt per E-Mail, Telefon oder WhatsApp</h2>
 <p>Wenn ihr uns per E-Mail, Telefon oder WhatsApp kontaktiert, verarbeiten wir eure Angaben zur Bearbeitung der Anfrage (Art. 6 Abs. 1 lit. b DSGVO). Beim Klick auf einen WhatsApp-Link öffnet sich die App oder Website von WhatsApp. Anbieter ist die WhatsApp Ireland Limited, Dublin, Irland {ph("vollständige Anschrift bei der rechtlichen Prüfung ergänzen")}. Ab dann gelten die Datenschutzhinweise von WhatsApp. Dabei können Daten auch an Meta in den USA übermittelt werden.</p>
 <h2>7. Links zu Instagram</h2>
@@ -1424,7 +1441,7 @@ def write_sitemap():
             for slug in CLIENTS[key]["reels"][:1]:
                 r = REELS[slug]
                 vids += f"""
-    <video:video><video:thumbnail_loc>{BASE}/media/{slug}.webp</video:thumbnail_loc><video:title>{html.escape(r['kunde'] + ': ' + r['format'])}</video:title><video:description>{html.escape(video_desc(slug))}</video:description><video:content_loc>{BASE}/media/{slug}.mp4</video:content_loc><video:duration>{r['dauer']}</video:duration><video:publication_date>{r['upload']}T12:00:00+02:00</video:publication_date></video:video>"""
+    <video:video><video:thumbnail_loc>{BASE}/media/{slug}.webp</video:thumbnail_loc><video:title>{html.escape(r['kunde'] + ': ' + r['format'])}</video:title><video:description>{html.escape(video_desc(slug))}</video:description><video:content_loc>{BASE}/media/{slug}.mp4</video:content_loc><video:duration>{r['dauer']}</video:duration><video:publication_date>{upload_ts(slug)}</video:publication_date></video:video>"""
         items.append(f"  <url><loc>{url(path)}</loc><lastmod>{lm[path]}</lastmod>{vids}\n  </url>")
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
            'xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n' + "\n".join(items) + "\n</urlset>\n")
