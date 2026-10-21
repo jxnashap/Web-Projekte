@@ -50,18 +50,25 @@ const P = server.address().port, B = `http://127.0.0.1:${P}`;
   console.log('weiter ohne Paket (erwartet 2):', await step());
   await p.click('label.opt:has(input[value="8"])'); await p.click('label.opt:has(input[value="recruiting"])');
   await p.click('[data-q="next"]'); await p.waitForTimeout(400);
-  await p.click('label.opt:has(input[value="sofort"])'); await p.fill('#ort', 'Lübeck');
+  await p.click('label.opt:has(input[value="sofort"])'); await p.click('label.opt:has(input[value="luebeck"])'); await p.fill('#ort', 'Lübeck');
   await p.click('[data-q="next"]'); await p.waitForTimeout(400);
   console.log('Kontaktschritt (erwartet 4):', await step());
   await p.click('[data-q="send"]'); await p.waitForTimeout(400);
   console.log('Fehler sichtbar:', await p.evaluate(() => document.querySelectorAll('.field.bad').length));
   await p.screenshot({ path: OUT + '/09-quiz-fehler.png' });
-  await p.fill('#name', 'Testkunde'); await p.fill('#telefon', '0451 123456');
+  // Kontaktweg WhatsApp verlangt Telefonnummer, E-Mail allein reicht nicht
+  await p.click('label.opt:has(input[value="whatsapp"])');
+  await p.fill('#name', 'Testkunde'); await p.fill('#email', 'test@example.de');
+  await p.click('[data-q="send"]'); await p.waitForTimeout(400);
+  console.log('WhatsApp ohne Telefon, Fehler (erwartet 1):', await p.evaluate(() => document.querySelectorAll('.field.bad').length),
+    'Fokus:', await p.evaluate(() => document.activeElement && document.activeElement.id));
+  await p.fill('#telefon', '0451 123456');
   await p.waitForTimeout(4200);
   await Promise.all([p.waitForURL(/danke/, { timeout: 8000 }).catch(() => {}), p.click('[data-q="send"]')]);
   await p.waitForTimeout(1200);
   console.log('nach Senden URL:', p.url().replace(B, ''), 'POST:', posted);
   await p.screenshot({ path: OUT + '/10-danke.png' });
+  console.log('Danke-Block Handwerk sichtbar:', await p.evaluate(() => { const e = document.querySelector('[data-b="handwerk"]'); return !!e && !e.hidden; }));
   // 6) Referenz mit Ton-Knopf
   await p.goto(B + '/referenzen', { waitUntil: 'load' }); await p.waitForTimeout(800);
   await p.click('.filter button[data-f="immobilien"]'); await p.waitForTimeout(300);

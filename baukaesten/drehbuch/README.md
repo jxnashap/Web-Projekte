@@ -29,24 +29,32 @@ Scrollen, animiert werden nur transform, opacity, clip-path und filter.
 
 ## JS-Module (`js/drehbuch.js`)
 
-- **Klappe**: nur beim ersten Besuch der Sitzung (`sessionStorage db-seen`), 1,15 s, danach `db:arrived`.
-- **Vorhang** bei internen Links, **Overlay-Menü** mit Fokus und Escape.
-- **Masken** `.split` (Wörter) und `data-split="chars"` (Zeichen mit Blur), `aria-label` bleibt lesbar.
+- **Klappe**: nur auf der Startseite beim ersten Besuch der Sitzung (`sessionStorage db-seen`), 700 ms, entfällt bei reduzierter Bewegung, danach `db:arrived`.
+- **Bewegung anhalten** `.motion-btn` im Header (WCAG 2.2.2): pausiert Videos, Laufband und Animationen, gemerkt in `sessionStorage db-still`.
+- **Vorhang** bei internen Links (nicht zu /anfrage), **Overlay-Menü** mit Fokusfalle (`inert` auf dem Rest der Seite) und Escape.
+- **Masken** `.split` (Wörter) und `data-split="chars"` (Zeichen mit Blur). Der Text steht zusätzlich als `.sr-only` im Element, die Animation ist `aria-hidden`. Wörter werden an Bindestrich und `&shy;` geteilt; der Trennstrich einer weichen Stelle erscheint nur, wenn dort wirklich umbrochen wird.
 - **Reveals** `.rv`, `.rv-img`, `.rv-focus` (Unschärfe zu scharf), `.line-h`, `.dp-row`, `[data-count]`.
 - **Lerp-Engine** für Header, Parallax `[data-plx]`, Scrub `[data-scrub]` (setzt `--p`, schaltet `.scrub-step` und `.beat`), Wort-Aufhellung `[data-say]`, HUD (Timecode = Scrollfortschritt × `data-runtime`, Szene aus `[data-scene]`), Mobil-Leiste.
-- **Videos**: `video[data-mp4][data-webm]` werden erst nahe dem Viewport geladen (AV1 bevorzugt), `data-auto` spielt stumm im Bild und pausiert außerhalb, `data-eager` lädt sofort. Timecode im `.phone` folgt `currentTime`. `.sound` schaltet Ton.
+- **Videos**: `video[data-mp4][data-webm]` werden erst nach `load` und nahe dem Viewport geladen (AV1 bevorzugt), bei Datensparmodus gar nicht. `data-auto` spielt stumm im Bild und pausiert außerhalb. Referenzvideos (`phone(..., watch=True)`) haben statische `<source>`, `controls` ohne JS und Untertitel (`<track>` aus `media/<slug>.de.vtt`). Timecode im `.phone` folgt `currentTime`. `.sound` schaltet Ton und Untertitel.
 - **Filter** `.filter [data-f]` blendet `[data-branche]` ein und aus.
-- **Quiz** `form.quiz`: `.q-step` pro Frage, `data-req` = Pflicht-Radio, `data-auto` = springt nach Auswahl weiter, Kontaktprüfung (Telefon oder E-Mail), Vorauswahl über `?branche=…&paket=…`, Versand als JSON an `form.action`, danach `/danke`. Ohne JS: normales Formular.
+- **Quiz** `form.quiz`: `.q-step` pro Frage, `data-req` = Pflicht-Radio mit `.q-err`, `data-auto` = springt nach Auswahl per Maus oder Finger weiter (nicht per Pfeiltaste), Fokus wandert mit. Kontaktprüfung je nach gewähltem Kontaktweg (Anruf/WhatsApp → Telefon, E-Mail → Adresse), Fehler mit `aria-invalid` und `aria-describedby`. Vorauswahl über `?branche=…&paket=…&extras=…`, Versand als JSON an `form.action` mit Quelle (vorherige Seite) und `utm_source`, danach `/danke?b=<branche>`. Bei Fehlern füllt `.q-msg` WhatsApp- und Mail-Link mit einer Zusammenfassung. Ohne JS: normales Formular.
 
 ## Neues Projekt
 
 1. `generatoren/build_scm.py` kopieren und Daten oben austauschen (Kontakt, `REELS`, `CLIENTS`, `BRANCHEN`, FAQ).
 2. Videos encodieren: volle Länge 720×1280 H.264 (CRF 25, faststart) + AV1 (SVT, CRF 40); Loops 8 s, 432×768, stumm; Poster als WebP.
 3. `python3 generatoren/build_<projekt>.py` schreibt die Site (saubere URLs: `/branchen/gastronomie` → `branchen/gastronomie.html`).
-4. QA: `NODE_PATH=/opt/node22/lib/node_modules node tools/shot.js <site> <out> [--mobile] [--flat]` → Reveals n/n, JS-Fehler, 404, Überlaufen, Gedankenstriche, Platzhalter-Zahl.
-5. `vercel.json` (cleanUrls, Weiterleitungen, CSP, Caching) und `api/anfrage.js` (SMTP) aus dem SCM-Projekt übernehmen.
+4. QA mit `NODE_PATH=/opt/node22/lib/node_modules`:
+   - `node tools/shot.js <site> <out> [--mobile] [--flat]` → Reveals n/n, JS-Fehler, 404, Überlaufen (gegen die eingestellte Breite), Gedankenstriche, Platzhalter-Zahl.
+   - `node tools/umbruch.js <site> [breiten…]` → Wörter, die in animierten Überschriften mitten im Wort brechen (Standard 1440 bis 360 px). Muss „keine gebrochenen Wörter" melden.
+   - `node tools/interact.js <site> <out>` → Klappe, Skript-Scrub, Menü, Quiz-Durchlauf, Danke-Seite, Filter.
+5. Projektordner wie bei SCM: statische Dateien in `public/`, daneben `api/anfrage.js` (SMTP, Herkunftsprüfung, Mindestzeit, Drossel, A/B/C-Einstufung), `package.json` (nodemailer, Node 22) und `vercel.json` (`outputDirectory: public`, cleanUrls, Weiterleitungen, CSP getrennt nach Live-Host und Vorschau, Caching). Die Generator-Konstante `SITE` zeigt auf `public/`.
 
 ## Stolpersteine (gelernt bei SCM)
+
+- Mobil wächst `innerWidth` mit zu breitem Inhalt mit. Überlaufen deshalb gegen die eingestellte Viewport-Breite messen, nicht gegen `innerWidth`.
+- `overflow-wrap:break-word` rettet zu lange Wörter in Masken-Überschriften nur durch einen Bruch mitten im Wort. Lösung: Schriftgröße im zweispaltigen Seitenkopf begrenzen (`.head-grid .d1`, `.case-head .d1`) und mit `tools/umbruch.js` prüfen.
+- Text im ersten Viewport nicht per `opacity` einblenden (LCP wartet sonst auf die Animation), nur per `transform`.
 
 - `[hidden]` braucht `display:none!important`, sonst gewinnt `.btn{display:inline-flex}`.
 - Masken mit `overflow:hidden` schneiden Umlaut-Punkte bei enger Zeilenhöhe ab: `.split .w` braucht Innenabstand oben.

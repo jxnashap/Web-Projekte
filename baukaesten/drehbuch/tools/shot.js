@@ -1,7 +1,7 @@
 /* QA Drehbuch-Baukasten — Playwright-Screenshots + Prüfungen.
    Aufruf:  NODE_PATH=/opt/node22/lib/node_modules node shot.js <site-dir> <out-dir> [--mobile] [--flat] [/pfad /pfad2 …]
    Ohne Pfade: alle *.html der Site (saubere URLs wie auf Vercel).
-   Prüft pro Seite: Reveals n/n, JS-Fehler, 404-Anfragen, horizontales Überlaufen.
+   Prüft pro Seite: Reveals n/n, JS-Fehler, 404-Anfragen, horizontales Überlaufen (gegen die eingestellte Breite).
    --flat: Skript-Kapitel ohne Sticky (für lesbare Ganzseiten-Shots). */
 const { chromium } = require('playwright');
 const http = require('http');
@@ -69,9 +69,10 @@ html{scroll-behavior:auto!important}
   const port = server.address().port;
 
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const VIEW = MOBILE ? { width: 390, height: 844 } : { width: 1440, height: 900 };
   const ctx = await browser.newContext(MOBILE
-    ? { viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true }
-    : { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+    ? { viewport: VIEW, deviceScaleFactor: 1, isMobile: true, hasTouch: true }
+    : { viewport: VIEW, deviceScaleFactor: 1 });
   fs.mkdirSync(OUT, { recursive: true });
   const report = [];
 
@@ -91,9 +92,11 @@ html{scroll-behavior:auto!important}
       window.scrollTo(0, 0);
     });
     await page.waitForTimeout(600);
-    const info = await page.evaluate(() => {
-      const q = s => document.querySelectorAll(s).length;
-      const sw = document.documentElement.scrollWidth, vw = window.innerWidth;
+    const info = await page.evaluate((VW) => {
+      // Sichtbare Elemente zählen: Blöcke in [hidden] (z. B. Danke-Varianten) bleiben außen vor.
+      const q = s => [...document.querySelectorAll(s)].filter(el => !el.closest('[hidden]')).length;
+      // Mobil wächst innerWidth mit dem Inhalt (Layout-Viewport) – daher gegen die eingestellte Breite messen.
+      const sw = Math.max(document.documentElement.scrollWidth, window.innerWidth), vw = VW;
       const wide = [];
       if (sw > vw + 1) document.querySelectorAll('body *').forEach(el => {
         const r = el.getBoundingClientRect();
@@ -102,7 +105,7 @@ html{scroll-behavior:auto!important}
       return { rv: [q('.rv.in,.rv-img.in,.rv-focus.in,.line-h.in,.split.in'), q('.rv,.rv-img,.rv-focus,.line-h,.split')],
                h1: q('h1'), title: document.title, overflow: sw - vw, wide,
                ph: q('.ph'), dashes: (document.body.innerText.match(/[–—]/g) || []).length };
-    });
+    }, VIEW.width);
     await page.addStyleTag({ content: END_CSS });
     await page.waitForTimeout(250);
     const name = (pg === '/' ? 'index' : pg.slice(1).replace(/\//g, '__')) + (MOBILE ? '-m' : '') + '.png';
