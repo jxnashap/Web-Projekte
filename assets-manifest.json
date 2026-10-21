@@ -1,6 +1,10 @@
 [
-  { "url": "https://i.instagram.com/api/v1/users/web_profile_info/?username=scm.creatives", "path": ".preview-cache/scm/ig-profile.json", "headers": "x-ig-app-id: 936619743392459" },
-  { "url": "https://imginn.com/scm.creatives/", "path": ".preview-cache/scm/imginn.html" },
-  { "url": "https://r.jina.ai/https://imginn.com/scm.creatives/", "path": ".preview-cache/scm/imginn-jina.md" },
-  { "url": "https://api.microlink.io/?url=https%3A%2F%2Fwww.instagram.com%2Fscm.creatives%2F&screenshot=true&meta=false&viewport.width=1280&viewport.height=2000&embed=screenshot.url", "path": ".preview-cache/scm/ig-shot.png" }
+  { "url": "https://www.instagram.com/scm.creatives/embed/", "path": ".preview-cache/scm/ig-embed.html" },
+  { "url": "https://www.instagram.com/api/v1/users/web_profile_info/?username=scm.creatives", "path": ".preview-cache/scm/ig-profile-www.json", "headers": "x-ig-app-id: 936619743392459" },
+  { "url": "https://i.instagram.com/api/v1/users/web_profile_info/?username=scm.creatives", "path": ".preview-cache/scm/ig-profile-2.json", "headers": "x-ig-app-id: 936619743392459" },
+  { "url": "https://r.jina.ai/https://www.instagram.com/scm.creatives/embed/", "path": ".preview-cache/scm/ig-embed-jina.md" },
+  { "url": "https://www.picnob.com/profile/scm.creatives/", "path": ".preview-cache/scm/picnob.html" },
+  { "url": "https://greatfon.com/v/scm.creatives", "path": ".preview-cache/scm/greatfon.html" },
+  { "url": "https://www.pixwox.com/profile/scm.creatives/", "path": ".preview-cache/scm/pixwox.html" },
+  { "url": "https://www.instagram.com/scm.creatives/", "path": ".preview-cache/scm/ig-ytdlp-profile.mp4", "mode": "ytdlp" }
 ]

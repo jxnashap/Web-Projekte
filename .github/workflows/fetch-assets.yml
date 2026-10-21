@@ -27,12 +27,16 @@ jobs:
             path=$(echo "$item" | jq -r '.path')
             mkdir -p "$(dirname "$path")"
             headers=$(echo "$item" | jq -r '.headers // empty')
-            if [ -n "$headers" ]; then
+            mode=$(echo "$item" | jq -r '.mode // empty')
+            if [ "$mode" = "ytdlp" ]; then
+              command -v yt-dlp >/dev/null || pip install -q yt-dlp
+              yt-dlp -q --no-warnings --write-info-json -f "best[ext=mp4]/best" -o "$path" "$url" || echo "yt-dlp failed: $url"
+            elif [ -n "$headers" ]; then
               curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -H "$headers" -o "$path" "$url"
             else
               curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -o "$path" "$url"
             fi
-            echo "fetched: $path ($(stat -c%s "$path") bytes)"
+            [ -f "$path" ] && echo "fetched: $path ($(stat -c%s "$path") bytes)" || echo "missing: $path"
           done
 
       - name: Redact secrets from fetched text files
