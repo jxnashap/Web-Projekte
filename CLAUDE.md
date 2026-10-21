@@ -14,8 +14,9 @@ Repo für alle Website-Projekte. Struktur:
 - `webseiten/scm-creatives/` – Social Media Agentur Kiel/Lübecker Bucht (Drehbuch-
   Baukasten, Schwarz/Weiß/Rot, Archivo + Courier Prime, echte Reels der Kunden,
   Anfrage-Quiz mit Vercel Function per SMTP, Vercel-ready mit vercel.json,
-  Sitemap mit Video-Einträgen). Platzhalter + Livegang: `PLATZHALTER.md`.
-  Recherche und Plan: `.preview-cache/scm/recherche/`
+  Sitemap mit Video-Einträgen). Statische Dateien in `public/`, daneben `api/`.
+  Platzhalter, Vercel-Einrichtung + Livegang: `PLATZHALTER.md`.
+  Recherche und Plan: `.preview-cache/scm/recherche/` · PR #10
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
@@ -36,7 +37,8 @@ ihren ursprünglichen Branches (PR #1/#2).
   erzählt sich als Film (Szene 01…, Klappe als Preloader, Handy-Rahmen mit REC und
   Live-Timecode, Skript-Kapitel mit Scroll-Scrub, HUD-Timecode, Abspann-Footer,
   Mehrschritt-Quiz). Engine aus premium-estate v2. Erstes Projekt: scm-creatives
-  (`generatoren/build_scm.py`), QA mit `tools/shot.js` (saubere URLs, --mobile).
+  (`generatoren/build_scm.py`), QA mit `tools/shot.js` (saubere URLs, --mobile),
+  `tools/umbruch.js` (Wortbrüche in Überschriften) und `tools/interact.js`.
 
 ## Arbeitsweise
 - Pro Projekt ein Branch `claude/<projekt>` + ein PR; Auslieferung als ZIP nach `auslieferung/`.
