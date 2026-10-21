@@ -725,8 +725,8 @@ html.still *,html.still *::before,html.still *::after{animation-play-state:pause
 .opts--chips .opt span{min-height:56px;padding:.8rem 1rem .8rem 3rem}
 @media(max-width:620px){.opts--chips{grid-template-columns:1fr}}
 .assure{display:flex;flex-wrap:wrap;gap:.6rem 1.4rem;margin:0 auto 2rem;max-width:860px;font:700 .8rem/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--fg)}
-.assure span{display:inline-flex;gap:.5rem;align-items:baseline}
-.assure span::before{content:"✓";color:var(--red)}
+.assure>span{display:inline-flex;gap:.5rem;align-items:baseline}
+.assure>span::before{content:"✓";color:var(--red)}
 .alt-line{margin-top:1.6rem;padding-top:1.2rem;border-top:1px solid var(--line);font-size:.98rem;color:var(--fg-dim)}
 .alt-line a{color:var(--fg);border-bottom:2px solid var(--red);padding-block:.3rem}
 .q-msg:target{display:block}
@@ -807,3 +807,37 @@ html.still *,html.still *::before,html.still *::after{animation-play-state:pause
 .callout{border:1px solid var(--line-2);border-radius:16px;padding:1.2rem 1.4rem;background:var(--bg-2);max-width:46em}
 .callout p{color:var(--fg)}
 .links-row{display:flex;flex-wrap:wrap;gap:1rem 2rem;margin-top:2rem}
+
+/* ============================================================
+   v1.2 · UX-Runde 2
+   ============================================================ */
+/* Referenzvideo mit Ton: Deko weicht, Untertitel und Steuerung liegen frei, Knopf nach oben */
+.phone:has(.sound[aria-pressed="true"]) .phone-ui{display:none}
+.phone .sound[aria-pressed="true"]{top:.8rem;bottom:auto}
+.phone .sound.sound--txt{width:auto;padding:0 .9rem 0 .75rem;border-radius:22px;gap:.45rem;display:inline-flex;align-items:center}
+.sound--txt span{font:700 .68rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#fff;white-space:nowrap}
+/* Beschriftung im Handy-Rahmen auch über hellen Bildern lesbar */
+.pu-bot b,.pu-bot span{text-shadow:0 1px 8px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.6)}
+/* Lange Wörter in Rechtstexten */
+.prose h2{-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word}
+/* Quiz: Zähler nur einmal sichtbar (Legende bleibt für Screenreader) */
+.q-step legend small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* Anfrage: Frage 1 im ersten Bildschirm */
+.page-anfrage .page-head{padding-top:clamp(5.5rem,11vh,7.5rem)}
+.page-anfrage .page-head .lbl{display:none}
+@media(max-width:640px){
+  .page-anfrage .page-head .lead{font-size:1rem}
+  .page-anfrage .assure{margin-bottom:1.2rem;gap:.2rem 1rem;font-size:.72rem}
+  .page-anfrage .q-progress{margin-bottom:1rem}
+  .page-anfrage .q-step legend{margin-bottom:.4rem}
+}
+/* Tap-Ziele und Mindestschrift mobil (Rest) */
+@media(max-width:640px){
+  .brand{padding-block:5px}
+  .clients a{display:inline-block;padding-block:.6rem}
+  .nav-list a{padding-block:.2rem}
+  .pack .tag,.fact span,.pack .meta,.pack-inc b,.sheet-note{font-size:.75rem}
+}
+@media(min-width:621px){.opts--chips4{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:620px){.opts--chips4{grid-template-columns:1fr 1fr}}
+@media(max-width:340px){.d1,.hero .d1,.head-grid .d1,.case-head .d1{font-size:2.4rem}}

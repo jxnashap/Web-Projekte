@@ -5,7 +5,8 @@
 Fakten nur aus .preview-cache/scm/ (Instagram-Embeds, Reels, Transkripte) und
 dem Briefing (.preview-cache/scm/recherche/briefing.md). Alles Unbelegte ist
 als [PLATZHALTER] sichtbar markiert. Schreibregel: keine Gedankenstriche.
-v1.1 setzt die UX-Analyse um (ux-reports: Barrierefreiheit, Conversion, SEO, Texte).
+v1.1 setzt die UX-Analyse um (ux-reports: Barrierefreiheit, Conversion, SEO, Texte),
+v1.2 die zweite UX-Runde (Untertitel, Quiz, Platzhalter für Unbestätigtes, SEO-Feinschliff).
 Aufruf: python3 build_scm.py  → schreibt webseiten/scm-creatives/public/
 """
 import datetime
@@ -202,7 +203,7 @@ BRANCHEN = {
              ("Können wir Aktionen kurzfristig bewerben?", f"Ja, wenn wir den Termin früh genug kennen. Sagt uns Aktionen am besten {ph('nötiger Vorlauf, z. B. zwei Wochen')} vorher.")],
         title="Reels für Restaurants und Gastro in Kiel | SCM Creatives",
         desc="Reels für Restaurants, Bars und Mittagstische in Kiel und an der Lübecker Bucht: Sketche am Tisch, Aktionen, Küche von innen. Nach Skript, vor Ort gedreht."),
-    "immobilien": dict(name="Immobilien", short="Immobilien", fuer="euer Maklerbüro", img="immobilien-dreh", im="bei Maklern", aus="aus der Immobilienbranche",
+    "immobilien": dict(name="Immobilien", short="Immobilien", fuer="euer Maklerbüro", img="immobilien-dreh", im="bei Maklern", aus="aus der Immobilien&shy;branche",
         head_reel="bs-entweder-oder",
         seo_h1="Social-Media-Videos und Reels für Immobilienmakler in Kiel und Umgebung",
         h1="Makler, die man kennt,<br><em>bevor man anruft.</em>",
@@ -467,18 +468,21 @@ def sec_head(num, label, title, lead=None, link=None):
       <h2 class="d2 split">{title}</h2></div>{l}{ld}</div>"""
 
 
-def phone(slug, kind="loop", cls="", eager=False, sound=False, ui=True, label=True, plx=None, watch=False):
+def phone(slug, kind="loop", cls="", eager=False, sound=False, ui=True, label=True, plx=None, watch=False, named=True):
     r = REELS[slug]
     src = f"/media/{slug}-loop" if kind == "loop" else f"/media/{slug}"
     poster = f"/media/{slug}-sm.webp" if kind == "loop" else f"/media/{slug}.webp"
     b = BRANCHEN[r["branche"]]["name"]
-    snd = f'<button class="sound" type="button" aria-pressed="false" aria-label="Ton">{I_SOUND}</button>' if sound else ""
+    if sound and watch:
+        snd = f'<button class="sound sound--txt" type="button" aria-pressed="false">{I_SOUND}<span>Ton + Untertitel</span></button>'
+    else:
+        snd = f'<button class="sound" type="button" aria-pressed="false" aria-label="Ton">{I_SOUND}</button>' if sound else ""
     p = f' data-plx="{plx}"' if plx else ""
     kit = " · mit KI-Elementen" if r.get("ki") else ""
-    aria = f'aria-label="Video: {html.escape(r["titel"])}, {html.escape(r["kunde"])}{kit}"'
+    aria = f'aria-label="Video: {html.escape(r["titel"])}, {html.escape(r["kunde"])}{kit}"' if named else 'aria-hidden="true"'
     trk = f'<track kind="captions" srclang="de" label="Deutsch" src="/media/{slug}.de.vtt">' if (kind == "full" and os.path.exists(f"{SITE}/media/{slug}.de.vtt")) else ""
     if watch:
-        video = (f'<video muted playsinline loop controls preload="none" width="720" height="1280" poster="{poster}" data-auto {aria}>'
+        video = (f'<video muted playsinline loop controls preload="none" width="720" height="1280" poster="{poster}" data-auto data-watch {aria}>'
                  f'<source src="{src}.webm" type=\'video/webm; codecs="av01.0.05M.08, opus"\'>'
                  f'<source src="{src}.mp4" type="video/mp4">{trk}</video>')
         img = ""
@@ -501,8 +505,8 @@ def reel_card(slug, d=None, rv=True):
     ki = ' <span class="ki">· mit KI-Elementen</span>' if r.get("ki") else ""
     return f"""<article class="reel{' rv' if rv else ''}"{dd} data-branche="{r['branche']}">
       <a href="/referenzen/{r['client']}" aria-label="{html.escape(r['kurz'])}, {b}, {html.escape(r['format'])}{' · mit KI-Elementen' if r.get('ki') else ''}: Aufbau ansehen">
-        {phone(slug, label=False)}
-        <div class="reel-meta" style="margin-top:.9rem"><b>{r['kurz']}</b><span>{b} · {r['format']}{ki}</span></div>
+        {phone(slug, label=False, named=False)}
+        <div class="reel-meta" style="margin-top:.9rem"><b>{r['kurz']}</b> <span>{b} · {r['format']}{ki}</span></div>
       </a></article>"""
 
 
@@ -841,7 +845,7 @@ def ref_tile(client_key, d=None):
     dd = f' data-d="{d}"' if d else ""
     if c["reels"]:
         return reel_card(c["reels"][0], d)
-    return f"""<article class="reel rv"{dd} data-branche="{c['branche']}"><a href="/referenzen/{client_key}" aria-label="{html.escape(c['name'])}, Gastronomie, Video folgt">
+    return f"""<article class="reel rv"{dd} data-branche="{c['branche']}"><a href="/referenzen/{client_key}">
       <div class="phone phone--empty"><span>Video<br>folgt</span></div>
       <div class="reel-meta" style="margin-top:.9rem"><b>{c['name']}</b><span>Gastronomie · Video folgt</span></div></a></article>"""
 
@@ -1271,7 +1275,7 @@ def build_anfrage():
               opt("extras", "recruiting", "Recruiting-Videos", kind="checkbox") + opt("extras", "fotos", "Fotos oder Imagefilm", kind="checkbox"))
     s_opts = (opt("start", "sofort", "So bald wie möglich") + opt("start", "1-3", "In 1 bis 3 Monaten") + opt("start", "spaeter", "Später, erst mal informieren"))
     r_opts = (opt("region", "kiel", "Kiel und Umgebung") + opt("region", "luebeck", "Lübeck und Lübecker Bucht") + opt("region", "woanders", "Woanders"))
-    k_opts = opt("kontaktweg", "anruf", "Anruf") + opt("kontaktweg", "whatsapp", "WhatsApp") + opt("kontaktweg", "email", "E-Mail")
+    k_opts = opt("kontaktweg", "anruf", "Anruf") + opt("kontaktweg", "whatsapp", "WhatsApp") + opt("kontaktweg", "email", "E-Mail") + opt("kontaktweg", "", "Egal")
     wa_base = f"https://wa.me/{WHATSAPP}" if WHATSAPP else ""
     msg_wa = f'<a class="btn" data-wa="{wa_base}" href="{wa_href()}"{ext(wa_href())}>Per WhatsApp senden{ext_txt(wa_href())}</a>'
     msg_ml = f'<a class="btn btn-ghost" data-mail="{MAIL or ""}" href="{mail_href()}">Per E-Mail senden</a>'
@@ -1292,13 +1296,13 @@ def build_anfrage():
     <fieldset class="q-sub"><legend class="lbl">Wo ist euer Betrieb? (optional)</legend><div class="opts opts--chips">{r_opts}</div></fieldset>
     <div class="fields"><div class="field full"><label for="ort">Ort eures Betriebs (optional)</label><input id="ort" name="ort" type="text" autocomplete="address-level2" placeholder="z. B. Kiel, Lübeck, Scharbeutz"></div></div></fieldset>
   <fieldset class="q-step"><legend><small>Frage 5 von 5</small>Wie erreichen wir euch?</legend>
-    <fieldset class="q-sub"><legend class="lbl">Wie sollen wir uns melden? (optional)</legend><div class="opts opts--chips">{k_opts}</div></fieldset>
+    <fieldset class="q-sub"><legend class="lbl">Wie sollen wir uns melden? (optional)</legend><div class="opts opts--chips opts--chips4">{k_opts}</div></fieldset>
     <p class="q-note" id="hint-kontakt">Felder mit * brauchen wir. Dazu Telefon oder E-Mail, eins von beiden reicht.</p>
     <div class="fields">
       <div class="field" data-check="req"><label for="name">Name *</label><input id="name" name="name" type="text" autocomplete="name" required><span class="err" id="err-name">Bitte gebt euren Namen an.</span></div>
       <div class="field"><label for="betrieb">Betrieb oder Instagram-Profil</label><input id="betrieb" name="betrieb" type="text" autocomplete="organization" aria-describedby="hint-betrieb"><span class="hint" id="hint-betrieb">Dann können wir uns vorab ansehen, wie ihr heute auftretet.</span></div>
       <div class="field" data-check="contact"><label for="telefon">Telefon oder WhatsApp</label><input id="telefon" name="telefon" type="tel" autocomplete="tel" inputmode="tel" aria-describedby="hint-kontakt hint-tel"><span class="hint" id="hint-tel">Für eine kurze Rückfrage. Wir rufen nur wegen eurer Anfrage an.</span><span class="err" id="err-telefon">Bitte gebt eine Telefonnummer oder eine E-Mail-Adresse an, damit wir euch erreichen.</span></div>
-      <div class="field"><label for="email">E-Mail</label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" aria-describedby="hint-kontakt"></div>
+      <div class="field"><label for="email">E-Mail</label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" aria-describedby="hint-kontakt"><span class="err" id="err-email"></span></div>
       <div class="field full field-andere" hidden><label for="andere">Welche Branche?</label><input id="andere" name="andere" type="text" placeholder="z. B. Friseur, Hotel, Autohaus"></div>
       <div class="field full"><label for="nachricht">Was sollen wir noch wissen? (optional)</label><textarea id="nachricht" name="nachricht" rows="4"></textarea></div>
     </div>

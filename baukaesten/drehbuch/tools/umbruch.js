@@ -1,11 +1,11 @@
 /* QA Drehbuch-Baukasten — findet Wörter, die in animierten Überschriften (.split) mitten im Wort umbrechen.
    Aufruf:  NODE_PATH=/opt/node22/lib/node_modules node umbruch.js <site-dir> [breite …]
-   Standardbreiten: 1440 1280 1024 820 390 360. Ausgabe: Seite, Breite, gebrochene Wörter. */
+   Standardbreiten: 1440 1280 1024 820 390 360 320. Ausgabe: Seite, Breite, gebrochene Wörter. */
 const { chromium } = require('playwright');
 const http = require('http'), fs = require('fs'), path = require('path');
 const SITE = path.resolve(process.argv[2]);
 const WIDTHS = process.argv.slice(3).map(Number).filter(Boolean);
-if (!WIDTHS.length) WIDTHS.push(1440, 1280, 1024, 820, 390, 360);
+if (!WIDTHS.length) WIDTHS.push(1440, 1280, 1024, 820, 390, 360, 320);
 const MIME = { html: 'text/html; charset=utf-8', css: 'text/css', js: 'text/javascript', woff2: 'font/woff2', svg: 'image/svg+xml', webp: 'image/webp', jpg: 'image/jpeg', png: 'image/png' };
 function walk(dir, base = '') {
   let out = [];

@@ -379,6 +379,7 @@
       vReady = true; loadVideo(v);
       v.muted = !on;
       if (v.textTracks && v.textTracks[0]) v.textTracks[0].mode = on ? 'showing' : 'hidden';
+      if (v.hasAttribute('data-watch')) v.controls = on; // Referenzvideo: Pause, Spulen, Untertitel, Vollbild
       if (on) { try { v.currentTime = 0; } catch (e) {} play(v); }
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
@@ -407,13 +408,14 @@
   /* Mobil-Leiste */
   var mbar = document.querySelector('.mbar');
   if (mbar) {
-    var hideZones = document.querySelectorAll('.credits');
+    var hideZones = document.querySelectorAll('.credits'), qNav = document.querySelector('.q-nav');
     lerpItem(function () { return window.scrollY; }, function () {
       var show = window.scrollY > window.innerHeight * 0.6 || document.body.classList.contains('page-anfrage');
       hideZones.forEach(function (z) {
         var r = z.getBoundingClientRect();
         if (r.top < window.innerHeight * 0.85 && r.bottom > 0) show = false;
       });
+      if (qNav) { var rq = qNav.getBoundingClientRect(); if (rq.top < window.innerHeight && rq.bottom > 0) show = false; }
       mbar.classList.toggle('on', show);
     }, 1);
   }
@@ -432,6 +434,7 @@
     var tField = form.querySelector('input[name="t"]');
     var other = form.querySelector('.field-andere');
     var MAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    var hintK = form.querySelector('#hint-kontakt'), hintK0 = hintK ? hintK.textContent : '';
     function val(n) { var c = form.querySelector('[name="' + n + '"]:checked'); return c ? c.value : ''; }
     function syncOther() { if (other) other.hidden = val('branche') !== 'andere'; }
     function show(i, focus) {
@@ -447,7 +450,7 @@
         var st = stepsQ[cur]; st.setAttribute('tabindex', '-1');
         st.focus({ preventScroll: true });
         var y = form.getBoundingClientRect().top + window.scrollY - 96;
-        if (Math.abs(window.scrollY - y) > 40) window.scrollTo({ top: y, behavior: prm ? 'auto' : 'smooth' });
+        window.scrollTo({ top: y, behavior: prm ? 'auto' : 'smooth' }); // löst ein laufendes Scrollen ab
       }
     }
     function mark(inputs, bad, errEl) {
@@ -463,7 +466,11 @@
       var s = stepsQ[i], ok = true, first = null;
       var req = s.getAttribute('data-req'), qe = s.querySelector('.q-err');
       var miss = !!req && !s.querySelector('input[name="' + req + '"]:checked');
-      if (qe) qe.hidden = !miss;
+      if (qe) {
+        qe.hidden = !miss;
+        if (miss) s.setAttribute('aria-describedby', qe.id); else s.removeAttribute('aria-describedby');
+        s.querySelectorAll('input[name="' + req + '"]').forEach(function (r) { r.setAttribute('aria-invalid', miss ? 'true' : 'false'); });
+      }
       if (miss) {
         ok = false; first = s.querySelector('input[name="' + req + '"]');
         var opts = s.querySelector('.opts');
@@ -475,12 +482,20 @@
         if (kind === 'req') { bad = v.length < 2; mark([inp], bad, err); }
         if (kind === 'contact') {
           var mail = form.querySelector('[name="email"]'), tel = form.querySelector('[name="telefon"]');
-          var weg = val('kontaktweg'), telOk = tel.value.replace(/\D/g, '').length >= 6, mailOk = MAIL_RE.test(mail.value.trim());
-          if (weg === 'anruf' || weg === 'whatsapp') { bad = !telOk; err.textContent = 'Für Anruf oder WhatsApp brauchen wir eure Telefonnummer.'; }
-          else if (weg === 'email') { bad = !mailOk; err.textContent = 'Bitte gebt eine gültige E-Mail-Adresse an.'; }
-          else { bad = !(telOk || mailOk); err.textContent = 'Bitte gebt eine Telefonnummer oder eine E-Mail-Adresse an, damit wir euch erreichen.'; }
-          mark([tel, mail], bad, err);
-          inp = (weg === 'email') ? mail : tel;
+          var mErr = form.querySelector('#err-email') || err;
+          var weg = val('kontaktweg'), toMail = weg === 'email', msg;
+          var telOk = tel.value.replace(/\D/g, '').length >= 6, mailOk = MAIL_RE.test(mail.value.trim());
+          if (weg === 'anruf' || weg === 'whatsapp') { bad = !telOk; msg = 'Für Anruf oder WhatsApp brauchen wir eure Telefonnummer.'; }
+          else if (toMail) { bad = !mailOk; msg = 'Bitte gebt eine gültige E-Mail-Adresse an.'; }
+          else { bad = !(telOk || mailOk); msg = 'Bitte gebt eine Telefonnummer oder eine E-Mail-Adresse an, damit wir euch erreichen.'; }
+          err.textContent = msg; mErr.textContent = msg;
+          mark([tel, mail], false, err); mark([tel, mail], false, mErr);
+          if (bad) mark(toMail ? [mail] : (weg ? [tel] : [tel, mail]), true, toMail ? mErr : err);
+          tel.closest('.field').classList.toggle('bad', bad && !toMail);
+          mail.closest('.field').classList.toggle('bad', bad && toMail);
+          inp = toMail ? mail : tel;
+          if (bad) { ok = false; first = first || inp; }
+          return;
         }
         f.classList.toggle('bad', bad);
         if (bad) { ok = false; first = first || inp; }
@@ -493,7 +508,7 @@
       byPointer = false;
       if (e.key === 'Enter' && e.target.tagName === 'INPUT' && cur < stepsQ.length - 1) {
         e.preventDefault();
-        if (valid(cur, true)) show(cur + 1, true);
+        if (valid(cur, true)) go(cur + 1);
       }
     });
     form.addEventListener('change', function (e) {
@@ -501,12 +516,34 @@
       var qe = st && st.querySelector('.q-err');
       if (qe && e.target.type === 'radio') qe.hidden = true;
       syncOther();
+      if (e.target.name === 'kontaktweg' && hintK) {
+        var w = e.target.value;
+        hintK.textContent = (w === 'anruf' || w === 'whatsapp') ? 'Felder mit * brauchen wir. Für Anruf oder WhatsApp dazu eure Telefonnummer.'
+          : w === 'email' ? 'Felder mit * brauchen wir. Für eine Antwort per E-Mail dazu eure E-Mail-Adresse.' : hintK0;
+      }
       if (byPointer && e.target.type === 'radio' && st && st.hasAttribute('data-auto') && stepsQ.indexOf(st) === cur) {
-        setTimeout(function () { show(cur + 1, true); }, 260);
+        setTimeout(function () { go(cur + 1); }, 260);
       }
     });
-    next.addEventListener('click', function () { if (valid(cur, true)) show(cur + 1, true); });
-    back.addEventListener('click', function () { show(cur - 1, true); });
+    next.addEventListener('click', function () { if (valid(cur, true)) go(cur + 1); });
+    /* Browser-Zurück führt zur vorigen Frage statt aus dem Quiz (Verlaufseintrag je Schritt) */
+    var depth = 0;
+    function go(i) {
+      show(i, true);
+      depth++;
+      try { history.pushState({ q: cur, d: depth }, '', location.pathname + location.search + '#frage-' + (cur + 1)); } catch (e) {}
+    }
+    back.addEventListener('click', function () {
+      if (depth > 0) { history.back(); return; }
+      show(cur - 1, true);
+      try { history.replaceState({ q: cur, d: 0 }, '', location.pathname + location.search); } catch (e) {}
+    });
+    window.addEventListener('popstate', function (e) {
+      var st = e.state;
+      if (!st || typeof st.q !== 'number') return;
+      depth = st.d || 0;
+      show(st.q, true);
+    });
     /* Vorauswahl aus der URL: ?branche=gastronomie&paket=8&extras=recruiting */
     var startAt = 0;
     try {
@@ -520,6 +557,7 @@
       if (q.get('branche') && val('branche')) startAt = 1;
     } catch (e) {}
     show(startAt, false);
+    try { history.replaceState({ q: startAt, d: 0 }, '', location.pathname + location.search); } catch (e) {}
     function summary(d) {
       var parts = [];
       form.querySelectorAll('.q-step').forEach(function (s) {
