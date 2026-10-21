@@ -1,4 +1,42 @@
 [
- {"url":"https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261021_211118_97d4d2cd-d6bf-4d88-8b92-d6d8a2d74ccd.mp4","path":".preview-cache/scm/ki/ki-gastro-dreh.mp4"},
- {"url":"https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261021_211125_85cdd4ea-964b-4bb5-9433-893bda928708.mp4","path":".preview-cache/scm/ki/ki-kiel-foerde.mp4"}
+ {
+  "url": "-",
+  "mode": "transcribe",
+  "model": "medium",
+  "prompt": "Malerbetrieb, Baustelle, Kunde, Nachbar, Material im Schuppen, gegenrechnen.",
+  "src": ".preview-cache/scm/video-DeuGwFgs_PK.mp4",
+  "path": ".preview-cache/scm/transkripte/medium-maler-rohwer.txt"
+ },
+ {
+  "url": "-",
+  "mode": "transcribe",
+  "model": "medium",
+  "prompt": "Mittagstisch in Kiel, Date, Jungs, kurz aufs Klo, ist hier noch ein Platz frei.",
+  "src": ".preview-cache/scm/video-DetkcAvpH3H.mp4",
+  "path": ".preview-cache/scm/transkripte/medium-jan-hein-klaas-pit.txt"
+ },
+ {
+  "url": "-",
+  "mode": "transcribe",
+  "model": "medium",
+  "prompt": "Steakhouse, Pommes, mehrere Teller bestellen, jeder kann von jedem nehmen.",
+  "src": ".preview-cache/scm/video-Det_06XPmbX.mp4",
+  "path": ".preview-cache/scm/transkripte/medium-das-kleine-steakhouse.txt"
+ },
+ {
+  "url": "-",
+  "mode": "transcribe",
+  "model": "medium",
+  "prompt": "Kletterwald Travemünde, Lehrerinnen und Lehrer, Klettern oder Teambuilding, Förderung des Bildungsministeriums, Schulklassen.",
+  "src": ".preview-cache/scm/video-DerbG9WBf2C.mp4",
+  "path": ".preview-cache/scm/transkripte/medium-kletterwald-travemuende.txt"
+ },
+ {
+  "url": "-",
+  "mode": "transcribe",
+  "model": "medium",
+  "prompt": "Immobilie rund um Kiel, Kronshagen, Schwentinental und Eckernförde, junge Familien, Kitas, Schulen, Einkaufsmöglichkeiten, Ärzte.",
+  "src": ".preview-cache/scm/video-DepDiWkN88H.mp4",
+  "path": ".preview-cache/scm/transkripte/medium-bs-ortsanalyse.txt"
+ }
 ]

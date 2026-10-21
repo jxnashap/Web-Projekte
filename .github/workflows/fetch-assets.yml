@@ -31,7 +31,9 @@ jobs:
             if [ "$mode" = "transcribe" ]; then
               src=$(echo "$item" | jq -r '.src')
               python3 -c "import faster_whisper, imageio_ffmpeg" 2>/dev/null || pip install -q faster-whisper imageio-ffmpeg
-              python3 - "$src" "$path" <<'PY' || echo "transcribe failed: $src"
+              wmodel=$(echo "$item" | jq -r '.model // empty')
+              wprompt=$(echo "$item" | jq -r '.prompt // empty')
+              python3 - "$src" "$path" "$wmodel" "$wprompt" <<'PY' || echo "transcribe failed: $src"
           import subprocess, sys
           import imageio_ffmpeg
           import numpy as np
@@ -41,8 +43,10 @@ jobs:
                                 "-f", "s16le", "-ac", "1", "-ar", "16000", "-"],
                                check=True, capture_output=True).stdout
           audio = np.frombuffer(raw, np.int16).astype(np.float32) / 32768.0
-          model = WhisperModel("small", device="cpu", compute_type="int8")
-          segs, info = model.transcribe(audio, language="de", vad_filter=True)
+          size = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else "small"
+          model = WhisperModel(size, device="cpu", compute_type="int8")
+          segs, info = model.transcribe(audio, language="de", vad_filter=True, beam_size=5,
+                                        initial_prompt=sys.argv[4] if len(sys.argv) > 4 else None)
           with open(out, "w", encoding="utf-8") as f:
               for s in segs:
                   f.write(f"[{s.start:5.1f}-{s.end:5.1f}] {s.text.strip()}\n")
