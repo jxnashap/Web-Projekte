@@ -28,7 +28,20 @@ jobs:
             mkdir -p "$(dirname "$path")"
             headers=$(echo "$item" | jq -r '.headers // empty')
             mode=$(echo "$item" | jq -r '.mode // empty')
-            if [ "$mode" = "ytdlp" ]; then
+            if [ "$mode" = "transcribe" ]; then
+              src=$(echo "$item" | jq -r '.src')
+              python3 -c "import faster_whisper" 2>/dev/null || pip install -q faster-whisper
+              python3 - "$src" "$path" <<'PY'
+          import sys
+          from faster_whisper import WhisperModel
+          src, out = sys.argv[1], sys.argv[2]
+          model = WhisperModel("small", device="cpu", compute_type="int8")
+          segs, info = model.transcribe(src, language="de", vad_filter=True)
+          with open(out, "w", encoding="utf-8") as f:
+              for s in segs:
+                  f.write(f"[{s.start:5.1f}-{s.end:5.1f}] {s.text.strip()}\n")
+          PY
+            elif [ "$mode" = "ytdlp" ]; then
               command -v yt-dlp >/dev/null || pip install -q yt-dlp
               yt-dlp -q --no-warnings --write-info-json -f "best[ext=mp4]/best" -o "$path" "$url" || echo "yt-dlp failed: $url"
             elif [ -n "$headers" ]; then
