@@ -1,0 +1,9 @@
+{
+  "name": "scm-creatives",
+  "private": true,
+  "description": "Website SCM Creatives: statische Seiten + eine Vercel Function für Anfragen",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "nodemailer": "7.0.13"
+  }
+}
