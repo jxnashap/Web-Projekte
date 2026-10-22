@@ -465,6 +465,7 @@ html:not(.js) .beat{opacity:1}
 .fact{padding:1.6rem 1.4rem 1.6rem 0;border-bottom:1px solid var(--line)}
 .fact strong{display:block;font:850 clamp(2.8rem,5vw,4.4rem)/.9 var(--display);font-stretch:70%;color:var(--fg)}
 .fact strong em{font-style:normal;color:var(--red)}
+.fact strong span{display:inline;margin:0;font:inherit;letter-spacing:inherit;text-transform:none;color:inherit}
 .fact span{display:block;margin-top:.6rem;font:700 .74rem/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--fg-dim)}
 
 /* Zitat / Kundenstimme */
