@@ -24,14 +24,16 @@ const P = server.address().port, B = `http://127.0.0.1:${P}`;
   await p.goto(B + '/', { waitUntil: 'domcontentloaded' });
   await p.waitForTimeout(650); await p.screenshot({ path: OUT + '/01-klappe.png' });
   await p.waitForTimeout(2600); await p.screenshot({ path: OUT + '/02-hero.png' });
-  // 2) Skript-Kapitel: drei Scrollpositionen
+  // 2) Skript-Kapitel: drei Scrollpositionen (auf der Ablauf-Seite)
+  await p.goto(B + '/so-arbeiten-wir', { waitUntil: 'load' }); await p.waitForTimeout(800);
   const top = await p.evaluate(() => document.querySelector('.skript').getBoundingClientRect().top + scrollY);
   const h = await p.evaluate(() => document.querySelector('.skript').offsetHeight - innerHeight);
   for (const [i, f] of [[3, 0.05], [4, 0.5], [5, 0.95]]) {
     await p.evaluate(y => window.scrollTo(0, y), top + h * f); await p.waitForTimeout(1300);
     await p.screenshot({ path: OUT + `/0${i}-skript-${f}.png` });
   }
-  // 3) Wort-Aufhellung halb
+  // 3) Wort-Aufhellung halb (auf der Vision-Seite)
+  await p.goto(B + '/vision', { waitUntil: 'load' }); await p.waitForTimeout(800);
   const say = await p.evaluate(() => document.querySelector('.say').getBoundingClientRect().top + scrollY);
   await p.evaluate(y => window.scrollTo(0, y - 500), say); await p.waitForTimeout(1200);
   await p.screenshot({ path: OUT + '/06-say.png' });

@@ -841,3 +841,89 @@ html.still *,html.still *::before,html.still *::after{animation-play-state:pause
 @media(min-width:621px){.opts--chips4{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:620px){.opts--chips4{grid-template-columns:1fr 1fr}}
 @media(max-width:340px){.d1,.hero .d1,.head-grid .d1,.case-head .d1{font-size:2.4rem}}
+
+/* ============================================================
+   v1.3 · Modus „ruhig“ (body.ruhig) für ältere Zielgruppen:
+   größere, breitere Schrift, UI-Texte in Normalschrift statt
+   Schreibmaschine in Versalien, kein HUD und kein Laufband.
+   Courier bleibt für Drehbuchseite, Timecodes, REC und Abspann.
+   ============================================================ */
+.ruhig{--fg-dim:rgba(245,243,239,.84);--fg-faint:rgba(245,243,239,.72);font-size:1.1875rem;line-height:1.6}
+.ruhig .hud,.ruhig .marquee{display:none!important}
+.ruhig .d1,.ruhig .d2,.ruhig .d3{font-stretch:86%;font-weight:800;letter-spacing:0}
+.ruhig .d1{font-size:clamp(2.5rem,7vw,7.2rem);line-height:.95}
+.ruhig .hero .d1{font-size:clamp(3rem,6.4vw,6.8rem)}
+.ruhig .head-grid .d1,.ruhig .case-head .d1{font-size:clamp(2.8rem,5.4vw,5.8rem)}
+.ruhig .d2{font-size:clamp(2.1rem,4.4vw,4.2rem);line-height:1}
+.ruhig .d3{font-size:clamp(1.55rem,2.4vw,2.2rem);line-height:1.05}
+.ruhig h3,.ruhig .h3{font-size:1.45rem;font-stretch:96%}
+.ruhig .lead{font-size:clamp(1.2rem,1.6vw,1.45rem);color:var(--fg)}
+.ruhig .btn{min-height:60px;font-size:1.12rem;padding-inline:1.7rem}
+.ruhig .btn-link{font-size:1.1rem}
+/* UI-Texte: Normalschrift, keine Versalien, lesbare Größe */
+.ruhig .lbl{font:700 1rem/1.3 var(--sans);letter-spacing:.01em;text-transform:none;color:var(--red)}
+.ruhig .lbl b{color:var(--fg)}
+.ruhig .h1-kicker{font:600 1.1rem/1.45 var(--sans);letter-spacing:0;text-transform:none;color:var(--fg-dim);max-width:32em}
+.ruhig .page-head.has-media .h1-kicker{color:var(--fg)}
+.ruhig .crumbs{font:600 .95rem/1.4 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .nav-small{font:600 .95rem/1.6 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .menu-btn{font:700 .95rem/1 var(--sans);letter-spacing:.02em}
+.ruhig .chip{font:600 .85rem/1 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .reel-meta b{font-size:1.15rem}
+.ruhig .reel-meta span{font:600 .95rem/1.4 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .filter button{font:600 1rem/1 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .dp-eff{font:600 1.02rem/1.45 var(--sans)}
+.ruhig .dp-head{font:700 .9rem/1 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .dp-row p{font-size:1.1rem}
+.ruhig .pack .tag{font:700 .85rem/1 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .pack-num>span,.ruhig .pack .meta,.ruhig .fact>span{font:600 .95rem/1.4 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .pack-inc b{font:700 .95rem/1.3 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .quote cite{font:700 1rem/1.4 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .case-facts dt{font:700 .88rem/1.3 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .q-progress{font:700 .95rem/1 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .field label{font:700 1rem/1.3 var(--sans);letter-spacing:0;text-transform:none;color:var(--fg)}
+.ruhig .q-step .q-sub legend{font:700 1.05rem/1.4 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .assure{font:600 1rem/1.4 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .clients,.ruhig .trust{font:500 1.05rem/1.5 var(--sans);letter-spacing:0;text-transform:none;color:var(--fg-dim)}
+.ruhig .clients b,.ruhig .trust b{color:var(--fg);font-weight:700}
+.ruhig .foot-col b{font:700 .95rem/1 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .foot-base{font:500 .95rem/1.5 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .phone--empty span{font:700 1rem/1.4 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .pu-bot span{font:600 .74rem/1.35 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .sound--txt span{font:700 .8rem/1 var(--sans);letter-spacing:0;text-transform:none}
+.ruhig .faq summary{font-size:1.2rem}
+.ruhig .faq .ans p{font-size:1.1rem;color:var(--fg)}
+/* Schlagwort-Zeile, 3-Schritte-Kacheln, Häkchen-Liste */
+.words{display:flex;flex-wrap:wrap;gap:.6rem 1.3rem;font:800 clamp(1.3rem,1.85vw,1.75rem)/1.1 var(--display);font-stretch:86%;text-transform:uppercase;color:var(--fg)}
+.words span{display:inline-flex;align-items:center;gap:.6rem}
+.words span::before{content:"";width:.55rem;height:.55rem;border-radius:50%;background:var(--red);flex:none}
+.words em{font-style:normal;color:var(--red)}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem}
+.step3{border:1px solid var(--line-2);border-radius:22px;padding:2rem 1.8rem;background:var(--bg-2);display:flex;flex-direction:column;gap:.9rem}
+.panel .step3{background:var(--bg-3)}
+.step3 .n{font:800 4.2rem/.9 var(--display);font-stretch:86%;color:var(--red)}
+.step3 h3{font:800 2rem/1 var(--display);font-stretch:86%;text-transform:uppercase}
+.step3 p{font-size:1.2rem;color:var(--fg)}
+.done{margin-top:2.2rem;display:flex;flex-wrap:wrap;align-items:center;gap:1.4rem 2.4rem}
+.done strong{font:800 clamp(2.4rem,5vw,4.4rem)/1 var(--display);font-stretch:86%;text-transform:uppercase}
+.done strong em{font-style:normal;color:var(--red)}
+.offer2{display:grid;grid-template-columns:1.2fr .8fr;gap:2rem 3rem;align-items:center;border:1px solid var(--red);border-radius:26px;
+  padding:clamp(1.8rem,4vw,3.4rem);background:linear-gradient(120deg,rgba(240,56,46,.16),transparent 65%)}
+.ticks-big{display:flex;flex-direction:column;gap:.9rem;font:700 1.35rem/1.2 var(--sans)}
+.ticks-big li{display:flex;gap:.8rem;align-items:center}
+.ticks-big li::before{content:"✓";color:var(--red);font-size:1.4rem}
+.offer2+.alt-line{max-width:none;text-align:left}
+.pk .tag{position:absolute;top:-.8rem;left:1.5rem;background:var(--red-btn);color:#fff;font:700 .85rem/1 var(--sans);padding:.45rem .75rem;border-radius:999px}
+.qs-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem}
+.ruhig .qs-btn{font-size:1.15rem;min-height:68px}
+.packs3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+.pk{position:relative;border:1px solid var(--line-2);border-radius:22px;padding:1.8rem;display:flex;flex-direction:column;gap:.7rem;background:var(--bg-2)}
+.pk strong{font:800 4.6rem/.9 var(--display);font-stretch:86%}
+.pk span{font-size:1.2rem;color:var(--fg)}
+.pk.hot{border-color:var(--red)}
+.pk .btn{margin-top:.6rem}
+@media(max-width:860px){.steps3,.packs3,.offer2{grid-template-columns:1fr}.ruhig .hero .d1{font-size:clamp(2.8rem,12vw,4rem)}}
+@media(max-width:380px){.ruhig .d1,.ruhig .hero .d1,.ruhig .head-grid .d1,.ruhig .case-head .d1{font-size:2.45rem}}
+@media(max-width:340px){.ruhig .d1,.ruhig .hero .d1,.ruhig .head-grid .d1,.ruhig .case-head .d1{font-size:2.2rem}}
+.ruhig .clients{display:block;line-height:2}
+.ruhig .clients a{display:inline;padding:0;border-bottom:1px solid var(--red);color:var(--fg)}

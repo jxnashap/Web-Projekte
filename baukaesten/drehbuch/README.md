@@ -10,6 +10,16 @@ Technisch die Engine aus `premium-estate` v2 (Lerp-Loop, Masken, Reveals,
 Scrub), ergänzt um Drehbuch-Module. Vanilla, keine Abhängigkeiten, natives
 Scrollen, animiert werden nur transform, opacity, clip-path und filter.
 
+## Modus „ruhig“ (v1.3)
+
+Für ältere Zielgruppen (Inhaber, Geschäftsführer): `RUHIG = True` im Generator setzt `body.ruhig`.
+Fließtext 19 px und kräftiger, Headlines breiter (`font-stretch:86%`), UI-Texte (Labels, Brotkrumen,
+Formularfelder, Fakten) in Normalschrift statt Courier-Versalien, größere Knöpfe, kein HUD und kein
+Laufband. „Szene 01 ·“ fällt aus den Labels. Bausteine: `.words` (Schlagwort-Zeile im Hero),
+`steps3()` (3 Schritte + „Zack. Fertig.“), `angebot()` (ein Abschluss-Kasten je Seite statt
+Angebotsstreifen plus Aufruf-Band), `packs3()`, `branchen_row()`. Courier bleibt für Drehbuchseite,
+Timecodes, REC und Abspann.
+
 ## Design-Sprache
 
 | Baustein | Umsetzung |
