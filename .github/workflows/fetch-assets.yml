@@ -26,8 +26,40 @@ jobs:
             url=$(echo "$item" | jq -r '.url')
             path=$(echo "$item" | jq -r '.path')
             mkdir -p "$(dirname "$path")"
-            curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -o "$path" "$url"
-            echo "fetched: $path ($(stat -c%s "$path") bytes)"
+            headers=$(echo "$item" | jq -r '.headers // empty')
+            mode=$(echo "$item" | jq -r '.mode // empty')
+            if [ "$mode" = "transcribe" ]; then
+              src=$(echo "$item" | jq -r '.src')
+              python3 -c "import faster_whisper, imageio_ffmpeg" 2>/dev/null || pip install -q faster-whisper imageio-ffmpeg
+              wmodel=$(echo "$item" | jq -r '.model // empty')
+              wprompt=$(echo "$item" | jq -r '.prompt // empty')
+              python3 - "$src" "$path" "$wmodel" "$wprompt" <<'PY' || echo "transcribe failed: $src"
+          import subprocess, sys
+          import imageio_ffmpeg
+          import numpy as np
+          from faster_whisper import WhisperModel
+          src, out = sys.argv[1], sys.argv[2]
+          raw = subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-nostdin", "-loglevel", "error", "-i", src,
+                                "-f", "s16le", "-ac", "1", "-ar", "16000", "-"],
+                               check=True, capture_output=True).stdout
+          audio = np.frombuffer(raw, np.int16).astype(np.float32) / 32768.0
+          size = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else "small"
+          model = WhisperModel(size, device="cpu", compute_type="int8")
+          segs, info = model.transcribe(audio, language="de", vad_filter=True, beam_size=5,
+                                        initial_prompt=sys.argv[4] if len(sys.argv) > 4 else None)
+          with open(out, "w", encoding="utf-8") as f:
+              for s in segs:
+                  f.write(f"[{s.start:5.1f}-{s.end:5.1f}] {s.text.strip()}\n")
+          PY
+            elif [ "$mode" = "ytdlp" ]; then
+              command -v yt-dlp >/dev/null || pip install -q yt-dlp
+              yt-dlp -q --no-warnings --write-info-json -f "best[ext=mp4]/best" -o "$path" "$url" || echo "yt-dlp failed: $url"
+            elif [ -n "$headers" ]; then
+              curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -H "$headers" -o "$path" "$url"
+            else
+              curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -o "$path" "$url"
+            fi
+            [ -f "$path" ] && echo "fetched: $path ($(stat -c%s "$path") bytes)" || echo "missing: $path"
           done
 
       - name: Redact secrets from fetched text files

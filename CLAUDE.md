@@ -11,6 +11,12 @@ Repo für alle Website-Projekte. Struktur:
 - `webseiten/myimmoapp/` – MyImmo-SaaS für private Vermieter (Premium-Estate v2,
   Fraunces/Outfit, Gold/Charcoal, Higgsfield-Video-Hero + Scroll-Scrub,
   echte App-Screenshots) · PR #8
+- `webseiten/scm-creatives/` – Social Media Agentur Kiel/Lübecker Bucht (Drehbuch-
+  Baukasten, Schwarz/Weiß/Rot, Archivo + Courier Prime, echte Reels der Kunden,
+  Anfrage-Quiz mit Vercel Function per SMTP, Vercel-ready mit vercel.json,
+  Sitemap mit Video-Einträgen). Statische Dateien in `public/`, daneben `api/`.
+  Platzhalter, Vercel-Einrichtung + Livegang: `PLATZHALTER.md`.
+  Recherche und Plan: `.preview-cache/scm/recherche/` · PR #10
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
@@ -27,6 +33,12 @@ ihren ursprünglichen Branches (PR #1/#2).
   mit Blur, Scroll-Scrub-Kapitel, Video-Scrub, 3D-Tilt, Spotlight, Video-Hero
   (AV1+H264), Gerät-Rahmen, Float-Chips. Higgsfield-Rezept: Still (Nano Banana,
   2 Cr.) → Kling 3.0 Turbo Bild-zu-Video (7,5–10 Cr.).
+- `baukaesten/drehbuch/` – für Video-, Social-Media- und Kreativagenturen: Seite
+  erzählt sich als Film (Szene 01…, Klappe als Preloader, Handy-Rahmen mit REC und
+  Live-Timecode, Skript-Kapitel mit Scroll-Scrub, HUD-Timecode, Abspann-Footer,
+  Mehrschritt-Quiz). Engine aus premium-estate v2. Erstes Projekt: scm-creatives
+  (`generatoren/build_scm.py`), QA mit `tools/shot.js` (saubere URLs, --mobile),
+  `tools/umbruch.js` (Wortbrüche in Überschriften) und `tools/interact.js`.
 
 ## Arbeitsweise
 - Pro Projekt ein Branch `claude/<projekt>` + ein PR; Auslieferung als ZIP nach `auslieferung/`.
@@ -36,3 +48,7 @@ ihren ursprünglichen Branches (PR #1/#2).
 - Recherche-Regeln: nur belegte Fakten verwenden, Unbelegtes als `[PLATZHALTER]`
   markieren; Design-Referenzen inspirieren, werden aber nie kopiert.
 - QA immer über die Screenshot-Tools der Baukästen (Reveal-Zählung muss n/n sein).
+- Protokoll und Vorlieben stehen in der Memory Vault (privates Repo `jxnashap/Memory`,
+  `03 - InnoWeb/Prozess/Projektablauf.md`, `semantic/preferences/schreibregeln.md`):
+  5 Phasen (Gespräch, Konzept, Design, Entwicklung, Launch); in Website-Texten
+  **keine Gedankenstriche**.
