@@ -178,7 +178,7 @@ CLIENTS = {
     "bs-immobiliengruppe": dict(name="BS Immobiliengruppe", h1="BS Immobilien&shy;gruppe", branche="immobilien", ort="Kiel und Umgebung",
         reels=["bs-ortsanalyse", "bs-entweder-oder"], ig="https://www.instagram.com/bs.immobiliengruppe/",
         intro="Immobilienmakler aus Kiel. Marc und Leon stehen selbst vor der Kamera und zeigen, wer hinter den Objekten steckt: mit Ortsanalysen für Käufer und mit Formaten, die Persönlichkeit zeigen."),
-    "maler-rohwer": dict(name="Jens Rohwer Malermeister", h1="Jens Rohwer Malermeister", branche="handwerk", ort="Kiel",
+    "maler-rohwer": dict(name="Jens Rohwer Malermeister", h1="Jens Rohwer Malermeister", branche="handwerk", ort="Kiel", web="https://www.maler-rohwer.de",
         reels=["maler-rohwer"], ig="https://www.instagram.com/maler.rohwer/",
         intro="Malerbetrieb mit Humor. Kein Vorher-Nachher, sondern eine Szene, die jeder Handwerker kennt. Genau das kommentieren die Leute."),
     "jan-hein-klaas-pit": dict(name="Jan & Hein & Klaas & Pit", h1="Jan & Hein & Klaas & Pit", branche="gastronomie", ort="Kiel",
@@ -963,6 +963,9 @@ def case_details(slug, c, b, with_quote=False):  # Zitat erst, wenn freigegebene
     beats = "".join(f'<li><span class="tc">{t}</span><b>{l}</b><p>{x}</p></li>' for t, l, x in r["beats"])
     facts = [("Kunde", r["kunde"]), ("Branche", b["name"]), ("Format", r["format"]), ("Länge", f"{r['dauer']} Sekunden"),
              ("Veröffentlicht", ".".join(reversed(r["upload"].split("-")))), ("Ort", c["ort"] or ph("Ort des Malerbetriebs Rohwer"))]
+    if c.get("web"):
+        host = c["web"].split("//")[-1].replace("www.", "").rstrip("/")
+        facts.append(("Website", f'<a href="{c["web"]}" target="_blank" rel="noopener">{host}{NEWTAB}</a>'))
     fx = "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for k, v in facts)
     if r.get("ki"):
         fx += '<div class="ki"><dt>Hinweis</dt><dd>Teile dieses Videos wurden mithilfe von KI erstellt. So ist es auch im Original auf Instagram gekennzeichnet.</dd></div>'
