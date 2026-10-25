@@ -92,6 +92,8 @@ Das Projekt konnte aus dieser Umgebung nicht direkt angelegt werden (fehlende Be
 
 ## 6. Nach dem Livegang
 
+- [ ] **Sperre für Suchmaschinen aufheben, sobald das Impressum vollständig ist:** In `vercel.json` in der Regel für den Host `scm-creatives\\.de` den Eintrag `X-Robots-Tag: noindex` löschen und neu hochladen. Bis dahin nimmt Google die Seite unter scm-creatives.de nicht auf.
+
 - [ ] Google Search Console: Domain-Property per DNS-TXT bestätigen, `https://scm-creatives.de/sitemap.xml` einreichen, Startseite und Referenzseiten zur Indexierung anmelden
 - [ ] Google-Unternehmensprofil als Servicegebiet (Kiel, Lübecker Bucht) ohne Adresse anlegen
 - [ ] Firewall-Regel aus Schritt 5.8 aktiv und mit einer Testanfrage geprüft
