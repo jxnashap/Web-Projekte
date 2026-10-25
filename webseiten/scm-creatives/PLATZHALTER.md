@@ -35,7 +35,7 @@ webseiten/scm-creatives/
 | Dauer eines Drehtermins, Vorlauf für Aktionen | `FAQ_*`, `BRANCHEN["gastronomie"]` | |
 | Einwilligungsvorlage für Mitarbeitende im Video | `FAQ_*` | |
 | Einwilligung aller gezeigten Personen (Darsteller, Marc und Leon von BS, Mitarbeitende der Kunden) für die Nutzung der Videos auf dieser Website | schriftlich bei SCM ablegen, das Briefing belegt nur die Freigabe durch die Kunden | |
-| Auf der Seite mit „von SCM bestätigen" markiert: Freigabe der Videos vor Veröffentlichung, Schritt 6 „Auswerten und nachschärfen", Plattformen für Werbeanzeigen, Verzicht auf Verbraucherschlichtung (Impressum), Vertrag zur Auftragsverarbeitung mit Vercel (Datenschutz) | jeweilige Stelle im Generator (`STEPS`, `FAQ_*`, `build_leistungen()`, `build_legal()`) | 6× |
+| Auf der Seite mit „von SCM bestätigen" markiert: Freigabe der Videos vor Veröffentlichung, Schritt 6 „Auswerten und nachschärfen", Verzicht auf Verbraucherschlichtung (Impressum), Vertrag zur Auftragsverarbeitung mit Vercel (Datenschutz) | jeweilige Stelle im Generator (`STEPS`, `FAQ_*`, `build_legal()`) | |
 | Logo als Vektordatei (Normalversion) | `public/img/logo.svg`, `logo-dark.svg` ersetzen (aktuell nachgebaute Wortmarke), danach `favicon.svg`, `favicon-96.png`, `favicon.ico`, `apple-touch-icon.png`, `og*.jpg` neu erzeugen | |
 
 ## 2. Von SCM zu bestätigen (steht so auf der Seite, ist aber nicht belegt)

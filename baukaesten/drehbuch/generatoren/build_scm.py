@@ -804,7 +804,7 @@ def build_home():
 def build_leistungen():
     items = [
         ("02", "Posting und Community", "Wir posten und antworten. Ihr müsst nicht ans Handy.", ["Veröffentlichung nach Plan", "Texte und Hashtags", "Kommentare und Nachrichten"], "posting", None),
-        ("03", "Werbeanzeigen", f"Mehr Reichweite in eurer Region. Plattformen: {ph('z. B. Instagram und Facebook, von SCM bestätigen')}.", ["Anzeigen aus euren Videos", "Zielgruppe in der Region"], "ads", None),
+        ("03", "Werbeanzeigen", "Mehr Reichweite in eurer Region. Auf Instagram, TikTok und Facebook.", ["Anzeigen aus euren Videos", "Instagram, TikTok, Facebook", "Zielgruppe in der Region"], "ads", None),
         ("04", "Recruiting-Videos", "Mitarbeitende findet man dort, wo sie scrollen.", ["Ein Tag als Azubi", "Team stellt sich vor", "Stellenanzeigen als Video"], "recruiting", ("/branchen/handwerk#formate", "Beispiele im Handwerk")),
         ("05", "Fotos und Imagefilm", "Fotos vom Drehtag oder ein längerer Film.", ["Fotos vom Drehtag", "Imagefilm", "Material für Website und Profile"], "fotos", None),
     ]
@@ -1083,7 +1083,7 @@ def build_ablauf():
 
 def build_pakete():
     addons = [("Posting und Community", "Wir posten und antworten.", "posting"),
-              ("Werbeanzeigen", "Eure Videos als Anzeigen in der Region.", "ads"),
+              ("Werbeanzeigen", "Eure Videos als Anzeigen auf Instagram, TikTok und Facebook.", "ads"),
               ("Recruiting-Videos", "Für Mitarbeitende und Azubis.", "recruiting"),
               ("Fotos und Imagefilm", "Fotos vom Drehtag oder ein längerer Film.", "fotos")]
     ad = "".join(f'<article class="svc-item rv"><span class="lbl">Dazu buchbar</span><h3>{t}</h3><p>{x}</p><a class="btn-link" href="/anfrage?extras={k}">Mit anfragen {ARROW}</a></article>' for t, x, k in addons)
