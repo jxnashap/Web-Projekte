@@ -19,7 +19,7 @@ webseiten/scm-creatives/
 
 | Was | Wo eintragen | Kommt vor |
 |---|---|---|
-| E-Mail-Adresse (Telefon und WhatsApp 0172 5361079 sind eingetragen) | `MAIL` oben im Generator. Bis dahin führt der E-Mail-Knopf auf /kontakt | 3× |
+| Kontaktdaten sind eingetragen: Telefon und WhatsApp 0172 5361079, E-Mail scm.creatives@gmx.de | `TEL`, `WHATSAPP`, `MAIL` oben im Generator | erledigt |
 | Antwortzeit (z. B. „innerhalb eines Werktags") | `ANTWORTZEIT` oben im Generator. **Nur eintragen, was SCM wirklich halten kann** | 15× |
 | Zeitpunkt der Preisnennung (Empfehlung: im Kennenlerngespräch, also vor den Testvideos) | `PREIS_SATZ` oben im Generator | 8× |
 | Impressum: Rechtsform, Inhaber oder vertretungsberechtigte Personen, Anschrift, USt-ID oder Kleinunternehmer, Register, Verantwortlicher § 18 MStV | `build_legal()` → Impressum | |
@@ -80,8 +80,10 @@ Das Projekt konnte aus dieser Umgebung nicht direkt angelegt werden (fehlende Be
    - Build Command: leer lassen · Output Directory: `public` (steht auch in `vercel.json`)
    - Node.js-Version: 22.x
 4. **Environment Variables** (Production):
-   - `SMTP_HOST` (z. B. Server des Mail-Anbieters), `SMTP_PORT` (465), `SMTP_USER`, `SMTP_PASS`
-   - `MAIL_TO` (Postfach für Anfragen), optional `MAIL_FROM` (Absender, meist gleich `SMTP_USER`)
+   - `SMTP_HOST` = `mail.gmx.net`, `SMTP_PORT` = `587`, `SMTP_USER` = `scm.creatives@gmx.de`, `SMTP_PASS` = Passwort des GMX-Postfachs
+   - `MAIL_TO` = `scm.creatives@gmx.de`, `MAIL_FROM` = `scm.creatives@gmx.de` (GMX verschickt nur mit der eigenen Adresse als Absender)
+   - In GMX unter Einstellungen → POP3/IMAP Abruf den Versand über externe Programme erlauben, sonst lehnt GMX die Anmeldung ab.
+   - Bitte prüfen, ob GMX für die geschäftliche Nutzung einen Vertrag zur Auftragsverarbeitung anbietet. Sonst später auf eine Adresse mit eigener Domain wechseln (z. B. bei Einrichtung von scm-creatives.de).
    - **`MAIL_TEST` in Production nicht setzen.** Mit `MAIL_TEST=1` wird nichts verschickt, nur ins Log geschrieben.
 5. Deploy, dann auf der Vorschau-Adresse (`*.vercel.app`) eine Testanfrage über `/anfrage` schicken und den Eingang prüfen. Vorschau-Adressen senden `noindex`, Google nimmt sie nicht auf.
 6. **Domains:** `scm-creatives.de` als Hauptdomain hinzufügen, DNS beim Registrar wie von Vercel angezeigt eintragen. `www.scm-creatives.de` und (falls gekauft) `scmcreatives.de` ebenfalls hinzufügen, die Weiterleitung auf die Hauptdomain steht schon in `vercel.json`.
