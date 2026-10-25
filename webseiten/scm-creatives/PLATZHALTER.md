@@ -86,7 +86,7 @@ Das Projekt konnte aus dieser Umgebung nicht direkt angelegt werden (fehlende Be
    - Bitte prüfen, ob GMX für die geschäftliche Nutzung einen Vertrag zur Auftragsverarbeitung anbietet. Sonst später auf eine Adresse mit eigener Domain wechseln (z. B. bei Einrichtung von scm-creatives.de).
    - **`MAIL_TEST` in Production nicht setzen.** Mit `MAIL_TEST=1` wird nichts verschickt, nur ins Log geschrieben.
 5. Deploy, dann auf der Vorschau-Adresse (`*.vercel.app`) eine Testanfrage über `/anfrage` schicken und den Eingang prüfen. Vorschau-Adressen senden `noindex`, Google nimmt sie nicht auf.
-6. **Domains:** `scm-creatives.de` als Hauptdomain hinzufügen, DNS beim Registrar wie von Vercel angezeigt eintragen. `www.scm-creatives.de` und (falls gekauft) `scmcreatives.de` ebenfalls hinzufügen, die Weiterleitung auf die Hauptdomain steht schon in `vercel.json`.
+6. **Erledigt (Oktober 2026):** scm-creatives.de ist verbunden, https läuft. **Domains:** `scm-creatives.de` als Hauptdomain hinzufügen, DNS beim Registrar wie von Vercel angezeigt eintragen. `www.scm-creatives.de` und (falls gekauft) `scmcreatives.de` ebenfalls hinzufügen, die Weiterleitung auf die Hauptdomain steht schon in `vercel.json`.
 7. Nach dem Livegang in den Domain-Einstellungen die Produktions-Adresse `*.vercel.app` auf `scm-creatives.de` umleiten.
 8. **Pflicht vor dem Livegang · Firewall → Rate Limiting:** Regel für Pfad `/api/anfrage`, Methode POST, 5 Anfragen je IP in 10 Minuten, Aktion „Deny". Die Function prüft zusätzlich Herkunft, Honeypot, Ausfülldauer und drosselt selbst, aber nur pro Instanz.
 
