@@ -39,8 +39,8 @@ def ph(text):
     return f'<span class="ph">[PLATZHALTER: {text}]</span>'
 
 
-ANTWORTZEIT = ph("Antwortzeit, z. B. innerhalb eines Werktags")
-PREIS_SATZ = (f"Den Preis für euer Paket nennen wir euch {ph('Zeitpunkt, Empfehlung: im Kennenlerngespräch, also vor den Testvideos')}. "
+ANTWORTZEIT = "innerhalb von 24 Stunden"
+PREIS_SATZ = ("Den Preis für euer Paket nennen wir euch im Kennenlerngespräch. "
               "Ihr bekommt ihn schriftlich, bevor ihr etwas unterschreibt.")
 NB = "3&nbsp;Testvideos"
 
@@ -295,7 +295,7 @@ FAQ_MORE = [
     ("Wem gehören die Videos?", ph("Wer welche Rechte an den Videos hat: wo ihr sie nutzen dürft, wie lange, ob ihr Rohmaterial bekommt")),
 ]
 FAQ_OBJ = {
-    "bindung": ("Wie lange binden wir uns?", f"{ph('Mindestlaufzeit und Kündigungsfrist')} Vor den Testvideos unterschreibt ihr nichts."),
+    "bindung": ("Wie lange binden wir uns?", "Laufzeit und Konditionen besprechen wir im Kennenlerngespräch. Vor den Testvideos unterschreibt ihr nichts."),
     "gefallen": ("Was, wenn uns die Testvideos nicht gefallen?", "Dann sagt ihr Nein, und es kostet euch nichts. Ein Vertrag entsteht erst, wenn ihr weitermachen wollt."),
     "garantie": ("Könnt ihr garantieren, dass die Videos mehr Gäste oder Bewerbungen bringen?", "Nein, das kann ehrlicherweise niemand. Was wir zusagen: Jedes Video folgt einem Skript mit starkem ersten Satz und klarem Aufruf, und ihr seht alles vor der Veröffentlichung."),
     "gefilmt": ("Was ist, wenn jemand nicht gefilmt werden möchte?", f"Dann filmen wir die Person nicht. Gäste filmen wir nur, wenn sie einverstanden sind. {ph('Einwilligung für euer Team: Vorlage von SCM, ja oder nein')}"),
@@ -1102,7 +1102,7 @@ def build_pakete():
 <section class="sec panel" data-scene="SZENE 03 · PREIS"><div class="wrap">
   {sec_head(None, "Preis", "Was den Preis<br><em>bestimmt.</em>", PREIS_SATZ)}
   <div class="drehplan">{pr}</div>
-  <p class="q-note rv" style="margin-top:1.4rem">Laufzeit: {ph("Mindestlaufzeit und Kündigungsfrist")}</p>
+  <p class="q-note rv" style="margin-top:1.4rem">Laufzeit und Konditionen klären wir im Kennenlerngespräch.</p>
 </div></section>
 <section class="sec" data-scene="SZENE 04 · EXTRAS"><div class="wrap">
   {sec_head(None, "Dazubuchen", "Mehr als<br><em>nur Videos.</em>", None, ("/leistungen", "Alle Leistungen"))}

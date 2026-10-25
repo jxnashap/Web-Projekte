@@ -20,15 +20,15 @@ webseiten/scm-creatives/
 | Was | Wo eintragen | Kommt vor |
 |---|---|---|
 | Kontaktdaten sind eingetragen: Telefon und WhatsApp 0172 5361079, E-Mail scm.creatives@gmx.de | `TEL`, `WHATSAPP`, `MAIL` oben im Generator | erledigt |
-| Antwortzeit (z. B. „innerhalb eines Werktags") | `ANTWORTZEIT` oben im Generator. **Nur eintragen, was SCM wirklich halten kann** | 15× |
-| Zeitpunkt der Preisnennung (Empfehlung: im Kennenlerngespräch, also vor den Testvideos) | `PREIS_SATZ` oben im Generator | 8× |
+| Antwortzeit: „innerhalb von 24 Stunden“ | `ANTWORTZEIT` oben im Generator | erledigt |
+| Preis: wird im Kennenlerngespräch genannt | `PREIS_SATZ` oben im Generator | erledigt |
 | Impressum: Rechtsform, Inhaber oder vertretungsberechtigte Personen, Anschrift, USt-ID oder Kleinunternehmer, Register, Verantwortlicher § 18 MStV | `build_legal()` → Impressum | |
 | Datenschutz: Verantwortlicher, E-Mail-Anbieter, Löschfrist der Anfragen, Speicherdauer der Vercel-Logs | `build_legal()` → Datenschutz, danach rechtlich prüfen lassen | |
 | Team: Namen, Rollen, Fotos, Gründungsjahr, Bedeutung „SCM", Anzahl | `build_ueber()` | |
 | Kundenstimmen (BS, Maler Rohwer, Jan & Hein & Klaas & Pit, Steakhouse, Kletterwald), schriftlich freigegeben | `build_case()` → Zitat-Block | 5× |
 | Ort von Maler Rohwer | `CLIENTS["maler-rohwer"]["ort"]` | |
 | Weinbar „Die Drei": Instagram-Profil, Videos, Format, Stimme | `CLIENTS["die-drei"]`, `REELS`. Seite ist bis dahin `noindex` und nicht in der Sitemap | |
-| Pakete: Mindestlaufzeit, Kündigungsfrist, Drehtermine pro Monat | `build_pakete()`, `FAQ_MORE` | |
+| Pakete: Drehtermine pro Monat (Laufzeit und Konditionen: „klären wir im Kennenlerngespräch“) | `build_pakete()`, `FAQ_MORE` | |
 | Testvideos: Dauer bis zur Lieferung, Bedingungen (z. B. einmal pro Betrieb), dürfen Kunden sie ohne Vertrag posten? | `build_testvideos()`, `FAQ_*` | |
 | Nutzungsrechte an den Videos, Rohmaterial | `FAQ_MORE` | |
 | Darsteller, wenn das Team nicht vor die Kamera will | `FAQ_OBJ`, Branchen-FAQ | 4× |
