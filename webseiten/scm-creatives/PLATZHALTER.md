@@ -27,16 +27,16 @@ webseiten/scm-creatives/
 | Team: Oskar von Esebeck und Yannick Ruch sind eingetragen, dazu ein kurzer Text über SCM. Offen: Rollen und Fotos | `TEAM` oben im Generator, `build_ueber()` | 4× |
 | Kundenstimmen (BS, Maler Rohwer, Jan & Hein & Klaas & Pit, Steakhouse, Kletterwald), schriftlich freigegeben. Der Zitat-Block ist bis dahin ausgeblendet | `case_details(..., with_quote=True)` in `build_case()` | |
 | Ort von Maler Rohwer: Kiel (laut maler-rohwer.de, Goethestraße 8), Website auf der Referenzseite verlinkt | `CLIENTS["maler-rohwer"]["ort"]` | erledigt |
-| Weinbar „Die Drei": Instagram-Profil, Videos, Format, Stimme | `CLIENTS["die-drei"]`, `REELS`. Seite ist bis dahin `noindex` und nicht in der Sitemap | |
+| Weinbar „Die Drei": Instagram-Profil ist verlinkt. Offen: Videos, Format, Stimme | `CLIENTS["die-drei"]`, `REELS`. Seite ist bis dahin `noindex` und nicht in der Sitemap | 1× |
 | Pakete: Drehtermine individuell (Restaurant z. B. einmal pro Woche), Laufzeit und Preis im Kennenlerngespräch | `build_pakete()`, `FAQ_*` | erledigt |
 | Testvideos: einmal pro Betrieb, zum Hochladen gedacht; Dauer bis zur Lieferung steht bewusst nicht auf der Seite | `build_testvideos()`, `FAQ_*` | erledigt |
-| Nutzungsrechte an den Videos, Rohmaterial | `FAQ_MORE` | |
-| Darsteller, wenn das Team nicht vor die Kamera will | `FAQ_OBJ`, Branchen-FAQ | 4× |
-| Vorlauf für Aktionen in der Gastronomie (Dauer eines Drehtermins: „hängt von den Szenen ab“) | `BRANCHEN["gastronomie"]` | 1× |
-| Einwilligungsvorlage für Mitarbeitende im Video | `FAQ_*` | |
+| Nutzungsrechte: Die fertigen Videos gehören dem Kunden, Rohmaterial bleibt bei SCM | `FAQ_MORE` | erledigt |
+| Darsteller: Wer mitspielt, entscheidet der Kunde | `FAQ_CORE`, Branchen-FAQ | erledigt |
+| Aktionen in der Gastronomie: kein fester Vorlauf, SCM kommt vorbereitet zum Drehtermin | `BRANCHEN["gastronomie"]` | erledigt |
+| Einwilligung der Mitarbeitenden: wird individuell mit dem Kunden abgesprochen | `FAQ_OBJ` | erledigt |
 | Einwilligung aller gezeigten Personen (Darsteller, Marc und Leon von BS, Mitarbeitende der Kunden) für die Nutzung der Videos auf dieser Website | schriftlich bei SCM ablegen, das Briefing belegt nur die Freigabe durch die Kunden | |
 | Auf der Seite mit „von SCM bestätigen" markiert: Drehtermine pro Monat (Pakete). Vertrag zur Auftragsverarbeitung mit Vercel (Datenschutz) folgt mit dem Pro-Konto | `build_pakete()`, `build_legal()` | |
-| Logo als Vektordatei (Normalversion) | `public/img/logo.svg`, `logo-dark.svg` ersetzen (aktuell nachgebaute Wortmarke), danach `favicon.svg`, `favicon-96.png`, `favicon.ico`, `apple-touch-icon.png`, `og*.jpg` neu erzeugen | |
+| Logo: Originaldateien von SCM liegen in `marke/`. Daraus erzeugt: `logo.svg` (transparent, Rand beschnitten), `logo-dark.svg`/`.png`, `favicon.svg` (Avatar), `favicon-96.png`, `favicon.ico`, `apple-touch-icon.png`, `og*.jpg` | `public/img/` | erledigt |
 
 ## 2. Von SCM zu bestätigen (steht so auf der Seite, ist aber nicht belegt)
 

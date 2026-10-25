@@ -191,7 +191,7 @@ CLIENTS = {
         reels=["kletterwald-travemuende"], ig="https://www.instagram.com/kletterwaldtravemuende/",
         intro="Kletterwald an der Lübecker Bucht. Hier zählen klare Angebote zur richtigen Zeit, zum Beispiel für Schulklassen kurz vor Saisonende."),
     "die-drei": dict(name="Weinbar „Die Drei“", h1="Weinbar<br><em>„Die Drei“</em>", branche="gastronomie", ort="Kiel",
-        reels=[], ig=None,
+        reels=[], ig="https://www.instagram.com/die_drei_weinbar/",
         intro="Weinbar in Kiel. Die Videos zeigen wir hier, sobald sie online sind."),
 }
 
@@ -212,8 +212,8 @@ BRANCHEN = {
         refs=["das-kleine-steakhouse", "jan-hein-klaas-pit", "die-drei"],
         proof=None,
         faq=[("Stören die Drehs den laufenden Betrieb?", "Wir stimmen den Drehtermin mit euch ab, zum Beispiel vor der Öffnung oder in einer ruhigen Stunde. Gäste filmen wir nur, wenn sie einverstanden sind."),
-             ("Wer spielt in den Videos mit?", "Das entscheiden wir gemeinsam im Skript. Viele zeigen ihr Team, andere bleiben lieber hinter der Kamera."),
-             ("Können wir Aktionen kurzfristig bewerben?", f"Ja, wenn wir den Termin früh genug kennen. Sagt uns Aktionen am besten {ph('nötiger Vorlauf, z. B. zwei Wochen')} vorher.")],
+             ("Wer spielt in den Videos mit?", "Das entscheidet ihr, wir schreiben das Skript danach. Viele zeigen ihr Team, andere bleiben lieber hinter der Kamera."),
+             ("Können wir Aktionen kurzfristig bewerben?", "Ja. Sagt uns, was ansteht. Zum nächsten Drehtermin kommen wir vorbereitet.")],
         title="Reels für Restaurants und Gastro in Kiel | SCM Creatives",
         desc="Reels für Restaurants, Bars und Mittagstische in Kiel und an der Lübecker Bucht: Sketche am Tisch, Aktionen, Küche von innen. Nach Skript, vor Ort gedreht."),
     "immobilien": dict(name="Immobilien", short="Immobilien", fuer="euer Maklerbüro", img="immobilien-dreh", im="bei Maklern", aus="aus der Immobilien&shy;branche",
@@ -290,7 +290,7 @@ NAV_ALL = [("/", "Start"), ("/leistungen", "Leistungen"), ("/branchen", "Branche
 FAQ_CORE = [
     ("Was kostet das?", f"Wir arbeiten mit drei Paketen: 4, 8 oder 12 Videos im Monat. Der Preis hängt vom Umfang ab. {PREIS_SATZ} Die {NB} sind kostenlos, ein Vertrag entsteht erst, wenn ihr danach weitermachen wollt. <a href=\"/pakete\">Zu den Paketen</a>"),
     ("Was sind die 3 kostenlosen Testvideos?", "Wir lernen euch kennen, schreiben drei Skripte, drehen bei euch vor Ort und schneiden drei fertige Videos. Danach entscheidet ihr, ob es weitergeht. <a href=\"/testvideos\">So laufen die Testvideos ab</a>"),
-    ("Müssen wir selbst vor die Kamera?", f"Ihr könnt, müsst aber nicht. Wer mitspielt, klären wir im Skript. {ph('Wer spielt, wenn ihr nicht vor die Kamera wollt, z. B. Darsteller aus dem SCM-Team')} Auswendig lernen muss niemand."),
+    ("Müssen wir selbst vor die Kamera?", "Ihr könnt, müsst aber nicht. Wer mitspielt, entscheidet ihr, wir schreiben das Skript danach. Auswendig lernen muss niemand."),
     ("Wie viel Zeit kostet uns das?", "Zum Start ein Gespräch. Danach Drehtermine bei euch, so oft es für euren Betrieb passt. Im Restaurant zum Beispiel einmal pro Woche für neue Gerichte. Schreiben, Schnitt und auf Wunsch das Posten übernehmen wir."),
     ("Wo seid ihr unterwegs?", "In Kiel und an der Lübecker Bucht. Wir kommen zu euch in den Laden, ins Büro oder auf die Baustelle. <a href=\"/kontakt\">Einsatzgebiet ansehen</a>"),
     ("Für welche Branchen arbeitet ihr?", "Grundsätzlich für jede Branche. Referenzen haben wir aus Gastronomie, Immobilien, Handwerk und Freizeit. <a href=\"/branchen\">Alle Branchen</a>"),
@@ -301,13 +301,13 @@ FAQ_MORE = [
     ("Wie läuft die Abstimmung?", "Wer im Video mitspielt, bekommt das Skript vorab. Dreh, Schnitt und Feinschliff übernehmen wir."),
     ("Für welche Kanäle sind die Videos?", "Alle Videos sind im Hochformat 9:16 und eignen sich für Instagram Reels, TikTok und YouTube Shorts."),
     ("Wie schnell können wir starten?", f"Nach dem Erstgespräch planen wir die {NB} und stimmen den Drehtermin mit euch ab."),
-    ("Wem gehören die Videos?", ph("Wer welche Rechte an den Videos hat: wo ihr sie nutzen dürft, wie lange, ob ihr Rohmaterial bekommt")),
+    ("Wem gehören die Videos?", "Euch. Die fertigen Videos gehören euch. Das Rohmaterial bleibt bei uns."),
 ]
 FAQ_OBJ = {
     "bindung": ("Wie lange binden wir uns?", "Laufzeit und Konditionen besprechen wir im Kennenlerngespräch. Vor den Testvideos unterschreibt ihr nichts."),
     "gefallen": ("Was, wenn uns die Testvideos nicht gefallen?", "Dann sagt ihr Nein, und es kostet euch nichts. Ein Vertrag entsteht erst, wenn ihr weitermachen wollt."),
     "garantie": ("Könnt ihr garantieren, dass die Videos mehr Gäste oder Bewerbungen bringen?", "Nein, das kann ehrlicherweise niemand. Was wir zusagen: Jedes Video folgt einem Skript mit starkem ersten Satz und klarem Aufruf."),
-    "gefilmt": ("Was ist, wenn jemand nicht gefilmt werden möchte?", f"Dann filmen wir die Person nicht. Gäste filmen wir nur, wenn sie einverstanden sind. {ph('Einwilligung für euer Team: Vorlage von SCM, ja oder nein')}"),
+    "gefilmt": ("Was ist, wenn jemand nicht gefilmt werden möchte?", "Dann filmen wir die Person nicht. Gäste filmen wir nur, wenn sie einverstanden sind. Wie ihr die Einwilligung eures Teams festhaltet, stimmen wir individuell mit euch ab."),
     "selbst": ("Wir posten schon selbst. Lohnt sich das trotzdem?", "Ihr könnt weiter selbst posten. Wir liefern die Videos mit Skript, Dreh und Schnitt, und auf Wunsch übernehmen wir auch das Posten."),
     "dauer": ("Wie lange dauert ein Drehtermin?", "Das ist unterschiedlich und hängt von den Szenen ab. Den Termin stimmen wir mit euch ab, zum Beispiel vor der Öffnung."),
 }
@@ -328,7 +328,7 @@ def jsonld(obj):
 
 ORG_MIN = {"@type": "Organization", "@id": BASE + "/#org", "name": "SCM Creatives", "url": BASE + "/"}
 ORG = {"@type": "Organization", "@id": BASE + "/#org", "name": "SCM Creatives", "url": BASE + "/",
-       "logo": {"@type": "ImageObject", "url": BASE + "/img/logo-dark.png", "width": 600, "height": 213},
+       "logo": {"@type": "ImageObject", "url": BASE + "/img/logo-dark.png", "width": 600, "height": 211},
        "description": "Social-Media-Agentur für Kiel und die Lübecker Bucht: Kurzvideos nach Skript, gedreht vor Ort.",
        "sameAs": [IG],
        "areaServed": [{"@type": "City", "name": "Kiel"}, {"@type": "Place", "name": "Lübecker Bucht"}]}
@@ -415,7 +415,7 @@ def header(path):
     nav = "".join(f'<a href="{h}"{cur(h)}>{l}</a>' for h, l in NAV_MAIN)
     allnav = "".join(f'<a href="{h}"{cur(h)}><i aria-hidden="true">SZ {i:02d}</i>{l}</a>' for i, (h, l) in enumerate(NAV_ALL, 1))
     return f"""<header class="site-header">
-  <a class="brand" href="/" aria-label="SCM Creatives, zur Startseite"><img src="/img/logo.svg" alt="SCM Creatives" width="113" height="40"></a>
+  <a class="brand" href="/" aria-label="SCM Creatives, zur Startseite"><img src="/img/logo.svg" alt="SCM Creatives" width="114" height="40"></a>
   <nav class="mainnav" aria-label="Hauptnavigation">{nav}</nav>
   <div class="head-right">
     <a class="btn btn-sm" href="/anfrage">{NB} anfragen</a>
@@ -456,7 +456,7 @@ def footer():
       </dl>
     </div>
     <div class="foot-grid">
-      <div class="foot-brand"><img src="/img/logo.svg" alt="SCM Creatives" width="130" height="46" loading="lazy">
+      <div class="foot-brand"><img src="/img/logo.svg" alt="SCM Creatives" width="131" height="46" loading="lazy">
         <p>Social-Media-Agentur für Kiel und die Lübecker Bucht. Kurzvideos nach Skript, gedreht bei euch vor Ort.</p></div>{cols}
     </div>
     <div class="foot-base"><span>© 2026 SCM Creatives</span><span><a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a></span></div>
@@ -995,7 +995,8 @@ def build_case(key):
         body = page_head("Referenz", c["h1"], c["intro"], crumbs=crumbs) + f"""
 <section class="sec" data-scene="SZENE 02 · VIDEO FOLGT"><div class="wrap wrap--narrow"><div class="stack">
   {lbl("Szene 02 · Video folgt", True)}<h2 class="d2">Video folgt.</h2>
-  <p class="lead">{ph("Videos, Format und Kundenstimme der Weinbar „Die Drei“, Instagram-Profil")}</p>
+  <p class="lead">{ph("Videos, Format und Kundenstimme der Weinbar „Die Drei“")}</p>
+  <div class="links-row"><a class="btn btn-ghost" href="{c['ig']}" target="_blank" rel="noopener">{c['name']} auf Instagram{NEWTAB}</a></div>
   {nav}
 </div></div></section>{angebot()}"""
         page(f"/referenzen/{key}", "Weinbar „Die Drei“, Kiel | Referenz | SCM Creatives",
