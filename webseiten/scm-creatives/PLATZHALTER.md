@@ -28,11 +28,11 @@ webseiten/scm-creatives/
 | Kundenstimmen (BS, Maler Rohwer, Jan & Hein & Klaas & Pit, Steakhouse, Kletterwald), schriftlich freigegeben. Der Zitat-Block ist bis dahin ausgeblendet | `case_details(..., with_quote=True)` in `build_case()` | |
 | Ort von Maler Rohwer: Kiel (laut maler-rohwer.de, Goethestraße 8), Website auf der Referenzseite verlinkt | `CLIENTS["maler-rohwer"]["ort"]` | erledigt |
 | Weinbar „Die Drei": Instagram-Profil, Videos, Format, Stimme | `CLIENTS["die-drei"]`, `REELS`. Seite ist bis dahin `noindex` und nicht in der Sitemap | |
-| Pakete: Drehtermine pro Monat (Laufzeit und Konditionen: „klären wir im Kennenlerngespräch“) | `build_pakete()`, `FAQ_MORE` | |
-| Testvideos: Dauer bis zur Lieferung, Bedingungen (z. B. einmal pro Betrieb), dürfen Kunden sie ohne Vertrag posten? | `build_testvideos()`, `FAQ_*` | |
+| Pakete: Drehtermine individuell (Restaurant z. B. einmal pro Woche), Laufzeit und Preis im Kennenlerngespräch | `build_pakete()`, `FAQ_*` | erledigt |
+| Testvideos: einmal pro Betrieb, zum Hochladen gedacht; Dauer bis zur Lieferung steht bewusst nicht auf der Seite | `build_testvideos()`, `FAQ_*` | erledigt |
 | Nutzungsrechte an den Videos, Rohmaterial | `FAQ_MORE` | |
 | Darsteller, wenn das Team nicht vor die Kamera will | `FAQ_OBJ`, Branchen-FAQ | 4× |
-| Dauer eines Drehtermins, Vorlauf für Aktionen | `FAQ_*`, `BRANCHEN["gastronomie"]` | |
+| Vorlauf für Aktionen in der Gastronomie (Dauer eines Drehtermins: „hängt von den Szenen ab“) | `BRANCHEN["gastronomie"]` | 1× |
 | Einwilligungsvorlage für Mitarbeitende im Video | `FAQ_*` | |
 | Einwilligung aller gezeigten Personen (Darsteller, Marc und Leon von BS, Mitarbeitende der Kunden) für die Nutzung der Videos auf dieser Website | schriftlich bei SCM ablegen, das Briefing belegt nur die Freigabe durch die Kunden | |
 | Auf der Seite mit „von SCM bestätigen" markiert: Drehtermine pro Monat (Pakete). Vertrag zur Auftragsverarbeitung mit Vercel (Datenschutz) folgt mit dem Pro-Konto | `build_pakete()`, `build_legal()` | |
@@ -45,7 +45,7 @@ Diese Aussagen sind sinnvolle Annahmen aus Gespräch und Instagram, aber nicht a
 - **Pakete:** Die Pakete heißen nach ihrem Rhythmus („Einmal pro Woche", „Zweimal pro Woche", „Dreimal pro Woche"), das 8er-Paket trägt das Etikett „Der Mittelweg". Eigene Paketnamen oder eine echte Empfehlung von SCM hier eintragen (`packs()`).
 - **Gäste im Bild** nur mit Einverständnis (Branche Gastronomie, FAQ).
 - **Erledigt:** Kunden sehen die Videos nicht vor der Veröffentlichung (Aussage entfernt). „Auswerten und nachschärfen“ ist bestätigt. Instagram-Zahlen sind entfernt, weil sie schnell veralten. KI-Hinweis bei den BS-Videos ist bestätigt.
-- **Offen:** Lesen Kunden das Skript vor dem Dreh? So steht es im Ablauf („Wir schreiben. Ihr lest vorab.“) und in den FAQ.
+- **Erledigt:** Das Skript lesen nur die, die im Video mitspielen.
 - **Untertitel prüfen:** Die Untertitel (`public/media/*.de.vtt`) und die Transkripte auf den Referenzseiten sind automatisch erkannt (Whisper) und von Hand geglättet. Bei Das kleine Steakhouse sind einzelne Sätze unsicher. Bitte gegenlesen.
 
 ## 3. Videos

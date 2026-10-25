@@ -251,7 +251,7 @@ BRANCHEN = {
                  ("Fachfrage in 30 Sekunden", "Eine Frage, die Kunden immer stellen, kurz beantwortet. Zeigt Kompetenz.", "„Wie oft kann man Raufaser eigentlich überstreichen?“")],
         refs=["maler-rohwer"],
         proof=None,
-        faq=[("Wie lange hält uns ein Dreh auf der Baustelle auf?", f"Wir drehen dort, wo ihr ohnehin arbeitet, und stimmen den Termin mit euch ab. Weil das Skript vorher steht, weiß jeder, was zu tun ist. {ph('typische Dauer eines Drehtermins')}"),
+        faq=[("Wie lange hält uns ein Dreh auf der Baustelle auf?", f"Wir drehen dort, wo ihr ohnehin arbeitet, und stimmen den Termin mit euch ab. Weil das Skript vorher steht, weiß jeder, was zu tun ist. Wie lange es dauert, hängt von den Szenen ab."),
              ("Helfen die Videos auch bei der Mitarbeitersuche?", "Ja. Recruiting-Videos gehören zu unseren Leistungen, zum Beispiel als Azubi-Format oder Teamvorstellung."),
              ("Was, wenn wir keine lustigen Typen sind?", "Nicht jedes Video muss ein Sketch sein. Fachfragen und Vorher-Nachher-Formate funktionieren auch ruhig erzählt.")],
         title="Reels und Recruiting-Videos für Handwerker | SCM Creatives",
@@ -291,16 +291,16 @@ FAQ_CORE = [
     ("Was kostet das?", f"Wir arbeiten mit drei Paketen: 4, 8 oder 12 Videos im Monat. Der Preis hängt vom Umfang ab. {PREIS_SATZ} Die {NB} sind kostenlos, ein Vertrag entsteht erst, wenn ihr danach weitermachen wollt. <a href=\"/pakete\">Zu den Paketen</a>"),
     ("Was sind die 3 kostenlosen Testvideos?", "Wir lernen euch kennen, schreiben drei Skripte, drehen bei euch vor Ort und schneiden drei fertige Videos. Danach entscheidet ihr, ob es weitergeht. <a href=\"/testvideos\">So laufen die Testvideos ab</a>"),
     ("Müssen wir selbst vor die Kamera?", f"Ihr könnt, müsst aber nicht. Wer mitspielt, klären wir im Skript. {ph('Wer spielt, wenn ihr nicht vor die Kamera wollt, z. B. Darsteller aus dem SCM-Team')} Auswendig lernen muss niemand."),
-    ("Wie viel Zeit kostet uns das?", f"Zum Start ein Gespräch. Danach pro Runde ein Blick aufs Skript und ein Drehtermin bei euch. {ph('Wie viele Drehtermine pro Monat bei 4, 8 und 12 Videos')} Schreiben, Schnitt und auf Wunsch das Posten übernehmen wir."),
+    ("Wie viel Zeit kostet uns das?", "Zum Start ein Gespräch. Danach Drehtermine bei euch, so oft es für euren Betrieb passt. Im Restaurant zum Beispiel einmal pro Woche für neue Gerichte. Schreiben, Schnitt und auf Wunsch das Posten übernehmen wir."),
     ("Wo seid ihr unterwegs?", "In Kiel und an der Lübecker Bucht. Wir kommen zu euch in den Laden, ins Büro oder auf die Baustelle. <a href=\"/kontakt\">Einsatzgebiet ansehen</a>"),
     ("Für welche Branchen arbeitet ihr?", "Grundsätzlich für jede Branche. Referenzen haben wir aus Gastronomie, Immobilien, Handwerk und Freizeit. <a href=\"/branchen\">Alle Branchen</a>"),
 ]
 FAQ_MORE = [
     ("Wer postet die Videos?", "Das könnt ihr selbst machen oder uns überlassen. Posting und Community-Management gehören zu unseren Zusatzleistungen."),
     ("Macht ihr auch Werbeanzeigen?", "Ja. Auf Wunsch spielen wir eure Videos als Werbeanzeigen aus, gezielt in eurer Region."),
-    ("Wie läuft die Abstimmung?", "Ihr lest das Skript vor dem Dreh. Dreh, Schnitt und Feinschliff übernehmen wir."),
+    ("Wie läuft die Abstimmung?", "Wer im Video mitspielt, bekommt das Skript vorab. Dreh, Schnitt und Feinschliff übernehmen wir."),
     ("Für welche Kanäle sind die Videos?", "Alle Videos sind im Hochformat 9:16 und eignen sich für Instagram Reels, TikTok und YouTube Shorts."),
-    ("Wie schnell können wir starten?", f"Nach dem Erstgespräch planen wir die {NB}. {ph('Wie viele Wochen vom Erstgespräch bis zu den fertigen Testvideos')}"),
+    ("Wie schnell können wir starten?", f"Nach dem Erstgespräch planen wir die {NB} und stimmen den Drehtermin mit euch ab."),
     ("Wem gehören die Videos?", ph("Wer welche Rechte an den Videos hat: wo ihr sie nutzen dürft, wie lange, ob ihr Rohmaterial bekommt")),
 ]
 FAQ_OBJ = {
@@ -309,7 +309,7 @@ FAQ_OBJ = {
     "garantie": ("Könnt ihr garantieren, dass die Videos mehr Gäste oder Bewerbungen bringen?", "Nein, das kann ehrlicherweise niemand. Was wir zusagen: Jedes Video folgt einem Skript mit starkem ersten Satz und klarem Aufruf."),
     "gefilmt": ("Was ist, wenn jemand nicht gefilmt werden möchte?", f"Dann filmen wir die Person nicht. Gäste filmen wir nur, wenn sie einverstanden sind. {ph('Einwilligung für euer Team: Vorlage von SCM, ja oder nein')}"),
     "selbst": ("Wir posten schon selbst. Lohnt sich das trotzdem?", "Ihr könnt weiter selbst posten. Wir liefern die Videos mit Skript, Dreh und Schnitt, und auf Wunsch übernehmen wir auch das Posten."),
-    "dauer": ("Wie lange dauert ein Drehtermin?", f"{ph('typische Dauer, z. B. pro 4 Videos')} Den Termin stimmen wir mit euch ab, zum Beispiel vor der Öffnung."),
+    "dauer": ("Wie lange dauert ein Drehtermin?", "Das ist unterschiedlich und hängt von den Szenen ab. Den Termin stimmen wir mit euch ab, zum Beispiel vor der Öffnung."),
 }
 
 # ------------------------------------------------------------------
@@ -480,7 +480,7 @@ def lbl(text, blink=False):
 
 
 def steps3(link=True):
-    items = [("1", "Skript", "Wir schreiben. Ihr lest vorab."),
+    items = [("1", "Skript", "Wir schreiben. Wer mitspielt, liest vorab."),
              ("2", "Dreh", "Bei euch vor Ort. Wir kommen zu euch."),
              ("3", "Schnitt", "Kurz, mit Untertiteln, fürs Handy.")]
     t = "".join(f'<article class="step3 rv" data-d="{i+1}"><span class="n" aria-hidden="true">{n}</span><h3>{h}</h3><p>{x}</p></article>'
@@ -594,7 +594,7 @@ def bcard_any(d=None):
 
 STEPS = [
     ("01", "Erstgespräch", "Wir lernen euch und eure Ziele kennen.", "Ein Gespräch"),
-    ("02", "Skript", "Wir schreiben. Ihr lest vorab.", "Skript lesen"),
+    ("02", "Skript", "Wir schreiben. Wer mitspielt, liest vorab.", "Lesen, wenn ihr mitspielt"),
     ("03", "Dreh vor Ort", "Wir kommen zu euch. Kamera, Mikrofon, klarer Ablauf.", "Ein Termin bei euch"),
     ("04", "Schnitt", "Tempo, Untertitel, Texte im Bild.", "Nichts"),
     ("05", "Veröffentlichen", "Ihr postet selbst oder wir übernehmen das.", "Nichts, wenn wir posten"),
@@ -621,7 +621,7 @@ def packs(compact=False):
     for i, (n, name, rhythm, fit, hot) in enumerate(data):
         tag = '<span class="tag">Der Mittelweg</span>' if hot else ""
         why = '<p class="meta">Bei zwei Videos pro Woche entsteht eine Serie mit festem Rhythmus.</p>' if (hot and not compact) else ""
-        extra = "" if compact else f'<p class="fit">{fit}</p><p class="meta">Drehtermine im Monat: {ph("Anzahl")}</p>{why}'
+        extra = "" if compact else f'<p class="fit">{fit}</p><p class="meta">Drehtermine: je nach Betrieb</p>{why}'
         out += f"""<article class="pack{' hot' if hot else ''} rv" data-d="{i+1}">{tag}
           <div class="pack-num"><strong>{n}</strong><span>Videos<br>pro Monat</span></div>
           <h3>{name}</h3>{extra}
@@ -1090,7 +1090,7 @@ def build_pakete():
               ("Fotos und Imagefilm", "Fotos vom Drehtag oder ein längerer Film.", "fotos")]
     ad = "".join(f'<article class="svc-item rv"><span class="lbl">Dazu buchbar</span><h3>{t}</h3><p>{x}</p><a class="btn-link" href="/anfrage?extras={k}">Mit anfragen {ARROW}</a></article>' for t, x, k in addons)
     price = [("Anzahl Videos", "4, 8 oder 12 im Monat."),
-             ("Drehtermine", ph("von SCM bestätigen")),
+             ("Drehtermine", "Individuell. Im Restaurant zum Beispiel einmal pro Woche für neue Gerichte."),
              ("Extras", "Posting, Community oder Werbeanzeigen.")]
     pr = "".join(f'<div class="dp-row"><span class="dp-no">{i+1:02d}</span><h3>{t}</h3><p>{x}</p><p class="dp-eff"><small>Faktor</small>Preis</p></div>' for i, (t, x) in enumerate(price))
     body = page_head("Pakete", "Drei Pakete.<br><em>Ein Prinzip.</em>",
@@ -1126,9 +1126,9 @@ def build_testvideos():
              ("03", "Skripte und Dreh", "Drei Skripte, Dreh bei euch.", "Ein Termin bei euch"),
              ("04", "3 fertige Videos", "Geschnitten und fertig.", "Ansehen"),
              ("05", "Entscheidung", "Gefällt es euch, geht es weiter. Sonst kostet es nichts.", "Ja oder Nein")]
-    blocks = [("Was ihr bekommt", "3 fertige Videos im Hochformat, mit Skript, bei euch gedreht. " + ph("Nutzung: Dürft ihr die 3 Testvideos posten, auch wenn danach kein Vertrag folgt?")),
+    blocks = [("Was ihr bekommt", "3 fertige Videos im Hochformat, mit Skript, bei euch gedreht. Zum Hochladen auf euren Kanälen."),
               ("Warum kostenlos?", "Erst sehen, dann entscheiden. Wir zeigen lieber, als zu versprechen."),
-              ("Für wen", "Betriebe in Kiel und an der Lübecker Bucht. " + ph("weitere Bedingungen, z. B. einmal pro Betrieb, regelmäßige Videos danach geplant"))]
+              ("Für wen", "Für jeden Betrieb einmal, in Kiel und an der Lübecker Bucht.")]
     bl = "".join(f'<article class="svc-item rv" data-d="{i+1}"><span class="lbl">Gut zu wissen</span><h3>{t}</h3><p>{x}</p></article>' for i, (t, x) in enumerate(blocks))
     body = page_head("Das Angebot", f"{NB}.<br><em>Kostenlos.</em>",
                      "Drei fertige Videos aus eurem Betrieb. Erst sehen, dann entscheiden.",
@@ -1136,7 +1136,7 @@ def build_testvideos():
                      seo_h1="3 kostenlose Testvideos für Betriebe in Kiel und an der Lübecker Bucht", head_reel="maler-rohwer",
                      extra=f'<div class="btn-row rv" data-d="2"><a class="btn" href="/anfrage">{NB} anfragen</a><a class="btn btn-ghost" href="/referenzen">Beispiele ansehen</a></div>') + f"""
 <section class="sec" data-scene="SZENE 02 · SO GEHT ES"><div class="wrap">
-  {sec_head(None, "So geht es", "Fünf Schritte<br><em>zu euren Testvideos.</em>", f"Dauer: {ph('typische Dauer')}")}
+  {sec_head(None, "So geht es", "Fünf Schritte<br><em>zu euren Testvideos.</em>")}
   {drehplan(steps)}
 </div></section>
 <section class="sec panel" data-scene="SZENE 03 · GUT ZU WISSEN"><div class="wrap">
@@ -1149,7 +1149,7 @@ def build_testvideos():
 </section>
 <section class="sec panel" data-scene="SZENE 05 · FRAGEN"><div class="wrap wrap--narrow">
   {sec_head(None, "Fragen", "Fragen zu<br><em>den Testvideos.</em>")}
-  {faq_block([("Kostet das wirklich nichts?", f"Wirklich nichts. Die {NB} sind kostenlos. Erst wenn ihr weitermachen wollt, schließen wir einen Vertrag."), FAQ_OBJ["gefallen"], ("Dürfen wir die Testvideos nutzen?", ph("Regelung: Dürft ihr die 3 Testvideos posten, auch wenn danach kein Vertrag folgt?"))])}
+  {faq_block([("Kostet das wirklich nichts?", f"Wirklich nichts. Die {NB} sind kostenlos. Erst wenn ihr weitermachen wollt, schließen wir einen Vertrag."), FAQ_OBJ["gefallen"], ("Dürfen wir die Testvideos nutzen?", "Ja. Die 3 Testvideos sind zum Hochladen gedacht. Jeder Betrieb bekommt sie einmal.")])}
 </div></section>
 {angebot(link=("/pakete", "Pakete danach"))}"""
     page("/testvideos", "3 kostenlose Testvideos | SCM Creatives Kiel",
