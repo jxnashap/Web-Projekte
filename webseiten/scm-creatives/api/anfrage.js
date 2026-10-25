@@ -50,9 +50,45 @@ function phone(tel) {
   return d;
 }
 
+function smtpTransport(env) {
+  const port = Number(env.SMTP_PORT) || 465;
+  return nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port,
+    secure: port === 465,
+    requireTLS: port !== 465, // 587: nur mit STARTTLS anmelden
+    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+    connectionTimeout: 5000, greetingTimeout: 5000, socketTimeout: 8000,
+  });
+}
+const REQUIRED = ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS', 'MAIL_TO'];
+
+// Prüfseite im Browser: /api/anfrage zeigt, ob die Einstellungen da sind (nie die Werte),
+// /api/anfrage?pruefen=1 testet zusätzlich die Anmeldung beim Mailserver.
+async function status(req, res) {
+  const env = process.env;
+  const fehlt = REQUIRED.filter((k) => !env[k]);
+  const out = {
+    versand: env.MAIL_TEST === '1' ? 'Testmodus: es wird nichts verschickt (MAIL_TEST löschen)' : (fehlt.length ? 'nicht eingerichtet' : 'eingerichtet'),
+    fehlt, server: env.SMTP_HOST || null, port: Number(env.SMTP_PORT) || 465, absender: env.MAIL_FROM || env.SMTP_USER || null, empfaenger: env.MAIL_TO || null,
+  };
+  const q = new URL(req.url, 'http://x').searchParams;
+  if (q.get('pruefen') && !fehlt.length) {
+    const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unbekannt';
+    if (limited(ip)) out.anmeldung = 'zu viele Prüfungen, bitte in 10 Minuten erneut';
+    else {
+      try { await smtpTransport(env).verify(); out.anmeldung = 'ok: Mailserver akzeptiert die Anmeldung'; }
+      catch (e) { out.anmeldung = 'fehlgeschlagen: ' + [e.code, e.responseCode, e.response || e.message].filter(Boolean).join(' · ').slice(0, 300); }
+    }
+  }
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json(out);
+}
+
 module.exports = async (req, res) => {
+  if (req.method === 'GET') return status(req, res);
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+    res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ ok: false });
   }
   const type = req.headers['content-type'] || '';
@@ -76,12 +112,12 @@ module.exports = async (req, res) => {
   const host = req.headers['x-forwarded-host'] || req.headers.host;
   let sameSite = false;
   try { sameSite = !!from && new URL(from).host === host; } catch (e) { sameSite = false; }
-  if (!sameSite) return reply(403, false, 'Unzulässige Herkunft.');
+  if (!sameSite) { console.warn('Abgelehnt: Herkunft', from || '(keine)', 'Host', host); return reply(403, false, 'Unzulässige Herkunft.'); }
 
   // Spam-Schutz: Honeypot-Feld und Mindestzeit (Bots füllen in Sekundenbruchteilen aus).
-  if (clean(d.website)) return reply(200, true);
+  if (clean(d.website)) { console.warn('Verworfen: Honeypot ausgefüllt'); return reply(200, true); }
   const elapsed = parseInt(d.t || '0', 10) || 0;
-  if (wantsJson && elapsed < 4000) return reply(200, true);
+  if (wantsJson && elapsed < 4000) { console.warn('Verworfen: zu schnell ausgefüllt', elapsed, 'ms'); return reply(200, true); }
 
   const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || (req.socket && req.socket.remoteAddress) || 'unbekannt';
   if (limited(ip)) return reply(429, false, 'Zu viele Anfragen. Bitte versucht es später noch einmal.');
@@ -97,9 +133,10 @@ module.exports = async (req, res) => {
     return reply(422, false, 'Bitte Name und je nach Kontaktweg Telefon oder E-Mail angeben.');
   }
 
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_TO, MAIL_FROM, MAIL_TEST } = process.env;
+  const { SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_TO, MAIL_FROM, MAIL_TEST } = process.env;
   const testMode = MAIL_TEST === '1';
   if (!testMode && (!SMTP_HOST || !SMTP_USER || !SMTP_PASS || !MAIL_TO)) {
+    console.error('Versand nicht eingerichtet, es fehlen:', REQUIRED.filter((k) => !process.env[k]).join(', '));
     return reply(503, false, 'Der Versand ist noch nicht eingerichtet.');
   }
 
@@ -144,16 +181,7 @@ ${actions ? `<p style="margin:0 0 16px">${actions}</p>` : ''}
     `<tr><td style="padding:6px 14px 6px 0;color:#666;vertical-align:top">${esc(k)}</td><td style="padding:6px 0"><b>${esc(v)}</b></td></tr>`).join('')}</table>
 </div>`;
 
-  const transport = testMode
-    ? nodemailer.createTransport({ jsonTransport: true })
-    : nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: Number(SMTP_PORT) || 465,
-      secure: (Number(SMTP_PORT) || 465) === 465,
-      requireTLS: (Number(SMTP_PORT) || 465) !== 465, // 587: nur mit STARTTLS anmelden
-      auth: { user: SMTP_USER, pass: SMTP_PASS },
-      connectionTimeout: 5000, greetingTimeout: 5000, socketTimeout: 8000,
-    });
+  const transport = testMode ? nodemailer.createTransport({ jsonTransport: true }) : smtpTransport(process.env);
   try {
     const info = await transport.sendMail({
       from: MAIL_FROM || SMTP_USER || 'test@scm-creatives.de',
@@ -164,7 +192,7 @@ ${actions ? `<p style="margin:0 0 16px">${actions}</p>` : ''}
     if (testMode) console.log(info.message);
     return reply(200, true);
   } catch (e) {
-    console.error('Versand fehlgeschlagen:', e.message);
+    console.error('Versand fehlgeschlagen:', [e.code, e.responseCode, e.response || e.message].filter(Boolean).join(' · '));
     return reply(502, false, 'Der Versand ist fehlgeschlagen.');
   }
 };
