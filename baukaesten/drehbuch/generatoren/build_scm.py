@@ -33,6 +33,9 @@ TEL = "0172 5361079"   # Anzeige; der tel:-Link wird international (+49) gebaut
 WHATSAPP = "491725361079"   # nur Ziffern, mit Ländervorwahl (für wa.me)
 MAIL = "scm.creatives@gmx.de"
 IG = "https://www.instagram.com/scm.creatives/"
+# Anbieter laut Impressum (von SCM geliefert)
+ANBIETER = dict(firma="Blacksnapper Consulting", inhaber="Andreas Mattolat", strasse="Hüttenweg 4",
+                ort="21516 Tramm", land="Deutschland", ust="DE265142237")
 
 
 def ph(text):
@@ -50,6 +53,11 @@ def tel_href():
         return "/kontakt#telefon"
     d = TEL.replace(" ", "")
     return "tel:" + ("+49" + d[1:] if d.startswith("0") else d)
+
+
+def tel_intl():
+    """Telefonnummer international für Impressum und Datenschutz: 0172 … → +49 172 …"""
+    return "+49 " + TEL[1:] if TEL and TEL.startswith("0") else (TEL or "")
 
 
 def wa_href(msg="Hallo SCM Creatives, wir interessieren uns für die 3 kostenlosen Testvideos."):
@@ -1354,17 +1362,16 @@ def build_404():
 
 
 def build_legal():
+    A = ANBIETER
     imp = f"""<section class="sec-sm"><div class="wrap"><div class="prose">
 <h2>Angaben gemäß § 5 DDG</h2>
-<p>SCM Creatives<br>{ph("Rechtsform, z. B. GbR, Einzelunternehmen, UG")}<br>{ph("vertretungsberechtigte Personen, bei GbR alle Gesellschafter")}<br>{ph("Straße und Hausnummer")}<br>{ph("PLZ und Ort")}</p>
+<p>{A["firma"]}<br>{A["inhaber"]}<br>{A["strasse"]}<br>{A["ort"]}<br>{A["land"]}</p>
 <h2>Kontakt</h2>
-<p>Telefon: {TEL or ph("Telefonnummer")}<br>E-Mail: {MAIL or ph("E-Mail-Adresse")}</p>
-<h2>Umsatzsteuer</h2>
-<p>Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz: {ph("USt-IdNr. oder Hinweis auf Kleinunternehmerregelung")}<br>Wirtschafts-Identifikationsnummer nach § 139c AO: {ph("falls vorhanden")}</p>
-<h2>Registereintrag</h2>
-<p>{ph("Handelsregister und Registernummer, falls vorhanden")}</p>
+<p>Telefon: <a href="{tel_href()}">{tel_intl()}</a><br>E-Mail: <a href="{mail_href()}">{MAIL}</a></p>
+<h2>Umsatzsteuer-ID</h2>
+<p>Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz: {A["ust"]}</p>
 <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
-<p>{ph("Name und Anschrift der verantwortlichen Person")}</p>
+<p>{A["inhaber"]}<br>{A["strasse"]}<br>{A["ort"]}</p>
 <h2>Verbraucherstreitbeilegung</h2>
 <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen. {ph('von SCM bestätigen')}</p>
 <h2>Haftung für Links</h2>
@@ -1379,7 +1386,7 @@ def build_legal():
     ds = f"""<section class="sec-sm"><div class="wrap"><div class="prose">
 <p>Hier erklären wir, welche Daten beim Besuch dieser Website verarbeitet werden und welche nicht.</p>
 <h2>1. Verantwortlicher</h2>
-<p>SCM Creatives, {ph("Inhaber, Anschrift")}<br>E-Mail: {MAIL or ph("E-Mail-Adresse")}, Telefon: {TEL or ph("Telefonnummer")}</p>
+<p>{A["firma"]}, {A["inhaber"]}, {A["strasse"]}, {A["ort"]}, {A["land"]}<br>E-Mail: {MAIL}, Telefon: {tel_intl()}</p>
 <h2>2. Hosting</h2>
 <p>Diese Website wird bei Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA gehostet. Beim Aufruf verarbeitet Vercel technisch notwendige Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite, Browser und Betriebssystem in Server-Logfiles, um die Website auszuliefern und vor Angriffen zu schützen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse liegt in einer sicheren und stabilen Bereitstellung. Die Logfiles werden {ph("Speicherdauer der Server-Logs bei Vercel")} gespeichert. Mit Vercel besteht ein Vertrag zur Auftragsverarbeitung {ph('mit dem eigenen Vercel-Konto abschließen')}. Vercel ist unter dem EU-US Data Privacy Framework zertifiziert; zusätzlich gelten Standardvertragsklauseln.</p>
 <h2>3. Keine Cookies, kein Tracking</h2>

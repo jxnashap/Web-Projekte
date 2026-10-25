@@ -22,8 +22,8 @@ webseiten/scm-creatives/
 | Kontaktdaten sind eingetragen: Telefon und WhatsApp 0172 5361079, E-Mail scm.creatives@gmx.de | `TEL`, `WHATSAPP`, `MAIL` oben im Generator | erledigt |
 | Antwortzeit: „innerhalb von 24 Stunden“ | `ANTWORTZEIT` oben im Generator | erledigt |
 | Preis: wird im Kennenlerngespräch genannt | `PREIS_SATZ` oben im Generator | erledigt |
-| Impressum: Rechtsform, Inhaber oder vertretungsberechtigte Personen, Anschrift, USt-ID oder Kleinunternehmer, Register, Verantwortlicher § 18 MStV | `build_legal()` → Impressum | |
-| Datenschutz: Verantwortlicher, E-Mail-Anbieter, Löschfrist der Anfragen, Speicherdauer der Vercel-Logs | `build_legal()` → Datenschutz, danach rechtlich prüfen lassen | |
+| Impressum: Blacksnapper Consulting, Andreas Mattolat, Hüttenweg 4, 21516 Tramm, USt-IdNr. DE265142237 | `ANBIETER` oben im Generator | erledigt |
+| Datenschutz: Löschfrist der Anfragen, Speicherdauer der Vercel-Logs (Verantwortlicher und E-Mail-Anbieter sind eingetragen) | `build_legal()` → Datenschutz, danach rechtlich prüfen lassen | |
 | Team: Namen, Rollen, Fotos, Gründungsjahr, Bedeutung „SCM", Anzahl | `build_ueber()` | |
 | Kundenstimmen (BS, Maler Rohwer, Jan & Hein & Klaas & Pit, Steakhouse, Kletterwald), schriftlich freigegeben | `build_case()` → Zitat-Block | 5× |
 | Ort von Maler Rohwer | `CLIENTS["maler-rohwer"]["ort"]` | |
