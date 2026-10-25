@@ -24,7 +24,7 @@ webseiten/scm-creatives/
 | Preis: wird im Kennenlerngespräch genannt | `PREIS_SATZ` oben im Generator | erledigt |
 | Impressum: Blacksnapper Consulting, Andreas Mattolat, Hüttenweg 4, 21516 Tramm, USt-IdNr. DE265142237 | `ANBIETER` oben im Generator | erledigt |
 | Datenschutz: Speicherdauer der Vercel-Logs (Verantwortlicher, E-Mail-Anbieter und Löschfrist 12 Monate sind eingetragen) | `build_legal()` → Datenschutz, danach rechtlich prüfen lassen | |
-| Team: Oskar von Esebeck und Yannick Ruch sind eingetragen, dazu ein kurzer Text über SCM. Offen: Rollen und Fotos | `TEAM` oben im Generator, `build_ueber()` | 4× |
+| Team: Namen, Rollen und Kurztexte stehen (aus den About-me-Posts). Offen: Fotos von Oskar und Yannick ohne Schrift, Hochformat, als Originaldatei | `TEAM` oben im Generator, `build_ueber()` | 2× |
 | Kundenstimmen (BS, Maler Rohwer, Jan & Hein & Klaas & Pit, Steakhouse, Kletterwald), schriftlich freigegeben. Der Zitat-Block ist bis dahin ausgeblendet | `case_details(..., with_quote=True)` in `build_case()` | |
 | Ort von Maler Rohwer: Kiel (laut maler-rohwer.de, Goethestraße 8), Website auf der Referenzseite verlinkt | `CLIENTS["maler-rohwer"]["ort"]` | erledigt |
 | Weinbar „Die Drei": Instagram-Profil ist verlinkt. Offen: Videos, Format, Stimme | `CLIENTS["die-drei"]`, `REELS`. Seite ist bis dahin `noindex` und nicht in der Sitemap | 1× |

@@ -33,7 +33,13 @@ TEL = "0172 5361079"   # Anzeige; der tel:-Link wird international (+49) gebaut
 WHATSAPP = "491725361079"   # nur Ziffern, mit Ländervorwahl (für wa.me)
 MAIL = "scm.creatives@gmx.de"
 IG = "https://www.instagram.com/scm.creatives/"
-TEAM = ["Oskar von Esebeck", "Yannick Ruch"]
+# Rollen und Texte nach den About-me-Posts von Oskar und Yannick
+TEAM = [
+    dict(name="Oskar von Esebeck", rolle="Gründer · Strategie und Content",
+         text="Entwickelt Content und Social-Media-Strategien, von Reels bis Kampagne. Wenn er nicht am Schnitt sitzt, steht er für Holstein Kiel U23 auf dem Platz."),
+    dict(name="Yannick Ruch", rolle="Gründer · Umsetzung",
+         text="Sorgt dafür, dass aus der Idee ein fertiges Video wird. Den Kopf frei kriegt er im Gym."),
+]
 # Anbieter laut Impressum (von SCM geliefert)
 ANBIETER = dict(firma="Blacksnapper Consulting", inhaber="Andreas Mattolat", strasse="Hüttenweg 4",
                 ort="21516 Tramm", land="Deutschland", ust="DE265142237")
@@ -331,6 +337,7 @@ ORG = {"@type": "Organization", "@id": BASE + "/#org", "name": "SCM Creatives", 
        "logo": {"@type": "ImageObject", "url": BASE + "/img/logo-dark.png", "width": 600, "height": 211},
        "description": "Social-Media-Agentur für Kiel und die Lübecker Bucht: Kurzvideos nach Skript, gedreht vor Ort.",
        "sameAs": [IG],
+       "founder": [{"@type": "Person", "name": m["name"], "jobTitle": "Gründer"} for m in TEAM],
        "areaServed": [{"@type": "City", "name": "Kiel"}, {"@type": "Place", "name": "Lübecker Bucht"}]}
 AREA = [{"@type": "City", "name": "Kiel"}, {"@type": "Place", "name": "Lübecker Bucht"}]
 
@@ -1189,15 +1196,15 @@ def build_vision():
 
 
 def build_ueber():
-    team = "".join(f"""<article class="member rv" data-d="{i+1}"><div class="portrait">{ph(f"Foto {n}")}</div>
-      <h3>{n}</h3><p class="lbl">{ph("Rolle, z. B. Skript, Kamera, Schnitt")}</p></article>""" for i, n in enumerate(TEAM))
+    team = "".join(f"""<article class="member rv" data-d="{i+1}"><div class="portrait">{ph(f"Foto von {m['name'].split()[0]} ohne Schrift, Hochformat")}</div>
+      <h3>{m['name']}</h3><p class="lbl">{m['rolle']}</p><p class="bio">{m['text']}</p></article>""" for i, m in enumerate(TEAM))
     body = page_head("Über uns", "Wer hinter<br><em>der Kamera steht.</em>",
                      "Social-Media-Agentur für Kiel und die Lübecker Bucht. Wir schreiben, drehen und schneiden.",
                      crumbs=[("/", "Start"), ("/ueber-uns", "Über uns")], media="ki-platzhalter-kiel-foerde",
                      seo_h1="Über uns: SCM Creatives, Social-Media-Agentur aus Kiel") + f"""
 <section class="sec" data-scene="SZENE 02 · TEAM"><div class="wrap">
-  {sec_head(None, "Das Team", "Skript, Kamera,<br><em>Schnitt.</em>", "Hinter SCM Creatives stehen Oskar von Esebeck und Yannick Ruch. Wir machen Social-Media-Videos für Betriebe aus Kiel und von der Lübecker Bucht: erst das Skript, dann kommen wir mit der Kamera zu euch und schneiden so, dass man bis zum Ende dranbleibt.")}
-  <div class="team">{team}</div>
+  {sec_head(None, "Das Team", "Skript, Kamera,<br><em>Schnitt.</em>", "Hinter SCM Creatives stehen die Gründer Oskar von Esebeck und Yannick Ruch. Wir machen Social-Media-Videos für Betriebe aus Kiel und von der Lübecker Bucht: erst das Skript, dann kommen wir mit der Kamera zu euch und schneiden so, dass man bis zum Ende dranbleibt.")}
+  <div class="team team--2">{team}</div>
 </div></section>
 <section class="sec panel" data-scene="SZENE 03 · REGION"><div class="wrap">
   {sec_head(None, "Unsere Region", "Wir kommen<br><em>zu euch.</em>", "Kein Kundenbüro. Wir drehen dort, wo eure Geschichte passiert.")}
