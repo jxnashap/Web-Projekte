@@ -19,7 +19,7 @@ webseiten/scm-creatives/
 
 | Was | Wo eintragen | Kommt vor |
 |---|---|---|
-| Telefon, WhatsApp-Nummer, E-Mail | `TEL`, `WHATSAPP`, `MAIL` oben im Generator. Bis dahin führen Anruf- und WhatsApp-Knöpfe auf /kontakt | 10× |
+| E-Mail-Adresse (Telefon und WhatsApp 0172 5361079 sind eingetragen) | `MAIL` oben im Generator. Bis dahin führt der E-Mail-Knopf auf /kontakt | 3× |
 | Antwortzeit (z. B. „innerhalb eines Werktags") | `ANTWORTZEIT` oben im Generator. **Nur eintragen, was SCM wirklich halten kann** | 15× |
 | Zeitpunkt der Preisnennung (Empfehlung: im Kennenlerngespräch, also vor den Testvideos) | `PREIS_SATZ` oben im Generator | 8× |
 | Impressum: Rechtsform, Inhaber oder vertretungsberechtigte Personen, Anschrift, USt-ID oder Kleinunternehmer, Register, Verantwortlicher § 18 MStV | `build_legal()` → Impressum | |

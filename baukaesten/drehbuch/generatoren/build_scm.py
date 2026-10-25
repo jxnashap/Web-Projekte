@@ -29,8 +29,8 @@ LM_FILE = f"{KIT}/generatoren/scm-lastmod.json"
 # ------------------------------------------------------------------
 # Kontaktdaten und offene Entscheidungen: None = noch nicht geliefert
 # ------------------------------------------------------------------
-TEL = None          # z. B. "+49 431 123456"
-WHATSAPP = None     # z. B. "4917612345678" (nur Ziffern, mit Ländervorwahl)
+TEL = "0172 5361079"   # Anzeige; der tel:-Link wird international (+49) gebaut
+WHATSAPP = "491725361079"   # nur Ziffern, mit Ländervorwahl (für wa.me)
 MAIL = None         # z. B. "hallo@scm-creatives.de"
 IG = "https://www.instagram.com/scm.creatives/"
 
@@ -46,7 +46,10 @@ NB = "3&nbsp;Testvideos"
 
 
 def tel_href():
-    return f"tel:{TEL.replace(' ', '')}" if TEL else "/kontakt#telefon"
+    if not TEL:
+        return "/kontakt#telefon"
+    d = TEL.replace(" ", "")
+    return "tel:" + ("+49" + d[1:] if d.startswith("0") else d)
 
 
 def wa_href(msg="Hallo SCM Creatives, wir interessieren uns für die 3 kostenlosen Testvideos."):
@@ -1220,7 +1223,7 @@ def build_faq():
 
 def build_kontakt():
     tel_txt = TEL or ph("Telefonnummer")
-    wa_txt = "Nachricht schreiben" if WHATSAPP else ph("WhatsApp-Nummer")
+    wa_txt = f"Nachricht an {TEL}" if WHATSAPP and TEL else ("Nachricht schreiben" if WHATSAPP else ph("WhatsApp-Nummer"))
     mail_txt = MAIL or ph("E-Mail-Adresse")
     body = page_head("Kontakt", "Lasst uns<br><em>drehen.</em>",
                      f"Der schnellste Weg zu euren {NB} ist die kurze Anfrage. Lieber direkt? Dann schreibt uns oder ruft an.",
