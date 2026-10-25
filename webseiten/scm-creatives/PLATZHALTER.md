@@ -24,9 +24,9 @@ webseiten/scm-creatives/
 | Preis: wird im Kennenlerngespräch genannt | `PREIS_SATZ` oben im Generator | erledigt |
 | Impressum: Blacksnapper Consulting, Andreas Mattolat, Hüttenweg 4, 21516 Tramm, USt-IdNr. DE265142237 | `ANBIETER` oben im Generator | erledigt |
 | Datenschutz: Speicherdauer der Vercel-Logs (Verantwortlicher, E-Mail-Anbieter und Löschfrist 12 Monate sind eingetragen) | `build_legal()` → Datenschutz, danach rechtlich prüfen lassen | |
-| Team: Namen, Rollen, Fotos, Gründungsjahr, Bedeutung „SCM", Anzahl | `build_ueber()` | |
-| Kundenstimmen (BS, Maler Rohwer, Jan & Hein & Klaas & Pit, Steakhouse, Kletterwald), schriftlich freigegeben | `build_case()` → Zitat-Block | 5× |
-| Ort von Maler Rohwer | `CLIENTS["maler-rohwer"]["ort"]` | |
+| Team: Oskar von Esebeck und Yannick Ruch sind eingetragen, dazu ein kurzer Text über SCM. Offen: Rollen und Fotos | `TEAM` oben im Generator, `build_ueber()` | 4× |
+| Kundenstimmen (BS, Maler Rohwer, Jan & Hein & Klaas & Pit, Steakhouse, Kletterwald), schriftlich freigegeben. Der Zitat-Block ist bis dahin ausgeblendet | `case_details(..., with_quote=True)` in `build_case()` | |
+| Ort von Maler Rohwer: Kiel (laut Branchenverzeichnis Das Telefonbuch) | `CLIENTS["maler-rohwer"]["ort"]` | erledigt |
 | Weinbar „Die Drei": Instagram-Profil, Videos, Format, Stimme | `CLIENTS["die-drei"]`, `REELS`. Seite ist bis dahin `noindex` und nicht in der Sitemap | |
 | Pakete: Drehtermine pro Monat (Laufzeit und Konditionen: „klären wir im Kennenlerngespräch“) | `build_pakete()`, `FAQ_MORE` | |
 | Testvideos: Dauer bis zur Lieferung, Bedingungen (z. B. einmal pro Betrieb), dürfen Kunden sie ohne Vertrag posten? | `build_testvideos()`, `FAQ_*` | |
@@ -35,7 +35,7 @@ webseiten/scm-creatives/
 | Dauer eines Drehtermins, Vorlauf für Aktionen | `FAQ_*`, `BRANCHEN["gastronomie"]` | |
 | Einwilligungsvorlage für Mitarbeitende im Video | `FAQ_*` | |
 | Einwilligung aller gezeigten Personen (Darsteller, Marc und Leon von BS, Mitarbeitende der Kunden) für die Nutzung der Videos auf dieser Website | schriftlich bei SCM ablegen, das Briefing belegt nur die Freigabe durch die Kunden | |
-| Auf der Seite mit „von SCM bestätigen" markiert: Freigabe der Videos vor Veröffentlichung, Schritt 6 „Auswerten und nachschärfen", Vertrag zur Auftragsverarbeitung mit Vercel (Datenschutz) | jeweilige Stelle im Generator (`STEPS`, `FAQ_*`, `build_legal()`) | |
+| Auf der Seite mit „von SCM bestätigen" markiert: Drehtermine pro Monat (Pakete). Vertrag zur Auftragsverarbeitung mit Vercel (Datenschutz) folgt mit dem Pro-Konto | `build_pakete()`, `build_legal()` | |
 | Logo als Vektordatei (Normalversion) | `public/img/logo.svg`, `logo-dark.svg` ersetzen (aktuell nachgebaute Wortmarke), danach `favicon.svg`, `favicon-96.png`, `favicon.ico`, `apple-touch-icon.png`, `og*.jpg` neu erzeugen | |
 
 ## 2. Von SCM zu bestätigen (steht so auf der Seite, ist aber nicht belegt)
@@ -44,8 +44,8 @@ Diese Aussagen sind sinnvolle Annahmen aus Gespräch und Instagram, aber nicht a
 
 - **Pakete:** Die Pakete heißen nach ihrem Rhythmus („Einmal pro Woche", „Zweimal pro Woche", „Dreimal pro Woche"), das 8er-Paket trägt das Etikett „Der Mittelweg". Eigene Paketnamen oder eine echte Empfehlung von SCM hier eintragen (`packs()`).
 - **Gäste im Bild** nur mit Einverständnis (Branche Gastronomie, FAQ).
-- **Zahlen von Instagram, Stand 21.10.2026:** 209 Likes und 24 Kommentare beim Maler-Sketch, 20 Kommentare beim Mittagstisch-Sketch. Vor dem Livegang aktualisieren oder Stand-Datum anpassen (`build_home()`, `BRANCHEN[...]["proof"]`).
-- **KI-Hinweis bei BS Immobiliengruppe:** Auf der Seite steht, dass Teile der beiden BS-Videos mithilfe von KI erstellt wurden (wie im Original auf Instagram gekennzeichnet). Bitte bestätigen, sonst Feld `ki` in `REELS` entfernen.
+- **Erledigt:** Kunden sehen die Videos nicht vor der Veröffentlichung (Aussage entfernt). „Auswerten und nachschärfen“ ist bestätigt. Instagram-Zahlen sind entfernt, weil sie schnell veralten. KI-Hinweis bei den BS-Videos ist bestätigt.
+- **Offen:** Lesen Kunden das Skript vor dem Dreh? So steht es im Ablauf („Wir schreiben. Ihr lest vorab.“) und in den FAQ.
 - **Untertitel prüfen:** Die Untertitel (`public/media/*.de.vtt`) und die Transkripte auf den Referenzseiten sind automatisch erkannt (Whisper) und von Hand geglättet. Bei Das kleine Steakhouse sind einzelne Sätze unsicher. Bitte gegenlesen.
 
 ## 3. Videos

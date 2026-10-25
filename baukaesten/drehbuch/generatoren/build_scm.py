@@ -33,6 +33,7 @@ TEL = "0172 5361079"   # Anzeige; der tel:-Link wird international (+49) gebaut
 WHATSAPP = "491725361079"   # nur Ziffern, mit Ländervorwahl (für wa.me)
 MAIL = "scm.creatives@gmx.de"
 IG = "https://www.instagram.com/scm.creatives/"
+TEAM = ["Oskar von Esebeck", "Yannick Ruch"]
 # Anbieter laut Impressum (von SCM geliefert)
 ANBIETER = dict(firma="Blacksnapper Consulting", inhaber="Andreas Mattolat", strasse="Hüttenweg 4",
                 ort="21516 Tramm", land="Deutschland", ust="DE265142237")
@@ -177,9 +178,9 @@ CLIENTS = {
     "bs-immobiliengruppe": dict(name="BS Immobiliengruppe", h1="BS Immobilien&shy;gruppe", branche="immobilien", ort="Kiel und Umgebung",
         reels=["bs-ortsanalyse", "bs-entweder-oder"], ig="https://www.instagram.com/bs.immobiliengruppe/",
         intro="Immobilienmakler aus Kiel. Marc und Leon stehen selbst vor der Kamera und zeigen, wer hinter den Objekten steckt: mit Ortsanalysen für Käufer und mit Formaten, die Persönlichkeit zeigen."),
-    "maler-rohwer": dict(name="Jens Rohwer Malermeister", h1="Jens Rohwer Malermeister", branche="handwerk", ort=None,
+    "maler-rohwer": dict(name="Jens Rohwer Malermeister", h1="Jens Rohwer Malermeister", branche="handwerk", ort="Kiel",
         reels=["maler-rohwer"], ig="https://www.instagram.com/maler.rohwer/",
-        intro="Malerbetrieb mit Humor. Kein Vorher-Nachher, sondern eine Szene, die jeder Handwerker kennt. Genau das kommentieren die Leute: 24 Kommentare unter einem Video."),
+        intro="Malerbetrieb mit Humor. Kein Vorher-Nachher, sondern eine Szene, die jeder Handwerker kennt. Genau das kommentieren die Leute."),
     "jan-hein-klaas-pit": dict(name="Jan & Hein & Klaas & Pit", h1="Jan & Hein & Klaas & Pit", branche="gastronomie", ort="Kiel",
         reels=["jan-hein-klaas-pit"], ig="https://www.instagram.com/janheinklaaspit/",
         intro="Gastronomie mit Mittagstisch in Kiel. Das Video macht aus der Mittagspause eine kleine Geschichte, die jeder aus seiner eigenen Mittagspause kennt."),
@@ -209,7 +210,7 @@ BRANCHEN = {
                  ("Aktion mit Termin", "Studententag, Event, Saisonstart. Ein Angebot, ein Datum, ein klarer Aufruf.", "„Diesen Donnerstag passiert hier etwas, das ihr nicht verpassen solltet.“"),
                  ("Küche von innen", "Wer kocht hier eigentlich? Menschen statt Hochglanz.", "„So sieht unser Freitagabend hinter der Tür aus.“")],
         refs=["das-kleine-steakhouse", "jan-hein-klaas-pit", "die-drei"],
-        proof="<strong>20 Kommentare</strong> unter dem Mittagstisch-Sketch von Jan & Hein & Klaas & Pit, einen Tag nach Veröffentlichung. Instagram, Stand 21.10.2026.",
+        proof=None,
         faq=[("Stören die Drehs den laufenden Betrieb?", "Wir stimmen den Drehtermin mit euch ab, zum Beispiel vor der Öffnung oder in einer ruhigen Stunde. Gäste filmen wir nur, wenn sie einverstanden sind."),
              ("Wer spielt in den Videos mit?", "Das entscheiden wir gemeinsam im Skript. Viele zeigen ihr Team, andere bleiben lieber hinter der Kamera."),
              ("Können wir Aktionen kurzfristig bewerben?", f"Ja, wenn wir den Termin früh genug kennen. Sagt uns Aktionen am besten {ph('nötiger Vorlauf, z. B. zwei Wochen')} vorher.")],
@@ -249,7 +250,7 @@ BRANCHEN = {
                  ("Vorher und Nachher", "Der Unterschied in Sekunden. Mit einem Aufhänger statt nur mit Musik.", "„Diese Wand hat drei Tapetenschichten versteckt.“"),
                  ("Fachfrage in 30 Sekunden", "Eine Frage, die Kunden immer stellen, kurz beantwortet. Zeigt Kompetenz.", "„Wie oft kann man Raufaser eigentlich überstreichen?“")],
         refs=["maler-rohwer"],
-        proof="<strong>209 Likes und 24 Kommentare</strong> für einen Malerbetrieb mit 377 Followern, einen Tag nach Veröffentlichung. Instagram, Stand 21.10.2026.",
+        proof=None,
         faq=[("Wie lange hält uns ein Dreh auf der Baustelle auf?", f"Wir drehen dort, wo ihr ohnehin arbeitet, und stimmen den Termin mit euch ab. Weil das Skript vorher steht, weiß jeder, was zu tun ist. {ph('typische Dauer eines Drehtermins')}"),
              ("Helfen die Videos auch bei der Mitarbeitersuche?", "Ja. Recruiting-Videos gehören zu unseren Leistungen, zum Beispiel als Azubi-Format oder Teamvorstellung."),
              ("Was, wenn wir keine lustigen Typen sind?", "Nicht jedes Video muss ein Sketch sein. Fachfragen und Vorher-Nachher-Formate funktionieren auch ruhig erzählt.")],
@@ -269,7 +270,7 @@ BRANCHEN = {
                  ("Menschen im Unternehmen", "Mitarbeitende stellen ihren Job vor. Stark für Marke und Recruiting.", "„Ich erkläre euch in 20 Sekunden, was ich hier mache.“"),
                  ("Hinter den Kulissen", "Was Kunden nie sehen, aber spannend finden.", "„So sieht es hier aus, bevor die Tür aufgeht.“")],
         refs=["kletterwald-travemuende"],
-        proof="<strong>11 Kommentare</strong> unter einem 13-Sekunden-Video für den Kletterwald Travemünde. Instagram, Stand 21.10.2026.",
+        proof=None,
         faq=[("Passt das auch, wenn eure Kunden andere Firmen sind?", "Ja. Auch Geschäftskunden schauen Kurzvideos. Wir passen Formate und Ton an eure Zielgruppe an."),
              ("Macht ihr auch längere Filme?", "Ja. Imagefilme gehören zu unseren Zusatzleistungen, Fotos vom Drehtag auch."),
              ("Können wir die Videos auch für Werbung nutzen?", "Ja. Auf Wunsch spielen wir sie als Werbeanzeigen in der Region aus.")],
@@ -297,7 +298,7 @@ FAQ_CORE = [
 FAQ_MORE = [
     ("Wer postet die Videos?", "Das könnt ihr selbst machen oder uns überlassen. Posting und Community-Management gehören zu unseren Zusatzleistungen."),
     ("Macht ihr auch Werbeanzeigen?", "Ja. Auf Wunsch spielen wir eure Videos als Werbeanzeigen aus, gezielt in eurer Region."),
-    ("Wie läuft die Abstimmung?", f"Ihr lest das Skript vor dem Dreh. Die fertigen Videos seht ihr vor der Veröffentlichung {ph('von SCM bestätigen')}."),
+    ("Wie läuft die Abstimmung?", "Ihr lest das Skript vor dem Dreh. Dreh, Schnitt und Feinschliff übernehmen wir."),
     ("Für welche Kanäle sind die Videos?", "Alle Videos sind im Hochformat 9:16 und eignen sich für Instagram Reels, TikTok und YouTube Shorts."),
     ("Wie schnell können wir starten?", f"Nach dem Erstgespräch planen wir die {NB}. {ph('Wie viele Wochen vom Erstgespräch bis zu den fertigen Testvideos')}"),
     ("Wem gehören die Videos?", ph("Wer welche Rechte an den Videos hat: wo ihr sie nutzen dürft, wie lange, ob ihr Rohmaterial bekommt")),
@@ -305,7 +306,7 @@ FAQ_MORE = [
 FAQ_OBJ = {
     "bindung": ("Wie lange binden wir uns?", "Laufzeit und Konditionen besprechen wir im Kennenlerngespräch. Vor den Testvideos unterschreibt ihr nichts."),
     "gefallen": ("Was, wenn uns die Testvideos nicht gefallen?", "Dann sagt ihr Nein, und es kostet euch nichts. Ein Vertrag entsteht erst, wenn ihr weitermachen wollt."),
-    "garantie": ("Könnt ihr garantieren, dass die Videos mehr Gäste oder Bewerbungen bringen?", "Nein, das kann ehrlicherweise niemand. Was wir zusagen: Jedes Video folgt einem Skript mit starkem ersten Satz und klarem Aufruf, und ihr seht alles vor der Veröffentlichung."),
+    "garantie": ("Könnt ihr garantieren, dass die Videos mehr Gäste oder Bewerbungen bringen?", "Nein, das kann ehrlicherweise niemand. Was wir zusagen: Jedes Video folgt einem Skript mit starkem ersten Satz und klarem Aufruf."),
     "gefilmt": ("Was ist, wenn jemand nicht gefilmt werden möchte?", f"Dann filmen wir die Person nicht. Gäste filmen wir nur, wenn sie einverstanden sind. {ph('Einwilligung für euer Team: Vorlage von SCM, ja oder nein')}"),
     "selbst": ("Wir posten schon selbst. Lohnt sich das trotzdem?", "Ihr könnt weiter selbst posten. Wir liefern die Videos mit Skript, Dreh und Schnitt, und auf Wunsch übernehmen wir auch das Posten."),
     "dauer": ("Wie lange dauert ein Drehtermin?", f"{ph('typische Dauer, z. B. pro 4 Videos')} Den Termin stimmen wir mit euch ab, zum Beispiel vor der Öffnung."),
@@ -595,9 +596,9 @@ STEPS = [
     ("01", "Erstgespräch", "Wir lernen euch und eure Ziele kennen.", "Ein Gespräch"),
     ("02", "Skript", "Wir schreiben. Ihr lest vorab.", "Skript lesen"),
     ("03", "Dreh vor Ort", "Wir kommen zu euch. Kamera, Mikrofon, klarer Ablauf.", "Ein Termin bei euch"),
-    ("04", "Schnitt", "Tempo, Untertitel, Texte im Bild.", "Videos ansehen"),
+    ("04", "Schnitt", "Tempo, Untertitel, Texte im Bild.", "Nichts"),
     ("05", "Veröffentlichen", "Ihr postet selbst oder wir übernehmen das.", "Nichts, wenn wir posten"),
-    ("06", "Auswerten und nachschärfen", f"Was lief gut? Daraus entstehen neue Skripte. {ph('von SCM bestätigen')}", "Ein kurzer Austausch"),
+    ("06", "Auswerten und nachschärfen", "Was gut läuft, gibt die Richtung für die nächsten Videos vor.", "Nichts"),
 ]
 
 
@@ -749,12 +750,6 @@ def skript_section(scene="04"):
 </section>"""
 
 
-def facts_home():
-    return f"""<div class="facts" style="margin-top:3rem">
-    <div class="fact rv"><strong><span aria-hidden="true" data-count="209">209</span><span class="sr-only">209</span></strong><span>Likes für den Maler-Sketch, einen Tag nach Veröffentlichung</span></div>
-    <div class="fact rv" data-d="1"><strong><span aria-hidden="true" data-count="24">24</span><span class="sr-only">24</span></strong><span>Kommentare unter demselben Video</span></div>
-    <div class="fact rv" data-d="2"><strong>6</strong><span>Kunden aus Gastro, Immobilien, Handwerk und Freizeit</span></div>
-  </div><p class="proof rv">Gemeinsamer Beitrag von Maler Rohwer und SCM Creatives. Zahlen von Instagram, Stand 21.10.2026.</p>"""
 
 
 def build_home():
@@ -788,7 +783,6 @@ def build_home():
 <section class="sec panel" data-scene="SZENE 03 · VIDEOS">
   <div class="wrap">{sec_head(None, "Unsere Videos", "Gedreht in Kiel<br><em>und Travemünde.</em>", None, ("/referenzen", "Alle Videos"))}</div>
   <div class="reels rv" role="region" tabindex="0" aria-label="Referenzvideos, seitlich scrollbar">{reels}</div>
-  <div class="wrap">{facts_home()}</div>
 </section>
 
 {angebot()}
@@ -964,7 +958,7 @@ def video_desc(slug):
     return f"{r['format']} für {r['kunde']} ({BRANCHEN[r['branche']]['name']}), produziert von SCM Creatives. Erster Satz: „{r['hook']}“.{ki}"
 
 
-def case_details(slug, c, b, with_quote=True):
+def case_details(slug, c, b, with_quote=False):  # Zitat erst, wenn freigegebene Kundenstimmen da sind
     r = REELS[slug]
     beats = "".join(f'<li><span class="tc">{t}</span><b>{l}</b><p>{x}</p></li>' for t, l, x in r["beats"])
     facts = [("Kunde", r["kunde"]), ("Branche", b["name"]), ("Format", r["format"]), ("Länge", f"{r['dauer']} Sekunden"),
@@ -972,10 +966,7 @@ def case_details(slug, c, b, with_quote=True):
     fx = "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for k, v in facts)
     if r.get("ki"):
         fx += '<div class="ki"><dt>Hinweis</dt><dd>Teile dieses Videos wurden mithilfe von KI erstellt. So ist es auch im Original auf Instagram gekennzeichnet.</dd></div>'
-    stat = ""
-    if r["stats"] and r["stats"][0] >= 60:
-        stat = f"""<div class="facts" style="margin:2rem 0 .6rem"><div class="fact"><strong>{r['stats'][0]}</strong><span>Likes</span></div>
-          <div class="fact"><strong>{r['stats'][1]}</strong><span>Kommentare</span></div></div><p class="q-note">Instagram, Stand 21.10.2026.</p>"""
+    stat = ""  # Instagram-Zahlen veralten schnell, deshalb nicht mehr auf der Seite
     tr = vtt_text(slug)
     chk = f'<p class="q-note">{ph("Transkript von SCM gegenlesen lassen, einzelne Sätze sind unsicher")}</p>' if slug == "das-kleine-steakhouse" else ""
     trans = (f'<details class="faq transcript"><summary>Transkript lesen<i aria-hidden="true"></i></summary><div class="ans"><p>{html.escape(tr)}</p>{chk}</div></details>'
@@ -1194,14 +1185,14 @@ def build_vision():
 
 
 def build_ueber():
-    team = "".join(f"""<article class="member rv" data-d="{i+1}"><div class="portrait">{ph(f"Foto Teammitglied {i+1}")}</div>
-      <h3>{ph("Name")}</h3><p class="lbl">{ph("Rolle, z. B. Skript, Kamera, Schnitt")}</p></article>""" for i in range(3))
+    team = "".join(f"""<article class="member rv" data-d="{i+1}"><div class="portrait">{ph(f"Foto {n}")}</div>
+      <h3>{n}</h3><p class="lbl">{ph("Rolle, z. B. Skript, Kamera, Schnitt")}</p></article>""" for i, n in enumerate(TEAM))
     body = page_head("Über uns", "Wer hinter<br><em>der Kamera steht.</em>",
                      "Social-Media-Agentur für Kiel und die Lübecker Bucht. Wir schreiben, drehen und schneiden.",
                      crumbs=[("/", "Start"), ("/ueber-uns", "Über uns")], media="ki-platzhalter-kiel-foerde",
                      seo_h1="Über uns: SCM Creatives, Social-Media-Agentur aus Kiel") + f"""
 <section class="sec" data-scene="SZENE 02 · TEAM"><div class="wrap">
-  {sec_head(None, "Das Team", "Skript, Kamera,<br><em>Schnitt.</em>", ph("Kurzvorstellung des Teams, Gründungsjahr, Bedeutung von SCM, Anzahl Teammitglieder"))}
+  {sec_head(None, "Das Team", "Skript, Kamera,<br><em>Schnitt.</em>", "Hinter SCM Creatives stehen Oskar von Esebeck und Yannick Ruch. Wir machen Social-Media-Videos für Betriebe aus Kiel und von der Lübecker Bucht: erst das Skript, dann kommen wir mit der Kamera zu euch und schneiden so, dass man bis zum Ende dranbleibt.")}
   <div class="team">{team}</div>
 </div></section>
 <section class="sec panel" data-scene="SZENE 03 · REGION"><div class="wrap">
