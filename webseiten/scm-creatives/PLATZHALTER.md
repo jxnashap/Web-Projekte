@@ -23,7 +23,7 @@ webseiten/scm-creatives/
 | Antwortzeit: „innerhalb von 24 Stunden“ | `ANTWORTZEIT` oben im Generator | erledigt |
 | Preis: wird im Kennenlerngespräch genannt | `PREIS_SATZ` oben im Generator | erledigt |
 | Impressum: Blacksnapper Consulting, Andreas Mattolat, Hüttenweg 4, 21516 Tramm, USt-IdNr. DE265142237 | `ANBIETER` oben im Generator | erledigt |
-| Datenschutz: Löschfrist der Anfragen, Speicherdauer der Vercel-Logs (Verantwortlicher und E-Mail-Anbieter sind eingetragen) | `build_legal()` → Datenschutz, danach rechtlich prüfen lassen | |
+| Datenschutz: Speicherdauer der Vercel-Logs (Verantwortlicher, E-Mail-Anbieter und Löschfrist 12 Monate sind eingetragen) | `build_legal()` → Datenschutz, danach rechtlich prüfen lassen | |
 | Team: Namen, Rollen, Fotos, Gründungsjahr, Bedeutung „SCM", Anzahl | `build_ueber()` | |
 | Kundenstimmen (BS, Maler Rohwer, Jan & Hein & Klaas & Pit, Steakhouse, Kletterwald), schriftlich freigegeben | `build_case()` → Zitat-Block | 5× |
 | Ort von Maler Rohwer | `CLIENTS["maler-rohwer"]["ort"]` | |
@@ -35,7 +35,7 @@ webseiten/scm-creatives/
 | Dauer eines Drehtermins, Vorlauf für Aktionen | `FAQ_*`, `BRANCHEN["gastronomie"]` | |
 | Einwilligungsvorlage für Mitarbeitende im Video | `FAQ_*` | |
 | Einwilligung aller gezeigten Personen (Darsteller, Marc und Leon von BS, Mitarbeitende der Kunden) für die Nutzung der Videos auf dieser Website | schriftlich bei SCM ablegen, das Briefing belegt nur die Freigabe durch die Kunden | |
-| Auf der Seite mit „von SCM bestätigen" markiert: Freigabe der Videos vor Veröffentlichung, Schritt 6 „Auswerten und nachschärfen", Verzicht auf Verbraucherschlichtung (Impressum), Vertrag zur Auftragsverarbeitung mit Vercel (Datenschutz) | jeweilige Stelle im Generator (`STEPS`, `FAQ_*`, `build_legal()`) | |
+| Auf der Seite mit „von SCM bestätigen" markiert: Freigabe der Videos vor Veröffentlichung, Schritt 6 „Auswerten und nachschärfen", Vertrag zur Auftragsverarbeitung mit Vercel (Datenschutz) | jeweilige Stelle im Generator (`STEPS`, `FAQ_*`, `build_legal()`) | |
 | Logo als Vektordatei (Normalversion) | `public/img/logo.svg`, `logo-dark.svg` ersetzen (aktuell nachgebaute Wortmarke), danach `favicon.svg`, `favicon-96.png`, `favicon.ico`, `apple-touch-icon.png`, `og*.jpg` neu erzeugen | |
 
 ## 2. Von SCM zu bestätigen (steht so auf der Seite, ist aber nicht belegt)
