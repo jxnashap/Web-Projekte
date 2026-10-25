@@ -23,7 +23,8 @@ webseiten/scm-creatives/
 | Antwortzeit: „innerhalb von 24 Stunden“ | `ANTWORTZEIT` oben im Generator | erledigt |
 | Preis: wird im Kennenlerngespräch genannt | `PREIS_SATZ` oben im Generator | erledigt |
 | Impressum: Blacksnapper Consulting, Andreas Mattolat, Hüttenweg 4, 21516 Tramm, USt-IdNr. DE265142237 | `ANBIETER` oben im Generator | erledigt |
-| Datenschutz: Speicherdauer der Vercel-Logs (Verantwortlicher, E-Mail-Anbieter und Löschfrist 12 Monate sind eingetragen) | `build_legal()` → Datenschutz, danach rechtlich prüfen lassen | |
+| Datenschutz: Vercel-Logs, WhatsApp- und Meta-Anschrift, Data Privacy Framework sind eingetragen (Quellen: vercel.com/docs/runtime-logs, vercel.com/legal/dpa, vercel.com/kb/guide/is-vercel-certified-under-dpf, whatsapp.com/legal/privacy-policy-eea). Offen: Vertrag zur Auftragsverarbeitung, gilt laut vercel.com/legal/dpa nur für Pro und Enterprise. **Nach Buchung des Pro-Plans `VERCEL_PRO = True` setzen und neu bauen.** Danach rechtlich prüfen lassen | `VERCEL_PRO` oben im Generator, `build_legal()` | 1× |
+| Achtung Datenschutz: Der Text sagt, dass SCM die Server-Logs höchstens einen Tag lang einsehen kann (Vercel Pro: 1 Tag, Hobby: 1 Stunde). Wer Observability Plus (30 Tage) oder einen Log Drain bucht, muss diesen Satz anpassen | `build_legal()` | |
 | Team: Namen, Rollen und Kurztexte stehen (aus den About-me-Posts). Offen: Fotos von Oskar und Yannick ohne Schrift, Hochformat, als Originaldatei | `TEAM` oben im Generator, `build_ueber()` | 2× |
 | Kundenstimmen (BS, Maler Rohwer, Jan & Hein & Klaas & Pit, Steakhouse, Kletterwald), schriftlich freigegeben. Der Zitat-Block ist bis dahin ausgeblendet | `case_details(..., with_quote=True)` in `build_case()` | |
 | Ort von Maler Rohwer: Kiel (laut maler-rohwer.de, Goethestraße 8), Website auf der Referenzseite verlinkt | `CLIENTS["maler-rohwer"]["ort"]` | erledigt |

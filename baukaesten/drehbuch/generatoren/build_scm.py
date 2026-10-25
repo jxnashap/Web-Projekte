@@ -49,6 +49,9 @@ def ph(text):
     return f'<span class="ph">[PLATZHALTER: {text}]</span>'
 
 
+# Auf True setzen, sobald SCM bei Vercel den Pro-Plan gebucht hat. Erst dann gilt das
+# Data Processing Addendum von Vercel (laut vercel.com/legal/dpa nur für Pro und Enterprise).
+VERCEL_PRO = False
 ANTWORTZEIT = "innerhalb von 24 Stunden"
 PREIS_SATZ = ("Den Preis für euer Paket nennen wir euch im Kennenlerngespräch. "
               "Ihr bekommt ihn schriftlich, bevor ihr etwas unterschreibt.")
@@ -1379,35 +1382,38 @@ def build_legal():
 <h2>Haftung für Links</h2>
 <p>Unsere Website enthält Links zu externen Websites Dritter, zum Beispiel zu Instagram. Auf deren Inhalte haben wir keinen Einfluss. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber verantwortlich.</p>
 <h2>Bildnachweise</h2>
-<p>Videos und Standbilder der Referenzen: SCM Creatives für die jeweiligen Kunden, mit deren Freigabe. Zwei Videos der BS Immobiliengruppe enthalten Elemente, die mithilfe von KI erstellt wurden; sie sind auf der Referenzseite gekennzeichnet. Einzelne Hintergrundbilder und Hintergrundvideos sind als „KI-Platzhalter“ gekennzeichnet und werden vor dem Livegang durch eigene Aufnahmen ersetzt.</p>
+<p>Videos und Standbilder der Referenzen: SCM Creatives für die jeweiligen Kunden, mit deren Freigabe. Zwei Videos der BS Immobiliengruppe enthalten Elemente, die mithilfe von KI erstellt wurden; sie sind auf der Referenzseite gekennzeichnet. Einzelne Hintergrundbilder und Hintergrundvideos sind als „KI-Platzhalter“ gekennzeichnet und werden nach und nach durch eigene Aufnahmen ersetzt.</p>
 </div></div></section>"""
     page("/impressum", "Impressum | SCM Creatives", "Impressum von SCM Creatives, Social-Media-Agentur für Kiel und die Lübecker Bucht.",
          page_head("Rechtliches", "Impressum", "Wer hinter dieser Website steht.", crumbs=[("/", "Start"), ("/impressum", "Impressum")], label="Rechtliches") + imp,
          ld=[crumbs_ld([("/", "Start"), ("/impressum", "Impressum")])])
 
+    avv = ("Mit Vercel besteht dafür ein Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO (Data Processing Addendum von Vercel)."
+           if VERCEL_PRO else ph("Vertrag zur Auftragsverarbeitung mit Vercel, gilt ab dem Pro-Plan"))
     ds = f"""<section class="sec-sm"><div class="wrap"><div class="prose">
 <p>Hier erklären wir, welche Daten beim Besuch dieser Website verarbeitet werden und welche nicht.</p>
 <h2>1. Verantwortlicher</h2>
 <p>{A["firma"]}, {A["inhaber"]}, {A["strasse"]}, {A["ort"]}, {A["land"]}<br>E-Mail: {MAIL}, Telefon: {tel_intl()}</p>
 <h2>2. Hosting</h2>
-<p>Diese Website wird bei Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA gehostet. Beim Aufruf verarbeitet Vercel technisch notwendige Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite, Browser und Betriebssystem in Server-Logfiles, um die Website auszuliefern und vor Angriffen zu schützen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse liegt in einer sicheren und stabilen Bereitstellung. Die Logfiles werden {ph("Speicherdauer der Server-Logs bei Vercel")} gespeichert. Mit Vercel besteht ein Vertrag zur Auftragsverarbeitung {ph('mit dem eigenen Vercel-Konto abschließen')}. Vercel ist unter dem EU-US Data Privacy Framework zertifiziert; zusätzlich gelten Standardvertragsklauseln.</p>
+<p>Diese Website wird bei Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA gehostet. Beim Aufruf verarbeitet Vercel technisch notwendige Daten wie IP-Adresse, Datum und Uhrzeit, aufgerufene Seite, Browser und Betriebssystem in Server-Logfiles, um die Website auszuliefern und vor Angriffen zu schützen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse liegt in einer sicheren und stabilen Bereitstellung. Wir selbst können diese Protokolle in unserem Vercel-Konto höchstens einen Tag lang einsehen.</p>
+<p>Für die Bereitstellung der Website ist Vercel unser Auftragsverarbeiter. {avv} Soweit Vercel Nutzungs- und Metadaten aus dem Betrieb seiner Dienste, zum Beispiel Logdaten, als eigener Verantwortlicher verarbeitet, gilt dafür die <a href="https://vercel.com/legal/privacy-notice" target="_blank" rel="noopener">Datenschutzerklärung von Vercel{NEWTAB}</a>. Vercel ist unter dem EU-US Data Privacy Framework zertifiziert. Für Übermittlungen in die USA gilt damit der Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO).</p>
 <h2>3. Keine Cookies, kein Tracking</h2>
-<p>Diese Website setzt keine Cookies und verwendet keine Tracking- oder Werbedienste. Im Browser wird lediglich für die Dauer der Sitzung gespeichert, ob die Eröffnungsanimation bereits gezeigt wurde und ob ihr Videos und Animationen angehalten habt (Session Storage). Diese Informationen verlassen euer Gerät nicht und werden beim Schließen des Browsers gelöscht. Rechtsgrundlage ist § 25 Abs. 2 Nr. 2 TDDDG, da die Speicherung für die von euch gewünschte Darstellung der Seite erforderlich ist. {ph("Rechtlich prüfen lassen; falls Vercel Web Analytics aktiviert wird: Absatz zu cookieloser Reichweitenmessung ergänzen")}</p>
+<p>Diese Website setzt keine Cookies und verwendet keine Tracking- oder Werbedienste. Im Browser wird lediglich für die Dauer der Sitzung gespeichert, ob die Eröffnungsanimation bereits gezeigt wurde und ob ihr Videos und Animationen angehalten habt (Session Storage). Diese Informationen verlassen euer Gerät nicht und werden beim Schließen des Browsers gelöscht. Rechtsgrundlage ist § 25 Abs. 2 Nr. 2 TDDDG, da die Speicherung für die von euch gewünschte Darstellung der Seite erforderlich ist.</p>
 <h2>4. Schriften und Videos</h2>
 <p>Schriftarten und Videos werden direkt von unserem Server geladen. Es werden keine Verbindungen zu Google Fonts, YouTube oder Instagram aufgebaut, solange ihr nicht selbst auf einen Link zu diesen Diensten klickt.</p>
 <h2>5. Anfrageformular</h2>
 <p>Wenn ihr uns über das Anfrageformular kontaktiert, verarbeiten wir die Angaben, die ihr macht (zum Beispiel Name, Betrieb oder Instagram-Profil, Telefon, E-Mail, Branche, Wünsche, Region, Ort, gewünschter Kontaktweg und Nachricht), um eure Anfrage zu beantworten und ein Angebot vorzubereiten. Zusätzlich übermitteln wir, von welcher Seite dieser Website ihr zur Anfrage gekommen seid und, falls der Link eine Kampagnenkennung enthielt (utm_source, zum Beispiel „instagram“), diese Kennung. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen). Das Formular wird über eine Funktion unseres Hosters Vercel in einem Rechenzentrum in Frankfurt am Main verarbeitet und per E-Mail an unser Postfach bei GMX (1&amp;1 Mail &amp; Media GmbH) übermittelt. Zum Schutz vor Spam prüfen wir ein verstecktes Feld, die Ausfülldauer und die Herkunft der Anfrage und halten die IP-Adresse höchstens zehn Minuten im Arbeitsspeicher, um massenhafte Anfragen zu begrenzen; Rechtsgrundlage dafür ist Art. 6 Abs. 1 lit. f DSGVO. Wir speichern die Anfrage, solange es für die Bearbeitung nötig ist, und löschen sie, wenn kein Vertrag zustande kommt, spätestens nach 12 Monaten, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.</p>
 <h2>6. Kontakt per E-Mail, Telefon oder WhatsApp</h2>
-<p>Wenn ihr uns per E-Mail, Telefon oder WhatsApp kontaktiert, verarbeiten wir eure Angaben zur Bearbeitung der Anfrage (Art. 6 Abs. 1 lit. b DSGVO). Beim Klick auf einen WhatsApp-Link öffnet sich die App oder Website von WhatsApp. Anbieter ist die WhatsApp Ireland Limited, Dublin, Irland {ph("vollständige Anschrift bei der rechtlichen Prüfung ergänzen")}. Ab dann gelten die Datenschutzhinweise von WhatsApp. Dabei können Daten auch an Meta in den USA übermittelt werden.</p>
+<p>Wenn ihr uns per E-Mail, Telefon oder WhatsApp kontaktiert, verarbeiten wir eure Angaben zur Bearbeitung der Anfrage (Art. 6 Abs. 1 lit. b DSGVO). Beim Klick auf einen WhatsApp-Link öffnet sich die App oder Website von WhatsApp. Anbieter ist die WhatsApp Ireland Limited, Merrion Road, Dublin 4, D04 X2K5, Irland. Ab dann gelten die Datenschutzhinweise von WhatsApp. Dabei können Daten auch an Meta in den USA übermittelt werden.</p>
 <h2>7. Links zu Instagram</h2>
-<p>Auf unserer Website verlinken wir auf Instagram (Meta Platforms Ireland Ltd.). Es handelt sich um einfache Links; Daten werden erst übertragen, wenn ihr einen Link anklickt.</p>
+<p>Auf unserer Website verlinken wir auf Instagram. Anbieter ist die Meta Platforms Ireland Limited, Merrion Road, Dublin 4, D04 X2K5, Irland. Es handelt sich um einfache Links; Daten werden erst übertragen, wenn ihr einen Link anklickt.</p>
 <h2>8. Eure Rechte</h2>
 <p>Ihr habt das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18) und Datenübertragbarkeit (Art. 20). Wendet euch dazu einfach an uns.</p>
 <p>Ihr habt außerdem das Recht, euch bei einer Datenschutz-Aufsichtsbehörde zu beschweren, zum Beispiel beim Unabhängigen Landeszentrum für Datenschutz Schleswig-Holstein (ULD), Holstenstraße 98, 24103 Kiel.</p>
 <h2>9. Widerspruchsrecht</h2>
 <p><strong>Verarbeiten wir eure Daten auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO, könnt ihr aus Gründen, die sich aus eurer besonderen Situation ergeben, jederzeit widersprechen (Art. 21 DSGVO). Ein formloser Hinweis an uns genügt.</strong></p>
 <h2>10. Aktualität</h2>
-<p>Stand: Oktober 2026. {ph("Vor Livegang rechtlich prüfen lassen")}</p>
+<p>Stand: Oktober 2026.</p>
 </div></div></section>"""
     page("/datenschutz", "Datenschutz | SCM Creatives", "Datenschutzerklärung von SCM Creatives: keine Cookies, kein Tracking, Anfrageformular per E-Mail.",
          page_head("Rechtliches", "Datenschutz", "Welche Daten beim Besuch dieser Website verarbeitet werden, und welche nicht.", crumbs=[("/", "Start"), ("/datenschutz", "Datenschutz")], label="Rechtliches") + ds,
