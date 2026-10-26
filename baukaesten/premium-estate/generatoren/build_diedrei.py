@@ -10,7 +10,7 @@ Quellen (nur belegte Fakten):
   (Alt-Texte, Maße; Agent „Assets"). Unbelegtes bleibt [PLATZHALTER: …].
 
 Aufruf:  python3 build_diedrei.py            (schreibt nach webseiten/diedrei/)
-Umgebung: DD_SCRATCH=<Ordner mit weinkarte.json / datenschutz-entwurf.html>
+Daten: generatoren/diedrei-daten/ (weinkarte.json, datenschutz-entwurf.html, fakten.md); überschreibbar per DD_SCRATCH
 """
 import html
 import json
@@ -21,7 +21,7 @@ ROOT = "/home/user/Web-Projekte"
 SITE = os.path.join(ROOT, "webseiten", "diedrei")
 SCRATCH = os.environ.get(
     "DD_SCRATCH",
-    "/tmp/claude-0/-home-user-Web-Projekte/5cb5e08b-fc38-5aa0-ac8f-0ea76d68a5dd/scratchpad/diedrei")
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "diedrei-daten"))
 DEV_ASSETS = os.environ.get("DD_DEV_ASSETS", "")  # nur für frühe QA, solange assets/ fehlt
 BASE = "https://diedreibar.de/"
 

@@ -11,6 +11,10 @@ Repo für alle Website-Projekte. Struktur:
 - `webseiten/myimmoapp/` – MyImmo-SaaS für private Vermieter (Premium-Estate v2,
   Fraunces/Outfit, Gold/Charcoal, Higgsfield-Video-Hero + Scroll-Scrub,
   echte App-Screenshots) · PR #8
+- `webseiten/diedrei/` – Weinbar DIE DREI Kiel, ruhig-moderne Variante „Quiet Rosé“
+  (Beere #5B0041/Porzellan/Blush, Fraunces/Inter self-hosted, Original-Fotos +
+  SVG-Logo, komplette Weinkarte aus PDF, keine Drittanbieter → kein Cookie-Banner,
+  ≈4,5 MB) · Branch `claude/kind-goodall-rs48pg`
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
@@ -27,6 +31,9 @@ ihren ursprünglichen Branches (PR #1/#2).
   mit Blur, Scroll-Scrub-Kapitel, Video-Scrub, 3D-Tilt, Spotlight, Video-Hero
   (AV1+H264), Gerät-Rahmen, Float-Chips. Higgsfield-Rezept: Still (Nano Banana,
   2 Cr.) → Kling 3.0 Turbo Bild-zu-Video (7,5–10 Cr.).
+  **Ruhige Variante „Quiet Rosé“** (diedrei, `generatoren/build_diedrei.py`):
+  hell, ohne Preloader/Vorhang/Cursor-Effekte, nur sanfte Reveals + Laufband;
+  Fonts als WOFF2-Subsets lokal statt Google Fonts.
 
 ## Arbeitsweise
 - Pro Projekt ein Branch `claude/<projekt>` + ein PR; Auslieferung als ZIP nach `auslieferung/`.

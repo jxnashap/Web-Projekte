@@ -1,0 +1,2410 @@
+{
+  "stand": "07.05.2025",
+  "quelle": "Karte-Webseite-07.05.2025.pdf",
+  "quelle_url": "https://diedreibar.de/wp-content/uploads/2025/05/Karte-Webseite-07.05.2025.pdf",
+  "seiten": 9,
+  "konventionen": {
+    "spalten": "Label und Menge exakt wie Kopfzeile der Karte (z. B. '0,1l' ohne Leerzeichen). Seite 9 (Speisen) hat keine Kopfzeile -> label/menge null, eine Preisspalte.",
+    "preise": "Reihenfolge = spalten. null = in der Karte '--' (Seiten 1-5) bzw. leere Zelle (Seiten 6-9).",
+    "name": "Bezeichnung ohne Jahrgang/Stilangabe/Erzeuger; Schreibweise des Originals (inkl. Eigenheiten wie 'Rose', 'Cuvee', 'dOc', 'Superieur', 'Stein- Harfe').",
+    "jahrgang": "Zahl oder null.",
+    "zusatz": "Stil-/Qualitätsangaben (trocken, Brut, Extra Dry, edelsüß, VDP Gutswein, Milde Säure ...), mehrere Angaben mit ', ' verbunden.",
+    "erzeuger": "Nur wenn in der Karte eindeutig als Erzeuger/Weingut genannt (meist 2. Zeile).",
+    "hinweis": "Satzartige Hinweise ('Unser Hauswein!', '(Erlös für einen guten Zweck)').",
+    "menge": "Menge aus der Zeile (z. B. '0,33l', '4cl'); Weine: null (Menge steht in spalten).",
+    "gruppe": "Übergeordnete Zeile, auf die sich '…' bezieht (z. B. 'FRITZ', 'KUKKI', 'Two Chefs Brewing', 'Don Papa 7 Single Island Rum 40 Vol.%'). Darstellung als Zwischenzeile; ist gruppe == Kategorietitel (Flammkuchen), nicht wiederholen. Hat die übergeordnete Zeile selbst einen Preis (Käse allerlei ...), existiert sie zusätzlich als eigener Eintrag mit gleichem name.",
+    "beschreibung": "Zutaten-/Beschreibungszeilen ohne eigenen Preis (Cocktails, Flammkuchen, 'mit Reis').",
+    "original": "Wortlaut der zugehörigen Kartenzeilen (Leerraum normalisiert) – nur zur Kontrolle, nicht anzeigen."
+  },
+  "kategorien": [
+    {
+      "id": "schaumweine",
+      "titel": "Schaumweine",
+      "seite": 1,
+      "fusszeile": "Übersicht Weine",
+      "spalten": [
+        {
+          "label": "Glas",
+          "menge": "0,1l"
+        },
+        {
+          "label": "Flasche",
+          "menge": "0,375l"
+        },
+        {
+          "label": "Flasche",
+          "menge": "0,75l"
+        },
+        {
+          "label": "Flasche Magnum",
+          "menge": "1,5l"
+        },
+        {
+          "label": "Jéroboam",
+          "menge": "3,0l"
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Prosecco Sacchetto - Millesimato",
+          "jahrgang": null,
+          "zusatz": "Extra Dry",
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "6,50 €",
+            null,
+            "29,50 €",
+            null,
+            null
+          ],
+          "original": [
+            "Prosecco Sacchetto - Millesimato",
+            "Extra Dry"
+          ]
+        },
+        {
+          "name": "Crémant d'Alsace",
+          "jahrgang": null,
+          "zusatz": "Brut",
+          "erzeuger": "Dopff",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "6,50 €",
+            null,
+            "29,50 €",
+            null,
+            null
+          ],
+          "original": [
+            "Crémant d'Alsace Brut,",
+            "Dopff"
+          ]
+        },
+        {
+          "name": "Crémant de Loire Cuvée Rosé",
+          "jahrgang": null,
+          "zusatz": "Brut",
+          "erzeuger": "Gratien & Meyer",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "7,00 €",
+            null,
+            "31,50 €",
+            null,
+            null
+          ],
+          "original": [
+            "Crémant de Loire Cuvée Rosé Brut,",
+            "Gratien & Meyer"
+          ]
+        },
+        {
+          "name": "Riesling Sekt",
+          "jahrgang": null,
+          "zusatz": "Extra Dry",
+          "erzeuger": "Allendorf",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "7,90 €",
+            null,
+            "39,50 €",
+            null,
+            null
+          ],
+          "original": [
+            "Riesling Sekt Extra Dry,",
+            "Allendorf"
+          ]
+        },
+        {
+          "name": "Pinot Rosé",
+          "jahrgang": 2022,
+          "zusatz": "brut",
+          "erzeuger": "Allendorf",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "7,90 €",
+            null,
+            "39,50 €",
+            null,
+            null
+          ],
+          "original": [
+            "2022 Pinot Rosé brut",
+            "Allendorf"
+          ]
+        },
+        {
+          "name": "Edea-Franciacorta Blanc de Blanc",
+          "jahrgang": null,
+          "zusatz": "DOCG",
+          "erzeuger": "Mirabella",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "8,50 €",
+            null,
+            "49,00 €",
+            null,
+            null
+          ],
+          "original": [
+            "Edea-Franciacorta Blanc de Blanc",
+            "DOCG Mirabella"
+          ]
+        },
+        {
+          "name": "Winzer-Champagner",
+          "jahrgang": null,
+          "zusatz": "Brut",
+          "erzeuger": "Thierry Tailliet",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "9,50 €",
+            "28,50 €",
+            "55,50 €",
+            "115,00 €",
+            "255,00 €"
+          ],
+          "original": [
+            "Winzer-Champagner Brut,",
+            "Thierry Tailliet"
+          ]
+        },
+        {
+          "name": "Winzer-Champagner Rosé",
+          "jahrgang": null,
+          "zusatz": "Brut",
+          "erzeuger": "Thierry Tailliet",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "9,90 €",
+            "29,90 €",
+            "59,90 €",
+            "125,00 €",
+            null
+          ],
+          "original": [
+            "Winzer-Champagner Rosé Brut,",
+            "Thierry Tailliet"
+          ]
+        },
+        {
+          "name": "Winzer-Champagner",
+          "jahrgang": null,
+          "zusatz": "Demi Sec (halbtrocken)",
+          "erzeuger": "Thierry Tailliet",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            null,
+            "55,50 €",
+            null,
+            null
+          ],
+          "original": [
+            "Winzer-Champagner Demi Sec",
+            "(halbtrocken), Thierry Tailliet"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "weissweine",
+      "titel": "Weißweine",
+      "seite": 2,
+      "fusszeile": "Übersicht Weine",
+      "spalten": [
+        {
+          "label": "Glas",
+          "menge": "0,1l"
+        },
+        {
+          "label": "Glas",
+          "menge": "0,2l"
+        },
+        {
+          "label": "Flasche",
+          "menge": "0,75l"
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Weiss - Grauburgunder",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,90 €",
+            "5,50 €",
+            null
+          ],
+          "original": [
+            "Weiss - Grauburgunder"
+          ]
+        },
+        {
+          "name": "Muskateller",
+          "jahrgang": 2022,
+          "zusatz": "trocken",
+          "erzeuger": null,
+          "hinweis": "Unser Hauswein!",
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            "7,00 €",
+            "26,00 €"
+          ],
+          "original": [
+            "2022 Muskateller, trocken,",
+            "Unser Hauswein!"
+          ]
+        },
+        {
+          "name": "Pinot Grigio Principato",
+          "jahrgang": null,
+          "zusatz": "trocken",
+          "erzeuger": "Cantina Viticoltori Trento",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            "7,00 €",
+            "26,00 €"
+          ],
+          "original": [
+            "Pinot Grigio Principato, trocken,",
+            "Cantina Viticoltori Trento"
+          ]
+        },
+        {
+          "name": "Sauvignon Blanc",
+          "jahrgang": 2022,
+          "zusatz": "trocken",
+          "erzeuger": "Michael Abt",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,90 €",
+            "8,50 €",
+            "29,50 €"
+          ],
+          "original": [
+            "2022 Sauvignon Blanc trocken,",
+            "Michael Abt"
+          ]
+        },
+        {
+          "name": "Chardonnay & Weißburgunder",
+          "jahrgang": 2022,
+          "zusatz": "trocken",
+          "erzeuger": "Michael Abt",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,90 €",
+            "8,50 €",
+            "29,50 €"
+          ],
+          "original": [
+            "2022 Chardonnay & Weißburgunder trocken,",
+            "Michael Abt"
+          ]
+        },
+        {
+          "name": "Grauburgunder",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": "Michael Abt",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,90 €",
+            "8,50 €",
+            "29,50 €"
+          ],
+          "original": [
+            "Grauburgunder Michael Abt"
+          ]
+        },
+        {
+          "name": "Bruderkuss Berlin Weißwein Cuvée",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,90 €",
+            "7,90 €",
+            "29,50 €"
+          ],
+          "original": [
+            "Bruderkuss Berlin Weißwein Cuvée"
+          ]
+        },
+        {
+          "name": "Riesling",
+          "jahrgang": 2022,
+          "zusatz": "trocken, VDP Gutswein, Milde Säure",
+          "erzeuger": "Allendorf",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "5,90 €",
+            "9,50 €",
+            "32,50 €"
+          ],
+          "original": [
+            "2022 Riesling trocken, VDP Gutswein,",
+            "Allendorf - Milde Säure"
+          ]
+        },
+        {
+          "name": "Riesling Season",
+          "jahrgang": 2022,
+          "zusatz": "Qualitätswein, Fruchtig & Blumig, Milde Säure",
+          "erzeuger": "Allendorf",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "5,90 €",
+            "8,90 €",
+            "29,50 €"
+          ],
+          "original": [
+            "2022 Riesling Season Qualitätswein -",
+            "Fruchtig & Blumig, Allendorf - Milde Säure"
+          ]
+        },
+        {
+          "name": "Weissweinschorle",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            "5,50 €",
+            null
+          ],
+          "original": [
+            "Weissweinschorle"
+          ]
+        },
+        {
+          "name": "Apfelwein",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            "2,90 €",
+            null
+          ],
+          "original": [
+            "Apfelwein"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "roseweine",
+      "titel": "Roséweine",
+      "seite": 3,
+      "fusszeile": "Übersicht Weine",
+      "spalten": [
+        {
+          "label": "Glas",
+          "menge": "0,1l"
+        },
+        {
+          "label": "Glas",
+          "menge": "0,2l"
+        },
+        {
+          "label": "Flasche",
+          "menge": "0,75l"
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Rosé - Cuvée MiaRosé",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            "5,50 €",
+            null
+          ],
+          "original": [
+            "Rosé - Cuvée MiaRosé"
+          ]
+        },
+        {
+          "name": "Rosé alkoholfrei",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": "Allendorf",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,50 €",
+            "7,00 €",
+            "26,00 €"
+          ],
+          "original": [
+            "Allendorf Rosé alkoholfrei"
+          ]
+        },
+        {
+          "name": "Eleve Cinsault Rose",
+          "jahrgang": null,
+          "zusatz": "trocken, Vin de Pays dOc, Roséwein",
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,90 €",
+            "7,90 €",
+            "29,50 €"
+          ],
+          "original": [
+            "Eleve Cinsault Rose trocken,",
+            "Vin de Pays dOc, Roséwein"
+          ]
+        },
+        {
+          "name": "Spätburgunder Rosé",
+          "jahrgang": 2022,
+          "zusatz": "fruchtig",
+          "erzeuger": "Allendorf",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,90 €",
+            "7,90 €",
+            "32,50 €"
+          ],
+          "original": [
+            "2022 Spätburgunder Rosé fruchtig,",
+            "Allendorf"
+          ]
+        },
+        {
+          "name": "LÄUFT ROSA – Rotling",
+          "jahrgang": 2023,
+          "zusatz": "feinfruchtig & süffig – Franken",
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "5,90 €",
+            "9,50 €",
+            "32,50 €"
+          ],
+          "original": [
+            "2023 LÄUFT ROSA – Rotling",
+            "feinfruchtig & süffig – Franken"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "rotweine",
+      "titel": "Rotweine",
+      "seite": 4,
+      "fusszeile": "Übersicht Weine",
+      "spalten": [
+        {
+          "label": "Glas",
+          "menge": "0,1l"
+        },
+        {
+          "label": "Glas",
+          "menge": "0,2l"
+        },
+        {
+          "label": "Flasche",
+          "menge": "0,75l"
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Rot - Cuvée Chill Out",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            "5,50 €",
+            null
+          ],
+          "original": [
+            "Rot - Cuvée Chill Out"
+          ]
+        },
+        {
+          "name": "Primitivo Atria",
+          "jahrgang": 2021,
+          "zusatz": "trocken",
+          "erzeuger": "Di Camillo",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            "7,00 €",
+            "26,00 €"
+          ],
+          "original": [
+            "2021 Primitivo Atria trocken,",
+            "Di Camillo"
+          ]
+        },
+        {
+          "name": "Cuvee Rot",
+          "jahrgang": 2021,
+          "zusatz": "trocken",
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,90 €",
+            "7,00 €",
+            null
+          ],
+          "original": [
+            "2021 Cuvee Rot trocken"
+          ]
+        },
+        {
+          "name": "Chianti",
+          "jahrgang": 2021,
+          "zusatz": "trocken",
+          "erzeuger": "Fattoria di Piazzano",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,90 €",
+            "7,90 €",
+            "29,00 €"
+          ],
+          "original": [
+            "2021 Chianti trocken,",
+            "Fattoria di Piazzano"
+          ]
+        },
+        {
+          "name": "Incognito",
+          "jahrgang": 2020,
+          "zusatz": "trocken",
+          "erzeuger": "Philipp Kuhn",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,90 €",
+            "7,90 €",
+            "29,00 €"
+          ],
+          "original": [
+            "2020 Incognito trocken,",
+            "Philipp Kuhn"
+          ]
+        },
+        {
+          "name": "Ancien Temps",
+          "jahrgang": 2022,
+          "zusatz": "trocken",
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,90 €",
+            "7,90 €",
+            "29,00 €"
+          ],
+          "original": [
+            "2022 Ancien Temps trocken"
+          ]
+        },
+        {
+          "name": "Bruderkuss Rotwein Cuvée",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,90 €",
+            "7,90 €",
+            null
+          ],
+          "original": [
+            "Bruderkuss Rotwein Cuvée"
+          ]
+        },
+        {
+          "name": "Spätburgunder 'T'",
+          "jahrgang": 2022,
+          "zusatz": "trocken",
+          "erzeuger": "Tesch",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "5,50 €",
+            "8,50 €",
+            "32,50 €"
+          ],
+          "original": [
+            "2022 Spätburgunder 'T' trocken,",
+            "Tesch"
+          ]
+        },
+        {
+          "name": "Les Chevaux Patache d'Aux",
+          "jahrgang": 2019,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "6,50 €",
+            "11,50 €",
+            "33,50 €"
+          ],
+          "original": [
+            "Les Chevaux Patache d'Aux 2019"
+          ]
+        },
+        {
+          "name": "Petit Soleil",
+          "jahrgang": 2019,
+          "zusatz": "Bordeaux Superieur, trocken",
+          "erzeuger": "Château Latour",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "7,50 €",
+            "12,50 €",
+            "37,50 €"
+          ],
+          "original": [
+            "2019 Petit Soleil, Bordeaux Superieur",
+            "trocken, Château Latour"
+          ]
+        },
+        {
+          "name": "Le Pauillac de Château Latour",
+          "jahrgang": 2017,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "13,50 €",
+            "23,50 €",
+            "79,00 €"
+          ],
+          "original": [
+            "2017 Le Pauillac de Château Latour,"
+          ]
+        },
+        {
+          "name": "Kairos",
+          "jahrgang": null,
+          "zusatz": "trocken",
+          "erzeuger": "Zýmē",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "14,50 €",
+            "26,50 €",
+            "89,00 €"
+          ],
+          "original": [
+            "Kairos trocken,",
+            "Zýmē"
+          ]
+        },
+        {
+          "name": "PAUILLAC",
+          "jahrgang": 2017,
+          "zusatz": "trocken",
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            null,
+            "189,00 €"
+          ],
+          "original": [
+            "2017 PAUILLAC",
+            "trocken,"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "suessweine",
+      "titel": "Süßweine",
+      "seite": 5,
+      "fusszeile": "Übersicht Weine",
+      "spalten": [
+        {
+          "label": "Glas",
+          "menge": "0,05l"
+        },
+        {
+          "label": "Glas",
+          "menge": "0,1l"
+        },
+        {
+          "label": "Flasche",
+          "menge": "0,375l"
+        },
+        {
+          "label": "Flasche",
+          "menge": "0,75l"
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Auslese",
+          "jahrgang": 2020,
+          "zusatz": "edelsüß, Würzburger Stein- Harfe",
+          "erzeuger": "Bürgerspital Würzburg",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,50 €",
+            "9,00 €",
+            null,
+            "33,00 €"
+          ],
+          "original": [
+            "2020 Auslese edelsüß, Würzburger",
+            "Stein- Harfe, Bürgerspital Würzburg"
+          ]
+        },
+        {
+          "name": "Moscato d’Asti",
+          "jahrgang": null,
+          "zusatz": "feine Perlage und Süße",
+          "erzeuger": "San Silvestro",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            null,
+            null,
+            "29,50 €"
+          ],
+          "original": [
+            "Moscato d’Asti feine Perlage und Süße,",
+            "San Silvestro"
+          ]
+        },
+        {
+          "name": "LBV Portwein",
+          "jahrgang": 2018,
+          "zusatz": "edelsüß",
+          "erzeuger": "Kopke",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "6,50 €",
+            "11,90 €",
+            null,
+            "64,50 €"
+          ],
+          "original": [
+            "2018 LBV Portwein edelsüß,",
+            "Kopke"
+          ]
+        },
+        {
+          "name": "No. 6 de Château d'Yquem",
+          "jahrgang": null,
+          "zusatz": "Sauternes, edelsüß",
+          "erzeuger": "Château d'Yquem",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "9,50 €",
+            "18,50 €",
+            "65,00 €",
+            null
+          ],
+          "original": [
+            "No. 6 de Château d'Yquem, Sauternes,",
+            "edelsüß, Château d'Yquem"
+          ]
+        },
+        {
+          "name": "Château d'Yquem",
+          "jahrgang": 1999,
+          "zusatz": "Sauternes, edelsüß",
+          "erzeuger": "Château d'Yquem",
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            null,
+            "350,00 €",
+            null
+          ],
+          "original": [
+            "1999 Château d'Yquem, Sauternes, edelsüß,",
+            "Château d'Yquem"
+          ]
+        }
+      ],
+      "notizen": [
+        "Alle unsere Weinfalschen können auch außer Haus gekauft werden. Wir gewähren 20% Rabatt auf alle Flaschen unter 60 €."
+      ]
+    },
+    {
+      "id": "erfrischungsgetraenke-wasser",
+      "titel": "Erfrischungsgetränke und Wasser",
+      "seite": 6,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": "Flasche",
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Coca-Cola",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,20l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,00 €"
+          ],
+          "original": [
+            "Coca-Cola"
+          ]
+        },
+        {
+          "name": "Coca-Cola Zero",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,20l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,00 €"
+          ],
+          "original": [
+            "Coca-Cola Zero"
+          ]
+        },
+        {
+          "name": "Kola",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "FRITZ",
+          "beschreibung": null,
+          "preise": [
+            "3,50 €"
+          ],
+          "original": [
+            "FRITZ …",
+            "… Kola"
+          ]
+        },
+        {
+          "name": "Kola ohne Zucker",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "FRITZ",
+          "beschreibung": null,
+          "preise": [
+            "3,50 €"
+          ],
+          "original": [
+            "FRITZ …",
+            "… Kola ohne Zucker"
+          ]
+        },
+        {
+          "name": "Orange",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "FRITZ",
+          "beschreibung": null,
+          "preise": [
+            "3,50 €"
+          ],
+          "original": [
+            "FRITZ …",
+            "… Orange"
+          ]
+        },
+        {
+          "name": "Zitrone",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "FRITZ",
+          "beschreibung": null,
+          "preise": [
+            "3,50 €"
+          ],
+          "original": [
+            "FRITZ …",
+            "… Zitrone"
+          ]
+        },
+        {
+          "name": "Apfelschorle",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "FRITZ",
+          "beschreibung": null,
+          "preise": [
+            "3,50 €"
+          ],
+          "original": [
+            "FRITZ …",
+            "… Apfelschorle"
+          ]
+        },
+        {
+          "name": "Wasser leise",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,30 €"
+          ],
+          "original": [
+            "Wasser leise"
+          ]
+        },
+        {
+          "name": "Wasser laut",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,30 €"
+          ],
+          "original": [
+            "Wasser laut"
+          ]
+        },
+        {
+          "name": "Wasser (mit Kohlensäure)",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,75l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "5,90 €"
+          ],
+          "original": [
+            "Wasser (mit Kohlensäure)"
+          ]
+        },
+        {
+          "name": "Wasser (still)",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,75l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "5,90 €"
+          ],
+          "original": [
+            "Wasser (still)"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "bier",
+      "titel": "Bier",
+      "seite": 6,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": "Glas",
+          "menge": null
+        },
+        {
+          "label": "Dose",
+          "menge": null
+        },
+        {
+          "label": "Flasche",
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Green Bullet Tray India Pale Ale 6,5 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "Two Chefs Brewing",
+          "beschreibung": null,
+          "preise": [
+            null,
+            "5,80 €",
+            null
+          ],
+          "original": [
+            "Two Chefs Brewing …",
+            "Green Bullet Tray India Pale Ale 6,5 Vol.%"
+          ]
+        },
+        {
+          "name": "Sunset Suzy Orange Soda Sour 4,8 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "Two Chefs Brewing",
+          "beschreibung": null,
+          "preise": [
+            null,
+            "5,80 €",
+            null
+          ],
+          "original": [
+            "Two Chefs Brewing …",
+            "Sunset Suzy Orange Soda Sour 4,8 Vol.%"
+          ]
+        },
+        {
+          "name": "Holy Günter Craft Lager 5,1 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "Two Chefs Brewing",
+          "beschreibung": null,
+          "preise": [
+            null,
+            "5,80 €",
+            null
+          ],
+          "original": [
+            "Two Chefs Brewing …",
+            "Holy Günter Craft Lager 5,1 Vol.%"
+          ]
+        },
+        {
+          "name": "Funky Falcon Pale Ale 0,2 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "Two Chefs Brewing",
+          "beschreibung": null,
+          "preise": [
+            null,
+            "5,80 €",
+            null
+          ],
+          "original": [
+            "Two Chefs Brewing …",
+            "Funky Falcon Pale Ale 0,2 Vol.%"
+          ]
+        },
+        {
+          "name": "Heineken 5,0 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            null,
+            "4,50 €"
+          ],
+          "original": [
+            "Heineken 5,0 Vol.%"
+          ]
+        },
+        {
+          "name": "Heineken 5,0 Vol.% frisch vom Fass",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,25l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,50 €",
+            null,
+            null
+          ],
+          "original": [
+            "Heineken 5,0 Vol.% frisch vom Fass"
+          ]
+        },
+        {
+          "name": "Heineken 0,0 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            null,
+            "4,50 €"
+          ],
+          "original": [
+            "Heineken 0,0 Vol.%"
+          ]
+        },
+        {
+          "name": "Paulaner Hefe Weissbier naturtrüb",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            null,
+            "4,50 €"
+          ],
+          "original": [
+            "Paulaner Hefe Weissbier naturtrüb"
+          ]
+        },
+        {
+          "name": "Paulaner Hefe Weissbier alkoholfrei",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            null,
+            "4,50 €"
+          ],
+          "original": [
+            "Paulaner Hefe Weissbier alkoholfrei"
+          ]
+        },
+        {
+          "name": "Gösser Naturradler 2,0 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            null,
+            null,
+            "4,50 €"
+          ],
+          "original": [
+            "Gösser Naturradler 2,0 Vol.%"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "longdrinks",
+      "titel": "Longdrinks",
+      "seite": 6,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": "Glas",
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "mit Tonic Water Thomas Henry",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": "Hendrick's Original Gin 44 Vol.%",
+          "beschreibung": null,
+          "preise": [
+            "10,90 €"
+          ],
+          "original": [
+            "Hendrick's Original Gin 44 Vol.%",
+            "… mit Tonic Water Thomas Henry"
+          ]
+        },
+        {
+          "name": "mit Tonic Water Thomas Henry",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": "(Erlös für einen guten Zweck)",
+          "menge": null,
+          "gruppe": "Rotary Gin „Blue Squirrel“ 44 Vol.%",
+          "beschreibung": null,
+          "preise": [
+            "8,90 €"
+          ],
+          "original": [
+            "Rotary Gin „Blue Squirrel“ 44 Vol.%",
+            "(Erlös für einen guten Zweck)",
+            "… mit Tonic Water Thomas Henry"
+          ]
+        },
+        {
+          "name": "mit Coca-Cola",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "4cl",
+          "gruppe": "Don Papa 7 Single Island Rum 40 Vol.%",
+          "beschreibung": null,
+          "preise": [
+            "11,90 €"
+          ],
+          "original": [
+            "Don Papa 7 Single Island Rum 40 Vol.%",
+            "… 4cl mit Coca-Cola"
+          ]
+        },
+        {
+          "name": "pur",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "4cl",
+          "gruppe": "Don Papa 7 Single Island Rum 40 Vol.%",
+          "beschreibung": null,
+          "preise": [
+            "8,90 €"
+          ],
+          "original": [
+            "Don Papa 7 Single Island Rum 40 Vol.%",
+            "… 4cl pur"
+          ]
+        },
+        {
+          "name": "mit Coca-Cola",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "4cl",
+          "gruppe": "Havana Club Añejo 3 Jahre Rum 40 Vol.%",
+          "beschreibung": null,
+          "preise": [
+            "8,90 €"
+          ],
+          "original": [
+            "Havana Club Añejo 3 Jahre Rum 40 Vol.%",
+            "… 4cl mit Coca-Cola"
+          ]
+        },
+        {
+          "name": "mit Coca-Cola",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "4cl",
+          "gruppe": "Highland Park 12 Jahre Viking Honour Single Malt Whisky 40 Vol.%",
+          "beschreibung": null,
+          "preise": [
+            "11,90 €"
+          ],
+          "original": [
+            "Highland Park 12 Jahre",
+            "Viking Honour Single Malt Whisky 40 Vol.%",
+            "… 4cl mit Coca-Cola"
+          ]
+        },
+        {
+          "name": "pur",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "4cl",
+          "gruppe": "Highland Park 12 Jahre Viking Honour Single Malt Whisky 40 Vol.%",
+          "beschreibung": null,
+          "preise": [
+            "8,90 €"
+          ],
+          "original": [
+            "Highland Park 12 Jahre",
+            "Viking Honour Single Malt Whisky 40 Vol.%",
+            "… 4cl pur"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "cocktails",
+      "titel": "Cocktails",
+      "seite": 7,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": "Glas",
+          "menge": null
+        },
+        {
+          "label": "Flasche",
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Aperol Spritz",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "7,90 €",
+            null
+          ],
+          "original": [
+            "Aperol Spritz"
+          ]
+        },
+        {
+          "name": "Lillet Berry",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "7,90 €",
+            null
+          ],
+          "original": [
+            "Lillet Berry"
+          ]
+        },
+        {
+          "name": "Limoncello-Spritz",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "7,90 €",
+            null
+          ],
+          "original": [
+            "Limoncello-Spritz"
+          ]
+        },
+        {
+          "name": "Caipi 14,1 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "KUKKI",
+          "beschreibung": "Cachaça, Limetten-Likör, Rohrzucker, Limettensaft, frische Limette, Eis",
+          "preise": [
+            null,
+            "6,90 €"
+          ],
+          "original": [
+            "KUKKI …",
+            "… Caipi 14,1 Vol.%",
+            "Cachaça, Limetten-Likör, Rohrzucker,",
+            "Limettensaft, frische Limette, Eis"
+          ]
+        },
+        {
+          "name": "Mojito 14,1 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "KUKKI",
+          "beschreibung": "Weißer Rum, Limetten-Minz-Likör, Zitronensaft, Limettensaft, frische Minze, Eis",
+          "preise": [
+            null,
+            "6,90 €"
+          ],
+          "original": [
+            "KUKKI …",
+            "… Mojito 14,1 Vol.%",
+            "Weißer Rum, Limetten-Minz-Likör, Zitronensaft,",
+            "Limettensaft, frische Minze, Eis"
+          ]
+        },
+        {
+          "name": "Wild Passion Fruit 8,0 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "KUKKI",
+          "beschreibung": "Fruchtwein, Maracujasirup, Maracujasaft, Limettensaft, frische Minze und Eis",
+          "preise": [
+            null,
+            "6,90 €"
+          ],
+          "original": [
+            "KUKKI …",
+            "… Wild Passion Fruit 8,0 Vol.%",
+            "Fruchtwein, Maracujasirup, Maracujasaft,",
+            "Limettensaft, frische Minze und Eis"
+          ]
+        },
+        {
+          "name": "El Presidente 14,1 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "KUKKI",
+          "beschreibung": "Brauner Rum, Ananassaft, Limettensaft, Grenadinesirup, Sauerkirschsaft, frische Heidelbeeren und Eis",
+          "preise": [
+            null,
+            "6,90 €"
+          ],
+          "original": [
+            "KUKKI …",
+            "… El Presidente 14,1 Vol.%",
+            "Brauner Rum, Ananassaft, Limettensaft,",
+            "Grenadinesirup, Sauerkirschsaft, frische",
+            "Heidelbeeren und Eis"
+          ]
+        },
+        {
+          "name": "Pink Grapefruit 8,0 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "KUKKI",
+          "beschreibung": "Fruchtwein, Pink Grapefruitsaft, Zitronensaft, Orangensaft, natürliches Grapefruitaroma, Guarana-Extrakt, frische Grapefruit und Eis",
+          "preise": [
+            null,
+            "6,90 €"
+          ],
+          "original": [
+            "KUKKI …",
+            "… Pink Grapefruit 8,0 Vol.%",
+            "Fruchtwein, Pink Grapefruitsaft, Zitronensaft,",
+            "Orangensaft, natürliches Grapefruitaroma,",
+            "Guarana-Extrakt, frische Grapefruit und Eis"
+          ]
+        },
+        {
+          "name": "Red Berry 8,0 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "KUKKI",
+          "beschreibung": "Fruchtwein, Heidelbeersirup, Cranberrysaftkonzentrat, Himbeersaftkonzentrat, schwarzes Johannisbeersaftkonzentrat und Eis",
+          "preise": [
+            null,
+            "6,90 €"
+          ],
+          "original": [
+            "KUKKI …",
+            "… Red Berry 8,0 Vol.%",
+            "Fruchtwein, Heidelbeersirup,",
+            "Cranberrysaftkonzentrat, Himbeersaftkonzentrat,",
+            "schwarzes Johannisbeersaftkonzentrat und Eis"
+          ]
+        },
+        {
+          "name": "Sex on the Beach 14,1 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "KUKKI",
+          "beschreibung": "Wodka, Ananassaft, Cranberrysaft, Pfirsichlikör, Orangensaft, frische Heidelbeeren und Eis",
+          "preise": [
+            null,
+            "6,90 €"
+          ],
+          "original": [
+            "KUKKI …",
+            "… Sex on the Beach 14,1 Vol.%",
+            "Wodka, Ananassaft, Cranberrysaft, Pfirsichlikör,",
+            "Orangensaft, frische Heidelbeeren und Eis"
+          ]
+        },
+        {
+          "name": "Colada 8,0 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "0,33l",
+          "gruppe": "KUKKI",
+          "beschreibung": "Fruchtwein, Ananassaftkonzentrat, Kokossirup und Eis",
+          "preise": [
+            null,
+            "6,90 €"
+          ],
+          "original": [
+            "KUKKI …",
+            "… Colada 8,0 Vol.%",
+            "Fruchtwein, Ananassaftkonzentrat, Kokossirup",
+            "und Eis"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "likoere-bruderkuss",
+      "titel": "Liköre von Bruderkuss Berlin",
+      "seite": 8,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": "Glas",
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Luxury Wild Cherry Whisky Likör 20 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "4cl",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,50 €"
+          ],
+          "original": [
+            "Luxury Wild Cherry Whisky Likör 20 Vol.%"
+          ]
+        },
+        {
+          "name": "Luxury Butter Scotch Likör 20 Vol.%",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "4cl",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,50 €"
+          ],
+          "original": [
+            "Luxury Butter Scotch Likör 20 Vol.%"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "likoere-obstler-grappa",
+      "titel": "Liköre, Obstler und Grappa",
+      "seite": 8,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": "Glas",
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Morand Williamine Obstbrand 43,0 Vol. %",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "2cl",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "5,50 €"
+          ],
+          "original": [
+            "Morand Williamine Obstbrand 43,0 Vol. %"
+          ]
+        },
+        {
+          "name": "Morand Mirabelle 43,0 Vol. %",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "2cl",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "5,50 €"
+          ],
+          "original": [
+            "Morand Mirabelle 43,0 Vol. %"
+          ]
+        },
+        {
+          "name": "Haselnuss-Schnäpschen",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "2cl",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,90 €"
+          ],
+          "original": [
+            "Haselnuss-Schnäpschen"
+          ]
+        },
+        {
+          "name": "Ercole Liquore Grappa e Caffe",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "2cl",
+          "gruppe": null,
+          "beschreibung": "(Grappa mit Kaffee)",
+          "preise": [
+            "4,50 €"
+          ],
+          "original": [
+            "Ercole Liquore Grappa e Caffe (Grappa mit Kaffee)"
+          ]
+        },
+        {
+          "name": "Marcati Grappa Riserva",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "2cl",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,50 €"
+          ],
+          "original": [
+            "Marcati Grappa Riserva"
+          ]
+        },
+        {
+          "name": "Jägermeister",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": "2cl",
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,50 €"
+          ],
+          "original": [
+            "Jägermeister"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "heissgetraenke",
+      "titel": "Heißgetränke",
+      "seite": 8,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": "Tasse",
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Café Crema",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,80 €"
+          ],
+          "original": [
+            "Café Crema"
+          ]
+        },
+        {
+          "name": "Cappuccino",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,20 €"
+          ],
+          "original": [
+            "Cappuccino"
+          ]
+        },
+        {
+          "name": "Espresso",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,00 €"
+          ],
+          "original": [
+            "Espresso"
+          ]
+        },
+        {
+          "name": "Doppelter Espresso",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,00 €"
+          ],
+          "original": [
+            "Doppelter Espresso"
+          ]
+        },
+        {
+          "name": "Latte Macchiato",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "4,20 €"
+          ],
+          "original": [
+            "Latte Macchiato"
+          ]
+        },
+        {
+          "name": "Tee Berry Wonder",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,50 €"
+          ],
+          "original": [
+            "Tee Berry Wonder"
+          ]
+        },
+        {
+          "name": "Tee Earl Grey",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,50 €"
+          ],
+          "original": [
+            "Tee Earl Grey"
+          ]
+        },
+        {
+          "name": "Tee Green",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,50 €"
+          ],
+          "original": [
+            "Tee Green"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "brotzeit",
+      "titel": "Brotzeit",
+      "seite": 9,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": null,
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Käse allerlei mit Brot und Dip (2 Personen)",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "16,50 €"
+          ],
+          "original": [
+            "Käse allerlei mit Brot und Dip (2 Personen)"
+          ]
+        },
+        {
+          "name": "mit Rinderschinken",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": "Käse allerlei mit Brot und Dip (2 Personen)",
+          "beschreibung": null,
+          "preise": [
+            "19,50 €"
+          ],
+          "original": [
+            "Käse allerlei mit Brot und Dip (2 Personen)",
+            "… mit Rinderschinken"
+          ]
+        },
+        {
+          "name": "Käse allerlei mit Brot und Dip (1 Person)",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "8,90 €"
+          ],
+          "original": [
+            "Käse allerlei mit Brot und Dip (1 Person)"
+          ]
+        },
+        {
+          "name": "zusätzliches Brot zur Käseplatte",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": "Käse allerlei mit Brot und Dip (1 Person)",
+          "beschreibung": null,
+          "preise": [
+            "3,00 €"
+          ],
+          "original": [
+            "Käse allerlei mit Brot und Dip (1 Person)",
+            "… zusätzliches Brot zur Käseplatte"
+          ]
+        },
+        {
+          "name": "verschiedene Brote mit Dip",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": "Brotkorb",
+          "beschreibung": null,
+          "preise": [
+            "6,50 €"
+          ],
+          "original": [
+            "Brotkorb",
+            "… verschiedene Brote mit Dip"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "flammkuchen",
+      "titel": "Flammkuchen",
+      "seite": 9,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": null,
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "nach griechischer Art",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": "Flammkuchen",
+          "beschreibung": "mit Schmand, Käse, Peperoni",
+          "preise": [
+            "10,90 €"
+          ],
+          "original": [
+            "… nach griechischer Art",
+            "mit Schmand, Käse, Peperoni"
+          ]
+        },
+        {
+          "name": "nach Nordischer Art",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": "Flammkuchen",
+          "beschreibung": "mit Schmand, Lachs, Dill",
+          "preise": [
+            "10,90 €"
+          ],
+          "original": [
+            "… nach Nordischer Art",
+            "mit Schmand, Lachs, Dill"
+          ]
+        },
+        {
+          "name": "nach Hähnchen Art (NEU)",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": "Flammkuchen",
+          "beschreibung": "mit Schmand und Hähnchen",
+          "preise": [
+            "10,90 €"
+          ],
+          "original": [
+            "… nach Hähnchen Art (NEU)",
+            "mit Schmand und Hähnchen"
+          ]
+        },
+        {
+          "name": "der Vegane",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": "Flammkuchen",
+          "beschreibung": "mit verschiedenen Gemüsesorten",
+          "preise": [
+            "12,90 €"
+          ],
+          "original": [
+            "… der Vegane",
+            "mit verschiedenen Gemüsesorten"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "warme-speisen",
+      "titel": "Warme Speisen (NEU)",
+      "seite": 9,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": null,
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Hähnchenbruststücke in Panaeng-Kokos-Curry Sauce",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": "mit Reis",
+          "preise": [
+            "14,90 €"
+          ],
+          "original": [
+            "Hähnchenbruststücke in Panaeng-Kokos-Curry Sauce",
+            "… mit Reis"
+          ]
+        },
+        {
+          "name": "Hähnchenbrust in Zitronensauce mit Olivenöl verfeinert",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": "mit Reis",
+          "preise": [
+            "18,90 €"
+          ],
+          "original": [
+            "Hähnchenbrust in Zitronensauce mit Olivenöl verfeinert",
+            "… mit Reis"
+          ]
+        },
+        {
+          "name": "mit Brot",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": "Tomatensuppe",
+          "beschreibung": null,
+          "preise": [
+            "6,50 €"
+          ],
+          "original": [
+            "Tomatensuppe",
+            "… mit Brot"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "knabberkram",
+      "titel": "Knabberkram",
+      "seite": 9,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": null,
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Nussmix",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "5,00 €"
+          ],
+          "original": [
+            "Nussmix"
+          ]
+        },
+        {
+          "name": "Kleine Brezel",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "3,00 €"
+          ],
+          "original": [
+            "Kleine Brezel"
+          ]
+        }
+      ],
+      "notizen": []
+    },
+    {
+      "id": "nachtisch",
+      "titel": "Nachtisch",
+      "seite": 9,
+      "fusszeile": "Übersicht Getränke",
+      "spalten": [
+        {
+          "label": null,
+          "menge": null
+        }
+      ],
+      "eintraege": [
+        {
+          "name": "Aprikose trifft Milchschokolade im Glas",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": "Nuss – Crunch, Vanille und Olivenöl",
+          "preise": [
+            "5,90 €"
+          ],
+          "original": [
+            "Aprikose trifft Milchschokolade im Glas",
+            "Nuss – Crunch, Vanille und Olivenöl"
+          ]
+        },
+        {
+          "name": "Erdbeere Muffin im Glas",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": null,
+          "beschreibung": null,
+          "preise": [
+            "5,90 €"
+          ],
+          "original": [
+            "Erdbeere Muffin im Glas"
+          ]
+        },
+        {
+          "name": "mit süßem Schmand, Apfel, Sultaninen & Zimt",
+          "jahrgang": null,
+          "zusatz": null,
+          "erzeuger": null,
+          "hinweis": null,
+          "menge": null,
+          "gruppe": "Flammkuchen süß",
+          "beschreibung": null,
+          "preise": [
+            "12,90 €"
+          ],
+          "original": [
+            "Flammkuchen süß",
+            "… mit süßem Schmand, Apfel, Sultaninen & Zimt"
+          ]
+        }
+      ],
+      "notizen": []
+    }
+  ]
+}
