@@ -1,16 +1,12 @@
 [
-  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260729_181717_8a62b96d-73b2-4c70-a566-7680ade24bd5.mp4", "path": ".preview-cache/mia-assets/hero-video.mp4" },
-  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260729_181735_bae7f0f9-7829-452f-9a61-f740d2fb1a67.mp4", "path": ".preview-cache/mia-assets/strand-video.mp4" },
-  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260729_181759_039b7900-ccc2-487f-8a01-00fb32b58a0c.png", "path": ".preview-cache/mia-assets/papier-still.png" },
-  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260729_181802_789b2017-362e-4ed9-86a4-4fb9247605d0.png", "path": ".preview-cache/mia-assets/modern-still.png" },
-  { "url": "https://myimmoapp.de/landing/dashboard.webp", "path": ".preview-cache/mia-assets/app-dashboard.webp" },
-  { "url": "https://myimmoapp.de/landing/mieterportal.webp", "path": ".preview-cache/mia-assets/app-mieterportal.webp" },
-  { "url": "https://myimmoapp.de/landing/steuer.webp", "path": ".preview-cache/mia-assets/app-steuer.webp" },
-  { "url": "https://myimmoapp.de/landing/immobilien.webp", "path": ".preview-cache/mia-assets/app-immobilien.webp" },
-  { "url": "https://myimmoapp.de/landing/banking.webp", "path": ".preview-cache/mia-assets/app-banking.webp" },
-  { "url": "https://myimmoapp.de/landing/termine.webp", "path": ".preview-cache/mia-assets/app-termine.webp" },
-  { "url": "https://myimmoapp.de/icon.svg?715329b45b300188", "path": ".preview-cache/mia-assets/icon.svg" },
-  { "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces%5Bopsz,SOFT,WONK,wght%5D.ttf", "path": ".preview-cache/fonts/Fraunces.ttf" },
-  { "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces-Italic%5Bopsz,SOFT,WONK,wght%5D.ttf", "path": ".preview-cache/fonts/Fraunces-Italic.ttf" },
-  { "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/outfit/Outfit%5Bwght%5D.ttf", "path": ".preview-cache/fonts/Outfit.ttf" }
+  { "url": "https://www.lets-drive-kiel.de/", "path": ".preview-cache/ldk/home.html" },
+  { "url": "http://lets-drive-kiel.de/", "path": ".preview-cache/ldk/home-http.html" },
+  { "url": "https://r.jina.ai/https://www.lets-drive-kiel.de/", "path": ".preview-cache/ldk/home-jina.md" },
+  { "url": "https://www.lets-drive-kiel.de/sitemap.xml", "path": ".preview-cache/ldk/sitemap.xml" },
+  { "url": "https://www.lets-drive-kiel.de/robots.txt", "path": ".preview-cache/ldk/robots.txt" },
+  { "url": "https://api.microlink.io/?url=https%3A%2F%2Fwww.lets-drive-kiel.de&screenshot=true&meta=false&viewport.width=1440&viewport.height=2400&embed=screenshot.url", "path": ".preview-cache/ldk/shot.png" },
+  { "url": "https://r.jina.ai/https://adresse.dastelefonbuch.de/Kiel/3-Fahrschule-Let-s-Drive-Kiel-Inh-Andreas-Glander-Kiel-Knooper-Weg.html", "path": ".preview-cache/ldk/telefonbuch-jina.md" },
+  { "url": "https://r.jina.ai/https://www.reviewhero.io/fahrschule-let-s-drive-kiel-4621", "path": ".preview-cache/ldk/reviewhero-jina.md" },
+  { "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/Manrope%5Bwght%5D.ttf", "path": ".preview-cache/fonts/Manrope.ttf" },
+  { "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/plusjakartasans/PlusJakartaSans%5Bwght%5D.ttf", "path": ".preview-cache/fonts/PlusJakartaSans.ttf" }
 ]
