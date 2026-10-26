@@ -27,7 +27,7 @@ export function VertragPdf({ ctx }: { ctx: RenderCtx }) {
   const sigs = ctx.proof?.signatures ?? d.signatures;
   const scm = sigFor(sigs, "scm") ?? d.scmSignature;
   const kunde = sigFor(sigs, "kunde");
-  const signerName = d.unterzeichnerName || ctx.party?.signatoryName || "";
+  const signerName = d.unterzeichnerName || kunde?.name || ctx.party?.signatoryName || "";
   return (
     <PdfDocument title={ctx.doc.title} subject="Dienstleistungsvertrag" company={ctx.company}>
       <PdfPage company={ctx.company} kind="Dienstleistungsvertrag" reference={`Vorlage ${ctx.doc.templateVersion ?? ""}`} watermark={watermark}>
@@ -37,7 +37,7 @@ export function VertragPdf({ ctx }: { ctx: RenderCtx }) {
         </Title>
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 7 * MM }}>
           <PartyBlock label="Zwischen" lines={scmPartyLines(ctx.company)} short="SCM" />
-          <PartyBlock label="und" lines={clientPartyLines(ctx.party, d)} short="Auftraggeber" />
+          <PartyBlock label="und" lines={clientPartyLines(ctx.party, { ...d, unterzeichnerName: signerName })} short="Auftraggeber" />
         </View>
         {!ctx.legalApproved ? (
           <Note tone="accent">

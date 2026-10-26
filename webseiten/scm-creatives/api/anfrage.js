@@ -40,6 +40,21 @@ function limited(ip) {
   return arr.length > 5;
 }
 
+// Anfrage zusätzlich ins SCM Studio übertragen (Programm der Agentur), nur wenn STUDIO_LEADS_URL und
+// STUDIO_LEADS_SECRET gesetzt sind. Fehler werden nur protokolliert und blockieren den Mailversand nie.
+function sendToStudio(payload) {
+  const { STUDIO_LEADS_URL, STUDIO_LEADS_SECRET } = process.env;
+  if (!STUDIO_LEADS_URL || !STUDIO_LEADS_SECRET) return Promise.resolve();
+  return fetch(STUDIO_LEADS_URL, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-studio-secret': STUDIO_LEADS_SECRET },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(3000),
+  })
+    .then((r) => { if (!r.ok) console.error('Studio-Eingang:', r.status); })
+    .catch((e) => console.error('Studio nicht erreichbar:', e.message));
+}
+
 // Deutsche Nummer für tel: und wa.me aufbereiten (0431 … → +49431 …).
 function phone(tel) {
   let d = tel.replace(/[^\d+]/g, '');
@@ -133,10 +148,17 @@ module.exports = async (req, res) => {
     return reply(422, false, 'Bitte Name und je nach Kontaktweg Telefon oder E-Mail angeben.');
   }
 
+  const toStudio = sendToStudio({
+    name, betrieb: clean(d.betrieb, 160), email, telefon: tel, kontaktweg: weg, branche: d.branche, andere: d.andere,
+    ziel: d.ziel, paket: d.paket, extras: d.extras, start: d.start, region: d.region, ort: clean(d.ort, 120),
+    nachricht: d.nachricht, quelle: d.quelle, utm: d.utm,
+  });
+
   const { SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_TO, MAIL_FROM, MAIL_TEST } = process.env;
   const testMode = MAIL_TEST === '1';
   if (!testMode && (!SMTP_HOST || !SMTP_USER || !SMTP_PASS || !MAIL_TO)) {
     console.error('Versand nicht eingerichtet, es fehlen:', REQUIRED.filter((k) => !process.env[k]).join(', '));
+    await toStudio;
     return reply(503, false, 'Der Versand ist noch nicht eingerichtet.');
   }
 
@@ -190,9 +212,11 @@ ${actions ? `<p style="margin:0 0 16px">${actions}</p>` : ''}
       subject, text, html,
     });
     if (testMode) console.log(info.message);
+    await toStudio;
     return reply(200, true);
   } catch (e) {
     console.error('Versand fehlgeschlagen:', [e.code, e.responseCode, e.response || e.message].filter(Boolean).join(' · '));
+    await toStudio;
     return reply(502, false, 'Der Versand ist fehlgeschlagen.');
   }
 };

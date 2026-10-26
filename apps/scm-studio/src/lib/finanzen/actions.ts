@@ -491,7 +491,7 @@ const exportSchema = z.object({
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   label: z.string().max(60),
-  confirm: z.literal("on", { error: "Bitte bestätigen, dass das Paket an die Steuerberatung geht." }),
+  confirm: z.string().optional(),
 });
 
 /** Erstellt das Export-Paket, legt es ab und schreibt die Belege des Zeitraums fest. */
@@ -500,7 +500,8 @@ export async function completeExport(_: ActionState, fd: FormData): Promise<Acti
   if (denied) return denied;
   const p = parseForm(exportSchema, fd);
   if (!p.success) return p.state;
-  const { from, to, label } = p.data;
+  const { from, to, label, confirm } = p.data;
+  if (confirm !== "on") return fail("Bitte bestätigen, dass das Paket an eure Steuerberatung geht.");
   if (from > to) return fail("Zeitraum prüfen.");
   if (to >= todayIso()) return fail("Bitte nur abgeschlossene Zeiträume festschreiben (Ende vor heute).");
   const db = await getDb();

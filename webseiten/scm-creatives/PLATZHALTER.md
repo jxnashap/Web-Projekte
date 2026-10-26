@@ -122,3 +122,9 @@ Fertig gebaut (9 Seiten, `auslieferung/SCM-Creatives-Merkblatt-Werbekosten.pdf`)
 - [ ] Klären, ob SCM Werbebudgets weiterberechnet oder Kunden über ihr eigenes Werbekonto zahlen. Das Merkblatt beschreibt beide Wege neutral.
 - [ ] Rechenwert 1.000 € netto pro Monat im Beispiel bei Bedarf in `BEISPIEL` anpassen, dann `python3 build_merkblatt.py`
 - [ ] Jährlich aktualisieren (Steuertarif, Hebesätze, E-Rechnung), Werte stehen in `steuer2026.py`
+
+## 9. Anfragen ins SCM Studio (optional)
+
+Die Function `api/anfrage.js` kann jede Anfrage zusätzlich an das interne Programm SCM Studio schicken.
+Dafür im Vercel-Projekt der Website `STUDIO_LEADS_URL` und `STUDIO_LEADS_SECRET` setzen
+(Werte und Ablauf: `apps/scm-studio/docs/website-anbindung.md`). Ohne die Variablen passiert nichts, der Mailversand bleibt wie bisher.

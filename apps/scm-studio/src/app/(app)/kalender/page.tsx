@@ -118,7 +118,7 @@ function Toolbar({ view, anchor, today, className }: { view: View; anchor: strin
 
 function Legend() {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-muted" aria-label="Legende">
+    <div className="mt-3 hidden flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-muted md:flex" aria-label="Legende">
       {Object.entries(EVENT_KINDS).map(([k, v]) => (
         <span key={k} className="inline-flex items-center gap-1.5">
           <span className={cn("size-3 rounded", k === "dreh" ? "bg-accent-soft" : k === "gespraech" ? "bg-info-soft" : k === "deadline" ? "bg-warn-soft" : "bg-sunken")} />

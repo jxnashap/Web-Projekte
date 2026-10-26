@@ -145,12 +145,22 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/finanzen">
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-semibold">{inv.recipient?.name ?? clientName}</div>
                       <div className="truncate text-[13px] text-muted">
-                        {inv.number} · fällig {dateDe(inv.dueDate)}
+                        <span className={late ? "font-medium text-accent-ink sm:font-normal sm:text-muted" : undefined}>
+                          {late ? <span className="sm:hidden">überfällig seit </span> : <span>fällig </span>}
+                          {late ? <span className="hidden sm:inline">fällig </span> : null}
+                          {dateDe(inv.dueDate)}
+                        </span>
+                        {" · "}
+                        {inv.number}
                         {inv.dunningLevel ? ` · ${inv.dunningLevel}. Erinnerung` : ""}
                       </div>
                     </div>
-                    {late && <Badge tone="accent">Überfällig</Badge>}
-                    <div className="w-28 text-right font-semibold tabular-nums">{eur(inv.grossCents)}</div>
+                    {late && (
+                      <span className="hidden sm:inline-flex">
+                        <Badge tone="accent">Überfällig</Badge>
+                      </span>
+                    )}
+                    <div className="shrink-0 text-right font-semibold tabular-nums sm:w-28">{eur(inv.grossCents)}</div>
                   </Link>
                 </li>
               ))}

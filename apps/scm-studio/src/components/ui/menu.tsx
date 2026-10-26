@@ -4,7 +4,20 @@ import { MoreHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
-export function Menu({ children, label = "Mehr", align = "right", trigger }: { children: React.ReactNode; label?: string; align?: "left" | "right"; trigger?: React.ReactNode }) {
+export function Menu({
+  children,
+  label = "Mehr",
+  align = "right",
+  trigger,
+  triggerClassName,
+}: {
+  children: React.ReactNode;
+  label?: string;
+  align?: "left" | "right";
+  trigger?: React.ReactNode;
+  /** eigene Klassen für den Auslöser, z. B. buttonClass("secondary") für einen Text-Knopf */
+  triggerClassName?: string;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -26,7 +39,7 @@ export function Menu({ children, label = "Mehr", align = "right", trigger }: { c
         aria-expanded={open}
         aria-label={label}
         onClick={() => setOpen((o) => !o)}
-        className="grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-fill hover:text-ink"
+        className={triggerClassName ?? "grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-fill hover:text-ink"}
       >
         {trigger ?? <MoreHorizontal className="size-4" />}
       </button>

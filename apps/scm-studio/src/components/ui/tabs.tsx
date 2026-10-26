@@ -37,7 +37,7 @@ export function Segmented({ items, className }: { items: TabItem[]; className?: 
           aria-selected={t.active}
           scroll={false}
           className={cn(
-            "flex h-7 min-w-16 items-center justify-center gap-1.5 rounded-[7px] px-3 text-[13px] transition-[background-color,box-shadow] duration-200",
+            "flex h-7 min-w-16 items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] px-3 text-[13px] transition-[background-color,box-shadow] duration-200",
             t.active ? "bg-surface font-semibold text-ink shadow-[var(--shadow-thumb)]" : "font-medium text-ink hover:bg-fill-2",
           )}
         >

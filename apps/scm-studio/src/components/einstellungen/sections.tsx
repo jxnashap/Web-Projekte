@@ -301,13 +301,13 @@ export function RechtPane({ o, isAdmin }: { o: O; isAdmin: boolean }) {
           value={approved ? "freigegeben" : "offen"}
         />
       </Group>
-      {isAdmin && !approved && (
+      {isAdmin && (
         <Card className="p-5 sm:p-6">
-          <h3 className="mb-4 text-[15px] font-semibold">Freigabe eintragen</h3>
+          <h3 className="mb-4 text-[15px] font-semibold">{approved ? "Freigabe ändern" : "Freigabe eintragen"}</h3>
           <ActionForm action={saveLegalApproval} className="grid gap-4">
             <FormGrid>
               <Field label="Geprüft von" name="approvedBy" hint="Kanzlei oder Name">
-                <Input name="approvedBy" />
+                <Input name="approvedBy" defaultValue={approved ? o.legal!.approvedBy : undefined} />
               </Field>
               <Field label="Datum der Freigabe" name="approvedAt">
                 <Input name="approvedAt" type="date" max={todayIso()} defaultValue={todayIso()} />

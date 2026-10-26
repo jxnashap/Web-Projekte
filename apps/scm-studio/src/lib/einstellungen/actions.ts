@@ -1,6 +1,8 @@
 "use server";
 // Einstellungen ändern: nur Inhaber (role admin). Jede Änderung landet im Änderungsprotokoll.
+import { eq } from "drizzle-orm";
 import { refresh } from "next/cache";
+import { getDb, schema } from "@/db";
 import { done, fail, parseForm, type ActionState } from "@/lib/action";
 import { audit, verifyAuditChain } from "@/lib/audit";
 import { assertAdmin, type CurrentUser } from "@/lib/auth";
@@ -82,7 +84,8 @@ export async function saveLegalApproval(_: ActionState, fd: FormData): Promise<A
 export async function revokeLegalApproval(): Promise<ActionState> {
   const me = await admin();
   if (!me) return fail(NO_ADMIN);
-  await setSetting("legal", null);
+  const db = await getDb();
+  await db.delete(schema.settings).where(eq(schema.settings.key, "legal"));
   await audit(me.id, "settings", null, "vorlagen_freigabe_entfernt");
   refresh();
   return done("Freigabe entfernt. PDFs tragen wieder den Entwurfsvermerk.");
