@@ -23,7 +23,8 @@ export async function createSupabaseServer() {
 /** Admin-Client mit geheimem Schlüssel (nur Server): Einladungen, Storage. */
 export async function createSupabaseAdmin() {
   const { createClient } = await import("@supabase/supabase-js");
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!, {
+  // trim: beim Einfügen in Vercel rutschen leicht Leerzeichen oder Zeilenumbrüche mit hinein
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!.trim(), {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

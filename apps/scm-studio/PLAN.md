@@ -53,7 +53,7 @@ Stand: 26.10.2026 · Next.js 16.4.3 · React 19.3.1 · Recherche mit Quellen: `d
 - **Apple-Stil**: Systemschrift (SF Pro auf iPhone/Mac, sonst Inter), große Titel, hellgrauer Grund mit weißen Karten und weichen Schatten,
   Glas-Material in Kopfzeile, Seitenleiste und Tab-Leiste, gefüllte Eingabefelder, iOS-Segmented-Control, Spotlight-Suche (⌘K),
   Blätter von unten auf dem Handy, installierbar auf dem Homescreen (Web-App-Manifest).
-- **Marke**: eigenes App-Icon für SCM Studio (Sucherrahmen mit rotem Aufnahmeknopf, `public/brand/`), Signalrot als einziger Akzent;
+- **Marke**: eigenes App-Icon für SCM Studio ("SCM Kachel": schwarze Kachel, SCM weiß, STUDIO rot; `public/brand/`, erzeugt mit `scripts/app-icon.mjs`), Signalrot als einziger Akzent;
   Courier Prime nur für Drehbuch-Elemente. Kundendokumente (PDF) tragen weiter das SCM-Creatives-Logo auf Weiß.
 - **Ehrlich**: Demo-Werte sind sichtbar markiert, Unbelegtes steht als [PLATZHALTER] im Text.
 

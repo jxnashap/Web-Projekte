@@ -2,11 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-/** App-Icon von SCM Studio (Sucherrahmen + Aufnahmeknopf). */
+/** App-Icon von SCM Studio (SCM Kachel, erzeugt mit scripts/app-icon.mjs). Bis 32 px nur SCM, STUDIO wäre dort unlesbar. */
 export function AppIcon({ size = 28, className }: { size?: number; className?: string }) {
   return (
     <Image
-      src={size <= 24 ? "/brand/scm-studio-icon-small.svg" : "/brand/scm-studio-icon.svg"}
+      src={size <= 32 ? "/brand/scm-studio-icon-small.svg" : "/brand/scm-studio-icon.svg"}
       alt=""
       width={size}
       height={size}

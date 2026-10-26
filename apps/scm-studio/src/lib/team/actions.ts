@@ -44,6 +44,13 @@ async function accessLink(email: string, name: string): Promise<{ link?: string;
     res = await admin.auth.admin.generateLink({ type, email });
   }
   const token = res.data?.properties?.hashed_token;
+  if (res.error && /invalid api key/i.test(res.error.message)) {
+    return {
+      error:
+        "Supabase lehnt den geheimen Schlüssel ab. In Vercel unter SUPABASE_SECRET_KEY den Secret key aus dem " +
+        "Supabase-Projekt scm-studio (Frankfurt) eintragen, Project Settings → API Keys, und neu deployen.",
+    };
+  }
   if (res.error || !token) return { error: `Zugangslink nicht erzeugt: ${res.error?.message ?? "keine Antwort von Supabase"}` };
   return { link: `${appUrl()}/auth/bestaetigen?token_hash=${encodeURIComponent(token)}&type=${type}` };
 }
