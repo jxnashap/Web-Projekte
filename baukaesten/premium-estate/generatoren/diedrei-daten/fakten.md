@@ -318,3 +318,7 @@ Nützlich für die Website, aber **nicht belegt** – nur mit Bestätigung des B
   „DieDreiWeinbar“, Bio: „Die Drei Weinbar · Wein, Freunde, gute Abende in Kiel ·
   📍 Knooper Weg 189 | Kiel“). Varianten die_drei_weinbar / diedrei_weinbar /
   diedrei.weinbar existieren auf TikTok nicht (statusCode 10221).
+- **Facebook:** nicht belegt. Der Facebook-Link im Footer der alten Website zeigte nur auf
+  https://diedreibar.de/ (Theme-Platzhalter). Geprüfte Kandidaten (facebook.com/diedreiweinbar,
+  /diedreibar, /diedreiweinbarkiel, /DieDreiWeinbar.Kiel, /diedrei.weinbar, /diedreikiel) liefern
+  anonym nur die Login-Seite → weder bestätigt noch widerlegt. → [PLATZHALTER: Facebook-URL vom Betreiber]

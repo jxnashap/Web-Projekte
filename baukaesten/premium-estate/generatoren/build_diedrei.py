@@ -39,6 +39,9 @@ IG = "https://www.instagram.com/die_drei_weinbar/"   # so auf diedreibar.de verl
 IG_HANDLE = "@die_drei_weinbar"
 TIKTOK = "https://www.tiktok.com/@diedreiweinbar"     # Profil geprüft (Bio: Knooper Weg 189 | Kiel)
 TT_HANDLE = "@diedreiweinbar"
+# Facebook: noch nicht belegt (alter Footer-Link zeigte nur auf diedreibar.de; Seiten-Abruf nur mit Login).
+# Sobald der Betreiber die URL nennt, hier eintragen – Icon, JSON-LD und Datenschutz folgen automatisch.
+FACEBOOK = None
 YELP = "https://yelp.de/biz/WB2g2Ljv48X9yp3cV70TaQ"
 GOOGLE = "https://g.co/kgs/jAAEs6p"
 OSM = "https://www.openstreetmap.org/search?query=Knooper%20Weg%20189%2C%2024118%20Kiel"
@@ -86,6 +89,25 @@ IG_ICON = ('<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" wi
            '<circle cx="12" cy="12" r="4"/><circle class="dot" cx="17.2" cy="6.8" r=".6"/></svg>')
 TT_ICON = ('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 3.5v11.25a3.25 3.25 0 1 1-3.25-3.25"/>'
            '<path d="M13.5 3.5c.35 2.55 2.15 4.3 4.75 4.55"/></svg>')
+FB_ICON = ('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3.5h-2a4 4 0 0 0-4 4v13"/>'
+           '<path d="M6.5 10.5h8"/></svg>')
+
+
+def socials():
+    """Social-Profile in fester Reihenfolge; Facebook erst, wenn belegt."""
+    out = [(IG, "Instagram", IG_HANDLE, IG_ICON), (TIKTOK, "TikTok", TT_HANDLE, TT_ICON)]
+    if FACEBOOK:
+        out.append((FACEBOOK, "Facebook", "", FB_ICON))
+    return out
+
+
+def social_icons():
+    """Ruhige Icon-Leiste (Footer-Grundzeile + Mobil-Menü) – nur Links, keine Einbettung."""
+    items = "".join(
+        f'<li><a class="si" href="{href}"{EXT} aria-label="{name}{" – " + handle if handle else ""} '
+        f'(öffnet in neuem Tab)" title="{name}">{icon}</a></li>'
+        for href, name, handle, icon in socials())
+    return f'<ul class="social-icons" aria-label="DIE DREI in den sozialen Medien">{items}</ul>'
 EXT = ' target="_blank" rel="noopener"'
 
 
@@ -207,7 +229,7 @@ def jsonld():
         "paymentAccepted": "Bargeld, EC-Karte, Kreditkarte, NFC",
         "currenciesAccepted": "EUR",
         "foundingDate": "2024",
-        "sameAs": [IG, TIKTOK, YELP],
+        "sameAs": [href for href, *_ in socials()] + [YELP],
     }
     data.update(EXTRA_LD)
     return ('<script type="application/ld+json">'
@@ -297,7 +319,8 @@ def header(active):
   <div class="nav-meta">
     <p><span class="today" data-today></span></p>
     <p>{NAME_LONG}<br>{STREET} · {ZIP_CITY}<br><a href="tel:{TEL}">{TEL_TXT}</a></p>
-    <div class="row"><a href="{IG}"{EXT}>Instagram</a><a href="{TIKTOK}"{EXT}>TikTok</a><a href="{YELP}"{EXT}>Yelp</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></div>
+    {social_icons()}
+    <div class="row"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></div>
   </div>
 </div>
 <main id="main">
@@ -344,19 +367,11 @@ def footer():
           <p>Mittwoch – Sonntag<br><span class="num">17:00 – 23:00 Uhr</span></p>
           <p>Montag &amp; Dienstag<br>Ruhetag</p>
         </div>
-        <div class="foot-col">
-          <p class="lbl">Folge uns</p>
-          <ul>
-            <li><a href="{IG}"{EXT}>Instagram</a></li>
-            <li><a href="{TIKTOK}"{EXT}>TikTok</a></li>
-            <li><a href="{YELP}"{EXT}>Yelp</a></li>
-            <li><a href="{GOOGLE}"{EXT}>Google</a></li>
-          </ul>
-        </div>
       </div>
     </div>
     <div class="foot-base">
       <span>© 2026 DIE DREI · Weinbar · Kiel</span>
+      {social_icons()}
       <nav aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></nav>
     </div>
   </div>
@@ -699,34 +714,9 @@ def page_index():
     </div>
   </div>
 </section>
-{social()}"""
+"""
     out += footer()
     return out
-
-
-def social():
-    """„Folge uns“: Instagram + TikTok als einfache Links (keine Einbettung → keine Drittanbieter-Requests)."""
-    cards = ""
-    for i, (href, name, handle, icon) in enumerate(
-            [(IG, "Instagram", IG_HANDLE, IG_ICON), (TIKTOK, "TikTok", TT_HANDLE, TT_ICON)], 1):
-        cards += f"""
-      <a class="social-card rv" data-d="{i}" href="{href}"{EXT} aria-label="{name}: {handle} (öffnet in neuem Tab)">
-        <span class="sc-ico">{icon}</span>
-        <span class="sc-txt"><span class="sc-name">{name}</span><span class="sc-handle">{handle}</span></span>
-        <span class="sc-arrow">{ARROW}</span>
-      </a>"""
-    return f"""
-<section class="sec">
-  <div class="wrap social">
-    <div class="social-head">
-      <p class="lbl rv">Folge uns</p>
-      <h2 class="d2 split">Wein, Freunde, gute Abende – <em>auch auf Instagram &amp; TikTok.</em></h2>
-    </div>
-    <div class="social-links">{cards}
-    </div>
-  </div>
-</section>
-"""
 
 
 TILE_SIZES = "(max-width: 639px) 100vw, (max-width: 1320px) 29vw, 370px"
@@ -871,7 +861,7 @@ def page_besuch():
         <div><dt>Telefon</dt><dd><a class="ul num" href="tel:{TEL}">{TEL_TXT}</a></dd></div>
         <div><dt>E-Mail</dt><dd><a class="ul" href="mailto:{MAIL}">{MAIL}</a></dd></div>
         <div><dt>Bezahlen</dt><dd>Bargeld, EC-Karte, Kreditkarte und kontaktlos (NFC)</dd></div>
-        <div><dt>Online</dt><dd><a class="ul" href="{IG}"{EXT}>Instagram</a> · <a class="ul" href="{TIKTOK}"{EXT}>TikTok</a> · <a class="ul" href="{YELP}"{EXT}>Yelp</a> · <a class="ul" href="{GOOGLE}"{EXT}>Google</a></dd></div>
+        <div><dt>Bewerten</dt><dd><a class="ul" href="{GOOGLE}"{EXT}>Google</a> · <a class="ul" href="{YELP}"{EXT}>Yelp</a></dd></div>
       </dl>
     </div>
   </div>
@@ -1119,6 +1109,9 @@ def page_datenschutz():
     # Dokumenttitel entfällt (steht bereits als H1 im Seitenkopf)
     frag = frag.replace('<section class="legal">', "<section>")
     frag = re.sub(r"(?s)^<section>\s*<h2>Datenschutzerklärung</h2>\s*", '<section class="legal-intro">\n  ', frag)
+    if FACEBOOK:
+        frag = frag.replace("<li>TikTok (unser Profil)</li>",
+                            "<li>TikTok (unser Profil)</li>\n    <li>Facebook (unser Profil)</li>")
     return legal_page("datenschutz.html", "Datenschutz – DIE DREI Weinbar Kiel",
                       "Datenschutzerklärung der Website der Weinbar DIE DREI in Kiel – statische Seite "
                       "ohne Cookies, ohne Tracking, ohne Drittanbieter-Inhalte.",

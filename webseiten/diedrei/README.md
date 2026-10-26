@@ -24,12 +24,13 @@ Quelle der Inhalte: diedreibar.de (Texte, Fotos, Logo, Weinkarte-PDF vom
 
 | Seite | Inhalt |
 |---|---|
-| `index.html` | Hero mit Claim „Jeder Schluck erzählt eine Geschichte.“ und Heute-Status · Intro · 3 Kacheln · Laufband · Stimmen (Google) · Öffnungszeiten + Reservierung · Folge uns (Instagram @die_drei_weinbar, TikTok @diedreiweinbar) |
+| `index.html` | Hero mit Claim „Jeder Schluck erzählt eine Geschichte.“ und Heute-Status · Intro · 3 Kacheln · Laufband · Stimmen (Google) · Öffnungszeiten + Reservierung |
 | `bar.html` | Atmosphäre · Galerie · Weine · Feiern · Brotzeit |
 | `weinkarte.html` | komplette Karte (17 Kategorien, 115 Einträge) mit Sprungnavigation und PDF |
 | `besuch.html` | Zeiten (heute markiert) · Adresse · Reservierung · Anfahrt als Link |
 | `impressum.html` / `datenschutz.html` | Rechtstexte (Datenschutz als Entwurf) |
 | `404.html` | Fehlerseite im Seitendesign (`noindex`, root-relative Pfade) |
+| alle Seiten | Social-Icons in der Footer-Grundzeile und im Mobil-Menü: Instagram @die_drei_weinbar, TikTok @diedreiweinbar (Facebook folgt, sobald die URL bekannt ist: `FACEBOOK` im Generator) |
 
 ## Technik
 
@@ -57,4 +58,5 @@ Quelle der Inhalte: diedreibar.de (Texte, Fotos, Logo, Weinkarte-PDF vom
 - **Impressum:** Registerangaben der Verwaltungs-GmbH, Hinweis Verbraucherstreitbeilegung
 - **Datenschutz:** Hoster, AV-Vertrag, Log-Speicherdauer, E-Mail-Anbieter, Stand-Datum
 - Einverständnis zur Namensnennung der Rezensenten und zur Falstaff-Erwähnung
+- **Facebook-Seite**: URL vom Betreiber erfragen und im Generator bei `FACEBOOK` eintragen
 - Fotonachweis (Urheber der Originalfotos)
