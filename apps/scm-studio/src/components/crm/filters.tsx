@@ -1,16 +1,17 @@
-// Filter als Links (Zustand in der URL), dargestellt mit dem Segmented-Control aus dem UI-Kit.
+// Filter als Links (Zustand in der URL). Segmente für 2 bis 5 Werte; die Leiste selbst steht in filter-bar.tsx.
 import { Segmented } from "@/components/ui/tabs";
 import { cn } from "@/lib/cn";
 
 export type Chip = { label: string; href: string; active: boolean };
 
+/** Segmente mit sichtbarer Beschriftung (für 2 bis 5 Werte). */
 export function FilterChips({ label, chips, className }: { label: string; chips: Chip[]; className?: string }) {
   return (
-    <div className={cn("flex min-w-0 items-center gap-2", className)} role="group" aria-label={label}>
-      <span className="shrink-0 text-[13px] font-medium text-muted">{label}</span>
-      <div className="min-w-0 overflow-x-auto">
-        <Segmented className="w-max shrink-0" items={chips.map((c) => ({ href: c.href, label: c.label, active: c.active }))} />
-      </div>
+    <div className={cn("flex min-w-0 items-center gap-2.5", className)}>
+      <span className="shrink-0 text-[13px] font-medium text-muted" aria-hidden>
+        {label}
+      </span>
+      <Segmented label={label} className="w-max shrink-0" items={chips.map((c) => ({ href: c.href, label: c.label, active: c.active }))} />
     </div>
   );
 }

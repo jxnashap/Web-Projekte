@@ -16,30 +16,31 @@ import { isIsoDay } from "@/lib/kalender/dates";
 import { mediaKey, normTitle, parseCount, parseDay, parseSeconds } from "./parse";
 
 // ---------------- Manuell ----------------
-const count = (label: string, required = false) =>
+const count = (label: string, required = false, zeroHint = false) =>
   z
     .string()
     .optional()
     .transform((v, ctx) => {
       const n = parseCount(v);
       if (n === null) {
-        if (required) ctx.addIssue({ code: "custom", message: `${label} fehlt` });
+        if (required) ctx.addIssue({ code: "custom", message: `Bitte ${label} eintragen${zeroHint ? ", bei keinen eine 0" : ""}` });
         return null;
       }
       if (Number.isNaN(n)) {
-        ctx.addIssue({ code: "custom", message: `${label}: bitte eine Zahl` });
+        ctx.addIssue({ code: "custom", message: "Bitte eine ganze Zahl ab 0 eingeben, z. B. 4.100" });
         return null;
       }
       return n;
     });
 
 const metricSchema = z.object({
-  videoId: z.coerce.number({ error: "Video wählen" }).int().positive("Video wählen"),
-  measuredOn: z.string({ error: "Datum fehlt" }).refine(isIsoDay, "Datum fehlt"),
-  views: count("Aufrufe", true),
-  reach: count("Reichweite"),
-  likes: count("Likes"),
-  comments: count("Kommentare"),
+  videoId: z.coerce.number({ error: "Bitte ein Video wählen" }).int().positive("Bitte ein Video wählen"),
+  measuredOn: z.string({ error: "Bitte das Datum wählen" }).refine(isIsoDay, "Bitte das Datum wählen"),
+  views: count("die Aufrufe", true),
+  reach: count("die Reichweite"),
+  // Likes und Kommentare zeigt Instagram immer; leer würde als 0 gespeichert und die Rate verfälschen
+  likes: count("die Likes", true, true),
+  comments: count("die Kommentare", true, true),
   shares: count("Geteilt"),
   saves: count("Gespeichert"),
   avgWatchSeconds: z
@@ -47,20 +48,34 @@ const metricSchema = z.object({
     .optional()
     .transform((v, ctx) => {
       const n = parseSeconds(v);
-      if (Number.isNaN(n)) ctx.addIssue({ code: "custom", message: "Sekunden, z. B. 8,5" });
+      if (Number.isNaN(n)) ctx.addIssue({ code: "custom", message: "Sekunden als Zahl, z. B. 8,5" });
       return Number.isNaN(n) ? null : n;
     }),
 });
+
+/** Nicht-API-Quellen: pro Video und Tag gilt nur ein Eintrag, der neueste ersetzt den alten. */
+async function replaceOtherManual(videoId: number, measuredOn: string, keep: "manuell" | "csv") {
+  const db = await getDb();
+  await db
+    .delete(schema.videoMetrics)
+    .where(
+      and(
+        eq(schema.videoMetrics.videoId, videoId),
+        eq(schema.videoMetrics.measuredOn, measuredOn),
+        eq(schema.videoMetrics.source, keep === "manuell" ? "csv" : "manuell"),
+      ),
+    );
+}
 
 export async function saveMetric(_: ActionState, fd: FormData): Promise<ActionState> {
   const user = await assertUser();
   const parsed = parseForm(metricSchema, fd);
   if (!parsed.success) return parsed.state;
   const v = parsed.data;
-  if (v.measuredOn > todayIso()) return fail("Das Datum liegt in der Zukunft.", { measuredOn: ["Datum liegt in der Zukunft"] });
+  if (v.measuredOn > todayIso()) return fail("Das Datum liegt in der Zukunft.", { measuredOn: ["Das Datum liegt in der Zukunft"] });
   const db = await getDb();
   const [video] = await db.select({ id: schema.videos.id, title: schema.videos.title }).from(schema.videos).where(eq(schema.videos.id, v.videoId));
-  if (!video) return fail("Video nicht gefunden.", { videoId: ["Video wählen"] });
+  if (!video) return fail("Video nicht gefunden.", { videoId: ["Bitte ein Video wählen"] });
   const values = {
     videoId: v.videoId,
     measuredOn: v.measuredOn,
@@ -81,6 +96,8 @@ export async function saveMetric(_: ActionState, fd: FormData): Promise<ActionSt
       target: [schema.videoMetrics.videoId, schema.videoMetrics.measuredOn, schema.videoMetrics.source],
       set: { ...values, createdAt: new Date() },
     });
+  // Eine manuelle Eingabe ist eine bewusste Korrektur: ein CSV-Wert vom selben Tag fällt weg
+  await replaceOtherManual(v.videoId, v.measuredOn, "manuell");
   await audit(user.id, "video_metrics", v.videoId, "erfasst", { measuredOn: v.measuredOn, views: values.views });
   refresh();
   return done(`Zahlen für „${video.title}“ gespeichert`);
@@ -224,7 +241,7 @@ export async function checkImport(rows: ImportRow[]): Promise<{ ok: true; rows: 
   return { ok: true, rows: await checkRows(parsed.data) };
 }
 
-/** Speichert alle fehlerfreien Zeilen (Quelle "csv"; gleiche Video+Datum-Zeilen werden überschrieben). */
+/** Speichert alle fehlerfreien Zeilen (Quelle "csv"; ein vorhandener Eintrag für Video und Tag wird ersetzt). */
 export async function commitImport(rows: ImportRow[]): Promise<ActionState> {
   const user = await assertUser();
   const parsed = importSchema.safeParse(rows);
@@ -249,11 +266,15 @@ export async function commitImport(rows: ImportRow[]): Promise<ActionState> {
       .insert(schema.videoMetrics)
       .values(values)
       .onConflictDoUpdate({ target: [schema.videoMetrics.videoId, schema.videoMetrics.measuredOn, schema.videoMetrics.source], set: { ...values, createdAt: new Date() } });
+    // der neuere Import ersetzt einen manuellen Eintrag vom selben Tag
+    await replaceOtherManual(values.videoId, values.measuredOn, "csv");
   }
   await audit(user.id, "video_metrics", null, "csv_import", { zeilen: unique.size, fehler: checked.length - good.length });
   refresh();
   const skipped = checked.length - good.length;
-  return done(`${unique.size} Messpunkte importiert${skipped ? `, ${skipped} Zeilen übersprungen` : ""}`, { redirectTo: "/zahlen?reiter=videos" });
+  return done(`${unique.size} Messpunkt${unique.size === 1 ? "" : "e"} importiert${skipped ? `, ${skipped} Zeile${skipped === 1 ? "" : "n"} übersprungen` : ""}`, {
+    redirectTo: "/zahlen?reiter=videos",
+  });
 }
 
 // ---------------- Konten ----------------

@@ -1,13 +1,12 @@
-// Karte einer Anfrage (Board und Handy-Liste).
-import { ArrowRight, CalendarClock } from "lucide-react";
+// Karte einer Anfrage (Board und Handy-Liste). Die ganze Karte führt zur Anfrage; Kontakt und Stufe bleiben bedienbar.
+import { CalendarClock, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Select } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
 import { packageShort, START_WISH } from "@/lib/crm/labels";
 import { dateShort } from "@/lib/format";
-import { LEAD_SCORE, LEAD_STAGES } from "@/lib/labels";
+import { LEAD_SCORE } from "@/lib/labels";
 import { ContactIcons } from "./contact-links";
 
 export type LeadCardData = {
@@ -15,6 +14,7 @@ export type LeadCardData = {
   company: string;
   name: string;
   ort: string | null;
+  branche: string | null;
   score: string | null;
   stage: string;
   nextStep: string | null;
@@ -29,6 +29,8 @@ export type LeadCardData = {
   clientName: string | null;
   lostReason: string | null;
 };
+
+const nb = (s: string) => s.replace(/ /g, "\u00a0");
 
 /** Fälligkeit des nächsten Schritts: überfällig, heute oder später */
 export function dueState(at: string | null, today: string): "overdue" | "today" | "later" | null {
@@ -50,22 +52,24 @@ export function NextStep({ step, at, today, className }: { step: string | null; 
       <CalendarClock className="mt-0.5 size-3.5 shrink-0" aria-hidden />
       <span className="min-w-0">
         {step ?? "Nächster Schritt"}
-        {at && (
-          <span className="whitespace-nowrap">
+        {at && (due !== "today" || !/heute/i.test(step ?? "")) && (
+          <>
             {" · "}
-            {due === "overdue" ? `überfällig seit ${dateShort(at)}` : due === "today" ? "heute" : dateShort(at)}
-          </span>
+            {/* Datum nicht umbrechen ("25. Okt."), sonst darf die Zeile umbrechen */}
+            {due === "overdue" ? `überfällig seit ${nb(dateShort(at))}` : due === "today" ? "heute" : nb(dateShort(at))}
+          </>
         )}
       </span>
     </div>
   );
 }
 
-export function LeadCard({ lead: l, today, onStage }: { lead: LeadCardData; today: string; onStage?: (stage: string) => void }) {
+export function LeadCard({ lead: l, today, stageControl }: { lead: LeadCardData; today: string; stageControl?: React.ReactNode }) {
   const score = l.score ? LEAD_SCORE[l.score] : null;
   const interest = [packageShort(l.packageInterest), l.startWish ? START_WISH[l.startWish] : null].filter(Boolean).join(" · ");
+  const who = [l.name !== l.company ? l.name : null, l.ort].filter(Boolean).join(" · ");
   return (
-    <Card className="relative p-3.5">
+    <Card className="relative p-3.5 transition-shadow has-[a[data-card]:focus-visible]:ring-2 has-[a[data-card]:focus-visible]:ring-accent has-[a[data-card]:focus-visible]:ring-offset-2 has-[a[data-card]:hover]:shadow-[var(--shadow-raised)]">
       <div className="flex items-start gap-2">
         {score && (
           <Badge tone={score.tone} className="mt-0.5">
@@ -75,19 +79,21 @@ export function LeadCard({ lead: l, today, onStage }: { lead: LeadCardData; toda
         )}
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-[15px] font-semibold leading-snug">
-            <Link href={`/anfragen/${l.id}`} className="after:absolute after:inset-0 focus-visible:outline-none" draggable={false}>
+            <Link href={`/anfragen/${l.id}`} data-card className="outline-none after:absolute after:inset-0 after:rounded-[inherit]" draggable={false}>
               {l.company}
             </Link>
           </h3>
-          <p className="truncate text-[13px] text-muted">{[l.name !== l.company ? l.name : null, l.ort].filter(Boolean).join(" · ") || " "}</p>
+          {who && <p className="truncate text-[13px] text-muted">{who}</p>}
         </div>
       </div>
 
-      {l.stage === "verloren" && l.lostReason ? (
-        <p className="mt-2 line-clamp-2 text-[13px] text-muted">Grund: {l.lostReason}</p>
-      ) : l.stage === "gewonnen" && l.clientName ? (
-        <p className="mt-2 flex items-center gap-1 text-[13px] font-semibold text-ok">
-          <ArrowRight className="size-3.5" /> Kunde: {l.clientName}
+      {l.stage === "verloren" ? (
+        <p className="mt-2 line-clamp-2 text-[13px] text-muted">{l.lostReason ? `Grund: ${l.lostReason}` : "Ohne Grund als verloren markiert"}</p>
+      ) : l.clientId ? (
+        <p className="mt-2 text-[13px]">
+          <Link href={`/kunden/${l.clientId}`} className="relative z-10 inline-flex items-center gap-1 font-semibold text-ok hover:underline">
+            <UserCheck className="size-3.5" aria-hidden /> Kunde: {l.clientName ?? "ansehen"}
+          </Link>
         </p>
       ) : (
         <>
@@ -98,19 +104,10 @@ export function LeadCard({ lead: l, today, onStage }: { lead: LeadCardData; toda
 
       {interest && <p className="mt-2 truncate text-[12px] text-muted">{interest}</p>}
 
-      {(l.phone || l.email) && <ContactIcons phone={l.phone} email={l.email} name={l.name} preferred={l.contactWay} className="relative z-10 mt-3" />}
-      {onStage && (
-        <label className="relative z-10 mt-3 block">
-          <span className="sr-only">Stufe von {l.company} ändern</span>
-          <Select value={l.stage} onChange={(e) => onStage(e.target.value)} className="cursor-pointer">
-            {LEAD_STAGES.map((s) => (
-              <option key={s.key} value={s.key}>
-                {s.label}
-              </option>
-            ))}
-          </Select>
-        </label>
+      {(l.phone || l.email) && !l.clientId && l.stage !== "verloren" && (
+        <ContactIcons phone={l.phone} email={l.email} name={l.name} preferred={l.contactWay} className="relative z-10 mt-3" />
       )}
+      {stageControl && <div className="relative z-10 mt-3">{stageControl}</div>}
     </Card>
   );
 }

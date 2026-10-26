@@ -1,4 +1,7 @@
+import { Mail } from "lucide-react";
 import Image from "next/image";
+import { buttonClass } from "@/components/ui/button";
+import { getCompany } from "@/lib/settings";
 
 /** Schlichter, heller Rahmen für öffentliche Seiten, die Kunden sehen (ohne Navigation). */
 export function PublicShell({ children }: { children: React.ReactNode }) {
@@ -8,9 +11,21 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
         <div className="mb-8 flex justify-center">
           <Image src="/logo-dark.svg" alt="SCM Creatives" width={128} height={45} priority />
         </div>
-        <div className="rounded-card border border-line bg-surface p-7 shadow-card sm:p-9">{children}</div>
-        <p className="mt-6 text-center text-[12px] text-muted">SCM Creatives · Social Media Videos aus Kiel und der Lübecker Bucht</p>
+        <div className="squircle rounded-[var(--radius-card)] bg-surface p-7 shadow-[var(--shadow-card)] sm:p-9">{children}</div>
+        <p className="mt-6 text-center text-[13px] text-muted">SCM Creatives · Social Media Videos aus Kiel und der Lübecker Bucht</p>
       </div>
     </main>
+  );
+}
+
+/** Kontaktweg für Kunden (E-Mail aus den Firmendaten in den Einstellungen). */
+export async function ContactButton({ subject, className }: { subject: string; className?: string }) {
+  const company = await getCompany().catch(() => null);
+  const email = company?.email?.trim();
+  if (!email) return <p className={className}>[PLATZHALTER Kontakt: E-Mail-Adresse in den Einstellungen unter Firma eintragen]</p>;
+  return (
+    <a href={`mailto:${email}?subject=${encodeURIComponent(subject)}`} className={buttonClass("secondary", "md", className)}>
+      <Mail className="size-4" aria-hidden /> E-Mail an SCM Creatives
+    </a>
   );
 }

@@ -1,62 +1,72 @@
-import { ArrowLeft, CalendarCheck2, Clapperboard, FileText, MapPin, Trash2, Users } from "lucide-react";
+import { CalendarCheck2, Clapperboard, FileText, MapPin, Pencil } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { EventForm } from "@/components/kalender/event-form";
+import { EventMoreMenu } from "@/components/kalender/event-menu";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
-import { ActionButton } from "@/components/ui/confirm-action";
+import { ParamDialog } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty";
 import { PageHeader } from "@/components/ui/page-header";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DetailSkeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/cn";
 import { dateLong, time } from "@/lib/format";
 import { getGoogleStatus } from "@/lib/google/calendar";
 import { deleteEvent, saveEvent } from "@/lib/kalender/actions";
 import { getCalendarOptions, getEvent, getShootVideos } from "@/lib/kalender/data";
 import { addDaysIso } from "@/lib/kalender/dates";
-import { calHref } from "@/lib/kalender/href";
+import { asView, calHref, kindStyle } from "@/lib/kalender/href";
 import { EVENT_KINDS, videoStatus } from "@/lib/labels";
 import { todayIso } from "@/lib/time";
 
-export const metadata = { title: "Termin" };
-
 type Params = Promise<{ id: string }>;
+type SP = Promise<Record<string, string | string[] | undefined>>;
 
-export default function TerminPage({ params }: { params: Params }) {
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const id = Number((await params).id);
+  const row = Number.isInteger(id) && id > 0 ? await getEvent(id).catch(() => null) : null;
+  return { title: row ? `${row.e.title} · Kalender` : "Termin" };
+}
+
+export default function TerminPage({ params, searchParams }: { params: Params; searchParams: SP }) {
   return (
     <Suspense fallback={<DetailSkeleton />}>
-      <Detail params={params} />
+      <Detail params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-function DetailSkeleton() {
+/** Zeile einer Infoliste: Bezeichnung links, Wert rechts (auf dem Handy untereinander bei langen Werten). */
+function Row({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className="grid gap-6">
-      <Skeleton className="h-24 w-full max-w-xl" />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <Skeleton className="h-[560px]" />
-        <Skeleton className="h-64" />
-      </div>
+    <div className={cn("flex min-h-12 items-start justify-between gap-4 px-5 py-3", className)}>
+      <dt className="shrink-0 text-muted">{label}</dt>
+      <dd className="min-w-0 text-right">{children}</dd>
     </div>
   );
 }
 
-async function Detail({ params }: { params: Params }) {
+async function Detail({ params, searchParams }: { params: Params; searchParams: SP }) {
   await connection();
-  const { id } = await params;
+  const [{ id }, sp] = await Promise.all([params, searchParams]);
   const eventId = Number(id);
   if (!Number.isInteger(eventId) || eventId <= 0) notFound();
   const [row, options, google] = await Promise.all([getEvent(eventId), getCalendarOptions(), getGoogleStatus()]);
   if (!row) notFound();
   const { e } = row;
+  const view = asView(Array.isArray(sp.ansicht) ? sp.ansicht[0] : sp.ansicht);
   const startDay = todayIso(e.startsAt);
   const lastDay = todayIso(new Date(e.endsAt.getTime() - 1));
   const days: string[] = [];
   for (let d = startDay; d <= lastDay && days.length < 32; d = addDaysIso(d, 1)) days.push(d);
-  const videos = e.kind === "dreh" && e.clientId ? await getShootVideos(e.clientId, days) : [];
+  const isShoot = e.kind === "dreh";
+  const videos = isShoot && e.clientId ? await getShootVideos(e.clientId, days) : [];
   const members = options.team.filter((t) => e.teamIds?.includes(t.id));
+  const kind = EVENT_KINDS[e.kind]?.label ?? "Termin";
   const when = e.allDay
     ? lastDay === startDay
       ? `${dateLong(startDay)}, ganztägig`
@@ -64,176 +74,175 @@ async function Detail({ params }: { params: Params }) {
     : todayIso(e.endsAt) === startDay
       ? `${dateLong(startDay)}, ${time(e.startsAt)} bis ${time(e.endsAt)} Uhr`
       : `${dateLong(startDay)}, ${time(e.startsAt)} Uhr bis ${dateLong(todayIso(e.endsAt))}, ${time(e.endsAt)} Uhr`;
+  const editHref = `/kalender/${e.id}?${new URLSearchParams({ ...(view ? { ansicht: view } : {}), bearbeiten: "1" })}`;
 
   return (
     <>
-      <div className="mb-4">
-        <Link href={calHref({ datum: startDay })} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted hover:text-ink">
-          <ArrowLeft className="size-4" /> Zum Kalender
-        </Link>
-      </div>
       <PageHeader
-        scene={`Szene 06 · ${EVENT_KINDS[e.kind]?.label ?? "Termin"}`}
+        scene={`Szene 06 · ${kind}`}
+        back={{ href: calHref({ ansicht: view, datum: startDay }), label: "Kalender" }}
+        eyebrow={
+          <span className="inline-flex items-center gap-2">
+            <span className="size-2.5 rounded-full" style={{ background: kindStyle(e.kind).dot }} aria-hidden />
+            {kind}
+          </span>
+        }
         title={e.title}
         description={when}
         actions={
-          <ActionButton action={deleteEvent.bind(null, e.id)} confirm={`Termin „${e.title}“ wirklich löschen?`} variant="danger" size="md">
-            <Trash2 className="size-4" /> Löschen
-          </ActionButton>
+          <>
+            <LinkButton href={editHref} scroll={false} variant="secondary">
+              <Pencil className="size-4" aria-hidden /> Bearbeiten
+            </LinkButton>
+            <EventMoreMenu title={e.title} remove={deleteEvent.bind(null, e.id, view)} googleLinked={Boolean(e.googleEventId) && google.state === "verbunden"} />
+          </>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <Card>
-          <CardHeader title="Termin bearbeiten" sub="Änderungen gehen sofort an Google, falls verbunden." />
-          <div className="p-5">
-            <EventForm
-              key={e.id}
-              action={saveEvent}
-              options={options}
-              defaults={{
-                id: e.id,
-                title: e.title,
-                kind: e.kind,
-                allDay: e.allDay,
-                startDate: startDay,
-                startTime: time(e.startsAt),
-                endDate: e.allDay ? lastDay : todayIso(e.endsAt),
-                endTime: time(e.endsAt),
-                location: e.location,
-                clientId: e.clientId,
-                leadId: e.leadId,
-                teamIds: e.teamIds,
-                notes: e.notes,
-              }}
-            />
-          </div>
+
+      <div className={cn("grid gap-6", isShoot ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" : "max-w-2xl")}>
+        <Card className="self-start">
+          <CardHeader title="Auf einen Blick" />
+          <dl className="divide-y divide-line border-t border-line text-[15px]">
+            {e.location && (
+              <Row label="Ort">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.location)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-start gap-1 font-semibold text-accent-ink hover:underline"
+                >
+                  <MapPin className="mt-1 size-3.5 shrink-0" aria-hidden /> {e.location}
+                </a>
+              </Row>
+            )}
+            {row.clientName && (
+              <Row label="Kunde">
+                <Link href={`/kunden/${e.clientId}`} className="inline-flex items-center gap-2 font-semibold hover:underline">
+                  <span className="size-2.5 rounded-full" style={{ background: row.clientColor ?? undefined }} aria-hidden />
+                  {row.clientName}
+                </Link>
+              </Row>
+            )}
+            {row.leadCompany && (
+              <Row label="Anfrage">
+                <Link href={`/anfragen/${e.leadId}`} className="font-semibold hover:underline">
+                  {row.leadCompany}
+                </Link>
+              </Row>
+            )}
+            <Row label="Team">{members.length ? members.map((m) => m.name).join(", ") : <span className="text-muted">niemand eingetragen</span>}</Row>
+            {e.notes && (
+              <div className="px-5 py-3">
+                <dt className="text-muted">Notizen</dt>
+                <dd className="mt-1 whitespace-pre-line text-ink">{e.notes}</dd>
+              </div>
+            )}
+            <Row label="Google" className="text-[14px]">
+              {google.state !== "verbunden" ? (
+                <span className="text-muted">nicht verbunden</span>
+              ) : e.googleEventId ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <CalendarCheck2 className="size-4 text-ok" aria-hidden /> eingetragen
+                </span>
+              ) : (
+                <span className="text-warn">noch nicht übertragen</span>
+              )}
+            </Row>
+          </dl>
         </Card>
 
-        <div className="grid content-start gap-6">
-          <Card>
-            <CardHeader title="Auf einen Blick" />
-            <dl className="grid gap-3 p-5 text-[14px]">
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-muted">Art</dt>
-                <dd>
-                  <Badge tone={EVENT_KINDS[e.kind]?.tone}>{EVENT_KINDS[e.kind]?.label ?? e.kind}</Badge>
-                </dd>
-              </div>
-              {row.clientName && (
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-muted">Kunde</dt>
-                  <dd>
-                    <Link href={`/kunden/${e.clientId}`} className="inline-flex items-center gap-2 font-semibold hover:underline">
-                      <span className="size-2.5 rounded-full" style={{ background: row.clientColor ?? undefined }} />
-                      {row.clientName}
-                    </Link>
-                  </dd>
-                </div>
-              )}
-              {row.leadCompany && (
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-muted">Anfrage</dt>
-                  <dd>
-                    <Link href={`/anfragen/${e.leadId}`} className="font-semibold hover:underline">
-                      {row.leadCompany}
-                    </Link>
-                  </dd>
-                </div>
-              )}
-              {e.location && (
-                <div className="flex items-start justify-between gap-3">
-                  <dt className="text-muted">Ort</dt>
-                  <dd className="text-right">
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.location)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 font-semibold hover:underline"
-                    >
-                      <MapPin className="size-3.5" /> {e.location}
-                    </a>
-                  </dd>
-                </div>
-              )}
-              <div className="flex items-start justify-between gap-3">
-                <dt className="text-muted">Team</dt>
-                <dd className="flex items-center gap-1.5 text-right">
-                  {members.length ? (
-                    <>
-                      <Users className="size-3.5 text-muted" /> {members.map((m) => m.name).join(", ")}
-                    </>
-                  ) : (
-                    <span className="text-faint">niemand eingetragen</span>
-                  )}
-                </dd>
-              </div>
-              <div className="flex items-start justify-between gap-3 border-t border-line pt-3">
-                <dt className="text-muted">Google</dt>
-                <dd className="flex items-center gap-1.5 text-right text-[13px]">
-                  {google.state !== "verbunden" ? (
-                    <span className="text-faint">nicht verbunden</span>
-                  ) : e.googleEventId ? (
-                    <>
-                      <CalendarCheck2 className="size-3.5 text-ok" /> eingetragen
-                    </>
-                  ) : (
-                    <span className="text-warn">noch nicht übertragen</span>
-                  )}
-                </dd>
-              </div>
-            </dl>
-          </Card>
-
-          {e.kind === "dreh" && (
-            <Card>
-              <CardHeader
-                title="Videos für diesen Dreh"
-                sub={row.clientName ? `Drehdatum ${days.length > 1 ? "in diesem Zeitraum" : "an diesem Tag"}` : "Kunde wählen, um Videos zu sehen"}
+        {isShoot && (
+          <Card className="self-start">
+            <CardHeader
+              title="Videos für diesen Dreh"
+              sub={row.clientName ? `Drehdatum ${days.length > 1 ? "in diesem Zeitraum" : "an diesem Tag"}` : undefined}
+              action={
+                e.clientId && videos.length > 0 ? (
+                  <LinkButton href={`/produktion?neu=1&kunde=${e.clientId}`} variant="ghost" size="sm">
+                    Video planen
+                  </LinkButton>
+                ) : undefined
+              }
+            />
+            {!e.clientId ? (
+              <EmptyState
+                variant="inline"
+                title="Noch kein Kunde gewählt"
                 action={
-                  e.clientId ? (
-                    <LinkButton href={`/produktion?neu=1&kunde=${e.clientId}`} variant="ghost" size="sm">
-                      Video planen
-                    </LinkButton>
-                  ) : undefined
+                  <LinkButton href={editHref} scroll={false} variant="secondary">
+                    Kunde eintragen
+                  </LinkButton>
                 }
-              />
-              {videos.length ? (
-                <ul className="divide-y divide-line">
-                  {videos.map((v) => {
-                    const st = videoStatus(v.status);
-                    return (
-                      <li key={v.id}>
-                        <Link href={`/produktion/${v.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-sunken/60">
-                          <Clapperboard className="size-4 shrink-0 text-muted" />
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate font-semibold">{v.title}</div>
-                            <div className="truncate text-[13px] text-muted">{[v.format, v.isTest ? "Testvideo" : null].filter(Boolean).join(" · ")}</div>
-                          </div>
-                          <Badge tone={st.tone}>{st.label}</Badge>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="px-5 py-4 text-[13px] text-muted">
-                  {e.clientId ? "Noch keine Videos mit diesem Drehdatum. Plant sie in der Produktion und tragt das Drehdatum ein." : "Ohne Kunde keine Videoliste."}
-                </p>
-              )}
-              {e.clientId && (
-                <div className="border-t border-line px-5 py-3">
-                  <Link
-                    href={`/dokumente/neu?art=drehplan&kunde=${e.clientId}&datum=${startDay}&termin=${e.id}`}
-                    className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink-2 hover:text-ink"
-                  >
-                    <FileText className="size-4" /> Drehplan erstellen
-                  </Link>
-                </div>
-              )}
-            </Card>
-          )}
-        </div>
+              >
+                Mit Kunde zeigt diese Karte die Videos, die an diesem Tag gedreht werden.
+              </EmptyState>
+            ) : videos.length ? (
+              <ul className="divide-y divide-line border-t border-line">
+                {videos.map((v) => {
+                  const st = videoStatus(v.status);
+                  return (
+                    <li key={v.id}>
+                      <Link href={`/produktion/${v.id}`} className="flex min-h-12 items-center gap-3 px-5 py-3 transition-colors hover:bg-fill-2">
+                        <Clapperboard className="size-4 shrink-0 text-muted" aria-hidden />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold">{v.title}</div>
+                          {(v.format || v.isTest) && <div className="text-[13px] text-muted">{[v.format, v.isTest ? "Testvideo" : null].filter(Boolean).join(" · ")}</div>}
+                        </div>
+                        <Badge tone={st.tone}>{st.label}</Badge>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <EmptyState
+                variant="inline"
+                title="Noch keine Videos mit diesem Drehdatum"
+                action={
+                  <LinkButton href={`/produktion?neu=1&kunde=${e.clientId}`} variant="secondary">
+                    Video planen
+                  </LinkButton>
+                }
+              >
+                Plant die Videos in der Produktion und tragt dort das Drehdatum ein.
+              </EmptyState>
+            )}
+            {e.clientId && (
+              <div className="border-t border-line px-3 py-1.5">
+                <Link
+                  href={`/dokumente/neu?art=drehplan&kunde=${e.clientId}&datum=${startDay}&termin=${e.id}`}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-[10px] px-2 text-[15px] font-semibold text-accent-ink hover:bg-fill-2"
+                >
+                  <FileText className="size-4" aria-hidden /> Drehplan erstellen
+                </Link>
+              </div>
+            )}
+          </Card>
+        )}
       </div>
+
+      <ParamDialog param="bearbeiten" title="Termin bearbeiten" description="Änderungen gehen sofort an Google, falls verbunden." size="lg">
+        <EventForm
+          key={e.updatedAt.getTime()}
+          action={saveEvent}
+          options={options}
+          defaults={{
+            id: e.id,
+            title: e.title,
+            kind: e.kind,
+            allDay: e.allDay,
+            startDate: startDay,
+            startTime: time(e.startsAt),
+            endDate: e.allDay ? lastDay : todayIso(e.endsAt),
+            endTime: time(e.endsAt),
+            location: e.location,
+            clientId: e.clientId,
+            leadId: e.leadId,
+            teamIds: e.teamIds,
+            notes: e.notes,
+          }}
+        />
+      </ParamDialog>
     </>
   );
 }

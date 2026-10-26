@@ -1,14 +1,21 @@
 import { cn } from "@/lib/cn";
 
-/** Große Zahl mit kleiner Beschriftung (wie in Apple Wallet). */
+/** Große Zahl mit kleiner Beschriftung (wie in Apple Wallet). Auf dem Handy etwas kleiner, damit zwei nebeneinander passen. */
 export function Figure({ label, value, sub, tone, className }: { label: string; value: React.ReactNode; sub?: React.ReactNode; tone?: "accent" | "ok" | "warn"; className?: string }) {
   return (
     <div className={cn("min-w-0", className)}>
       <div className="text-[13px] text-muted">{label}</div>
-      <div className={cn("mt-1 truncate text-[30px] font-semibold leading-tight tracking-tight tabular-nums", tone === "accent" && "text-accent-ink", tone === "ok" && "text-ok", tone === "warn" && "text-warn")}>
+      <div
+        className={cn(
+          "mt-1 truncate text-[22px] font-semibold leading-tight tracking-tight tabular-nums sm:text-[30px]",
+          tone === "accent" && "text-accent-ink",
+          tone === "ok" && "text-ok",
+          tone === "warn" && "text-warn",
+        )}
+      >
         {value}
       </div>
-      {sub ? <div className="mt-0.5 text-[13px] text-muted">{sub}</div> : null}
+      {sub ? <div className="mt-0.5 text-[12px] text-muted sm:text-[13px]">{sub}</div> : null}
     </div>
   );
 }

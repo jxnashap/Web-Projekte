@@ -1,14 +1,18 @@
-// Karte eines Kunden in der Übersicht.
+// Kunde in der Übersicht: Karte ab Tablet, kompakte Listenzeile auf dem Handy.
 import { CalendarDays } from "lucide-react";
 import Link from "next/link";
 import type { Client } from "@/db/schema";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { Card, ListRow } from "@/components/ui/card";
 import type { Kontingent } from "@/lib/data/kontingent";
 import { dateShort, eurShort, time } from "@/lib/format";
 import { BRANCHEN, CLIENT_STATUS, EVENT_KINDS } from "@/lib/labels";
 import { ContactIcons } from "./contact-links";
-import { KontingentMini } from "./kontingent-mini";
+import { KontingentMini, KontingentTiny } from "./kontingent-mini";
+
+type NextEvent = { startsAt: Date; title: string; kind: string } | null;
+
+const eventText = (e: NonNullable<NextEvent>) => `${EVENT_KINDS[e.kind]?.label ?? "Termin"} ${dateShort(e.startsAt)}, ${time(e.startsAt)}`;
 
 export function ClientCard({
   client: c,
@@ -19,17 +23,17 @@ export function ClientCard({
   client: Client;
   month: string;
   kontingent: Kontingent | null;
-  nextEvent: { startsAt: Date; title: string; kind: string } | null;
+  nextEvent: NextEvent;
 }) {
   const st = CLIENT_STATUS[c.status];
   return (
-    <Card className="relative flex flex-col overflow-hidden">
+    <Card className="relative flex flex-col transition-shadow has-[a[data-card]:focus-visible]:ring-2 has-[a[data-card]:focus-visible]:ring-accent has-[a[data-card]:focus-visible]:ring-offset-2 has-[a[data-card]:hover]:shadow-[var(--shadow-raised)]">
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="flex items-center gap-2 text-[17px] font-semibold">
               <span className="size-2.5 shrink-0 rounded-full" style={{ background: c.color }} aria-hidden />
-              <Link href={`/kunden/${c.id}`} className="truncate after:absolute after:inset-0 focus-visible:outline-none">
+              <Link href={`/kunden/${c.id}`} data-card className="truncate outline-none after:absolute after:inset-0 after:rounded-[inherit]">
                 {c.name}
               </Link>
             </h2>
@@ -56,9 +60,7 @@ export function ClientCard({
             {nextEvent ? (
               <p className="flex items-center gap-1.5 truncate text-ink-2">
                 <CalendarDays className="size-3.5 shrink-0 text-muted" aria-hidden />
-                <span className="truncate">
-                  {EVENT_KINDS[nextEvent.kind]?.label ?? "Termin"} {dateShort(nextEvent.startsAt)}, {time(nextEvent.startsAt)}
-                </span>
+                <span className="truncate">{eventText(nextEvent)}</span>
               </p>
             ) : (
               <p className="text-muted">Kein Termin geplant</p>
@@ -69,5 +71,30 @@ export function ClientCard({
         </div>
       </div>
     </Card>
+  );
+}
+
+/** Kompakte Zeile für die Handy-Liste: Name, Paket, Kontingent, nächster Termin. Die ganze Zeile führt zum Kunden. */
+export function ClientRow({ client: c, kontingent, nextEvent }: { client: Client; kontingent: Kontingent | null; nextEvent: NextEvent }) {
+  const st = CLIENT_STATUS[c.status];
+  const paket = c.packageVideos ? `${c.packageVideos} Videos` : c.status === "test" ? "Testvideos" : "Kein Paket";
+  return (
+    <ListRow href={`/kunden/${c.id}`} className="py-3">
+      <span className="size-2.5 shrink-0 rounded-full" style={{ background: c.color }} aria-hidden />
+      <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-[16px] font-semibold">{c.name}</span>
+          {st && c.status !== "aktiv" && <Badge tone={st.tone}>{st.label}</Badge>}
+        </div>
+        <div className="truncate text-[13px] text-muted">{[paket, c.ort ?? c.city].filter(Boolean).join(" · ")}</div>
+        {nextEvent && (
+          <div className="mt-0.5 flex items-center gap-1 truncate text-[13px] text-ink-2">
+            <CalendarDays className="size-3.5 shrink-0 text-muted" aria-hidden />
+            <span className="truncate">{eventText(nextEvent)}</span>
+          </div>
+        )}
+      </div>
+      {kontingent && <KontingentTiny k={kontingent} />}
+    </ListRow>
   );
 }

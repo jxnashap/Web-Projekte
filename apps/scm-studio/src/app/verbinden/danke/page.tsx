@@ -2,10 +2,10 @@
 import { CircleCheck, CircleX } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { PublicShell } from "@/components/zahlen/public-shell";
+import { ContactButton, PublicShell } from "@/components/zahlen/public-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export const metadata: Metadata = { title: "Instagram verbinden", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { absolute: "Instagram verbinden · SCM Creatives" }, robots: { index: false, follow: false } };
 
 const TEXTS: Record<string, { ok: boolean; title: string; text: string }> = {
   ok: { ok: true, title: "Danke, das hat geklappt", text: "Eure Instagram-Statistik ist jetzt mit SCM Creatives verbunden. Ihr könnt dieses Fenster schließen." },
@@ -33,6 +33,7 @@ async function Result({ searchParams }: { searchParams: Promise<{ status?: strin
       <Icon className={t.ok ? "mx-auto size-10 text-ok" : "mx-auto size-10 text-muted"} aria-hidden />
       <h1 className="mt-4 text-[24px] font-bold tracking-tight">{t.title}</h1>
       <p className="mt-3 text-[15px] text-muted">{t.text}</p>
+      {!t.ok && <ContactButton subject="Instagram-Freigabe für SCM Creatives" className="mt-6" />}
     </div>
   );
 }

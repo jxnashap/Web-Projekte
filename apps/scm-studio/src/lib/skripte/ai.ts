@@ -78,7 +78,7 @@ function explain(e: unknown, model: string): string {
   if (e instanceof OpenAI.APIConnectionError) return "OpenAI ist von hier aus nicht erreichbar. Bitte Internetverbindung oder Firewall prüfen.";
   if (e instanceof OpenAI.APIError) {
     const code = String(e.code ?? "");
-    if (e.status === 401) return "Der OpenAI-Schlüssel wird nicht akzeptiert. Bitte OPENAI_API_KEY prüfen.";
+    if (e.status === 401) return "Der OpenAI-Schlüssel wird nicht akzeptiert. Bitte unter Einstellungen, KI prüfen.";
     if (e.status === 404 || code === "model_not_found")
       return `Das Modell „${model}“ ist für diesen Schlüssel nicht verfügbar. In den Einstellungen unter KI ein anderes Modell wählen.`;
     if (e.status === 429)

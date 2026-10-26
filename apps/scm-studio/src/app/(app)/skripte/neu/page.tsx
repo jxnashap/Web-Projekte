@@ -1,6 +1,4 @@
-import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { ScriptGenerator } from "@/components/skripte/script-generator";
@@ -11,7 +9,7 @@ import { getAiConfig } from "@/lib/skripte/ai";
 import { getScriptOptions } from "@/lib/skripte/data";
 import { modelLabel } from "@/lib/skripte/pricing";
 
-export const metadata: Metadata = { title: "Skript schreiben" };
+export const metadata: Metadata = { title: "Skript schreiben · Skripte" };
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
@@ -19,13 +17,11 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 export default function NeuesSkriptPage({ searchParams }: { searchParams: SP }) {
   return (
     <>
-      <Link href="/skripte" className="mb-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted hover:text-ink">
-        <ArrowLeft className="size-4" /> Alle Skripte
-      </Link>
       <PageHeader
         scene="Szene 05 · Skripte"
+        back={{ href: "/skripte", label: "Skripte" }}
         title="Skript schreiben"
-        description="Briefing wählen, Entwurf prüfen, verfeinern und speichern. Ihr habt immer das letzte Wort."
+        description="Briefing ausfüllen, Entwurf prüfen, verfeinern und speichern. Ihr habt immer das letzte Wort."
       />
       <Suspense fallback={<GeneratorSkeleton />}>
         <Generator searchParams={searchParams} />
@@ -55,8 +51,8 @@ async function Generator({ searchParams }: { searchParams: SP }) {
 function GeneratorSkeleton() {
   return (
     <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
-      <Skeleton className="h-[640px]" />
-      <Skeleton className="h-80" />
+      <Skeleton className="h-[640px] rounded-[var(--radius-card)]" />
+      <Skeleton className="h-96 rounded-[var(--radius-card)]" />
     </div>
   );
 }

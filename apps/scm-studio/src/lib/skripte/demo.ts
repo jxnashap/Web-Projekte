@@ -110,7 +110,7 @@ function template(format: string, v: Vocab, seed: number, lokal: string | null):
     case "Kunden-Sketch":
     default:
       return {
-        title: pick([`Also mein Nachbar hätte das anders gemacht`, `Der ${v.kunde}, der alles besser weiß`, `Kann man da noch was am Preis machen?`], seed),
+        title: pick([`Der ${v.kunde}, der alles besser weiß`, `Kann man da noch was am Preis machen?`, `Das geht doch bestimmt auch schneller`], seed),
         hook: `POV: Jede Person aus der Branche kennt diesen ${v.kundeAkk}.`,
         wieder: `„${pick(["Mein Nachbar hat das aber früher immer anders gemacht.", "Das geht doch bestimmt auch schneller, oder?", "Ich hab das mal auf YouTube gesehen."], seed, 1)}“`,
         steig: `Er hat noch etwas im Keller gefunden. „Kann man das nicht gegenrechnen?“`,
@@ -126,41 +126,99 @@ const shorten = (t: string) => {
   return first.length >= 12 ? first : t;
 };
 
-/** Demo-Skript erzeugen. `refine` (kuerzer, lustiger, lokal) verändert den vorherigen Entwurf. */
+const LABELS = ["Hook", "Wiedererkennen", "Steigerung", "Pointe", "Aufruf"] as const;
+const GAGS_STEIG = ["Und dann klingelt auch noch sein Handy. Klingelton: Möwengeschrei.", "Im Hintergrund fällt leise eine Leiter um.", "Der Kollege filmt heimlich mit."];
+const GAGS_POINTE = ["Abspann. Der Chef sucht immer noch seine Brille.", "Schnitt. Alle tun so, als wäre nichts passiert.", "Und der Kaffee ist natürlich kalt."];
+
+/** Timecodes passend zur Länge: Hook 0 s, dann ca. 8 %, 40 %, 70 %, 88 % (bei anderer Anzahl gleichmäßig verteilt). */
+function marks(count: number, length: number) {
+  if (count === 5) return [0, Math.max(1, Math.round(length * 0.08)), Math.round(length * 0.4), Math.round(length * 0.7), Math.round(length * 0.88)];
+  return Array.from({ length: count }, (_, i) => (count < 2 ? 0 : Math.round((length * 0.88 * i) / (count - 1))));
+}
+
+/** Erster noch nicht verwendeter Gag (deterministisch), sonst null. */
+function nextGag(list: string[], text: string, seed: number, offset: number) {
+  for (let k = 0; k < list.length; k++) {
+    const g = pick(list, seed, offset + k);
+    if (!text.includes(g)) return g;
+  }
+  return null;
+}
+
+/**
+ * Verfeinern im Demo-Modus: arbeitet auf dem bisherigen Entwurf (gewählter Hook, Titel und frühere Änderungen bleiben).
+ * `input.length` ist die Länge, die gerade im Formular steht.
+ */
+function refineDemo(prev: ScriptDraft, refine: string, input: GenInput, ctx: GenContext): { draft: ScriptDraft; notice?: string } {
+  const local = localOf(ctx.region);
+  const seed = hash([prev.title, input.format, ctx.branche].join("|"));
+  const beats = prev.beats.map((b) => ({ ...b }));
+  // Der gewählte Hook steht im Abschnitt Hook
+  const hi = beats.findIndex((b) => b.label === "Hook");
+  if (hi >= 0) beats[hi].text = prev.hook;
+  const by = (label: string) => beats.find((b) => b.label === label);
+  let hookVariants = prev.hookVariants.filter((h) => h !== prev.hook);
+  let hashtags = prev.hashtags;
+  let notice: string | undefined;
+
+  if (refine === "kuerzer") {
+    const length = input.length > 30 ? 30 : 15;
+    const before = JSON.stringify(beats);
+    beats.forEach((b, i) => {
+      if (i !== hi) b.text = shorten(b.text);
+    });
+    const m = marks(beats.length, length);
+    beats.forEach((b, i) => (b.tc = tc(m[i])));
+    if (JSON.stringify(beats) === before) notice = "Kürzer geht es im Demo-Modus nicht. Mit OpenAI-Schlüssel kürzt die KI auch einzelne Sätze.";
+  } else if (refine === "lustiger") {
+    const steig = by("Steigerung");
+    const pointe = by("Pointe");
+    const g1 = steig ? nextGag(GAGS_STEIG, steig.text, seed, 2) : null;
+    const g2 = pointe ? nextGag(GAGS_POINTE, pointe.text, seed, 3) : null;
+    if (steig && g1) steig.text = `${steig.text} ${g1}`;
+    if (pointe && g2) pointe.text = `${pointe.text} ${g2}`;
+    if (!g1 && !g2) notice = "Mehr Gags hat der Demo-Generator nicht. Mit OpenAI-Schlüssel schreibt die KI neue Pointen.";
+  } else if (refine === "lokal") {
+    const w = by("Wiedererkennen");
+    const add = `Und das mitten ${local.spot}.`;
+    if (w && !w.text.includes(add)) w.text = `${w.text} ${add}`;
+    else notice = "Der Entwurf ist schon lokal. Mit OpenAI-Schlüssel baut die KI mehr Bezug zur Region ein.";
+    const localHook = `Nur Leute ${local.spot} verstehen dieses Video.`;
+    if (prev.hook !== localHook && !hookVariants.includes(localHook)) hookVariants = [...hookVariants.slice(0, 2), localHook];
+    hashtags = Array.from(new Set([...local.tags, ...hashtags]));
+  } else {
+    notice = "Im Demo-Modus setzt der Generator nur Kürzer, Lustiger und Mehr lokal um. Eigene Wünsche schreibt erst die KI mit OpenAI-Schlüssel um.";
+  }
+  const aufruf = beats.findLast((b) => b.label === "Aufruf");
+  return { draft: { ...prev, hookVariants, beats, hashtags, cta: aufruf?.text ?? prev.cta }, notice };
+}
+
+/** Demo-Skript erzeugen. Mit `refine` und `previous` wird der bisherige Entwurf verändert statt neu geschrieben. */
 export function demoScript(input: GenInput, ctx: GenContext, previous?: ScriptDraft | null): { draft: ScriptDraft; notice?: string } {
+  const refine = (input.refine ?? "").trim();
+  if (refine && previous) return refineDemo(previous, refine, input, ctx);
+
   const v = VOCAB[ctx.branche] ?? VOCAB.unternehmen;
   const local = localOf(ctx.region);
   const seed = hash([input.format, input.ziel, input.ton, input.length, input.briefing ?? "", ctx.branche].join("|"));
-  const refine = (input.refine ?? "").trim();
-  const wantsLocal = refine === "lokal";
-  let length = input.length;
-  if (refine === "kuerzer") length = length > 30 ? 30 : 15;
+  const length = input.length;
 
-  const t = template(input.format, v, seed, wantsLocal ? local.spot : null);
+  const t = template(input.format, v, seed, null);
   let parts = [t.hook, t.wieder, t.steig, t.pointe, t.aufruf];
   if (input.ton === "Sachlich") parts = parts.map((p, i) => (i === 3 ? p.replace(/Zur Sicherheit\.|Das reicht\./, "").trim() : p));
-  if (refine === "lustiger") {
-    parts[2] = `${parts[2]} ${pick(["Und dann klingelt auch noch sein Handy. Klingelton: Möwengeschrei.", "Im Hintergrund fällt leise eine Leiter um.", "Der Kollege filmt heimlich mit."], seed, 2)}`;
-    parts[3] = `${parts[3]} ${pick(["Abspann. Der Chef sucht immer noch seine Brille.", "Schnitt. Alle tun so, als wäre nichts passiert.", "Und der Kaffee ist natürlich kalt."], seed, 3)}`;
-  }
-  if (wantsLocal) parts[1] = `${parts[1]} Und das mitten ${local.spot}.`;
-  if (refine === "kuerzer") parts = parts.map(shorten);
-  if (input.briefing && input.briefing.trim().length > 10) {
-    parts[1] = `${parts[1]} (Bezug zum Briefing: ${input.briefing.trim().slice(0, 90)}${input.briefing.trim().length > 90 ? " …" : ""})`;
-  }
+  if (length <= 15) parts = parts.map((p, i) => (i === 0 ? p : shorten(p)));
 
-  // Timecodes passend zur Länge: Hook 0 s, dann ca. 8 %, 40 %, 70 %, 88 %
-  const marks = [0, Math.max(1, Math.round(length * 0.08)), Math.round(length * 0.4), Math.round(length * 0.7), Math.round(length * 0.88)];
-  const beats = parts.map((text, i) => ({ tc: tc(marks[i]), label: ["Hook", "Wiedererkennen", "Steigerung", "Pointe", "Aufruf"][i], text, shot: t.shots[i] }));
+  const m = marks(5, length);
+  const beats = parts.map((text, i) => ({ tc: tc(m[i]), label: LABELS[i], text, shot: t.shots[i] }));
 
   const hookVariants = [
     pick([`Wenn der ${v.kunde} sagt: „Das kann doch nicht so schwer sein.“`, `Niemand: … Der ${v.kunde} um 17:55:`, `Das passiert jede Woche ${v.ort}.`], seed, 4),
     pick([`Drei Sätze, die jeder ${v.team} kennt.`, `Ehrlich gesagt: Das hier nervt uns am meisten.`, `Wir müssen über diesen einen ${v.kundeAkk} reden.`], seed, 5),
-    wantsLocal ? `Nur Leute ${local.spot} verstehen dieses Video.` : pick([`Bitte nicht nachmachen.`, `Wartet aufs Ende.`, `Ihr werdet euch wiedererkennen.`], seed, 6),
+    pick([`Bitte nicht nachmachen.`, `Wartet aufs Ende.`, `Ihr werdet euch wiedererkennen.`], seed, 6),
   ];
 
   const draft: ScriptDraft = {
-    title: refine && previous ? previous.title : t.title,
+    title: t.title,
     hook: parts[0],
     hookVariants,
     beats,
@@ -173,8 +231,8 @@ export function demoScript(input: GenInput, ctx: GenContext, previous?: ScriptDr
     hashtags: [...local.tags, v.tag, `#${input.format.replace(/[^A-Za-zÄÖÜäöüß]/g, "")}`, "#Reels", "#Norddeutsch"],
   };
   const notice =
-    refine && !["kuerzer", "lustiger", "lokal"].includes(refine)
-      ? "Im Demo-Modus werden nur die Knöpfe Kürzer, Lustiger und Mehr lokal umgesetzt. Freie Änderungswünsche gehen erst mit OpenAI-Schlüssel."
+    input.briefing && input.briefing.trim().length > 0
+      ? "Demo-Modus: Das Briefing wird mit dem Skript gespeichert, fließt aber erst mit OpenAI-Schlüssel in den Text ein."
       : undefined;
   return { draft, notice };
 }

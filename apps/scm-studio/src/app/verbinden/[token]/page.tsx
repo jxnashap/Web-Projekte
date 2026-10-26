@@ -3,14 +3,15 @@ import { Check, Lock, X } from "lucide-react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { PublicShell } from "@/components/zahlen/public-shell";
+import { ContactButton, PublicShell } from "@/components/zahlen/public-shell";
 import { buttonClass } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { integrations } from "@/lib/env";
 import { dateLong } from "@/lib/format";
 import { getConnectLink } from "@/lib/instagram/connect";
 
-export const metadata: Metadata = { title: "Instagram verbinden", robots: { index: false, follow: false } };
+// Kundenseite: im Tab steht der Agenturname, nicht der interne Programmname
+export const metadata: Metadata = { title: { absolute: "Instagram verbinden · SCM Creatives" }, robots: { index: false, follow: false } };
 
 type Params = Promise<{ token: string }>;
 
@@ -33,6 +34,7 @@ async function Content({ params }: { params: Params }) {
       <div className="text-center">
         <h1 className="text-[24px] font-bold tracking-tight">Dieser Link ist nicht mehr gültig</h1>
         <p className="mt-3 text-[15px] text-muted">Verbindungslinks gelten sieben Tage und nur einmal. Schreibt uns kurz, dann schicken wir euch einen neuen.</p>
+        <ContactButton subject="Neuer Verbindungslink für Instagram" className="mt-6" />
       </div>
     );
   const ready = integrations.instagram();
@@ -78,7 +80,7 @@ async function Content({ params }: { params: Params }) {
           <Lock className="size-4" aria-hidden /> Weiter zu Instagram
         </a>
       ) : (
-        <p role="status" className="mt-7 rounded-xl border border-warn/30 bg-warn-soft px-4 py-3 text-[14px] text-warn">
+        <p role="status" className="mt-7 rounded-xl bg-warn-soft px-4 py-3 text-[14px] text-warn">
           Die Verbindung ist bei uns gerade noch nicht freigeschaltet. Bitte versucht es später noch einmal oder meldet euch bei SCM Creatives.
         </p>
       )}

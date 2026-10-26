@@ -115,3 +115,11 @@ export async function getAiUsage() {
     byModel: real,
   };
 }
+
+/** Nur der Titel (für den Seitentitel im Browser). */
+export async function getScriptTitle(id: number) {
+  await requireUser();
+  const db = await getDb();
+  const [row] = await db.select({ title: schema.scripts.title }).from(schema.scripts).where(eq(schema.scripts.id, id));
+  return row?.title ?? null;
+}

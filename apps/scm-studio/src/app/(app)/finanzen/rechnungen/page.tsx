@@ -10,24 +10,24 @@ import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty";
 import { PageHeader } from "@/components/ui/page-header";
-import { Skeleton, SkeletonTable } from "@/components/ui/skeleton";
+import { ListSkeleton } from "@/components/ui/skeleton";
 import { Segmented } from "@/components/ui/tabs";
-import { cn } from "@/lib/cn";
-import { KIND_LABEL, KIND_PLURAL, type DocKind } from "@/lib/finanzen/core";
+import { UrlSearch } from "@/components/ui/url-search";
+import { KIND_LABEL, KIND_PLURAL, plural } from "@/lib/finanzen/core";
 import { listInvoices } from "@/lib/finanzen/data";
 import { dateDe, eur } from "@/lib/format";
 
-export const metadata = { title: "Rechnungen und Angebote" };
+export const metadata = { title: "Rechnungen" };
 
-const KINDS: DocKind[] = ["rechnung", "angebot", "storno"];
+type Kind = "rechnung" | "angebot";
 
 export default function RechnungenPage({ searchParams }: PageProps<"/finanzen/rechnungen">) {
   return (
     <>
       <PageHeader
         scene="Szene 08 · Finanzen"
-        title="Rechnungen und Angebote"
-        description="Entwürfe könnt ihr frei bearbeiten. Festgeschriebene Belege bleiben unverändert und werden bei Bedarf storniert."
+        title="Rechnungen"
+        description="Rechnungen und Angebote. Entwürfe könnt ihr frei bearbeiten, festgeschriebene Rechnungen bleiben unverändert und werden bei Bedarf storniert."
         actions={
           <>
             <LinkButton href="/finanzen/rechnungen/neu?art=angebot" variant="secondary">
@@ -40,7 +40,7 @@ export default function RechnungenPage({ searchParams }: PageProps<"/finanzen/re
         }
       />
       <FinanzenNav active="rechnungen" />
-      <Suspense fallback={<div className="grid gap-4"><Skeleton className="h-10 w-96" /><SkeletonTable /></div>}>
+      <Suspense fallback={<ListSkeleton />}>
         <List searchParams={searchParams} />
       </Suspense>
     </>
@@ -50,85 +50,142 @@ export default function RechnungenPage({ searchParams }: PageProps<"/finanzen/re
 async function List({ searchParams }: { searchParams: PageProps<"/finanzen/rechnungen">["searchParams"] }) {
   await connection();
   const sp = await searchParams;
-  const kind: DocKind = KINDS.includes(sp.art as DocKind) ? (sp.art as DocKind) : "rechnung";
+  const kind: Kind = sp.art === "angebot" ? "angebot" : "rechnung";
   const filters = STATUS_FILTERS[kind];
-  const status = typeof sp.status === "string" && filters.some((f) => f.key === sp.status) ? sp.status : "";
-  const data = await listInvoices({ kind, status: status || undefined });
-  const href = (k: DocKind, st = "") => `/finanzen/rechnungen?art=${k}${st ? `&status=${st}` : ""}`;
+  // ältere Links mit ?art=storno landen bei den Rechnungen im Filter "Storniert"
+  const status = sp.art === "storno" ? "storniert" : typeof sp.status === "string" && filters.some((f) => f.key === sp.status) ? sp.status : "";
+  const q = typeof sp.q === "string" ? sp.q.trim() : "";
+  const data = await listInvoices({ kind, status: status || undefined, q });
+  const href = (k: Kind, st = "", search = q) => {
+    const p = new URLSearchParams();
+    if (k === "angebot") p.set("art", k);
+    if (st) p.set("status", st);
+    if (search) p.set("q", search);
+    const s = p.toString();
+    return s ? `/finanzen/rechnungen?${s}` : "/finanzen/rechnungen";
+  };
+  const nounOne = KIND_LABEL[kind];
+  const nounMany = KIND_PLURAL[kind];
 
   return (
     <div className="grid gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Segmented items={KINDS.map((k) => ({ href: href(k), label: KIND_PLURAL[k], active: k === kind }))} />
-        {filters.length > 1 && (
-          <nav className="-mx-1 flex gap-1.5 overflow-x-auto px-1" aria-label="Status filtern">
-            {filters.map((f) => (
-              <Link
-                key={f.key}
-                href={href(kind, f.key)}
-                scroll={false}
-                aria-current={f.key === status ? "page" : undefined}
-                className={cn(
-                  "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium transition-colors",
-                  f.key === status ? "bg-accent-soft text-accent-ink" : "bg-surface text-ink-2 ring-1 ring-line hover:bg-sunken",
-                )}
-              >
-                {f.label}
-                {f.key && data.counts[f.key] ? <span className="tabular-nums opacity-70">{data.counts[f.key]}</span> : null}
-              </Link>
-            ))}
-          </nav>
-        )}
+      <div className="grid gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Segmented
+            label="Art"
+            items={(["rechnung", "angebot"] as const).map((k) => ({ href: href(k, ""), label: KIND_PLURAL[k], active: k === kind }))}
+          />
+          <UrlSearch placeholder="Nummer, Kunde oder Titel" className="min-w-48 flex-1 sm:max-w-xs" />
+        </div>
+        <div className="-mx-4 overflow-x-auto px-4 py-1 [scrollbar-width:none] sm:mx-0 sm:px-0">
+          <Segmented
+            label="Status"
+            className="w-max"
+            items={filters.map((f) => ({
+              href: href(kind, f.key),
+              label: f.key && data.counts[f.key] ? `${f.label} ${data.counts[f.key]}` : f.label,
+              active: f.key === status,
+            }))}
+          />
+        </div>
       </div>
 
-      {data.total > 0 && (
+      {data.rows.length > 0 && (
         <Card className="p-5">
-          <div className="grid gap-5 sm:grid-cols-3">
-            <Figure label={`${data.rows.length} ${data.rows.length === 1 ? KIND_LABEL[kind] : KIND_PLURAL[kind]}`} value={eur(data.sumGross)} sub="brutto, festgeschrieben" />
+          <p className="text-[15px] tabular-nums text-ink-2 sm:hidden">
+            <span className="font-semibold text-ink">{plural(data.finalizedCount, nounOne, nounMany)}</span> · {eur(data.sumGross)}
+            {kind === "rechnung" && !status && data.sumOpen ? <> · offen {eur(data.sumOpen)}</> : null}
+            {data.draftCount ? <span className="block text-[13px] text-muted">dazu {plural(data.draftCount, "Entwurf", "Entwürfe")}</span> : null}
+          </p>
+          <div className="hidden gap-5 sm:grid sm:grid-cols-3">
+            <Figure
+              label="Festgeschrieben, brutto"
+              value={eur(data.sumGross)}
+              sub={`${plural(data.finalizedCount, nounOne, nounMany)}${data.draftCount ? `, dazu ${plural(data.draftCount, "Entwurf", "Entwürfe")}` : ""}`}
+            />
             <Figure label="Netto" value={eur(data.sumNet)} />
-            {kind === "rechnung" && <Figure label="Davon offen" value={eur(data.sumOpen)} tone={data.sumOpen ? "warn" : undefined} />}
+            {kind === "rechnung" && !status && <Figure label="Davon offen" value={eur(data.sumOpen)} tone={data.sumOpen ? "warn" : undefined} />}
           </div>
         </Card>
       )}
 
       {data.rows.length === 0 ? (
-        <EmptyState
-          title={data.total === 0 ? `Noch keine ${KIND_PLURAL[kind]}` : "Nichts in diesem Filter"}
-          action={
-            kind !== "storno" ? (
-              <LinkButton href={`/finanzen/rechnungen/neu${kind === "angebot" ? "?art=angebot" : ""}`}>
+        data.total === 0 ? (
+          <EmptyState
+            title={`Noch keine ${nounMany}`}
+            action={
+              <LinkButton href={`/finanzen/rechnungen/neu${kind === "angebot" ? "?art=angebot" : ""}`} variant="secondary">
                 <Plus className="size-4" /> {kind === "angebot" ? "Angebot anlegen" : "Rechnung anlegen"}
               </LinkButton>
-            ) : undefined
-          }
-        >
-          {kind === "storno" ? "Stornos entstehen, wenn ihr eine festgeschriebene Rechnung storniert." : "Legt einen Entwurf an, prüft die Vorschau und schreibt ihn dann fest."}
-        </EmptyState>
+            }
+          >
+            Legt einen Entwurf an, prüft die Vorschau und schreibt ihn dann fest.
+          </EmptyState>
+        ) : (
+          <EmptyState
+            title={q ? `Keine ${nounMany} zu „${q}“` : "Nichts in diesem Filter"}
+            action={
+              <LinkButton href={href(kind, "", "")} variant="secondary" scroll={false}>
+                Alle {nounMany} zeigen
+              </LinkButton>
+            }
+          >
+            {q ? "Sucht nach Rechnungsnummer, Kunde oder Titel." : `Zu diesem Status gibt es gerade keine ${nounMany}.`}
+          </EmptyState>
+        )
       ) : (
-        <Card>
+        <Card className="overflow-hidden">
           <ul className="divide-y divide-line">
-            {data.rows.map(({ inv, clientName, clientColor, display }) => (
-              <li key={inv.id}>
-                <Link href={`/finanzen/rechnungen/${inv.id}`} className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 px-5 py-3.5 hover:bg-sunken/60 sm:grid-cols-[150px_1fr_120px_130px_110px]">
-                  <div className="font-mono text-[13px] text-ink-2 sm:order-none">{inv.number ?? "Entwurf"}</div>
-                  <div className="order-3 col-span-2 flex min-w-0 items-center gap-2 sm:order-none sm:col-span-1">
-                    <Dot color={clientColor ?? "var(--color-line-2)"} />
-                    <div className="min-w-0">
-                      <div className="truncate font-semibold">{inv.recipient?.name ?? clientName ?? "Ohne Empfänger"}</div>
-                      <div className="truncate text-[13px] text-muted">{inv.title}</div>
+            {data.rows.map(({ inv, clientName, clientColor, display }) => {
+              const name = inv.recipient?.name ?? clientName ?? "Ohne Empfänger";
+              const when = inv.finalizedAt ? dateDe(inv.issueDate) : `geändert ${dateDe(inv.updatedAt)}`;
+              const due = inv.kind === "rechnung" && inv.dueDate && inv.finalizedAt ? `fällig ${dateDe(inv.dueDate)}` : null;
+              return (
+                <li key={inv.id}>
+                  <Link
+                    href={`/finanzen/rechnungen/${inv.id}`}
+                    className="block px-5 py-3.5 transition-colors hover:bg-fill-2 focus-visible:bg-fill-2 focus-visible:outline-none"
+                  >
+                    {/* Handy: Kunde und Betrag tragen die Zeile */}
+                    <div className="flex items-start justify-between gap-3 sm:hidden">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Dot color={clientColor ?? "var(--color-line-2)"} />
+                          <span className="truncate font-semibold">{name}</span>
+                        </div>
+                        <div className="mt-0.5 truncate text-[13px] text-muted">
+                          {inv.number ?? "Entwurf"} · {when}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className="font-semibold tabular-nums">{eur(inv.grossCents)}</div>
+                        <div className="mt-1">
+                          <InvoiceStatus kind={inv.kind} status={display} />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="hidden text-[13px] text-muted sm:block">
-                    {inv.issueDate ? dateDe(inv.issueDate) : "ohne Datum"}
-                    {kind === "rechnung" && inv.dueDate && inv.finalizedAt ? <div>fällig {dateDe(inv.dueDate)}</div> : null}
-                  </div>
-                  <div className="order-2 text-right font-semibold tabular-nums sm:order-none">{eur(inv.grossCents)}</div>
-                  <div className="order-4 col-span-2 sm:order-none sm:col-span-1 sm:text-right">
-                    <InvoiceStatus kind={inv.kind} status={display} />
-                  </div>
-                </Link>
-              </li>
-            ))}
+                    <div className="hidden items-center gap-x-4 sm:grid sm:grid-cols-[120px_minmax(0,1fr)_130px_120px_110px]">
+                      <div className="text-[13px] font-medium text-ink-2">{inv.number ?? "Entwurf"}</div>
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Dot color={clientColor ?? "var(--color-line-2)"} />
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold">{name}</div>
+                          <div className="truncate text-[13px] text-muted">{inv.title}</div>
+                        </div>
+                      </div>
+                      <div className="text-[13px] text-muted">
+                        {when}
+                        {due ? <div>{due}</div> : null}
+                      </div>
+                      <div className="text-right font-semibold tabular-nums">{eur(inv.grossCents)}</div>
+                      <div className="text-right">
+                        <InvoiceStatus kind={inv.kind} status={display} />
+                      </div>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </Card>
       )}

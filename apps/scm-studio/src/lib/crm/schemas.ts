@@ -18,14 +18,15 @@ const optPhone = z
   .optional();
 
 export const leadSchema = z.object({
-  name: zText("Name", 120),
+  // Ansprechpartner ist optional (bei Instagram-Nachrichten oft unbekannt); leer übernimmt der Betrieb
+  name: z.string().max(120, "Ansprechpartner ist zu lang").optional(),
   company: zText("Betrieb", 160),
   branche: z.enum(keys(LEAD_BRANCHEN)).optional(),
   ort: zOptText(120),
   phone: optPhone,
   email: optEmail,
   contactWay: z.enum(keys(CONTACT_WAYS)).optional(),
-  source: z.enum(keys(LEAD_SOURCES)).default("sonstiges"),
+  source: z.enum(keys(LEAD_SOURCES), { error: "Quelle wählen" }).default("telefon"),
   packageInterest: z.enum(keys(PACKAGE_INTEREST)).optional(),
   startWish: z.enum(keys(START_WISH)).optional(),
   score: z.enum([...keys(LEAD_SCORE), "auto"]).optional(),
@@ -41,9 +42,17 @@ export const lostSchema = z.object({ lostReason: zText("Grund", 300) });
 
 export const convertSchema = z.object({
   name: zText("Kundenname", 160),
-  status: z.enum(["test", "aktiv"]),
-  packageVideos: z.coerce.number().int().min(1).max(60).optional(),
+  branche: z.enum(keys(BRANCHEN), { error: "Branche wählen" }),
+  status: z.enum(["test", "aktiv"], { error: "Start wählen" }),
+  packageVideos: z.coerce.number().int("Ganze Zahl").min(1, "Mindestens 1").max(60, "Höchstens 60").optional(),
 });
+
+/** Website: einfache Prüfung auf eine Domain, z. B. www.beispiel.de oder https://beispiel.de/seite */
+const zWebsite = z
+  .string()
+  .max(200, "Website ist zu lang")
+  .refine((v) => /^(https?:\/\/)?([a-z0-9äöüß-]+\.)+[a-z]{2,}(:\d+)?([/?#]\S*)?$/i.test(v), "Website prüfen, z. B. www.beispiel.de")
+  .optional();
 
 /** Betrag in Euro ("1.600,00") → Cent; leer → null */
 const zEuro = z
@@ -74,13 +83,13 @@ const zHandle = z
 
 export const clientSchema = z.object({
   name: zText("Name", 160),
-  branche: z.enum(keys(BRANCHEN)).default("unternehmen"),
-  status: z.enum(keys(CLIENT_STATUS)).default("aktiv"),
+  branche: z.enum(keys(BRANCHEN), { error: "Branche wählen" }),
+  status: z.enum(keys(CLIENT_STATUS), { error: "Status wählen" }).default("aktiv"),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Farbe wählen").default("#1F4E79"),
   contactName: zOptText(160),
   email: optEmail,
   phone: optPhone,
-  website: zOptText(200),
+  website: zWebsite,
   instagram: zHandle,
   tiktok: zHandle,
   street: zOptText(160),

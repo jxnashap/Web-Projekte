@@ -1,4 +1,5 @@
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -10,6 +11,7 @@ import { SyncPanel } from "@/components/kalender/sync-panel";
 import { WeekView } from "@/components/kalender/week-view";
 import { buttonClass } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { PeriodStepper } from "@/components/ui/period-stepper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Segmented } from "@/components/ui/tabs";
 import { cn } from "@/lib/cn";
@@ -18,7 +20,7 @@ import { getGoogleStatus } from "@/lib/google/calendar";
 import { saveEvent } from "@/lib/kalender/actions";
 import { getCalendarOptions, getEventsBetween, getIcalSettings, getShootVideosBetween } from "@/lib/kalender/data";
 import { addDaysIso, isIsoDay, isoWeek, shiftAnchor, type View, viewRange, VIEWS } from "@/lib/kalender/dates";
-import { calHref } from "@/lib/kalender/href";
+import { asView, calHref, kindStyle } from "@/lib/kalender/href";
 import { publicOrigin } from "@/lib/kalender/origin";
 import { EVENT_KINDS } from "@/lib/labels";
 import { todayIso } from "@/lib/time";
@@ -27,13 +29,12 @@ export const metadata = { title: "Kalender" };
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
-const asView = (v: string | undefined): View | undefined => (v === "monat" || v === "woche" || v === "liste" ? v : undefined);
 
 const GOOGLE_MESSAGES = {
   verbunden: { ok: true, text: "Google Kalender verbunden. Termine werden ab jetzt übertragen." },
   abgebrochen: { ok: false, text: "Verbindung mit Google abgebrochen." },
   fehler: { ok: false, text: "Verbindung mit Google fehlgeschlagen. Details stehen in der Google-Karte." },
-  "nicht-eingerichtet": { ok: false, text: "Google ist noch nicht eingerichtet (GOOGLE_CLIENT_ID fehlt)." },
+  "nicht-eingerichtet": { ok: false, text: "Google Kalender ist noch nicht eingerichtet. Das erledigt einmalig, wer die App betreut." },
 };
 
 export default function KalenderPage({ searchParams }: { searchParams: SP }) {
@@ -84,51 +85,43 @@ function CalendarSkeleton() {
 }
 
 function Toolbar({ view, anchor, today, className }: { view: View; anchor: string; today: string; className?: string }) {
-  const prev = shiftAnchor(view, anchor, -1);
-  const next = shiftAnchor(view, anchor, 1);
   const range = viewRange(view, anchor);
   const label =
     view === "monat"
       ? fmt(anchor, "MMMM yyyy")
       : view === "woche"
-        ? `KW ${isoWeek(range.days[0])} · ${fmt(range.days[0], "d. MMM")} bis ${fmt(range.days[6], "d. MMM yyyy")}`
-        : `${fmt(range.days[0], "d. MMM")} bis ${fmt(range.days[27], "d. MMM yyyy")}`;
+        ? `KW ${isoWeek(range.days[0])} · ${fmt(range.days[0], "d. MMM")} bis ${fmt(range.days[6], "d. MMM")}`
+        : `${fmt(range.days[0], "d. MMM")} bis ${fmt(range.days[27], "d. MMM")}`;
   return (
     <div className={cn("mb-4 flex flex-wrap items-center justify-between gap-3", className)}>
-      <div className="flex items-center gap-2">
-        <div className="flex items-center rounded-full border border-line-2 bg-surface">
-          <Link href={calHref({ ansicht: view, datum: prev })} className="grid size-9 place-items-center rounded-l-full text-ink-2 hover:bg-sunken" aria-label="Zurück" scroll={false}>
-            <ChevronLeft className="size-4" />
-          </Link>
-          <Link href={calHref({ ansicht: view, datum: today })} className="flex h-9 items-center border-x border-line-2 px-3 text-[13px] font-semibold hover:bg-sunken" scroll={false}>
-            Heute
-          </Link>
-          <Link href={calHref({ ansicht: view, datum: next })} className="grid size-9 place-items-center rounded-r-full text-ink-2 hover:bg-sunken" aria-label="Weiter" scroll={false}>
-            <ChevronRight className="size-4" />
-          </Link>
-        </div>
-        <h2 className="text-[17px] font-semibold" aria-live="polite">
-          {label}
-        </h2>
-      </div>
-      <Segmented items={VIEWS.map((v) => ({ href: calHref({ ansicht: v.key, datum: anchor }), label: v.label, active: v.key === view }))} />
+      <PeriodStepper
+        label={label}
+        prevHref={calHref({ ansicht: view, datum: shiftAnchor(view, anchor, -1) })}
+        nextHref={calHref({ ansicht: view, datum: shiftAnchor(view, anchor, 1) })}
+        todayHref={calHref({ ansicht: view, datum: today })}
+      />
+      <Segmented
+        label="Ansicht"
+        className="w-full sm:w-auto [&>a]:flex-1"
+        items={VIEWS.map((v) => ({ href: calHref({ ansicht: v.key, datum: anchor }), label: v.label, active: v.key === view }))}
+      />
     </div>
   );
 }
 
 function Legend() {
   return (
-    <div className="mt-3 hidden flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-muted md:flex" aria-label="Legende">
+    <ul className="mt-3 hidden flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted md:flex" aria-label="Legende">
       {Object.entries(EVENT_KINDS).map(([k, v]) => (
-        <span key={k} className="inline-flex items-center gap-1.5">
-          <span className={cn("size-3 rounded", k === "dreh" ? "bg-accent-soft" : k === "gespraech" ? "bg-info-soft" : k === "deadline" ? "bg-warn-soft" : "bg-sunken")} />
+        <li key={k} className="inline-flex items-center gap-1.5">
+          <span className="size-2.5 rounded-full" style={{ background: kindStyle(k).dot }} aria-hidden />
           {v.label}
-        </span>
+        </li>
       ))}
-      <span className="inline-flex items-center gap-1.5">
-        <span className="h-3 w-[3px] rounded-full bg-ink-2" /> Leiste in Kundenfarbe
-      </span>
-    </div>
+      <li className="inline-flex items-center gap-1.5">
+        <span className="h-3 w-[3px] rounded-full bg-ink-2" aria-hidden /> Leiste in Kundenfarbe
+      </li>
+    </ul>
   );
 }
 
@@ -168,11 +161,33 @@ async function CalendarBody({ searchParams }: { searchParams: SP }) {
     (hints[day] ??= []).push({ clientId: Number(cid), clientName: clientName.get(Number(cid)) ?? "Kunde", count });
   }
 
+  const highlight = Number(one(sp.neu_id)) || undefined;
+  const agenda = { rows, today, team: options.team, hints, videoCount, highlight };
   const render = (v: View) => {
     const r = viewRange(v, anchor);
-    if (v === "monat") return <MonthView rows={rows} days={r.days} anchor={anchor} today={today} hints={hints} />;
-    if (v === "woche") return <WeekView rows={rows} days={r.days} today={today} now={new Date()} />;
-    return <AgendaView rows={rows} days={r.days} today={today} team={options.team} hints={hints} videoCount={videoCount} />;
+    if (v === "monat")
+      return (
+        <>
+          <MonthView rows={rows} days={r.days} anchor={anchor} today={today} hints={hints} highlight={highlight} />
+          {/* Handy: Termine des gewählten Tages unter dem Raster */}
+          <div className="mt-5 sm:hidden">
+            <AgendaView {...agenda} days={[anchor]} view="monat" showEmptyDays />
+          </div>
+        </>
+      );
+    if (v === "woche")
+      return (
+        <>
+          <div className="hidden md:block">
+            <WeekView rows={rows} days={r.days} today={today} now={new Date()} highlight={highlight} />
+          </div>
+          {/* Handy: die Woche als Liste, Tag für Tag */}
+          <div className="md:hidden">
+            <AgendaView {...agenda} days={r.days} view="woche" showEmptyDays />
+          </div>
+        </>
+      );
+    return <AgendaView {...agenda} days={r.days} view={explicit} />;
   };
 
   if (explicit)
@@ -202,8 +217,9 @@ async function CalendarBody({ searchParams }: { searchParams: SP }) {
 async function Sync() {
   await connection();
   const origin = await publicOrigin();
+  const ua = (await headers()).get("user-agent") ?? "";
   const [ical, google] = await Promise.all([getIcalSettings(), getGoogleStatus(origin)]);
-  return <SyncPanel ical={ical} origin={origin} google={google} />;
+  return <SyncPanel ical={ical} origin={origin} google={google} ios={/iPhone|iPad|iPod/.test(ua)} />;
 }
 
 async function NewDialog({ searchParams }: { searchParams: SP }) {

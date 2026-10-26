@@ -1,12 +1,12 @@
 // Datenzugriff Finanzen (nur Server, nur angemeldet).
 import "server-only";
-import { and, asc, desc, eq, gte, inArray, isNotNull, lte, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lte, notInArray, sql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import type { Invoice } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { getCompany, getSetting, isDemo } from "@/lib/settings";
 import { getFileMeta, verifyFile } from "@/lib/storage";
-import { monthIso, shiftMonth, todayIso } from "@/lib/time";
+import { monthIso, monthRange, shiftMonth, todayIso } from "@/lib/time";
 import { calcTotals, DATEV_DEFAULTS, roundHalfUp, periodRange, type DatevSettings, type DocKind, type JournalExpense, type JournalInvoice, type PeriodKind } from "./core";
 import { finalizeBlockers, loadInvoice } from "./workflow";
 
@@ -40,31 +40,114 @@ export async function getClientOptions() {
 }
 export type ClientOption = Awaited<ReturnType<typeof getClientOptions>>[number];
 
+/** Offene Anfragen (noch kein Kunde), damit Angebote direkt an eine Anfrage gehen können. */
+export async function getLeadOptions() {
+  await requireUser();
+  const db = await getDb();
+  return db
+    .select({ id: schema.leads.id, company: schema.leads.company, name: schema.leads.name, stage: schema.leads.stage })
+    .from(schema.leads)
+    .where(and(isNull(schema.leads.clientId), notInArray(schema.leads.stage, ["gewonnen", "verloren"])))
+    .orderBy(asc(schema.leads.company));
+}
+
+/** Kurzangaben für den Seitentitel (generateMetadata). */
+export async function getInvoiceTitle(id: number) {
+  await requireUser();
+  const db = await getDb();
+  const [row] = await db
+    .select({ kind: schema.invoices.kind, number: schema.invoices.number, finalizedAt: schema.invoices.finalizedAt })
+    .from(schema.invoices)
+    .where(eq(schema.invoices.id, id));
+  return row ?? null;
+}
+
+export async function getExpenseTitle(id: number) {
+  await requireUser();
+  const db = await getDb();
+  const [row] = await db.select({ supplier: schema.expenses.supplier }).from(schema.expenses).where(eq(schema.expenses.id, id));
+  return row?.supplier ?? null;
+}
+
+/**
+ * Nachgereichte Belegdateien zu exportierten Ausgaben (Ausgabe → Datei). Exportierte Ausgaben sind unveränderlich,
+ * die Verknüpfung steht deshalb im Änderungsprotokoll (Aktion "datei_nachgereicht").
+ */
+export async function lateReceiptMap(expenseIds?: number[]): Promise<Map<number, number>> {
+  if (expenseIds && expenseIds.length === 0) return new Map();
+  const db = await getDb();
+  const rows = await db
+    .select({ entityId: schema.auditLog.entityId, detail: schema.auditLog.detail })
+    .from(schema.auditLog)
+    .where(
+      and(
+        eq(schema.auditLog.entity, "expense"),
+        eq(schema.auditLog.action, "datei_nachgereicht"),
+        expenseIds ? inArray(schema.auditLog.entityId, expenseIds) : undefined,
+      ),
+    )
+    .orderBy(asc(schema.auditLog.id));
+  const map = new Map<number, number>();
+  for (const r of rows) {
+    const fileId = (r.detail as { fileId?: number } | null)?.fileId;
+    if (r.entityId && fileId && !map.has(r.entityId)) map.set(r.entityId, fileId);
+  }
+  return map;
+}
+
 /** Effektiver Status für die Anzeige: offene Rechnungen nach Fälligkeit gelten als überfällig. */
 export function displayStatus(inv: Pick<Invoice, "kind" | "status" | "dueDate">, today = todayIso()): string {
   if (inv.kind === "rechnung" && inv.status === "offen" && inv.dueDate && inv.dueDate < today) return "ueberfaellig";
   return inv.status;
 }
 
-export async function listInvoices(opts: { kind: DocKind; status?: string }) {
+/**
+ * Liste je Art. Stornobelege erscheinen bei den Rechnungen im Filter "Storniert" (zusammen mit den stornierten Rechnungen).
+ * Entwürfe zeigen ihre Summe live aus den Positionen (gespeicherte Summen gelten erst ab dem Festschreiben).
+ */
+export async function listInvoices(opts: { kind: "rechnung" | "angebot"; status?: string; q?: string }) {
   await requireUser();
   const db = await getDb();
+  const kinds = opts.kind === "rechnung" ? ["rechnung", "storno"] : [opts.kind];
   const rows = await db
     .select({ inv: schema.invoices, clientName: schema.clients.name, clientColor: schema.clients.color })
     .from(schema.invoices)
     .leftJoin(schema.clients, eq(schema.invoices.clientId, schema.clients.id))
-    .where(eq(schema.invoices.kind, opts.kind))
+    .where(inArray(schema.invoices.kind, kinds))
     .orderBy(desc(sql`coalesce(${schema.invoices.issueDate}, '9999-12-31')`), desc(schema.invoices.id));
+
+  // Entwürfe: Summen aus den Positionen
+  const draftIds = rows.filter((r) => !r.inv.finalizedAt).map((r) => r.inv.id);
+  if (draftIds.length) {
+    const [items, company] = await Promise.all([db.select().from(schema.invoiceItems).where(inArray(schema.invoiceItems.invoiceId, draftIds)), getCompany()]);
+    for (const r of rows) {
+      if (r.inv.finalizedAt) continue;
+      const t = calcTotals(items.filter((i) => i.invoiceId === r.inv.id), company?.smallBusiness);
+      r.inv = { ...r.inv, netCents: t.netCents, taxCents: t.taxCents, grossCents: t.grossCents };
+    }
+  }
+
   const today = todayIso();
-  const all = rows.map((r) => ({ ...r, display: displayStatus(r.inv, today) }));
-  const filtered = opts.status ? all.filter((r) => r.display === opts.status || (opts.status === "offen" && r.display === "ueberfaellig")) : all;
+  const all = rows.map((r) => ({ ...r, display: r.inv.kind === "storno" ? "storniert" : displayStatus(r.inv, today) }));
+  const q = opts.q?.trim().toLowerCase();
+  const searched = q
+    ? all.filter((r) => [r.inv.number, r.inv.recipient?.name, r.clientName, r.inv.title].some((x) => x?.toLowerCase().includes(q)))
+    : all;
+  // Ohne Statusfilter: Stornobelege nicht doppelt neben der stornierten Rechnung zeigen
+  const filtered = opts.status
+    ? searched.filter((r) => r.display === opts.status || (opts.status === "offen" && r.display === "ueberfaellig"))
+    : searched.filter((r) => r.inv.kind !== "storno");
   const counts: Record<string, number> = {};
-  for (const r of all) counts[r.display] = (counts[r.display] ?? 0) + 1;
+  for (const r of searched) counts[r.display] = (counts[r.display] ?? 0) + 1;
+  // "Offen" umfasst überfällige Rechnungen (wie der Filter)
+  counts.offen = (counts.offen ?? 0) + (counts.ueberfaellig ?? 0);
   const finalized = filtered.filter((r) => r.inv.finalizedAt);
   return {
     rows: filtered,
     counts,
-    total: all.length,
+    total: all.filter((r) => r.inv.kind !== "storno").length,
+    finalizedCount: finalized.length,
+    draftCount: filtered.length - finalized.length,
     sumNet: finalized.reduce((s, r) => s + r.inv.netCents, 0),
     sumGross: finalized.reduce((s, r) => s + r.inv.grossCents, 0),
     sumOpen: filtered.filter((r) => r.inv.kind === "rechnung" && r.inv.status === "offen").reduce((s, r) => s + r.inv.grossCents, 0),
@@ -184,9 +267,23 @@ export async function getOverview(kind: PeriodKind, ym: string) {
     .orderBy(asc(schema.invoices.dueDate));
 
   const drafts = await db
-    .select({ n: sql<number>`count(*)::int` })
+    .select({ kind: schema.invoices.kind, n: sql<number>`count(*)::int` })
     .from(schema.invoices)
-    .where(and(eq(schema.invoices.status, "entwurf"), ne(schema.invoices.kind, "storno")));
+    .where(and(eq(schema.invoices.status, "entwurf"), inArray(schema.invoices.kind, ["rechnung", "angebot"])))
+    .groupBy(schema.invoices.kind);
+
+  // Monatsexport: ist der Vormonat schon abgeschlossen? (Protokoll "datev_export", Zeitraum deckt den Monat ab)
+  const exportMonth = shiftMonth(monthIso(), -1);
+  const em = monthRange(exportMonth);
+  const exportsDone = await db
+    .select({ detail: schema.auditLog.detail })
+    .from(schema.auditLog)
+    .where(and(eq(schema.auditLog.entity, "export"), eq(schema.auditLog.action, "datev_export")));
+  const exported = exportsDone.some((e) => {
+    const d = e.detail as { from?: string; to?: string } | null;
+    return Boolean(d?.from && d?.to && d.from <= em.from && d.to >= em.to);
+  });
+  const late = await lateReceiptMap(expP.filter((e) => !e.fileId).map((e) => e.id));
 
   const incomeNet = invP.reduce((s, i) => s + i.netCents, 0);
   const expenseNet = expP.reduce((s, e) => s + (smallBusiness ? e.grossCents : e.netCents), 0);
@@ -209,8 +306,9 @@ export async function getOverview(kind: PeriodKind, ym: string) {
     paidIn: paidIn[0] ?? { sum: 0, n: 0 },
     vat: vatFor(invP, byInv, expP, smallBusiness),
     open: open.map((o) => ({ ...o, overdue: Boolean(o.inv.dueDate && o.inv.dueDate < today) })),
-    draftCount: drafts[0]?.n ?? 0,
-    missingReceipts: expP.filter((e) => !e.fileId).length,
+    drafts: { rechnung: drafts.find((d) => d.kind === "rechnung")?.n ?? 0, angebot: drafts.find((d) => d.kind === "angebot")?.n ?? 0 },
+    monthExport: { month: exportMonth, done: exported },
+    missingReceipts: expP.filter((e) => !e.fileId && !late.has(e.id)).length,
     chart,
     today,
   };
@@ -222,15 +320,16 @@ export async function getOverview(kind: PeriodKind, ym: string) {
 export async function listExpenses(month: string, category?: string) {
   await requireUser();
   const db = await getDb();
-  const from = `${month}-01`;
-  const to = `${month}-31`;
+  const { from, to } = monthRange(month);
   const rows = await db
     .select({ e: schema.expenses, clientName: schema.clients.name })
     .from(schema.expenses)
     .leftJoin(schema.clients, eq(schema.expenses.clientId, schema.clients.id))
     .where(and(gte(schema.expenses.date, from), lte(schema.expenses.date, to)))
     .orderBy(desc(schema.expenses.date), desc(schema.expenses.id));
-  const filtered = category ? rows.filter((r) => r.e.category === category) : rows;
+  const late = await lateReceiptMap(rows.filter((r) => !r.e.fileId && r.e.exportedAt).map((r) => r.e.id));
+  const all = rows.map((r) => ({ ...r, hasFile: Boolean(r.e.fileId || late.has(r.e.id)) }));
+  const filtered = category ? all.filter((r) => r.e.category === category) : all;
   const sum = (f: (e: (typeof rows)[number]["e"]) => number) => filtered.reduce((s, r) => s + f(r.e), 0);
   return {
     rows: filtered,
@@ -239,7 +338,7 @@ export async function listExpenses(month: string, category?: string) {
     taxCents: sum((e) => e.taxCents),
     grossCents: sum((e) => e.grossCents),
     rcNetCents: sum((e) => (e.reverseCharge ? e.netCents : 0)),
-    withoutReceipt: filtered.filter((r) => !r.e.fileId).length,
+    withoutReceipt: filtered.filter((r) => !r.hasFile).length,
   };
 }
 
@@ -248,8 +347,10 @@ export async function getExpense(id: number) {
   const db = await getDb();
   const [e] = await db.select().from(schema.expenses).where(eq(schema.expenses.id, id));
   if (!e) return null;
-  const file = e.fileId ? await getFileMeta(e.fileId) : null;
-  return { expense: e, file };
+  const lateId = !e.fileId && e.exportedAt ? (await lateReceiptMap([e.id])).get(e.id) : undefined;
+  const fileId = e.fileId ?? lateId;
+  const file = fileId ? await getFileMeta(fileId) : null;
+  return { expense: e, file, late: Boolean(lateId) };
 }
 
 // ------------------------------------------------------------------
@@ -296,6 +397,7 @@ export async function getJournal(from: string, to: string) {
     paidAt: inv.paidAt,
     fileId: inv.fileId,
   }));
+  const late = await lateReceiptMap(exps.filter((e) => !e.fileId).map((e) => e.id));
   const journalExpenses: (JournalExpense & { fileId: number | null; exportedAt: Date | null })[] = exps.map((e) => ({
     id: e.id,
     date: e.date,
@@ -309,8 +411,8 @@ export async function getJournal(from: string, to: string) {
     reverseCharge: e.reverseCharge,
     paidOn: e.paidOn,
     supplierInvoiceNo: e.supplierInvoiceNo,
-    hasReceipt: Boolean(e.fileId),
-    fileId: e.fileId,
+    hasReceipt: Boolean(e.fileId ?? late.get(e.id)),
+    fileId: e.fileId ?? late.get(e.id) ?? null,
     exportedAt: e.exportedAt,
   }));
   return { invoices: journalInvoices, expenses: journalExpenses, smallBusiness: small, company };

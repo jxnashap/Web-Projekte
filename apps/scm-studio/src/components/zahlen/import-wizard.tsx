@@ -3,14 +3,14 @@
 import Papa from "papaparse";
 import { CircleAlert, CircleCheck, Download, FileUp } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Field, Select, Textarea } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
-import { num } from "@/lib/format";
+import { dateDe, num } from "@/lib/format";
 import { checkImport, commitImport, type CheckedRow, type ImportRow } from "@/lib/zahlen/actions";
 
 type Target = Exclude<keyof ImportRow, "line">;
@@ -27,10 +27,13 @@ const TARGETS: { key: Target; label: string; required?: boolean; synonyms: strin
   { key: "watch", label: "Ø Wiedergabezeit (s)", synonyms: ["wiedergabezeit", "watch", "avg watch", "durchschnittliche wiedergabezeit", "average watch time", "wiedergabezeit_s"] },
 ];
 
+// Vorlage mit neutralen Beispielzeilen (keine echten Videos, damit ein unveränderter Import nichts verfälscht)
 const TEMPLATE =
   "video_link;titel;datum;aufrufe;reichweite;likes;kommentare;geteilt;gespeichert;wiedergabezeit_s\n" +
-  "https://www.instagram.com/reel/DeuGwFgs_PK/;Also mein Nachbar hätte das anders gemacht;26.10.2026;18.400;14.300;209;24;61;38;8,5\n" +
-  ";Gespräche für guten Mittagstisch opfern;26.10.2026;6.900;5.400;63;20;14;11;7\n";
+  "https://www.instagram.com/reel/LINK-ZUM-REEL/;Titel des Videos;26.10.2026;4.100;3.200;120;8;15;12;8,5\n" +
+  ";Oder nur der Titel, wenn der Link fehlt;26.10.2026;2.300;1.900;64;5;7;6;7\n";
+
+const zeilen = (n: number) => `${n} Zeile${n === 1 ? "" : "n"}`;
 
 const norm = (s: string) => s.toLowerCase().replace(/[_\-.]+/g, " ").replace(/\s+/g, " ").trim();
 
@@ -53,7 +56,32 @@ export function ImportWizard() {
   const [mapping, setMapping] = useState<Partial<Record<Target, string>>>({});
   const [checked, setChecked] = useState<CheckedRow[] | null>(null);
   const [pending, start] = useTransition();
+  const [dragging, setDragging] = useState(false);
   const router = useRouter();
+
+  // Eine daneben fallen gelassene Datei soll der Browser nicht selbst öffnen (sonst verlässt man die App)
+  useEffect(() => {
+    const stop = (e: DragEvent) => e.preventDefault();
+    window.addEventListener("dragover", stop);
+    window.addEventListener("drop", stop);
+    return () => {
+      window.removeEventListener("dragover", stop);
+      window.removeEventListener("drop", stop);
+    };
+  }, []);
+
+  const readFile = async (f: File | undefined) => {
+    if (!f) return;
+    if (f.size > 2_000_000) {
+      toast.error("Die Datei ist größer als 2 MB.");
+      return;
+    }
+    if (!/\.(csv|txt)$/i.test(f.name) && !/^text\//.test(f.type)) {
+      toast.error("Bitte eine CSV-Datei wählen.");
+      return;
+    }
+    load(await f.text(), f.name);
+  };
 
   const parsed = useMemo(() => {
     if (!raw.trim()) return null;
@@ -96,31 +124,47 @@ export function ImportWizard() {
             <a
               href={`data:text/csv;charset=utf-8,${encodeURIComponent("﻿" + TEMPLATE)}`}
               download="scm-zahlen-vorlage.csv"
-              className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold text-ink-2 hover:bg-fill-2"
+              className="hit inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold text-ink-2 hover:bg-fill-2"
             >
-              <Download className="size-4" /> Vorlage
+              <Download className="size-4" aria-hidden /> Vorlage laden
             </a>
           }
         />
         <div className="grid gap-4 p-5 pt-2">
-          <label className="flex cursor-pointer flex-col items-center gap-2 rounded-card border border-dashed border-line-2 bg-fill-2 px-6 py-8 text-center hover:border-faint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/30">
-            <FileUp className="size-6 text-muted" aria-hidden />
-            <span className="font-semibold">{fileName ?? "CSV-Datei auswählen"}</span>
-            <span className="text-[13px] text-muted">{parsed ? `${parsed.rows.length} Zeilen, ${parsed.headers.length} Spalten erkannt` : "oder unten Text einfügen"}</span>
-            <input
-              type="file"
-              accept=".csv,text/csv,text/plain"
-              className="sr-only"
-              onChange={async (e) => {
-                const f = e.target.files?.[0];
-                if (!f) return;
-                if (f.size > 2_000_000) {
-                  toast.error("Die Datei ist größer als 2 MB.");
-                  return;
-                }
-                load(await f.text(), f.name);
-              }}
-            />
+          <label
+            onDragEnter={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "copy";
+            }}
+            onDragLeave={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              void readFile(e.dataTransfer.files?.[0]);
+            }}
+            className={cn(
+              "squircle flex cursor-pointer flex-col items-center gap-2 rounded-[var(--radius-card)] px-6 py-8 text-center transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/40",
+              dragging ? "bg-info-soft ring-2 ring-info/40" : "bg-fill-2 hover:bg-fill",
+            )}
+          >
+            <FileUp className={cn("size-6", dragging ? "text-info" : "text-muted")} aria-hidden />
+            <span className="font-semibold">{dragging ? "Datei hier ablegen" : fileName ?? "CSV-Datei auswählen"}</span>
+            <span className="text-[13px] text-muted">
+              {parsed ? (
+                `${zeilen(parsed.rows.length)}, ${parsed.headers.length} Spalte${parsed.headers.length === 1 ? "" : "n"} erkannt`
+              ) : (
+                <>
+                  <span className="hidden sm:inline">Datei hierher ziehen </span>oder unten Text einfügen
+                </>
+              )}
+            </span>
+            <input type="file" accept=".csv,text/csv,text/plain" className="sr-only" onChange={(e) => void readFile(e.target.files?.[0])} />
           </label>
           <Field label="Oder Inhalt einfügen" optional>
             <Textarea
@@ -128,7 +172,7 @@ export function ImportWizard() {
               onChange={(e) => load(e.target.value, null)}
               rows={4}
               placeholder="video_link;titel;datum;aufrufe;…"
-              className="font-mono text-[12px]"
+              className="text-[14px] sm:text-[13px]"
               spellCheck={false}
             />
           </Field>
@@ -169,6 +213,7 @@ export function ImportWizard() {
             )}
             <Button
               type="button"
+              variant={checked ? "secondary" : "primary"}
               disabled={pending || missing.length > 0 || noIdentifier || rows.length === 0}
               onClick={() =>
                 start(async () => {
@@ -178,7 +223,7 @@ export function ImportWizard() {
                 })
               }
             >
-              {pending && !checked ? "Prüft …" : "Prüfen"}
+              {pending && !checked ? "Prüft …" : checked ? "Erneut prüfen" : "Prüfen"}
             </Button>
           </div>
         </Card>
@@ -188,7 +233,7 @@ export function ImportWizard() {
         <Card className="overflow-hidden">
           <CardHeader
             title="3. Vorschau"
-            sub={`${okCount} von ${checked.length} Zeilen bereit. Gleicher Tag und gleiches Video überschreibt einen älteren CSV-Eintrag.`}
+            sub={`${okCount} von ${zeilen(checked.length)} bereit. Gibt es für Video und Tag schon einen Eintrag (CSV oder von Hand), ersetzt der Import ihn.`}
             action={
               <Button
                 type="button"
@@ -203,13 +248,13 @@ export function ImportWizard() {
                   })
                 }
               >
-                {pending ? "Importiert …" : `${okCount} Zeilen importieren`}
+                {pending ? "Importiert …" : `${zeilen(okCount)} importieren`}
               </Button>
             }
           />
           <ul className="max-h-[480px] divide-y divide-line overflow-y-auto">
             {checked.map((c) => (
-              <li key={c.line} className={cn("flex items-start gap-3 px-5 py-3 text-[13px]", !c.ok && "bg-warn-soft/40")}>
+              <li key={c.line} className={cn("flex items-start gap-3 px-5 py-3 text-[14px] sm:text-[13px]", !c.ok && "bg-warn-soft/40")}>
                 {c.ok ? <CircleCheck className="mt-0.5 size-4 shrink-0 text-ok" aria-label="bereit" /> : <CircleAlert className="mt-0.5 size-4 shrink-0 text-warn" aria-label="Fehler" />}
                 <span className="w-14 shrink-0 tabular-nums text-muted">Zeile {c.line}</span>
                 <div className="min-w-0 flex-1">
@@ -222,7 +267,7 @@ export function ImportWizard() {
                   )}
                   {c.ok && c.values ? (
                     <div className="text-muted">
-                      {c.measuredOn} · {num(c.values.views)} Aufrufe · {num(c.values.likes)} Likes
+                      {dateDe(c.measuredOn)} · {num(c.values.views)} Aufrufe · {num(c.values.likes)} Likes
                       {c.matchedBy === "titel" && <Badge className="ml-2">über Titel</Badge>}
                     </div>
                   ) : (

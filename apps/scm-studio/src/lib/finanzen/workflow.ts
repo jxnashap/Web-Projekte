@@ -12,7 +12,7 @@ import { renderPdf } from "@/lib/pdf/render";
 import type { Company } from "@/lib/settings";
 import { putFile } from "@/lib/storage";
 import { todayIso } from "@/lib/time";
-import { addDaysIso, calcTotals, formatDocNumber, KIND_LABEL, missingCompanyFields, type DocKind } from "./core";
+import { addDaysIso, calcTotals, draftBlockers, formatDocNumber, KIND_LABEL, missingCompanyFields, type DocKind } from "./core";
 import { toFacturX } from "./einvoice";
 import { InvoicePdf, ReminderPdf } from "./pdf";
 
@@ -40,8 +40,10 @@ async function cancelsRef(db: DB, invoice: Invoice) {
 export async function renderInvoiceFile(db: DB, invoice: Invoice, items: InvoiceItem[], company: Company | null, draft: boolean): Promise<Uint8Array> {
   const kind = invoice.kind as DocKind;
   const cancels = await cancelsRef(db, invoice);
+  // Vorschau mit Beispiel-IBAN: im PDF deutlich als Demo markieren, damit niemand auf das Testkonto überweist
+  const demoIban = Boolean((await readSettingDb<{ testIban?: boolean } | null>(db, "demo:finanzen", null))?.testIban);
   const pdf = await renderPdf(
-    createElement(InvoicePdf, { invoice: { ...invoice, kind }, items, recipient: invoice.recipient ?? null, company, draft, cancels }),
+    createElement(InvoicePdf, { invoice: { ...invoice, kind }, items, recipient: invoice.recipient ?? null, company, draft, cancels, demoIban }),
   );
   if (draft || kind === "angebot" || !company || !invoice.recipient) return pdf;
   return toFacturX(
@@ -77,40 +79,37 @@ async function reserveNumber(db: DB, invoice: Invoice, company: Company): Promis
       })
       .where(and(eq(schema.invoices.id, invoice.id), isNull(schema.invoices.number)))
       .returning();
-    if (!updated) throw new FinanceError("Der Beleg wurde gerade anderweitig bearbeitet. Bitte neu laden.");
+    if (!updated) throw new FinanceError("Das wurde gerade anderweitig bearbeitet. Bitte die Seite neu laden.");
     return updated;
   });
 }
 
-/** Prüft, ob ein Entwurf festgeschrieben werden kann. Liefert verständliche Gründe. */
+/** Prüft, ob ein Entwurf festgeschrieben werden kann. Liefert verständliche Gründe (Regeln in core.ts). */
 export function finalizeBlockers(
   invoice: Invoice,
   items: Pick<InvoiceItem, "description" | "quantity" | "unitPriceCents" | "taxRate">[],
   company: Company | null,
   opts: { demo?: boolean } = {},
 ): string[] {
-  const out: string[] = [];
-  const kind = invoice.kind as DocKind;
-  const miss = missingCompanyFields(company, kind);
-  if (miss.length) out.push(`In den Firmendaten fehlt: ${miss.join(", ")}.`);
-  const r = invoice.recipient;
-  if (!r?.name?.trim()) out.push("Empfänger fehlt.");
-  else if (kind !== "angebot" && !opts.demo && (!r.street?.trim() || !r.zip?.trim() || !r.city?.trim()))
-    out.push("Die vollständige Anschrift des Empfängers fehlt (Straße, PLZ, Ort; Pflichtangabe nach § 14 Abs. 4 UStG).");
-  if (!items.length) out.push("Mindestens eine Position anlegen.");
-  if (items.some((i) => !i.description.trim())) out.push("Jede Position braucht eine Beschreibung.");
-  if (kind === "rechnung" && calcTotals(items, company?.smallBusiness).grossCents <= 0) out.push("Der Rechnungsbetrag muss größer als 0 sein.");
-  if (kind === "rechnung" && invoice.serviceFrom && invoice.serviceTo && invoice.serviceFrom > invoice.serviceTo) out.push("Leistungszeitraum: Beginn liegt nach dem Ende.");
-  return out;
+  return draftBlockers({
+    kind: invoice.kind as DocKind,
+    recipient: invoice.recipient,
+    serviceFrom: invoice.serviceFrom,
+    serviceTo: invoice.serviceTo,
+    items,
+    companyMissing: missingCompanyFields(company, invoice.kind as DocKind),
+    smallBusiness: company?.smallBusiness,
+    demo: opts.demo,
+  }).map((b) => b.text);
 }
 
 /** Entwurf festschreiben: Summen, Nummer, Datei (bei Rechnungen ZUGFeRD), Hash, Zeitpunkt. */
 export async function finalizeInvoice(db: DB, id: number, userId: number | null, opts: { demo?: boolean } = {}): Promise<Invoice> {
   const loaded = await loadInvoice(db, id);
-  if (!loaded) throw new FinanceError("Beleg nicht gefunden.");
+  if (!loaded) throw new FinanceError("Rechnung oder Angebot nicht gefunden.");
   let { invoice } = loaded;
   const { items } = loaded;
-  if (invoice.finalizedAt) throw new FinanceError("Der Beleg ist bereits festgeschrieben.");
+  if (invoice.finalizedAt) throw new FinanceError("Schon festgeschrieben.");
   const company = await readSettingDb<Company | null>(db, "company", null);
   const blockers = finalizeBlockers(invoice, items, company, opts);
   if (blockers.length) throw new FinanceError(blockers.join(" "));
@@ -129,7 +128,7 @@ export async function finalizeInvoice(db: DB, id: number, userId: number | null,
     .set({ finalizedAt: new Date(), fileId: file.id, contentHash: file.sha256, status: "offen", updatedAt: new Date() })
     .where(and(eq(schema.invoices.id, id), isNull(schema.invoices.finalizedAt)))
     .returning();
-  if (!done) throw new FinanceError("Der Beleg wurde gerade anderweitig festgeschrieben.");
+  if (!done) throw new FinanceError("Das wurde gerade anderweitig festgeschrieben. Bitte die Seite neu laden.");
   await audit(userId, "invoice", id, "festgeschrieben", { kind: done.kind, number: done.number, grossCents: done.grossCents, fileId: file.id, sha256: file.sha256 });
   return done;
 }
@@ -221,8 +220,10 @@ export async function createReminder(db: DB, id: number, userId: number | null):
   if (invoice.dunningLevel >= 3) throw new FinanceError("Es wurden bereits drei Erinnerungen erstellt. Bitte persönlich nachfassen.");
   const level = invoice.dunningLevel + 1;
   const company = await readSettingDb<Company | null>(db, "company", null);
+  const demoIban = Boolean((await readSettingDb<{ testIban?: boolean } | null>(db, "demo:finanzen", null))?.testIban);
   const data = await renderPdf(
     createElement(ReminderPdf, {
+      demoIban,
       level,
       date: today,
       payUntil: addDaysIso(today, 7),

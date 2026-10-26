@@ -124,6 +124,42 @@ export function missingCompanyFields(c: Company | null, kind: DocKind): string[]
   return miss;
 }
 
+/** Hindernis vor dem Festschreiben; `field` ist der Name des Formularfelds (für Sprung und Markierung). */
+export type Blocker = { text: string; field?: string; href?: string };
+
+/**
+ * Prüft einen Entwurf vor dem Festschreiben (rein, ohne Datenbank): die App zeigt die Liste live im Editor,
+ * der Server prüft beim Festschreiben dieselben Regeln (siehe workflow.ts).
+ */
+export function draftBlockers(input: {
+  kind: DocKind;
+  recipient: Pick<Party, "name" | "street" | "zip" | "city"> | null | undefined;
+  serviceFrom?: string | null;
+  serviceTo?: string | null;
+  items: { description: string; quantity: number; unitPriceCents: number; taxRate: number }[];
+  companyMissing: string[];
+  smallBusiness?: boolean;
+  demo?: boolean;
+}): Blocker[] {
+  const out: Blocker[] = [];
+  const { kind, recipient: r, items } = input;
+  if (input.companyMissing.length) out.push({ text: `In den Firmendaten fehlt: ${input.companyMissing.join(", ")}.`, href: "/einstellungen" });
+  if (!r?.name?.trim()) out.push({ text: "Empfänger fehlt.", field: "recipientName" });
+  else if (kind === "rechnung" && !input.demo && (!r.street?.trim() || !r.zip?.trim() || !r.city?.trim())) {
+    const field = !r.street?.trim() ? "recipientStreet" : !r.zip?.trim() ? "recipientZip" : "recipientCity";
+    out.push({ text: "Die vollständige Anschrift des Empfängers fehlt (Straße, PLZ, Ort; Pflichtangabe nach § 14 Abs. 4 UStG).", field });
+  }
+  if (!items.length) out.push({ text: "Mindestens eine Position anlegen." });
+  items.forEach((it, i) => {
+    if (!it.description.trim()) out.push({ text: `Position ${i + 1} braucht eine Beschreibung.`, field: `items.${i}.description` });
+    else if (kind !== "storno" && it.unitPriceCents === 0) out.push({ text: `Position ${i + 1} hat noch keinen Preis.`, field: `items.${i}.price` });
+  });
+  if (kind === "rechnung" && items.length && calcTotals(items, input.smallBusiness).grossCents <= 0) out.push({ text: "Der Rechnungsbetrag muss größer als 0 sein." });
+  if (kind === "rechnung" && input.serviceFrom && input.serviceTo && input.serviceFrom > input.serviceTo)
+    out.push({ text: "Leistungszeitraum: Beginn liegt nach dem Ende.", field: "serviceTo" });
+  return out;
+}
+
 export function validIban(iban: string): boolean {
   const s = iban.replace(/\s+/g, "").toUpperCase();
   if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(s)) return false;
@@ -182,6 +218,17 @@ export function eurText(cents: number): string {
 
 /** Menge deutsch ohne überflüssige Nachkommastellen. */
 export const qtyText = (q: number) => (Number.isInteger(q) ? String(q) : q.toLocaleString("de-DE", { maximumFractionDigits: 3 }));
+
+// Mehrzahl der Einheiten für Texte und PDF (die E-Rechnung nutzt weiter die Einheitencodes)
+const UNIT_PLURAL: Record<string, string> = { Monat: "Monate", Tag: "Tage", Stunde: "Stunden" };
+
+/** Menge mit Einheit in der passenden Zahl: "1 Monat", "3 Monate", "0,5 Stunden"; Stück, Pauschal und km bleiben. */
+export function unitText(qty: number, unit: string): string {
+  return `${qtyText(qty)} ${Math.abs(qty) === 1 ? unit : (UNIT_PLURAL[unit] ?? unit)}`;
+}
+
+/** Zahl mit Wort in Einzahl oder Mehrzahl: plural(1, "Rechnung", "Rechnungen") → "1 Rechnung". */
+export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 // ------------------------------------------------------------------
 // DATEV-Export (Buchungsstapel EXTF) und CSV-Journale

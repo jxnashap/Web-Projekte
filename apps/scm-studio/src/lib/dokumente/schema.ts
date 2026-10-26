@@ -11,11 +11,49 @@ export const DOC_KIND_KEYS: DocKind[] = ["vertrag", "einwilligung", "drehplan", 
 export const isDocKind = (k: unknown): k is DocKind => typeof k === "string" && (DOC_KIND_KEYS as string[]).includes(k);
 export const needsSignature = (k: string) => k === "vertrag" || k === "einwilligung";
 
-export const DOC_STATUS: Record<string, { label: string; tone: "neutral" | "info" | "ok" | "warn" | "accent" }> = {
-  entwurf: { label: "Entwurf", tone: "neutral" },
-  final: { label: "Final", tone: "info" },
-  unterschrieben: { label: "Unterschrieben", tone: "ok" },
+type StatusInfo = { label: string; tone: "neutral" | "info" | "ok" | "warn" | "accent" };
+
+/**
+ * Status je Dokumentart. "final" heißt bei Vertrag und Einwilligung "bereit zur Unterschrift",
+ * bei Drehplan und Monatsbericht "als PDF abgelegt".
+ */
+export function docStatus(kind: string, status: string, revokedAt?: Date | string | null): StatusInfo {
+  if (revokedAt) return { label: "Widerrufen", tone: "accent" };
+  if (status === "unterschrieben") return { label: "Unterschrieben", tone: "ok" };
+  if (status === "final") return needsSignature(kind) ? { label: "Bereit zur Unterschrift", tone: "warn" } : { label: "Abgelegt", tone: "info" };
+  return { label: "Entwurf", tone: "neutral" };
+}
+
+/** Beschriftung der Aktion, die einen Entwurf festhält */
+export const finalizeLabel = (kind: string) => (needsSignature(kind) ? "Zur Unterschrift freigeben" : "Abschließen und ablegen");
+
+/** Filterwerte für den Status in der Liste (je Art nur die passenden) */
+export const STATUS_FILTER: Record<string, { label: string; kinds: DocKind[] }> = {
+  entwurf: { label: "Entwurf", kinds: ["vertrag", "einwilligung", "drehplan", "monatsbericht"] },
+  bereit: { label: "Bereit zur Unterschrift", kinds: ["vertrag", "einwilligung"] },
+  unterschrieben: { label: "Unterschrieben", kinds: ["vertrag", "einwilligung"] },
+  widerrufen: { label: "Widerrufen", kinds: ["einwilligung"] },
+  abgelegt: { label: "Abgelegt", kinds: ["drehplan", "monatsbericht"] },
 };
+export const statusFiltersFor = (kind?: DocKind) => Object.entries(STATUS_FILTER).filter(([, v]) => !kind || v.kinds.includes(kind));
+
+/** Passt ein Dokument zum Statusfilter? */
+export function matchesStatus(d: { kind: string; status: string; revokedAt?: Date | string | null }, filter: string) {
+  switch (filter) {
+    case "entwurf":
+      return d.status === "entwurf";
+    case "bereit":
+      return d.status === "final" && needsSignature(d.kind);
+    case "abgelegt":
+      return d.status === "final" && !needsSignature(d.kind);
+    case "unterschrieben":
+      return d.status === "unterschrieben" && !d.revokedAt;
+    case "widerrufen":
+      return Boolean(d.revokedAt);
+    default:
+      return true;
+  }
+}
 
 // ------------------------------------------------------------------
 // Gemeinsame Bausteine
@@ -209,7 +247,7 @@ export const einwilligungSchema = z
   });
 export type EinwilligungData = z.infer<typeof einwilligungSchema> & { party?: PartySnapshot; signatures?: SignatureEntry[]; companySnapshot?: unknown; zweckeBeiUnterschrift?: ZweckKey[] };
 
-export function defaultEinwilligung(day: string): z.infer<typeof einwilligungSchema> {
+export function defaultEinwilligung(day: string, hasClient = true): z.infer<typeof einwilligungSchema> {
   return {
     personName: "",
     kontakt: "",
@@ -222,10 +260,43 @@ export function defaultEinwilligung(day: string): z.infer<typeof einwilligungSch
     erziehungsberechtigt1: "",
     erziehungsberechtigt2: "",
     alleinigesSorgerecht: false,
-    verantwortlich: "kunde",
+    verantwortlich: hasClient ? "kunde" : "scm",
     verguetung: "",
-    zwecke: ["aufnahme", "kanaele"],
+    zwecke: hasClient ? ["aufnahme", "kanaele"] : ["aufnahme", "portfolio"],
   };
+}
+
+/** Zwecke, die zur Einwilligung passen: ohne Auftraggeber gibt es keine "Kanäle des Auftraggebers". */
+export const zweckKeysFor = (hasClient: boolean) => ZWECK_KEYS.filter((k) => hasClient || k !== "kanaele");
+
+/** Verantwortliche Stelle (Art. 13 DSGVO) einer Einwilligung mit allem, was für die Datenschutzhinweise fehlt. */
+export type ConsentController = { isClient: boolean; name: string; address: string; email: string; missing: string[] };
+
+export function consentController(
+  verantwortlich: "kunde" | "scm",
+  party: PartySnapshot | null | undefined,
+  company: { legalName?: string | null; street?: string | null; zip?: string | null; city?: string | null; email?: string | null } | null | undefined,
+): ConsentController {
+  const src = verantwortlich === "kunde" ? party : company ? { name: company.legalName, street: company.street, zip: company.zip, city: company.city, email: company.email } : null;
+  const name = (src?.name ?? "").trim();
+  const street = (src?.street ?? "").trim();
+  const city = [src?.zip, src?.city].filter(Boolean).join(" ").trim();
+  const email = (src?.email ?? "").trim();
+  const missing: string[] = [];
+  if (!name) missing.push(verantwortlich === "kunde" ? "der Auftraggeber" : "der Firmenname");
+  if (!street || !src?.city) missing.push("die Anschrift");
+  if (!email) missing.push("die E-Mail");
+  return { isClient: verantwortlich === "kunde", name, address: [street, city].filter(Boolean).join(", "), email, missing };
+}
+
+/** Satz für die Oberfläche, wenn die verantwortliche Stelle unvollständig ist (sonst null). */
+export function controllerProblem(c: ConsentController, hasClient: boolean): string | null {
+  if (c.isClient && !hasClient) return "Ohne Auftraggeber ist SCM verantwortlich. Bitte bei „Verantwortlich“ SCM wählen.";
+  if (!c.missing.length) return null;
+  const list = c.missing.join(" und ");
+  return c.isClient
+    ? `Beim Kunden fehlt ${list} für Datenschutzfragen. Bitte im Kunden ergänzen oder SCM als verantwortlich wählen.`
+    : `In den Firmendaten von SCM fehlt ${list}. Bitte unter Einstellungen, Firma ergänzen.`;
 }
 
 /** Welche Unterschriften braucht eine Einwilligung? (Minderjährige: Sorgeberechtigte, ab etwa 14 Jahren zusätzlich das Kind) */

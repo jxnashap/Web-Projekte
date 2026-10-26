@@ -126,3 +126,11 @@ export async function getVideo(id: number) {
 
   return { video: row.v, client: row.client, script, linkable, metrics };
 }
+
+/** Nur der Titel (für den Seitentitel im Browser). */
+export async function getVideoTitle(id: number) {
+  await requireUser();
+  const db = await getDb();
+  const [row] = await db.select({ title: schema.videos.title }).from(schema.videos).where(eq(schema.videos.id, id));
+  return row?.title ?? null;
+}

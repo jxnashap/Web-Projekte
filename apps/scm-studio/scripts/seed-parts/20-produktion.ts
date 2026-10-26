@@ -1,5 +1,6 @@
 // Demo-Daten Produktion und Skripte: weitere Skripte an geplanten Videos, Zuständige an allen Videos.
 // Unbekannte Fakten über die Kunden (Preise, Ortsdetails) stehen als [PLATZHALTER] im Text.
+// Hook und Aufruf entsprechen den Texten der Abschnitte „Hook“ und „Aufruf“ (eine Quelle der Wahrheit wie im Editor).
 import { and, eq, isNull } from "drizzle-orm";
 import * as s from "../../src/db/schema";
 import type { SeedPart } from "../seed";
@@ -33,7 +34,7 @@ const part: SeedPart = async (db, ctx) => {
       format: "Ortsanalyse",
       status: "final",
       source: "manuell",
-      hook: "Wo würdet ihr rund um Kiel hinziehen? Teil 2.",
+      hook: "Text im Bild: Ortsanalyse Teil 2. Drei Orte, eine ehrliche Bewertung.",
       beats: [
         { tc: "00:00", label: "Hook", text: "Text im Bild: Ortsanalyse Teil 2. Drei Orte, eine ehrliche Bewertung.", shot: "Drohne über Preetz, Titel eingeblendet" },
         { tc: "00:03", label: "Wiedererkennen", text: "Ihr wollt raus aus Kiel, aber nicht ganz weg? Dann bleibt dran.", shot: "Halbnah, beide Makler gehen auf die Kamera zu" },
@@ -41,7 +42,7 @@ const part: SeedPart = async (db, ctx) => {
         { tc: "00:22", label: "Pointe", text: "Und welcher gewinnt? Der, bei dem ihr am Samstag einen Parkplatz findet.", shot: "Nah, Augenzwinkern" },
         { tc: "00:27", label: "Aufruf", text: "Welchen Ort sollen wir als Nächstes prüfen? Schreibt ihn in die Kommentare.", shot: "Karte mit Pins im Bild" },
       ],
-      cta: "Welchen Ort sollen wir als Nächstes prüfen?",
+      cta: "Welchen Ort sollen wir als Nächstes prüfen? Schreibt ihn in die Kommentare.",
       caption: "Teil 2 unserer Ortsanalyse rund um Kiel 🏡 Welcher Ort ist euer Favorit?\n\n#Kiel #Immobilien #Preetz #Raisdorf #Flintbek",
       createdBy: yannick.id,
     },
@@ -60,7 +61,7 @@ const part: SeedPart = async (db, ctx) => {
         { tc: "00:22", label: "Pointe", text: "Feierabend. Vorher, nachher. Der Meister nickt. Mehr Lob gibt es nicht. Reicht aber.", shot: "Split Screen vorher und nachher" },
         { tc: "00:27", label: "Aufruf", text: "Bock drauf? Schreibt uns eine Nachricht. [PLATZHALTER: Ausbildungsstart]", shot: "Team winkt in die Kamera" },
       ],
-      cta: "Bock drauf? Schreibt uns eine Nachricht.",
+      cta: "Bock drauf? Schreibt uns eine Nachricht. [PLATZHALTER: Ausbildungsstart]",
       caption: "Ein ganz normaler Tag als Azubi bei uns 🎨\n\n#Kiel #Ausbildung #Maler #Handwerk #Azubi",
       createdBy: oskar.id,
     },

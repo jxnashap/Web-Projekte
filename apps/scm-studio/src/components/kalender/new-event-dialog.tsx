@@ -8,7 +8,7 @@ import type { ActionState } from "@/lib/action";
 import type { CalendarOptions } from "@/lib/kalender/data";
 import { EventForm, type EventDefaults } from "./event-form";
 
-const PREFILL = ["neu", "kunde", "lead", "art", "von"];
+const PREFILL = ["neu", "kunde", "lead", "art", "von", "neu_id"];
 
 function Inner(props: { action: (p: ActionState, fd: FormData) => Promise<ActionState>; defaults: EventDefaults; options: CalendarOptions }) {
   const sp = useSearchParams();
@@ -23,7 +23,14 @@ function Inner(props: { action: (p: ActionState, fd: FormData) => Promise<Action
   }, [sp, pathname, router]);
   return (
     <Dialog open={open} onClose={close} title="Neuer Termin" description="Drehs, Gespräche, Abgaben und interne Termine." size="lg">
-      <EventForm key={sp.toString()} action={props.action} defaults={props.defaults} options={props.options} submitLabel="Termin anlegen" />
+      <EventForm
+        key={sp.toString()}
+        action={props.action}
+        defaults={props.defaults}
+        options={props.options}
+        submitLabel="Termin anlegen"
+        view={sp.get("ansicht") ?? undefined}
+      />
     </Dialog>
   );
 }

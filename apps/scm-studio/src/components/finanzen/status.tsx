@@ -5,14 +5,15 @@ const EXTRA: Record<string, { label: string; tone: Tone }> = {
   ueberfaellig: { label: "Überfällig", tone: "accent" },
 };
 
-/** Status eines Belegs. Stornobelege zeigen „Storno“, Angebote „Offen“ als „Versendet/offen“. */
+/** Status einer Rechnung oder eines Angebots. Stornobelege zeigen „Stornobeleg“. */
 export function InvoiceStatus({ kind, status }: { kind: string; status: string }) {
-  if (kind === "storno") return <Badge tone="dark">Storno</Badge>;
+  if (kind === "storno") return <Badge tone="dark">Stornobeleg</Badge>;
   const s = EXTRA[status] ?? INVOICE_STATUS[status] ?? { label: status, tone: "neutral" as Tone };
-  return <Badge tone={s.tone}>{kind === "angebot" && status === "offen" ? "Offen" : s.label}</Badge>;
+  return <Badge tone={s.tone}>{s.label}</Badge>;
 }
 
-export const STATUS_FILTERS: Record<string, { key: string; label: string }[]> = {
+/** Statusfilter je Art. Stornobelege stehen bei den Rechnungen unter „Storniert“. */
+export const STATUS_FILTERS: Record<"rechnung" | "angebot", { key: string; label: string }[]> = {
   rechnung: [
     { key: "", label: "Alle" },
     { key: "entwurf", label: "Entwürfe" },
@@ -28,5 +29,4 @@ export const STATUS_FILTERS: Record<string, { key: string; label: string }[]> = 
     { key: "angenommen", label: "Angenommen" },
     { key: "abgelehnt", label: "Abgelehnt" },
   ],
-  storno: [{ key: "", label: "Alle" }],
 };

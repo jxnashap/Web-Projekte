@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, desc, eq, inArray, like, notInArray } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
-import { addDaysIso } from "@/lib/kalender/dates";
+import { addDaysIso, diffDaysIso, startOfWeekIso } from "@/lib/kalender/dates";
 import { todayIso } from "@/lib/time";
 import {
   buckets,
@@ -143,8 +143,12 @@ export async function getZahlenOverview(opts: { days: Period; clientId?: number 
   const now = kpis("cur");
   const before = kpis("prev");
 
-  // Verlauf je Kunde
-  const axis = buckets(from, to);
+  // Verlauf je Kunde. Wochenachse beginnt am Montag, damit die erste Woche vollständig ist;
+  // die letzte Woche läuft meist noch (partialDays: so viele Tage hat sie bisher).
+  const unitProbe = buckets(from, to).unit;
+  const axis = buckets(unitProbe === "woche" ? startOfWeekIso(from) : from, to);
+  const lastBucket = axis.list.at(-1);
+  const partialDays = axis.unit === "woche" && lastBucket ? diffDaysIso(to, lastBucket.from) + 1 : 7;
   const clientsInData = [...new Map(videos.map((v) => [v.clientId, v.clientName])).entries()]
     .map(([id, name]) => ({ id, name, color: colors.get(id) ?? "#2a78d6" }))
     .sort((a, b) => a.id - b.id);
@@ -194,22 +198,22 @@ export async function getZahlenOverview(opts: { days: Period; clientId?: number 
     })
     .sort((a, b) => b.views - a.views);
 
-  // Formate: Videos mit Aufrufen im Zeitraum, Lebenszeit-Werte
+  // Formate: Videos mit Aufrufen im Zeitraum, Zuwachs im Zeitraum (passt zum Zeitraumschalter)
   const formatMap = new Map<string, { n: number; views: number; inter: number }>();
   for (const p of perVideo) {
-    if (p.cur.views < 1 || !p.latest) continue;
+    if (p.cur.views < 1) continue;
     const f = p.v.format ?? "Ohne Format";
     const cur = formatMap.get(f) ?? { n: 0, views: 0, inter: 0 };
     cur.n++;
-    cur.views += p.latest.views;
-    cur.inter += interactionsOf(p.latest);
+    cur.views += p.cur.views;
+    cur.inter += p.cur.interactions;
     formatMap.set(f, cur);
   }
   const formats = [...formatMap.entries()]
     .map(([format, f]) => ({ format, videos: f.n, avgViews: Math.round(f.views / f.n), rate: f.views > 0 ? f.inter / f.views : null }))
     .sort((a, b) => b.avgViews - a.avgViews);
 
-  return { from, to, days: opts.days, unit: axis.unit, now, before, clients: clientsInData, series, top, byClient, formats };
+  return { from, to, days: opts.days, unit: axis.unit, partialDays, now, before, clients: clientsInData, series, top, byClient, formats };
 }
 
 /** Online-Videos der letzten 45 Tage, deren letzte Messung älter als 7 Tage ist (oder fehlt). */
@@ -265,6 +269,14 @@ export async function getVideoTable(clientId?: number) {
     .sort((a, b) => (b.postDate ?? "").localeCompare(a.postDate ?? ""));
 }
 
+/** Nur der Titel (für den Seitentitel im Browser). */
+export async function getVideoName(videoId: number): Promise<string | null> {
+  await requireUser();
+  const db = await getDb();
+  const [row] = await db.select({ title: schema.videos.title }).from(schema.videos).where(eq(schema.videos.id, videoId));
+  return row?.title ?? null;
+}
+
 export async function getVideoDetail(videoId: number) {
   await requireUser();
   const db = await getDb();
@@ -300,18 +312,33 @@ export async function getVideoDetail(videoId: number) {
   return { video: video.v, clientName: video.clientName, clientColor: video.clientColor, rows, latest, curve };
 }
 
-export type VideoOption = { id: number; title: string; clientName: string; postDate: string | null };
+export type VideoOption = {
+  id: number;
+  title: string;
+  clientName: string;
+  postDate: string | null;
+  /** letzter Messwert (für den Hinweis "Speichern ersetzt …" und als Orientierung) */
+  last: { day: string; views: number } | null;
+};
 
 /** Auswahl für "Zahlen erfassen": veröffentlichte oder fertige Videos, neueste zuerst. */
 export async function getVideoOptions(): Promise<VideoOption[]> {
   await requireUser();
   const db = await getDb();
-  return db
+  const videos = await db
     .select({ id: schema.videos.id, title: schema.videos.title, clientName: schema.clients.name, postDate: schema.videos.postDate })
     .from(schema.videos)
     .innerJoin(schema.clients, eq(schema.videos.clientId, schema.clients.id))
     .where(inArray(schema.videos.status, ["online", "fertig"]))
     .orderBy(asc(schema.clients.name), desc(schema.videos.postDate));
+  if (!videos.length) return [];
+  const last = await db
+    .selectDistinctOn([schema.videoMetrics.videoId], { videoId: schema.videoMetrics.videoId, day: schema.videoMetrics.measuredOn, views: schema.videoMetrics.views })
+    .from(schema.videoMetrics)
+    .where(inArray(schema.videoMetrics.videoId, videos.map((v) => v.id)))
+    .orderBy(schema.videoMetrics.videoId, desc(schema.videoMetrics.measuredOn), desc(schema.videoMetrics.views));
+  const lastBy = new Map(last.map((l) => [l.videoId, { day: l.day, views: l.views }]));
+  return videos.map((v) => ({ ...v, last: lastBy.get(v.id) ?? null }));
 }
 
 // ---------------- Konten (Instagram/TikTok) ----------------

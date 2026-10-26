@@ -1,32 +1,41 @@
 "use client";
 // Zahlen eines Videos manuell erfassen (Gesamtstand an einem Tag, z. B. aus der Instagram-Statistik).
+import { Info } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { ActionForm } from "@/components/ui/action-form";
 import { Dialog } from "@/components/ui/dialog";
 import { Field, FormActions, Input, Select } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { ActionState } from "@/lib/action";
+import { cn } from "@/lib/cn";
+import { dateShort, num } from "@/lib/format";
 import type { VideoOption } from "@/lib/zahlen/data";
 
 type Props = { action: (p: ActionState, fd: FormData) => Promise<ActionState>; videos: VideoOption[]; today: string; videoId?: number | null };
 
-const NUM_FIELDS: { name: string; label: string; hint?: string; required?: boolean }[] = [
-  { name: "views", label: "Aufrufe", required: true },
+// Likes und Kommentare zeigt Instagram immer an, deshalb Pflicht (leer würde die Interaktionsrate verfälschen)
+const NUM_FIELDS: { name: string; label: string; hint?: string; required?: boolean; placeholder?: string }[] = [
+  { name: "views", label: "Aufrufe", required: true, placeholder: "z. B. 4.100" },
   { name: "reach", label: "Reichweite", hint: "Erreichte Konten" },
-  { name: "likes", label: "Likes" },
-  { name: "comments", label: "Kommentare" },
+  { name: "likes", label: "Likes", required: true },
+  { name: "comments", label: "Kommentare", required: true },
   { name: "shares", label: "Geteilt" },
   { name: "saves", label: "Gespeichert" },
 ];
 
 export function MetricForm({ action, videos, today, videoId }: Props) {
+  const [selected, setSelected] = useState<string>(videoId ? String(videoId) : "");
+  const [day, setDay] = useState(today);
   const groups = new Map<string, VideoOption[]>();
   for (const v of videos) groups.set(v.clientName, [...(groups.get(v.clientName) ?? []), v]);
+  const last = videos.find((v) => String(v.id) === selected)?.last ?? null;
+  const replaces = last && last.day === day;
+
   return (
     <ActionForm action={action} className="grid gap-4">
       <Field label="Video" name="videoId">
-        <Select name="videoId" defaultValue={videoId ?? ""} required>
+        <Select name="videoId" value={selected} onChange={(e) => setSelected(e.target.value)} required>
           <option value="" disabled>
             Video wählen
           </option>
@@ -41,13 +50,24 @@ export function MetricForm({ action, videos, today, videoId }: Props) {
           ))}
         </Select>
       </Field>
-      <Field label="Stand vom" name="measuredOn" hint="Die Werte sind Gesamtstände an diesem Tag, so wie Instagram sie anzeigt.">
-        <Input type="date" name="measuredOn" defaultValue={today} max={today} required />
+      <Field label="Stand vom" name="measuredOn" hint="Gesamtstände an diesem Tag, so wie Instagram sie anzeigt.">
+        <Input type="date" name="measuredOn" value={day} onChange={(e) => setDay(e.target.value)} max={today} required />
       </Field>
+      {last && (
+        <p
+          role="status"
+          className={cn("flex items-start gap-2 rounded-[10px] px-3 py-2 text-[14px]", replaces ? "bg-warn-soft text-warn" : "bg-fill-2 text-ink-2")}
+        >
+          <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+          {replaces
+            ? `Für den ${dateShort(last.day)} gibt es schon Werte (${num(last.views)} Aufrufe). Speichern ersetzt sie.`
+            : `Letzter Stand vom ${dateShort(last.day)}: ${num(last.views)} Aufrufe`}
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         {NUM_FIELDS.map((f) => (
           <Field key={f.name} label={f.label} name={f.name} optional={!f.required} hint={f.hint}>
-            <Input name={f.name} inputMode="numeric" autoComplete="off" placeholder={f.required ? "z. B. 4.100" : ""} required={f.required} />
+            <Input name={f.name} inputMode="numeric" autoComplete="off" placeholder={f.placeholder} required={f.required} />
           </Field>
         ))}
       </div>
@@ -75,7 +95,7 @@ function Inner(props: Props) {
   }, [sp, pathname, router]);
   const pre = Number(sp.get("video")) || props.videoId || null;
   return (
-    <Dialog open={open} onClose={close} title="Zahlen erfassen" description="Aktuellen Stand eines Videos eintragen. Gleicher Tag überschreibt den alten Eintrag." size="lg">
+    <Dialog open={open} onClose={close} title="Zahlen erfassen" description="Ein Eintrag pro Video und Tag. Ein neuer Wert ersetzt den alten." size="lg">
       <MetricForm key={sp.toString()} {...props} videoId={pre} />
     </Dialog>
   );

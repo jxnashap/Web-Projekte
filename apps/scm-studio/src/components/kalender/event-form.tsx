@@ -2,12 +2,12 @@
 // Terminformular (Anlegen und Bearbeiten). Ganztägig blendet die Uhrzeiten aus.
 import { useState } from "react";
 import { ActionForm } from "@/components/ui/action-form";
-import { Field, FormActions, FormGrid, Input, Select, Textarea } from "@/components/ui/field";
+import { Checkbox, Field, FormActions, FormGrid, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { ActionState } from "@/lib/action";
 import { cn } from "@/lib/cn";
-import { EVENT_KINDS } from "@/lib/labels";
 import type { CalendarOptions } from "@/lib/kalender/data";
+import { EVENT_KINDS } from "@/lib/labels";
 
 export type EventDefaults = {
   id?: number;
@@ -29,14 +29,17 @@ export function EventForm({
   action,
   defaults,
   options,
-  submitLabel = "Termin speichern",
+  submitLabel = "Speichern",
   onSaved,
+  view,
 }: {
   action: (prev: ActionState, fd: FormData) => Promise<ActionState>;
   defaults: EventDefaults;
   options: CalendarOptions;
   submitLabel?: string;
   onSaved?: (s: ActionState) => void;
+  /** aktuelle Kalenderansicht (nach dem Anlegen springt der Kalender dorthin) */
+  view?: string;
 }) {
   const [allDay, setAllDay] = useState(Boolean(defaults.allDay));
   const [kind, setKind] = useState(defaults.kind ?? "dreh");
@@ -47,15 +50,16 @@ export function EventForm({
   return (
     <ActionForm action={action} onSuccess={onSaved} className="grid gap-4">
       {defaults.id && <input type="hidden" name="id" value={defaults.id} />}
+      {view && <input type="hidden" name="ansicht" value={view} />}
       <fieldset className="grid gap-2">
-        <legend className="mb-1.5 text-[13px] font-semibold text-ink-2">Art</legend>
-        <div className="grid grid-cols-2 gap-0.5 rounded-control bg-fill p-0.5 sm:inline-grid sm:grid-cols-4" role="radiogroup">
+        <legend className="mb-1.5 text-[13px] font-medium text-ink-2">Art</legend>
+        <div className="grid grid-cols-4 gap-0.5 rounded-[9px] bg-fill p-[2px] sm:inline-grid sm:w-fit">
           {Object.entries(EVENT_KINDS).map(([k, v]) => (
             <label
               key={k}
               className={cn(
-                "flex h-8 cursor-pointer items-center justify-center rounded-[8px] px-3.5 text-[13px] font-semibold transition-all has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/30",
-                kind === k ? "bg-surface text-ink shadow-thumb" : "text-ink-2 hover:text-ink",
+                "flex h-10 cursor-pointer items-center justify-center rounded-[7px] px-1.5 text-[13px] transition-[background-color,box-shadow] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/40 sm:h-8 sm:px-3.5",
+                kind === k ? "bg-surface font-semibold text-ink shadow-[var(--shadow-thumb)]" : "font-medium text-ink hover:bg-fill-2",
               )}
             >
               <input type="radio" name="kind" value={k} checked={kind === k} onChange={() => setKind(k)} className="sr-only" />
@@ -66,7 +70,7 @@ export function EventForm({
       </fieldset>
 
       <FormGrid>
-        <Field label="Kunde" name="clientId" optional={kind !== "dreh"}>
+        <Field label="Kunde" name="clientId" optional={kind !== "dreh"} hint={kind === "dreh" ? "Empfohlen. Ohne Kunde bitte einen Titel angeben." : undefined}>
           <Select name="clientId" defaultValue={defaults.clientId ?? ""}>
             <option value="">Kein Kunde</option>
             {options.clients.map((c) => (
@@ -96,23 +100,16 @@ export function EventForm({
         <Input name="title" defaultValue={defaults.title ?? ""} placeholder={kind === "dreh" ? "z. B. Dreh Azubi-Tag" : "z. B. Kennenlerngespräch"} maxLength={200} />
       </Field>
 
-      <div className="flex flex-wrap gap-x-6 gap-y-2">
-        <label className="inline-flex items-center gap-2 text-sm text-ink-2">
-          <input type="checkbox" name="allDay" className="size-4 accent-[var(--color-accent)]" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} />
-          Ganztägig
-        </label>
-        <label className="inline-flex items-center gap-2 text-sm text-ink-2">
-          <input
-            type="checkbox"
-            className="size-4 accent-[var(--color-accent)]"
-            checked={multiDay}
-            onChange={(e) => {
-              setMultiDay(e.target.checked);
-              if (!e.target.checked) setEndDate(startDate);
-            }}
-          />
-          Mehrere Tage
-        </label>
+      <div className="flex flex-wrap gap-x-6">
+        <Checkbox label="Ganztägig" name="allDay" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} />
+        <Checkbox
+          label="Mehrere Tage"
+          checked={multiDay}
+          onChange={(e) => {
+            setMultiDay(e.target.checked);
+            if (!e.target.checked) setEndDate(startDate);
+          }}
+        />
       </div>
 
       <div className={cn("grid gap-4", multiDay ? "sm:grid-cols-2" : allDay ? "sm:grid-cols-2" : "grid-cols-2 sm:grid-cols-3")}>
@@ -153,16 +150,16 @@ export function EventForm({
 
       {options.team.length > 0 && (
         <fieldset>
-          <legend className="mb-1.5 text-[13px] font-semibold text-ink-2">
-            Team <span className="font-normal text-faint">optional</span>
+          <legend className="mb-1.5 text-[13px] font-medium text-ink-2">
+            Team <span className="ml-1 font-normal text-muted">optional</span>
           </legend>
           <div className="flex flex-wrap gap-2">
             {options.team.map((t) => (
               <label
                 key={t.id}
-                className="flex h-9 cursor-pointer items-center gap-2 rounded-full bg-fill-2 px-3 text-[13px] text-ink-2 transition-colors has-[:checked]:bg-accent-soft has-[:checked]:text-accent-ink has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/30"
+                className="flex h-11 cursor-pointer items-center gap-2 rounded-full bg-fill-2 px-3.5 text-[14px] text-ink-2 transition-colors has-[:checked]:bg-info-soft has-[:checked]:font-medium has-[:checked]:text-info has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/40 sm:h-9 sm:text-[13px]"
               >
-                <input type="checkbox" name="teamIds[]" value={t.id} defaultChecked={defaults.teamIds?.includes(t.id)} className="size-4 accent-[var(--color-accent)]" />
+                <input type="checkbox" name="teamIds[]" value={t.id} defaultChecked={defaults.teamIds?.includes(t.id)} className="size-4 accent-[var(--color-info)]" />
                 {t.name}
               </label>
             ))}

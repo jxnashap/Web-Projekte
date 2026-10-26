@@ -1,12 +1,11 @@
 import { FilePlus2 } from "lucide-react";
-import { ActionButton } from "@/components/ui/confirm-action";
-import { createBlankScript } from "@/lib/skripte/actions";
+import { LinkButton } from "@/components/ui/button";
 
-/** Legt ein leeres Skript nach dem Bauplan an und öffnet es. */
+/** Öffnet ein leeres Skript nach dem Bauplan (angelegt wird erst beim Speichern). */
 export function NewBlankButton() {
   return (
-    <ActionButton action={createBlankScript} variant="secondary" size="md">
+    <LinkButton href="/skripte/leer" variant="secondary">
       <FilePlus2 className="size-4" /> Leeres Skript
-    </ActionButton>
+    </LinkButton>
   );
 }

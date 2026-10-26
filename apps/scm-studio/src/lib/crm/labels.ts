@@ -23,6 +23,16 @@ export function scoreFor(paket?: string | null, start?: string | null): "A" | "B
   return big && start === "sofort" ? "A" : start === "sofort" || start === "1-3" || big ? "B" : "C";
 }
 
+/**
+ * Ist die gespeicherte Bewertung die automatische? Dann rechnet das Studio sie nach Änderungen an Paket
+ * oder Start neu. Eine von Hand gewählte, abweichende Bewertung bleibt dagegen stehen.
+ */
+export function isAutoScore(score: string | null | undefined, paket?: string | null, start?: string | null) {
+  if (!score) return true;
+  if (!paket && !start) return false;
+  return score === scoreFor(paket, start);
+}
+
 export const SCORE_TEXT: Record<string, string> = {
   A: "Großes Paket und schneller Start. Am besten heute zurückrufen.",
   B: "Konkretes Interesse. Innerhalb der zugesagten Antwortzeit melden.",
@@ -57,20 +67,22 @@ export const LEAD_BRANCHEN: Record<string, string> = {
   andere: "Andere Branche",
 };
 
-/** Ruhige Kundenfarben (gut lesbar auf Weiß, unterscheidbar im Kalender) */
-export const CLIENT_COLORS = [
-  "#1F4E79",
-  "#2E7D32",
-  "#3E7C59",
-  "#B5651D",
-  "#8E2A1C",
-  "#6D2E46",
-  "#5B4B8A",
-  "#0F766E",
-  "#A16207",
-  "#E1251B",
-  "#3D3D42",
-];
+/** Ruhige Kundenfarben (gut lesbar auf Weiß, unterscheidbar im Kalender) mit Namen für Screenreader */
+export const CLIENT_COLOR_NAMES: Record<string, string> = {
+  "#1F4E79": "Nachtblau",
+  "#2E7D32": "Grün",
+  "#3E7C59": "Tannengrün",
+  "#B5651D": "Kupfer",
+  "#8E2A1C": "Rostrot",
+  "#6D2E46": "Weinrot",
+  "#5B4B8A": "Violett",
+  "#0F766E": "Petrol",
+  "#A16207": "Ocker",
+  "#E1251B": "Signalrot",
+  "#3D3D42": "Anthrazit",
+};
+export const CLIENT_COLORS = Object.keys(CLIENT_COLOR_NAMES);
+export const colorName = (hex: string) => CLIENT_COLOR_NAMES[hex.toUpperCase()] ?? "Eigene Farbe";
 
 /** Deutsche Nummer für tel: und wa.me (0431 … → +49431 …), wie auf der Website. */
 export function intlPhone(tel: string): string {
@@ -90,6 +102,9 @@ export const hasPhone = (tel?: string | null): tel is string => Boolean(tel && t
 export const igHref = (handle: string) => `https://www.instagram.com/${handle.replace(/^@/, "")}/`;
 export const tiktokHref = (handle: string) => `https://www.tiktok.com/@${handle.replace(/^@/, "")}`;
 export const webHref = (url: string) => (/^https?:\/\//.test(url) ? url : `https://${url}`);
+
+/** Alter in ganzen Tagen (z. B. für die 12-Monats-Frist bei Anfragen ohne Auftrag) */
+export const ageInDays = (d: Date, now = Date.now()) => Math.floor((now - d.getTime()) / 86_400_000);
 
 /** Aufrufe lesbar: bis 9.999 genau, darüber kompakt (12.400 → 12,4 Tsd.) */
 export const views = (n: number) =>

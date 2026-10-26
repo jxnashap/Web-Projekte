@@ -7,7 +7,8 @@ import { DemoNote, fmtDate } from "./common";
 import type { RenderCtx } from "./types";
 
 const nf = new Intl.NumberFormat("de-DE");
-const pf = new Intl.NumberFormat("de-DE", { style: "percent", maximumFractionDigits: 1 });
+// Raten immer mit einer Nachkommastelle (3,0 % neben 3,7 %), Veränderungen ebenso
+const pf = new Intl.NumberFormat("de-DE", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const monthName = (ym: string) => new Intl.DateTimeFormat("de-DE", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${ym}-15T12:00:00Z`));
 
 function delta(cur: number, prev: number): string {
@@ -112,13 +113,13 @@ export function MonatsberichtPdf({ ctx }: { ctx: RenderCtx }) {
                 <P>In diesem Monat gab es keine Videos.</P>
               )}
             </Section>
-            <Section title="Vormonat zum Vergleich">
-              <P>
-                {r.prevTotals.videos
-                  ? `${r.prevTotals.videos} ${r.prevTotals.videos === 1 ? "Video" : "Videos"} online, ${nf.format(r.prevTotals.views)} Aufrufe, ${nf.format(r.prevTotals.interactions)} Interaktionen, Interaktionsrate ${pf.format(rate(r.prevTotals))}.`
-                  : "Im Vormonat wurden keine Videos veröffentlicht oder es liegen keine Zahlen vor."}
-              </P>
-            </Section>
+            {r.prevTotals.videos ? (
+              <Section title="Vormonat zum Vergleich">
+                <P>
+                  {`${r.prevTotals.videos} ${r.prevTotals.videos === 1 ? "Video" : "Videos"} online, ${nf.format(r.prevTotals.views)} Aufrufe, ${nf.format(r.prevTotals.interactions)} Interaktionen, Interaktionsrate ${pf.format(rate(r.prevTotals))}.`}
+                </P>
+              </Section>
+            ) : null}
             {d.ausblick ? (
               <Section title="Ausblick">
                 <P>{d.ausblick}</P>

@@ -1,13 +1,14 @@
 "use server";
 // Server Actions für Anfragen und Kunden: prüfen Anmeldung und Eingaben, schreiben ins Protokoll
 // und aktualisieren danach die Ansicht (refresh).
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull, notInArray } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { getDb, schema } from "@/db";
 import { type ActionState, done, fail, parseForm } from "@/lib/action";
 import { audit } from "@/lib/audit";
 import { assertUser } from "@/lib/auth";
-import { BRANCHEN, LEAD_STAGES } from "@/lib/labels";
+import { saveEvent } from "@/lib/kalender/actions";
+import { LEAD_STAGES } from "@/lib/labels";
 import { clientDependencies } from "./data";
 import { CLIENT_COLORS, scoreFor } from "./labels";
 import { type ClientInput, clientSchema, convertSchema, type LeadInput, leadSchema, lostSchema, notesSchema, STAGE_KEYS } from "./schemas";
@@ -16,10 +17,13 @@ const { leads, clients } = schema;
 
 const nul = <T,>(v: T | undefined) => (v === undefined ? null : v);
 
+/** Abgeschlossene Stufen setzen nur eigene Abläufe: Gewonnen über "Zum Kunden machen", Verloren mit Grund. */
+const CLOSED = ["gewonnen", "verloren"];
+
 function leadValues(d: LeadInput) {
   const score = !d.score || d.score === "auto" ? (d.packageInterest || d.startWish ? scoreFor(d.packageInterest, d.startWish) : null) : d.score;
   return {
-    name: d.name,
+    name: d.name ?? d.company,
     company: d.company,
     branche: nul(d.branche),
     ort: nul(d.ort),
@@ -37,6 +41,8 @@ function leadValues(d: LeadInput) {
   };
 }
 
+const stageLabel = (key: string) => LEAD_STAGES.find((s) => s.key === key)?.label ?? key;
+
 // ------------------------------------------------------------------
 // Anfragen
 // ------------------------------------------------------------------
@@ -45,9 +51,10 @@ export async function createLead(_: ActionState, fd: FormData): Promise<ActionSt
   const p = parseForm(leadSchema, fd);
   if (!p.success) return p.state;
   const db = await getDb();
+  const stage = p.data.stage && !CLOSED.includes(p.data.stage) ? p.data.stage : "neu";
   const [row] = await db
     .insert(leads)
-    .values({ ...leadValues(p.data), stage: p.data.stage ?? "neu" })
+    .values({ ...leadValues(p.data), stage })
     .returning({ id: leads.id });
   await audit(user.id, "lead", row.id, "angelegt", { firma: p.data.company });
   refresh();
@@ -60,11 +67,8 @@ export async function updateLead(id: number, _: ActionState, fd: FormData): Prom
   if (!p.success) return p.state;
   const db = await getDb();
   const values = leadValues(p.data);
-  const [row] = await db
-    .update(leads)
-    .set({ ...values, ...(p.data.stage ? { stage: p.data.stage } : {}), updatedAt: new Date() })
-    .where(eq(leads.id, id))
-    .returning({ id: leads.id });
+  // Die Stufe ändert sich nur über setLeadStage, convertLead und markLeadLost
+  const [row] = await db.update(leads).set({ ...values, updatedAt: new Date() }).where(eq(leads.id, id)).returning({ id: leads.id });
   if (!row) return fail("Anfrage nicht gefunden");
   await audit(user.id, "lead", id, "geändert");
   refresh();
@@ -74,15 +78,21 @@ export async function updateLead(id: number, _: ActionState, fd: FormData): Prom
 export async function setLeadStage(id: number, stage: string): Promise<ActionState> {
   const user = await assertUser();
   if (!STAGE_KEYS.includes(stage)) return fail("Unbekannte Stufe");
+  if (stage === "gewonnen") return fail("Gewonnen wird eine Anfrage über „Zum Kunden machen“.");
+  if (stage === "verloren") return fail("Für „Verloren“ bitte einen Grund angeben.");
   const db = await getDb();
-  const [before] = await db.select({ stage: leads.stage, company: leads.company }).from(leads).where(eq(leads.id, id));
+  const [before] = await db.select({ stage: leads.stage, company: leads.company, clientId: leads.clientId }).from(leads).where(eq(leads.id, id));
   if (!before) return fail("Anfrage nicht gefunden");
+  if (before.clientId) return fail(`${before.company} ist schon Kunde. Die Stufe bleibt „Gewonnen“.`);
   if (before.stage === stage) return done("Unverändert");
-  await db.update(leads).set({ stage, updatedAt: new Date() }).where(eq(leads.id, id));
+  // Wer eine verlorene Anfrage wieder aufnimmt, braucht den alten Grund nicht mehr als Status
+  await db
+    .update(leads)
+    .set({ stage, ...(before.stage === "verloren" ? { lostReason: null } : {}), updatedAt: new Date() })
+    .where(eq(leads.id, id));
   await audit(user.id, "lead", id, "stufe", { von: before.stage, nach: stage });
   refresh();
-  const label = LEAD_STAGES.find((s) => s.key === stage)?.label ?? stage;
-  return done(`${before.company}: ${label}`);
+  return done(`${before.company}: ${stageLabel(stage)}`);
 }
 
 export async function markLeadLost(id: number, _: ActionState, fd: FormData): Promise<ActionState> {
@@ -90,23 +100,30 @@ export async function markLeadLost(id: number, _: ActionState, fd: FormData): Pr
   const p = parseForm(lostSchema, fd);
   if (!p.success) return p.state;
   const db = await getDb();
+  const [before] = await db.select({ company: leads.company, clientId: leads.clientId }).from(leads).where(eq(leads.id, id));
+  if (!before) return fail("Anfrage nicht gefunden");
+  if (before.clientId) return fail(`${before.company} ist schon Kunde. Beendet die Zusammenarbeit beim Kunden.`);
   await db
     .update(leads)
     .set({ stage: "verloren", lostReason: p.data.lostReason, nextStep: null, nextStepAt: null, updatedAt: new Date() })
     .where(eq(leads.id, id));
   await audit(user.id, "lead", id, "verloren", { grund: p.data.lostReason });
-  // Neu laden per Navigation statt refresh(): der Dialog mit diesem Formular verschwindet danach,
-  // die Rückmeldung (Toast) soll trotzdem noch erscheinen.
-  return done("Als verloren markiert", { redirectTo: `/anfragen/${id}` });
+  refresh();
+  return done(`${before.company}: als verloren markiert`);
 }
 
 export async function reopenLead(id: number): Promise<ActionState> {
   const user = await assertUser();
   const db = await getDb();
-  await db.update(leads).set({ stage: "kontaktiert", lostReason: null, updatedAt: new Date() }).where(eq(leads.id, id));
+  const [row] = await db
+    .update(leads)
+    .set({ stage: "kontaktiert", lostReason: null, updatedAt: new Date() })
+    .where(and(eq(leads.id, id), isNull(leads.clientId)))
+    .returning({ company: leads.company });
+  if (!row) return fail("Anfrage nicht gefunden oder schon Kunde");
   await audit(user.id, "lead", id, "wieder_geoeffnet");
   refresh();
-  return done("Anfrage wieder geöffnet");
+  return done(`${row.company}: wieder geöffnet, Stufe Kontaktiert`);
 }
 
 /** Aus einer Anfrage einen Kunden machen (Stufe "Gewonnen", Verknüpfung bleibt erhalten). */
@@ -125,25 +142,52 @@ export async function convertLead(id: number, _: ActionState, fd: FormData): Pro
       .insert(clients)
       .values({
         name: p.data.name,
-        branche: lead.branche && lead.branche in BRANCHEN ? lead.branche : "unternehmen",
+        branche: p.data.branche,
         status: p.data.status,
         ort: lead.ort,
         city: lead.ort,
-        contactName: lead.name,
+        contactName: lead.name !== lead.company ? lead.name : null,
         email: lead.email,
         phone: lead.phone,
-        packageVideos: p.data.packageVideos ?? null,
+        // Testkunden haben noch kein Paket und damit kein Kontingent
+        packageVideos: p.data.status === "aktiv" ? (p.data.packageVideos ?? null) : null,
         color,
         notes: lead.notes ? `Aus Anfrage übernommen:\n${lead.notes}` : null,
       })
       .returning({ id: clients.id });
-    await tx.update(leads).set({ stage: "gewonnen", clientId: c.id, updatedAt: new Date() }).where(eq(leads.id, id));
+    await tx
+      .update(leads)
+      .set({ stage: "gewonnen", clientId: c.id, lostReason: null, nextStep: null, nextStepAt: null, updatedAt: new Date() })
+      .where(eq(leads.id, id));
     return c.id;
   });
   await audit(user.id, "client", clientId, "angelegt", { ausAnfrage: id });
   await audit(user.id, "lead", id, "umgewandelt", { kunde: clientId });
-  // kein refresh(): sonst verschwindet der Dialog vor der Weiterleitung zum neuen Kunden
+  // kein refresh(): die Weiterleitung zum neuen Kunden lädt ohnehin frisch
   return done(`${p.data.name} ist jetzt Kunde`, { redirectTo: `/kunden/${clientId}`, id: clientId });
+}
+
+/**
+ * Termin zu einer Anfrage anlegen (Formular aus dem Kalender, direkt auf der Anfrage).
+ * Danach wird der Termin zum nächsten Schritt der Anfrage, solange sie offen ist.
+ */
+export async function addLeadEvent(id: number, prev: ActionState, fd: FormData): Promise<ActionState> {
+  const user = await assertUser();
+  const r = await saveEvent(prev, fd);
+  if (!r.ok) return r;
+  if (Number(fd.get("leadId")) === id) {
+    const title = String(fd.get("title") ?? "").trim();
+    const day = String(fd.get("startDate") ?? "");
+    const db = await getDb();
+    const [row] = await db
+      .update(leads)
+      .set({ nextStep: title || "Termin", nextStepAt: /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null, updatedAt: new Date() })
+      .where(and(eq(leads.id, id), notInArray(leads.stage, CLOSED)))
+      .returning({ id: leads.id });
+    if (row) await audit(user.id, "lead", id, "geändert", { naechsterSchritt: title });
+  }
+  refresh();
+  return done("Termin angelegt und als nächster Schritt eingetragen", { id: r.id });
 }
 
 export async function deleteLead(id: number): Promise<ActionState> {
@@ -247,14 +291,14 @@ export async function setClientStatus(id: number, status: string): Promise<Actio
   if (!row) return fail("Kunde nicht gefunden");
   await audit(user.id, "client", id, "status", { status });
   refresh();
-  return done(status === "beendet" ? `${row.name} ist beendet` : "Status geändert");
+  return done(status === "beendet" ? `${row.name}: Zusammenarbeit beendet` : `${row.name}: Status geändert`);
 }
 
 /** Löschen nur ohne abhängige Daten (Videos, Rechnungen, Dokumente, Termine, Belege, Skripte). */
 export async function deleteClient(id: number): Promise<ActionState> {
   const user = await assertUser();
   const deps = await clientDependencies(id);
-  if (deps > 0) return fail("Zu diesem Kunden gibt es schon Videos, Termine, Rechnungen oder Dokumente. Setzt den Status auf „Beendet“.");
+  if (deps > 0) return fail("Zu diesem Kunden gibt es schon Videos, Termine, Rechnungen oder Dokumente. Beendet stattdessen die Zusammenarbeit.");
   const db = await getDb();
   const [row] = await db.delete(clients).where(eq(clients.id, id)).returning({ name: clients.name });
   if (!row) return fail("Kunde nicht gefunden");

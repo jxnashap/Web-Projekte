@@ -1,12 +1,51 @@
 // Drehplan im Drehbuch-Look: Szenen in Courier Prime, sonst ruhiges Weiß mit Logo. Sprache: ihr-Form (Team und Kunde).
 import { Text, View } from "@react-pdf/renderer";
-import { KeyValues, P, PdfDocument, PdfPage, PdfTable, s, Section, Title } from "@/lib/pdf/components";
-import { C, MM } from "@/lib/pdf/theme";
+import { KeyValues, P, PdfDocument, PdfPage, s, Section, Title } from "@/lib/pdf/components";
+import { C, MM, PAGE } from "@/lib/pdf/theme";
 import { lines, type DrehplanData } from "../schema";
 import { Bullets, CheckRow, DemoNote, fmtDate } from "./common";
 import type { RenderCtx } from "./types";
 
 const weekday = (iso: string) => new Intl.DateTimeFormat("de-DE", { weekday: "long", timeZone: "UTC" }).format(new Date(`${iso}T12:00:00Z`));
+
+// Tabellen mit festen Breiten in Punkt (aus der Inhaltsbreite), Abstand als Rand am Text: Prozentbreiten mit
+// Innenabstand am View misst react-pdf zu schmal, dann brechen Wörter mitten im Wort um.
+const CONTENT_W = 595.28 - 2 * PAGE.marginX;
+const GAP = 10;
+type ColDef = { label: string; width: number };
+/** Restbreite für die flexible Spalte */
+const rest = (...fixed: number[]) => CONTENT_W - fixed.reduce((a, b) => a + b + GAP, 0);
+
+function TableHead({ cols }: { cols: ColDef[] }) {
+  return (
+    <View fixed style={{ flexDirection: "row", borderBottomWidth: 0.8, borderBottomColor: C.ink, paddingBottom: 4, marginBottom: 2 }}>
+      {cols.map((c, i) => (
+        <Text key={c.label} style={[s.label, { width: c.width }, i < cols.length - 1 ? { marginRight: GAP } : {}]}>
+          {c.label}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
+function TableRow({ children }: { children: React.ReactNode }) {
+  return (
+    <View wrap={false} style={{ flexDirection: "row", paddingVertical: 5, borderBottomWidth: 0.5, borderBottomColor: C.line }}>
+      {children}
+    </View>
+  );
+}
+
+const W = { tc: 36, label: 78, shot: 128, zeit: 60 };
+const W_TEXT = rest(W.tc, W.label, W.shot);
+const W_WAS = rest(W.zeit);
+const SCRIPT_COLS: ColDef[] = [
+  { label: "TC", width: W.tc },
+  { label: "Abschnitt", width: W.label },
+  { label: "Inhalt", width: W_TEXT },
+  { label: "Einstellung", width: W.shot },
+];
+const scriptText = { fontFamily: "Courier Prime", fontSize: 8.5, lineHeight: 1.4, color: C.ink };
 
 export function DrehplanPdf({ ctx }: { ctx: RenderCtx }) {
   const d = ctx.doc.data as unknown as DrehplanData;
@@ -40,7 +79,13 @@ export function DrehplanPdf({ ctx }: { ctx: RenderCtx }) {
         </Section>
         {plan.length ? (
           <Section title="Zeitplan">
-            <PdfTable cols={[{ key: "z", label: "Zeit", width: "18%", render: (r: { zeit: string; was: string }) => r.zeit }, { key: "w", label: "Was", width: "82%", render: (r) => r.was }]} rows={plan} />
+            <TableHead cols={[{ label: "Zeit", width: W.zeit }, { label: "Was", width: W_WAS }]} />
+            {plan.map((r, i) => (
+              <TableRow key={i}>
+                <Text style={[s.p, { width: W.zeit, marginRight: GAP, color: C.ink }]}>{r.zeit}</Text>
+                <Text style={[s.p, { width: W_WAS, color: C.ink }]}>{r.was}</Text>
+              </TableRow>
+            ))}
           </Section>
         ) : null}
         {snap.videos.map((v, i) => (
@@ -56,15 +101,17 @@ export function DrehplanPdf({ ctx }: { ctx: RenderCtx }) {
                   <Text style={[s.mono, { fontSize: 9.5, color: C.ink, marginBottom: 4, lineHeight: 1.45 }]}>{`HOOK: ${v.script.hook}`}</Text>
                 ) : null}
                 {v.script.beats.length ? (
-                  <PdfTable
-                    cols={[
-                      { key: "tc", label: "TC", width: "11%", render: (b: { tc: string; label: string; text: string; shot?: string }) => <Text style={[s.mono, { fontSize: 8.5, color: C.ink }]}>{b.tc}</Text> },
-                      { key: "l", label: "Abschnitt", width: "18%", render: (b) => <Text style={[s.mono, { fontSize: 8.5, color: C.muted, textTransform: "uppercase" }]}>{b.label}</Text> },
-                      { key: "t", label: "Inhalt", width: "48%", render: (b) => <Text style={[s.mono, { fontSize: 9, color: C.ink, lineHeight: 1.4 }]}>{b.text}</Text> },
-                      { key: "e", label: "Einstellung", width: "23%", render: (b) => <Text style={[s.mono, { fontSize: 8.5, color: C.ink2, lineHeight: 1.4 }]}>{b.shot ?? ""}</Text> },
-                    ]}
-                    rows={v.script.beats}
-                  />
+                  <View>
+                    <TableHead cols={SCRIPT_COLS} />
+                    {v.script.beats.map((b, j) => (
+                      <TableRow key={j}>
+                        <Text style={[scriptText, { width: W.tc, marginRight: GAP }]}>{b.tc}</Text>
+                        <Text style={[scriptText, { width: W.label, marginRight: GAP, color: C.muted, textTransform: "uppercase" }]}>{b.label}</Text>
+                        <Text style={[scriptText, { width: W_TEXT, marginRight: GAP }]}>{b.text}</Text>
+                        <Text style={[scriptText, { width: W.shot, color: C.ink2 }]}>{b.shot ?? ""}</Text>
+                      </TableRow>
+                    ))}
+                  </View>
                 ) : null}
               </View>
             ) : (

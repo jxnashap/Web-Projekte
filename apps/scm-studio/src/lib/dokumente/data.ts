@@ -1,6 +1,6 @@
 // Datenzugriff für Dokumente (nur Server). Jede Funktion prüft die Anmeldung.
 import "server-only";
-import { and, asc, desc, eq, gte, inArray, lte, or, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lte, ne, or, type SQL } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import type { Client, Doc } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
@@ -11,6 +11,8 @@ import {
   interactionsOf,
   isDocKind,
   LEGAL_TEMPLATE_VERSION,
+  matchesStatus,
+  STATUS_FILTER,
   type DrehplanData,
   type DrehplanSnapshot,
   type PartySnapshot,
@@ -29,13 +31,17 @@ export async function isLegalApproved() {
 
 export type DocRow = Doc & { clientName: string | null; clientColor: string | null };
 
+/**
+ * Dokumente für die Liste. Kunde filtert die Datenbank, Status (nach STATUS_FILTER, je Art anders benannt)
+ * und Suche filtern im Speicher. Die Art filtert die Seite selbst, damit die Zähler der Reiter zu den übrigen
+ * Filtern passen.
+ */
 export async function listDocuments(f: { art?: string; kunde?: number; status?: string; q?: string }): Promise<DocRow[]> {
   await requireUser();
   const db = await getDb();
   const where: SQL[] = [];
   if (f.art && isDocKind(f.art)) where.push(eq(schema.documents.kind, f.art));
   if (f.kunde) where.push(eq(schema.documents.clientId, f.kunde));
-  if (f.status && ["entwurf", "final", "unterschrieben"].includes(f.status)) where.push(eq(schema.documents.status, f.status));
   const rows = await db
     .select({ d: schema.documents, clientName: schema.clients.name, clientColor: schema.clients.color })
     .from(schema.documents)
@@ -45,14 +51,8 @@ export async function listDocuments(f: { art?: string; kunde?: number; status?: 
   const q = f.q?.trim().toLowerCase();
   return rows
     .map((r) => ({ ...r.d, clientName: r.clientName, clientColor: r.clientColor }))
+    .filter((d) => !f.status || !(f.status in STATUS_FILTER) || matchesStatus(d, f.status))
     .filter((d) => !q || d.title.toLowerCase().includes(q) || (d.clientName ?? "").toLowerCase().includes(q) || (d.signerName ?? "").toLowerCase().includes(q));
-}
-
-export async function countByKind(): Promise<Record<string, number>> {
-  await requireUser();
-  const db = await getDb();
-  const rows = await db.select({ kind: schema.documents.kind }).from(schema.documents);
-  return rows.reduce<Record<string, number>>((acc, r) => ((acc[r.kind] = (acc[r.kind] ?? 0) + 1), acc), {});
 }
 
 export async function getDocument(id: number): Promise<{ doc: Doc; client: Client | null } | null> {
@@ -119,13 +119,6 @@ export async function getShootEvents(clientId?: number | null) {
     .leftJoin(schema.clients, eq(schema.events.clientId, schema.clients.id))
     .where(and(...where))
     .orderBy(asc(schema.events.startsAt));
-}
-
-/** Einwilligungs-Register: alle Einwilligungen mit Person, Zwecken, Status, Widerruf. */
-export async function getConsentRegister() {
-  await requireUser();
-  const docs = await listDocuments({ art: "einwilligung" });
-  return docs;
 }
 
 // ------------------------------------------------------------------
@@ -245,13 +238,15 @@ export async function buildReportSnapshot(clientId: number, month: string): Prom
   };
 }
 
-export async function getRecentAudit(limit = 25) {
+/** Letzte Einträge des Änderungsprotokolls; Anmeldungen nur auf Wunsch (sie füllen die Liste sonst schnell). */
+export async function getRecentAudit(limit = 25, opts: { withLogins?: boolean } = {}) {
   await requireUser();
   const db = await getDb();
   return db
     .select({ a: schema.auditLog, userName: schema.teamMembers.name })
     .from(schema.auditLog)
     .leftJoin(schema.teamMembers, eq(schema.auditLog.userId, schema.teamMembers.id))
+    .where(opts.withLogins ? undefined : ne(schema.auditLog.entity, "session"))
     .orderBy(desc(schema.auditLog.id))
     .limit(limit);
 }

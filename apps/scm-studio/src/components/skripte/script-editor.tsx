@@ -1,45 +1,78 @@
 "use client";
-// Skript-Editor: Kopf, Hook, Ablauf (Beats) mit Timecode, Abschnitt, Text und Einstellung, Caption und Aufruf.
+// Skript-Editor: Titel, Kunde, Format, Ablauf (Schritte) mit Zeit, Abschnitt, Text und Einstellung, Caption.
+// Hook und Aufruf sind die Texte der Abschnitte „Hook“ und „Aufruf“ (eine Quelle der Wahrheit).
+// Der Status wird nicht hier geführt, sondern über den Seitenkopf: „Als fertig markieren“ speichert die Eingaben mit
+// (versteckte Knöpfe mit intent=final/entwurf/duplizieren, siehe ScriptHeaderActions).
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActionForm } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
 import { Field, FormGrid, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { ActionState } from "@/lib/action";
-import { BAUPLAN, FORMATS } from "@/lib/skripte/schema";
+import { cn } from "@/lib/cn";
+import { BAUPLAN, FORMATS, mergeHookAndCta, tc, toSec } from "@/lib/skripte/schema";
+import { useLeaveGuard } from "./use-leave-guard";
 
 type Beat = { key: number; tc: string; label: string; text: string; shot: string };
-type ScriptData = {
+export type ScriptData = {
   title: string;
   format: string | null;
   hook: string | null;
   beats: { tc: string; label: string; text: string; shot?: string }[];
   caption: string | null;
   cta: string | null;
-  status: string;
   clientId: number | null;
 };
 
-const toSec = (tc: string) => {
-  const [m, s] = tc.split(":").map(Number);
-  return Number.isFinite(m) && Number.isFinite(s) ? m * 60 + s : 0;
-};
-const toTc = (sec: number) => `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
-const mini = "grid size-8 place-items-center rounded-full text-muted hover:bg-sunken hover:text-ink disabled:opacity-30";
+
+// Kleine Symbolknöpfe: auf dem Handy 44 px, am Computer 32 px
+const mini =
+  "grid size-11 place-items-center rounded-full text-muted transition-colors hover:bg-fill hover:text-ink disabled:opacity-30 disabled:hover:bg-transparent sm:size-8";
+
+/** Textfelder wachsen mit dem Inhalt: per CSS (field-sizing), in älteren Browsern per Skript. */
+function fitTextarea(el: HTMLTextAreaElement) {
+  if (typeof CSS !== "undefined" && CSS.supports("field-sizing", "content")) return;
+  el.style.height = "auto";
+  el.style.height = `${el.scrollHeight + 2}px`;
+}
+function useAutoGrow(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    ref.current?.querySelectorAll("textarea").forEach(fitTextarea);
+  });
+}
 
 export function ScriptEditor({
   action,
   script,
   clients,
+  isNew = false,
+  formId,
 }: {
   action: (prev: ActionState, fd: FormData) => Promise<ActionState>;
   script: ScriptData;
   clients: { id: number; name: string }[];
+  /** neues Skript: wird erst beim Speichern angelegt */
+  isNew?: boolean;
+  formId: string;
 }) {
-  const [beats, setBeats] = useState<Beat[]>(() => script.beats.map((b, i) => ({ key: i + 1, tc: b.tc, label: b.label, text: b.text, shot: b.shot ?? "" })));
-  const keyRef = useRef(script.beats.length + 1);
+  const [beats, setBeats] = useState<Beat[]>(() =>
+    mergeHookAndCta(script.beats, script.hook, script.cta).map((b, i) => ({ key: i + 1, tc: b.tc, label: b.label, text: b.text, shot: b.shot ?? "" })),
+  );
+  const keyRef = useRef(beats.length + 1);
   const [dirty, setDirty] = useState(false);
+  const areaRef = useRef<HTMLDivElement>(null);
+  useAutoGrow(areaRef);
+
+  // Neues Skript: Titel am Computer gleich markiert (auf Touch-Geräten keine Tastatur, die ungefragt hochspringt)
+  useEffect(() => {
+    if (!isNew || !window.matchMedia("(pointer: fine)").matches) return;
+    const title = areaRef.current?.querySelector<HTMLInputElement>('input[name="title"]');
+    title?.focus();
+    title?.select();
+  }, [isNew]);
+
+  useLeaveGuard(dirty);
 
   const update = (key: number, patch: Partial<Beat>) => {
     setBeats((bs) => bs.map((b) => (b.key === key ? { ...b, ...patch } : b)));
@@ -62,19 +95,34 @@ export function ScriptEditor({
     const key = keyRef.current++;
     setBeats((bs) => {
       const last = bs[bs.length - 1];
-      const tc = last ? toTc(toSec(last.tc) + 4) : "00:00";
+      const at = last ? tc((toSec(last.tc) ?? 0) + 4) : "00:00";
       const label = BAUPLAN[Math.min(bs.length, BAUPLAN.length - 1)];
-      return [...bs, { key, tc, label, text: "", shot: "" }];
+      return [...bs, { key, tc: at, label, text: "", shot: "" }];
     });
     setDirty(true);
+    // neues Textfeld fokussieren
+    requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>(`#${CSS.escape(formId)} li:last-child textarea`)?.focus());
   };
 
   return (
-    <ActionForm action={action} onSuccess={() => setDirty(false)} className="grid gap-6">
-      <div onInput={() => setDirty(true)} className="grid gap-6">
+    <ActionForm action={action} id={formId} onSuccess={() => setDirty(false)} className="grid gap-6">
+      <div
+        ref={areaRef}
+        onInput={(e) => {
+          setDirty(true);
+          if (e.target instanceof HTMLTextAreaElement) fitTextarea(e.target);
+        }}
+        data-dirty={dirty ? "true" : "false"}
+        className="grid gap-6"
+      >
         <FormGrid>
           <Field label="Titel" name="title" className="sm:col-span-2">
-            <Input name="title" defaultValue={script.title} required className="text-[16px] font-semibold" />
+            <Input
+              name="title"
+              defaultValue={script.title}
+              required
+              className="text-[16px] font-semibold"
+            />
           </Field>
           <Field label="Kunde" name="clientId" optional>
             <Select name="clientId" defaultValue={String(script.clientId ?? "")}>
@@ -87,28 +135,21 @@ export function ScriptEditor({
             </Select>
           </Field>
           <Field label="Format" name="format" optional>
-            <Input name="format" list="skript-formate" defaultValue={script.format ?? ""} />
+            <Input name="format" list="skript-formate" defaultValue={script.format ?? ""} placeholder="z. B. Kunden-Sketch" />
             <datalist id="skript-formate">
               {FORMATS.map((f) => (
                 <option key={f} value={f} />
               ))}
             </datalist>
           </Field>
-          <Field label="Status" name="status">
-            <Select name="status" defaultValue={script.status}>
-              <option value="entwurf">Entwurf</option>
-              <option value="final">Final</option>
-            </Select>
-          </Field>
-          <Field label="Hook" name="hook" className="sm:col-span-2" hint="Der erste Satz oder Text im Bild. Entscheidet in zwei Sekunden, ob jemand bleibt.">
-            <Textarea name="hook" defaultValue={script.hook ?? ""} className="min-h-16" />
-          </Field>
         </FormGrid>
 
         <fieldset className="grid gap-3">
-          <legend className="mb-2 flex w-full items-baseline justify-between gap-3">
-            <span className="text-[15px] font-semibold text-ink">Ablauf</span>
-            <span className="text-[12px] text-muted">Bauplan: {BAUPLAN.join(", ")}</span>
+          <legend className="mb-2 grid w-full gap-0.5">
+            <span className="text-[17px] font-semibold tracking-[-0.02em] text-ink">Ablauf</span>
+            <span className="text-[13px] text-muted">
+              Bauplan: {BAUPLAN.join(", ")}. Der Text im Abschnitt Hook ist der Hook, der im Abschnitt Aufruf der Aufruf am Ende.
+            </span>
           </legend>
           <datalist id="bauplan-abschnitte">
             {BAUPLAN.map((b) => (
@@ -117,86 +158,95 @@ export function ScriptEditor({
           </datalist>
           <ol className="grid gap-3">
             {beats.map((b, i) => (
-              <li key={b.key} className="rounded-xl bg-sunken/60 p-3 sm:p-4">
+              <li key={b.key} className="squircle grid gap-2 rounded-[14px] bg-sunken p-3 sm:p-4">
                 <div className="flex flex-wrap items-end gap-2">
-                  <label className="grid w-20 gap-1">
+                  <label className="grid w-[84px] gap-1">
                     <span className="text-[12px] font-medium text-muted">Zeit</span>
                     <Input
                       value={b.tc}
                       onChange={(e) => update(b.key, { tc: e.target.value })}
-                      pattern="\d{2}:\d{2}"
+                      inputMode="numeric"
                       placeholder="00:00"
-                      className="tabular-nums"
-                      aria-label={`Timecode Beat ${i + 1}`}
+                      className="bg-surface tabular-nums"
+                      aria-label={`Zeit Schritt ${i + 1}`}
                     />
                   </label>
-                  <label className="grid min-w-0 flex-1 gap-1 sm:max-w-56">
+                  <label className="grid min-w-0 flex-1 gap-1 sm:max-w-64">
                     <span className="text-[12px] font-medium text-muted">Abschnitt</span>
                     <Input
                       value={b.label}
                       onChange={(e) => update(b.key, { label: e.target.value })}
                       list="bauplan-abschnitte"
-                      className="font-semibold"
-                      aria-label={`Abschnitt Beat ${i + 1}`}
+                      className="bg-surface font-semibold"
+                      aria-label={`Abschnitt Schritt ${i + 1}`}
                     />
                   </label>
-                  <div className="ml-auto flex items-center">
-                    <button type="button" className={mini} onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Beat ${i + 1} nach oben`}>
-                      <ArrowUp className="size-4" />
-                    </button>
-                    <button type="button" className={mini} onClick={() => move(i, 1)} disabled={i === beats.length - 1} aria-label={`Beat ${i + 1} nach unten`}>
-                      <ArrowDown className="size-4" />
-                    </button>
-                    <button type="button" className={mini} onClick={() => remove(b.key)} aria-label={`Beat ${i + 1} entfernen`}>
-                      <Trash2 className="size-4" />
-                    </button>
+                  <div className="flex items-center max-sm:order-first max-sm:-mt-1 max-sm:w-full max-sm:justify-between sm:ml-auto">
+                    <span className="text-[13px] font-semibold text-muted sm:hidden">Schritt {i + 1}</span>
+                    <div className="flex items-center">
+                      <button type="button" className={mini} onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Schritt ${i + 1} nach oben`}>
+                        <ArrowUp className="size-4" />
+                      </button>
+                      <button type="button" className={mini} onClick={() => move(i, 1)} disabled={i === beats.length - 1} aria-label={`Schritt ${i + 1} nach unten`}>
+                        <ArrowDown className="size-4" />
+                      </button>
+                      <button type="button" className={mini} onClick={() => remove(b.key)} aria-label={`Schritt ${i + 1} entfernen`}>
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <label className="mt-2 grid gap-1">
-                  <span className="sr-only">Text Beat {i + 1}</span>
+                <label className="grid gap-1">
+                  <span className="sr-only">Text Schritt {i + 1}</span>
                   <Textarea
                     value={b.text}
                     onChange={(e) => update(b.key, { text: e.target.value })}
                     placeholder="Was gesagt wird oder im Bild steht"
-                    className="min-h-16"
+                    rows={2}
+                    className="field-sizing-content min-h-[72px] resize-none bg-surface"
                   />
                 </label>
-                <label className="mt-2 grid gap-1">
-                  <span className="sr-only">Einstellung Beat {i + 1}</span>
-                  <Input
+                <label className="grid gap-1">
+                  <span className="sr-only">Einstellung Schritt {i + 1}</span>
+                  <Textarea
                     value={b.shot}
                     onChange={(e) => update(b.key, { shot: e.target.value })}
-                    placeholder="Einstellung, z. B. Halbnah, Gegenschuss"
-                   
+                    placeholder="Einstellung, z. B. Halbnah"
+                    rows={1}
+                    className="field-sizing-content min-h-11 resize-none bg-surface py-[9px] text-[15px] text-ink-2 sm:min-h-10 sm:text-[14px]"
                   />
                 </label>
               </li>
             ))}
           </ol>
+          {beats.length === 0 && <p className="rounded-[14px] bg-fill-2 px-4 py-6 text-center text-[15px] text-muted">Noch kein Ablauf. Fügt den ersten Schritt hinzu.</p>}
           <div>
-            <Button type="button" variant="secondary" size="sm" onClick={add}>
-              <Plus className="size-4" /> Beat hinzufügen
+            <Button type="button" variant="secondary" onClick={add}>
+              <Plus className="size-4" /> Schritt hinzufügen
             </Button>
           </div>
-          <input type="hidden" name="beats" value={JSON.stringify(beats.map(({ tc, label, text, shot }) => ({ tc, label, text, shot })))} />
+          <input type="hidden" name="beats" value={JSON.stringify(beats.map(({ tc: t, label, text, shot }) => ({ tc: t, label, text, shot })))} />
         </fieldset>
 
-        <FormGrid>
-          <Field label="Caption" name="caption" optional className="sm:col-span-2">
-            <Textarea name="caption" defaultValue={script.caption ?? ""} />
-          </Field>
-          <Field label="Aufruf am Ende" name="cta" optional className="sm:col-span-2">
-            <Input name="cta" defaultValue={script.cta ?? ""} />
-          </Field>
-        </FormGrid>
+        <Field label="Caption" name="caption" optional hint="Text unter dem Beitrag, gern mit Hashtags">
+          <Textarea name="caption" defaultValue={script.caption ?? ""} className="field-sizing-content min-h-24 resize-none" />
+        </Field>
       </div>
 
-      <div className="sticky bottom-20 z-10 -mx-1 flex items-center justify-end gap-3 rounded-2xl border border-line bg-surface/95 px-3 py-2 backdrop-blur lg:bottom-4">
-        <span className="mr-auto pl-2 text-[12px] font-semibold text-muted" aria-live="polite">
-          {dirty ? "Ungespeicherte Änderungen" : "Alles gespeichert"}
+      <div
+        className={cn(
+          "squircle material-light sticky bottom-[calc(var(--tabbar-h,54px)+12px)] z-10 -mx-1 flex items-center justify-end gap-3 rounded-2xl px-3 py-2 shadow-[var(--shadow-raised)] lg:bottom-4",
+        )}
+      >
+        <span className={cn("mr-auto pl-2 text-[13px] font-semibold", dirty ? "text-ink-2" : "text-muted")} aria-live="polite">
+          {isNew ? "Noch nicht angelegt" : dirty ? "Ungespeicherte Änderungen" : "Alles gespeichert"}
         </span>
-        <SubmitButton>Speichern</SubmitButton>
+        <SubmitButton disabled={!isNew && !dirty}>{isNew ? "Skript anlegen" : "Speichern"}</SubmitButton>
       </div>
+      {/* Ziele der Kopf-Aktionen: speichern und zugleich Status setzen oder kopieren */}
+      <button type="submit" name="intent" value="final" data-intent="final" hidden tabIndex={-1} aria-hidden />
+      <button type="submit" name="intent" value="entwurf" data-intent="entwurf" hidden tabIndex={-1} aria-hidden />
+      <button type="submit" name="intent" value="duplizieren" data-intent="duplizieren" hidden tabIndex={-1} aria-hidden />
     </ActionForm>
   );
 }

@@ -3,7 +3,7 @@ import type { Invoice, InvoiceItem, Party } from "@/db/schema";
 import { AddressHead, Note, P, PdfDocument, PdfPage, PdfTable, s, Text, Title, View } from "@/lib/pdf/components";
 import { C, MM } from "@/lib/pdf/theme";
 import type { Company } from "@/lib/settings";
-import { calcTotals, customerNumber, eurText, isoToDe, KIND_LABEL, lineNetCents, qtyText, recipientLines, type DocKind } from "./core";
+import { calcTotals, customerNumber, eurText, isoToDe, KIND_LABEL, lineNetCents, recipientLines, unitText, type DocKind } from "./core";
 
 export type InvoicePdfData = {
   invoice: Pick<
@@ -15,9 +15,13 @@ export type InvoicePdfData = {
   company: Company | null;
   draft: boolean;
   cancels?: { number: string; issueDate: string } | null;
+  /** Vorschau mit Beispiel-IBAN aus den Demo-Daten */
+  demoIban?: boolean;
 };
 
-export function InvoicePdf({ invoice, items, recipient, company, draft, cancels }: InvoicePdfData) {
+const DEMO_IBAN_NOTE = "Demo: Die IBAN ist eine Beispiel-IBAN aus der Vorschau. Bitte nicht überweisen.";
+
+export function InvoicePdf({ invoice, items, recipient, company, draft, cancels, demoIban }: InvoicePdfData) {
   const kind = invoice.kind;
   const label = KIND_LABEL[kind];
   const small = Boolean(company?.smallBusiness);
@@ -41,7 +45,13 @@ export function InvoicePdf({ invoice, items, recipient, company, draft, cancels 
 
   return (
     <PdfDocument title={`${label} ${number}`} subject={sub ?? label} company={company} pdfa={isEInvoice}>
-      <PdfPage company={company} kind={label} reference={number} watermark={draft ? "Entwurf · nicht gültig" : undefined}>
+      <PdfPage
+        company={company}
+        kind={label}
+        reference={number}
+        watermark={draft ? "Entwurf · nicht gültig" : undefined}
+        footerNote={demoIban && kind !== "angebot" ? "Demo: Beispiel-IBAN, bitte nicht überweisen" : undefined}
+      >
         <AddressHead company={company} recipient={recipientLines(recipient)} meta={meta} />
         <Title kicker={recipient?.name ? `Für ${recipient.name}` : (company?.brand ?? "SCM Creatives")} sub={sub}>
           {label}
@@ -56,8 +66,8 @@ export function InvoicePdf({ invoice, items, recipient, company, draft, cancels 
         <PdfTable
           cols={[
             { key: "pos", label: "Pos", width: "7%", render: (_, i) => String(i + 1) },
-            { key: "text", label: "Leistung", width: "45%", render: (r) => r.description },
-            { key: "qty", label: "Menge", width: "14%", align: "right", render: (r) => `${qtyText(r.quantity)} ${r.unit}` },
+            { key: "text", label: "Leistung", width: "43%", render: (r) => r.description },
+            { key: "qty", label: "Menge", width: "16%", align: "right", render: (r) => unitText(r.quantity, r.unit) },
             { key: "price", label: "Einzelpreis", width: "16%", align: "right", render: (r) => eurText(r.unitPriceCents) },
             { key: "sum", label: "Betrag", width: "18%", align: "right", render: (r) => eurText(lineNetCents(r)) },
           ]}
@@ -87,6 +97,7 @@ export function InvoicePdf({ invoice, items, recipient, company, draft, cancels 
             {company?.iban ? ` (IBAN ${company.iban.replace(/\s+/g, "").replace(/(.{4})/g, "$1 ").trim()})` : ""}. Verwendungszweck: {number}.
           </P>
         ) : null}
+        {kind === "rechnung" && demoIban ? <Note tone="accent">{DEMO_IBAN_NOTE}</Note> : null}
         {kind === "angebot" && invoice.validUntil ? <P>Dieses Angebot gilt bis zum {isoToDe(invoice.validUntil)}.</P> : null}
         {invoice.outro ? <P style={{ marginTop: 2 * MM }}>{invoice.outro}</P> : null}
         {isEInvoice ? (
@@ -115,12 +126,13 @@ export type ReminderPdfData = {
   invoice: { number: string; issueDate: string; dueDate: string | null; grossCents: number; clientId: number | null; title: string };
   recipient: Party | null;
   company: Company | null;
+  demoIban?: boolean;
 };
 
 const REMINDER_TITLE = ["Zahlungserinnerung", "Zweite Zahlungserinnerung", "Letzte Zahlungserinnerung"];
 
 /** Freundliche Zahlungserinnerung ohne Gebühren. */
-export function ReminderPdf({ level, date, payUntil, invoice, recipient, company }: ReminderPdfData) {
+export function ReminderPdf({ level, date, payUntil, invoice, recipient, company, demoIban }: ReminderPdfData) {
   const title = REMINDER_TITLE[Math.min(Math.max(level, 1), 3) - 1];
   const greeting = recipient?.contact ? `Hallo ${recipient.contact},` : "Hallo,";
   const body =
@@ -131,7 +143,7 @@ export function ReminderPdf({ level, date, payUntil, invoice, recipient, company
         : `trotz unserer bisherigen Erinnerungen ist die Rechnung ${invoice.number} noch offen. Bitte überweist den offenen Betrag bis spätestens ${isoToDe(payUntil)}. Falls es einen Grund für die Verzögerung gibt, sprecht uns bitte an, damit wir gemeinsam eine Lösung finden.`;
   return (
     <PdfDocument title={`${title} ${invoice.number}`} company={company}>
-      <PdfPage company={company} kind={title} reference={invoice.number}>
+      <PdfPage company={company} kind={title} reference={invoice.number} footerNote={demoIban ? "Demo: Beispiel-IBAN, bitte nicht überweisen" : undefined}>
         <AddressHead
           company={company}
           recipient={recipientLines(recipient)}
@@ -160,6 +172,7 @@ export function ReminderPdf({ level, date, payUntil, invoice, recipient, company
           {company?.iban ? `, IBAN ${company.iban.replace(/\s+/g, "").replace(/(.{4})/g, "$1 ").trim()}` : ""}
           {company?.bic ? `, BIC ${company.bic}` : ""}. Verwendungszweck: {invoice.number}.
         </P>
+        {demoIban ? <Note tone="accent">{DEMO_IBAN_NOTE}</Note> : null}
         <P>Falls sich eure Zahlung mit diesem Schreiben überschnitten hat, betrachtet es bitte als erledigt. Vielen Dank!</P>
         <P style={{ marginTop: 4 * MM }}>Viele Grüße{company?.owner ? `\n${company.owner}` : ""}</P>
       </PdfPage>

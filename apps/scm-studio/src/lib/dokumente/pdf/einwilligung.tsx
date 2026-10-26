@@ -4,7 +4,7 @@
 import { Text, View } from "@react-pdf/renderer";
 import { KeyValues, Note, P, PdfDocument, PdfPage, s, Section, Title } from "@/lib/pdf/components";
 import { MM } from "@/lib/pdf/theme";
-import { consentSigners, ROLLEN, ZWECK_KEYS, ZWECKE, type EinwilligungData } from "../schema";
+import { consentController, consentSigners, ROLLEN, ZWECKE, zweckKeysFor, type EinwilligungData } from "../schema";
 import { CheckRow, DemoNote, DRAFT_LEGAL, fmtDate, ProofPage, SignatureRow, sigFor } from "./common";
 import type { RenderCtx } from "./types";
 
@@ -14,12 +14,14 @@ export function EinwilligungPdf({ ctx }: { ctx: RenderCtx }) {
   const signed = ctx.doc.status === "unterschrieben" || Boolean(ctx.proof);
   const zwecke = d.zweckeBeiUnterschrift ?? d.zwecke ?? [];
   const watermark = !ctx.legalApproved ? DRAFT_LEGAL : ctx.doc.status === "entwurf" ? "Entwurf" : undefined;
-  const auftraggeber = ctx.party?.name ?? ctx.clientName ?? "[PLATZHALTER: Auftraggeber]";
-  const verantwortlich =
-    d.verantwortlich === "kunde"
-      ? [ctx.party?.name ?? auftraggeber, [ctx.party?.street, [ctx.party?.zip, ctx.party?.city].filter(Boolean).join(" ")].filter(Boolean).join(", ") || "[PLATZHALTER: Anschrift]", ctx.party?.email ?? "[PLATZHALTER: Kontakt für Datenschutzanfragen]"]
-      : [c?.legalName ?? "SCM", c ? `${c.street}, ${c.zip} ${c.city}` : "", c?.email ?? ""];
-  const widerrufAn = d.verantwortlich === "kunde" ? ctx.party?.email ?? "[PLATZHALTER: Kontakt des Auftraggebers]" : c?.email ?? "[PLATZHALTER]";
+  const hasClient = Boolean(ctx.doc.clientId);
+  const auftraggeber = ctx.party?.name ?? ctx.clientName ?? (hasClient ? "[PLATZHALTER: Auftraggeber]" : "keiner, eigener Dreh von SCM");
+  // Verantwortliche Stelle (Art. 13 DSGVO): Unvollständige Angaben erscheinen nur im Entwurf als Platzhalter,
+  // freigeben und unterschreiben lässt sich die Einwilligung erst mit vollständigen Angaben.
+  const ctrl = consentController(d.verantwortlich, ctx.party, c);
+  const ctrlName = ctrl.name || "[PLATZHALTER: Verantwortlicher]";
+  const ctrlAddress = ctrl.address || "[PLATZHALTER: Anschrift]";
+  const ctrlEmail = ctrl.email || "[PLATZHALTER: E-Mail für Datenschutzfragen]";
   const sigs = ctx.proof?.signatures ?? d.signatures ?? [];
   const signers = consentSigners(d);
   const revoked = ctx.doc.revokedAt;
@@ -51,7 +53,7 @@ export function EinwilligungPdf({ ctx }: { ctx: RenderCtx }) {
         <Section title="Meine Einwilligung">
           <P>Ich kreuze an, wofür ich einwillige. Jede Einwilligung gilt einzeln; was ich nicht ankreuze, ist nicht erlaubt.</P>
           <View style={{ marginTop: 3 }}>
-            {ZWECK_KEYS.map((k) => (
+            {zweckKeysFor(hasClient).map((k) => (
               <CheckRow key={k} checked={zwecke.includes(k)} label={ZWECKE[k].label} text={ZWECKE[k].text} />
             ))}
           </View>
@@ -62,11 +64,11 @@ export function EinwilligungPdf({ ctx }: { ctx: RenderCtx }) {
         </Section>
         <Section title="Widerruf">
           <P>
-            {`Sie können Ihre Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen (Art. 7 Abs. 3 DSGVO), zum Beispiel per E-Mail an ${widerrufAn}. Die Rechtmäßigkeit der bis zum Widerruf erfolgten Verarbeitung bleibt unberührt. Nach einem Widerruf werden keine neuen Beiträge mit Ihnen veröffentlicht. Umgang mit bereits veröffentlichten Beiträgen: [PLATZHALTER: anwaltlich festlegen].`}
+            {`Sie können Ihre Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen (Art. 7 Abs. 3 DSGVO), zum Beispiel per E-Mail an ${ctrlEmail}. Die Rechtmäßigkeit der bis zum Widerruf erfolgten Verarbeitung bleibt unberührt. Nach einem Widerruf werden keine neuen Beiträge mit Ihnen veröffentlicht. Umgang mit bereits veröffentlichten Beiträgen: [PLATZHALTER: anwaltlich festlegen].`}
           </P>
         </Section>
         <Section title="Datenschutzhinweise">
-          <P>{`Verantwortlich: ${verantwortlich.filter(Boolean).join(", ")}.`}</P>
+          <P>{`Verantwortlich: ${ctrlName}, ${ctrlAddress}, ${ctrlEmail}.`}</P>
           <P>
             Zweck: Herstellung der Aufnahmen und deren Veröffentlichung zu den angekreuzten Zwecken. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO),
             für die Veröffentlichung von Bildnissen zusätzlich § 22 KUG.
@@ -81,7 +83,7 @@ export function EinwilligungPdf({ ctx }: { ctx: RenderCtx }) {
           </P>
           <P>
             Ihre Rechte: Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit, Widerruf und Beschwerde bei einer
-            Datenschutz-Aufsichtsbehörde. Kontakt für Datenschutzfragen: [PLATZHALTER].
+            Datenschutz-Aufsichtsbehörde. Kontakt für Datenschutzfragen: {ctrlEmail}.
           </P>
           {d.minderjaehrig ? (
             <P>

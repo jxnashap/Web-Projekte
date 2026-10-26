@@ -36,6 +36,17 @@ export async function getLeads(f: LeadFilter = {}) {
 
 export type LeadRow = Awaited<ReturnType<typeof getLeads>>[number];
 
+/** Filter wie in getLeads, aber auf schon geladenen Zeilen (Kennzahlen kommen aus allen Anfragen). */
+export function filterLeads(rows: LeadRow[], f: LeadFilter) {
+  const q = f.q?.trim().toLocaleLowerCase("de");
+  return rows.filter(
+    ({ lead: l }) =>
+      (!f.score || l.score === f.score) &&
+      (!f.quelle || l.source === f.quelle) &&
+      (!q || [l.company, l.name, l.ort].some((v) => v?.toLocaleLowerCase("de").includes(q))),
+  );
+}
+
 export async function getLead(id: number) {
   await requireUser();
   const db = await getDb();
@@ -84,10 +95,22 @@ export async function getClients(filter: ClientFilterKey = "aktuell", q?: string
     .orderBy(events.clientId, asc(events.startsAt));
   const nextByClient = new Map(nextEvents.map((e) => [e.clientId, e]));
   const counts = await db.select({ status: clients.status, n: count() }).from(clients).groupBy(clients.status);
+  // Kennzahlen immer über alle aktiven Kunden, unabhängig von Filter und Suche
+  const active = await db
+    .select({ id: clients.id, price: clients.packagePriceCents })
+    .from(clients)
+    .where(eq(clients.status, "aktiv"));
+  const activeKont = active.map((a) => kont.get(a.id)).filter((k): k is Kontingent => Boolean(k));
   return {
     month,
     clients: rows.map((c) => ({ client: c, kontingent: kont.get(c.id) ?? null, nextEvent: nextByClient.get(c.id) ?? null })),
     counts: Object.fromEntries(counts.map((r) => [r.status, r.n])) as Record<string, number>,
+    kpi: {
+      active: active.length,
+      mrr: active.reduce((s, a) => s + (a.price ?? 0), 0),
+      soll: activeKont.reduce((s, k) => s + k.soll, 0),
+      fertig: activeKont.reduce((s, k) => s + Math.min(k.fertig, k.soll), 0),
+    },
   };
 }
 

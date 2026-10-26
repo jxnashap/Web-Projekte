@@ -4,16 +4,41 @@
 // Technik: tsx lädt den Seed als CommonJS, react-pdf ist reines ESM. Deshalb bündelt esbuild
 // src/lib/finanzen/seed-entry.ts einmalig als ESM nach .data/build/ ("server-only" wird dabei leer ersetzt)
 // und der Seed reicht seine Datenbank über globalThis.__scmDb an getDb() weiter.
+import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { eq } from "drizzle-orm";
 import * as s from "../../src/db/schema";
-import { addDaysIso, fromNet, partyFromClient, splitGross } from "../../src/lib/finanzen/core";
+import { addDaysIso, calcTotals, fromNet, partyFromClient, splitGross } from "../../src/lib/finanzen/core";
 import { monthLabel } from "../../src/lib/format";
-import { monthRange, todayIso as isoOf } from "../../src/lib/time";
+import { berlinDateTime, monthRange, todayIso as isoOf } from "../../src/lib/time";
 import type { SeedPart } from "../seed";
 
 type Workflow = typeof import("../../src/lib/finanzen/seed-entry");
+
+/**
+ * Führt fn so aus, als wäre es `when` (Festschreiben, Versand, Zahlung der Demo-Rechnungen in der richtigen Reihenfolge).
+ * Zeitpunkte und Protokolleinträge entstehen so mit der App-Logik selbst; die Hash-Kette des Protokolls bleibt gültig.
+ */
+async function asOf<T>(when: Date, fn: () => Promise<T>): Promise<T> {
+  const Real = Date;
+  const fixed = when.getTime();
+  class FixedDate extends Real {
+    constructor(...args: [] | [string | number | Date]) {
+      if (args.length === 0) super(fixed);
+      else super(args[0]);
+    }
+    static now() {
+      return fixed;
+    }
+  }
+  globalThis.Date = FixedDate as DateConstructor;
+  try {
+    return await fn();
+  } finally {
+    globalThis.Date = Real;
+  }
+}
 
 async function loadWorkflow(): Promise<Workflow> {
   const root = process.cwd();
@@ -32,6 +57,13 @@ async function loadWorkflow(): Promise<Workflow> {
     logLevel: "error",
     plugins: [
       {
+        // hyphen (Silbentrennung der PDFs) ist CommonJS; mitbündeln, damit der benannte Import in ESM funktioniert
+        name: "hyphen-buendeln",
+        setup(b) {
+          b.onResolve({ filter: /^hyphen(\/.*)?$/ }, (args) => ({ path: createRequire(path.join(root, "package.json")).resolve(args.path) }));
+        },
+      },
+      {
         name: "server-only-leer",
         setup(b) {
           b.onResolve({ filter: /^server-only$/ }, () => ({ path: "server-only", namespace: "leer" }));
@@ -49,6 +81,9 @@ export default (async (db, ctx) => {
   const cur = monthRange(month);
   const todayIso = isoOf(today);
   const day = (iso: string, d: number) => (iso.slice(0, 8) + String(d).padStart(2, "0")) as string;
+  // Zeitpunkt an einem Tag (Berliner Zeit), nie in der Zukunft (der Seed kann am Monatsanfang laufen)
+  const moment = (iso: string, hhmm: string) => new Date(Math.min(berlinDateTime(iso, hhmm).getTime(), Date.now() - 60_000));
+  const pastDay = (iso: string) => (iso > todayIso ? todayIso : iso);
   const oskar = ctx.team[0].id;
 
   // Firmen-IBAN ist echt noch leer: für die Demo eine offensichtliche Test-IBAN, damit Rechnungen festgeschrieben werden können
@@ -110,7 +145,9 @@ export default (async (db, ctx) => {
         validUntil: d.validUntil ?? null,
         intro: d.intro ?? null,
         outro: d.outro ?? null,
-        notes: "Demo-Beleg (Seed)",
+        notes: "Demo-Daten (Seed)",
+        // Summen wie in der App (Liste und Überblick zeigen sie schon vor dem ersten Speichern)
+        ...(({ netCents, taxCents, grossCents }) => ({ netCents, taxCents, grossCents }))(calcTotals(d.items)),
       })
       .returning();
     await db.insert(s.invoiceItems).values(d.items.map((it, i) => ({ ...it, invoiceId: inv.id, position: i + 1 })));
@@ -121,12 +158,29 @@ export default (async (db, ctx) => {
   const wf = await loadWorkflow();
   (globalThis as unknown as { __scmDb?: Promise<unknown> }).__scmDb = Promise.resolve(db);
   const [reBs, reJhkp, reMaler, reSteak, reKletter, anDrei] = ids;
-  // demo: die echten Kunden haben in der Vorschau keine vollständige Anschrift; in der App ist sie Pflicht
-  for (const id of [reBs, reJhkp, reMaler, reSteak, reKletter, anDrei]) await wf.finalizeInvoice(db, id, oskar, { demo: true });
-  await db.update(s.invoices).set({ status: "bezahlt", paidAt: day(cur.from, 8), sentAt: new Date(`${prev.to}T10:00:00Z`) }).where(eq(s.invoices.id, reBs));
-  await db.update(s.invoices).set({ status: "bezahlt", paidAt: day(cur.from, 12), sentAt: new Date(`${prev.to}T10:00:00Z`) }).where(eq(s.invoices.id, reJhkp));
-  await db.update(s.invoices).set({ sentAt: new Date(`${prev.to}T10:00:00Z`) }).where(eq(s.invoices.id, reMaler));
+  // demo: die echten Kunden haben in der Vorschau keine vollständige Anschrift; in der App ist sie Pflicht.
+  // Reihenfolge wie im echten Ablauf: festschreiben am Rechnungsdatum, dann versenden, dann Zahlung bzw. Annahme.
+  const issued = new Map(drafts.map((d, i) => [ids[i], d.issueDate]));
+  for (const id of [reBs, reJhkp, reMaler, reSteak, reKletter, anDrei]) {
+    await asOf(moment(issued.get(id)!, "09:30"), () => wf.finalizeInvoice(db, id, oskar, { demo: true }));
+  }
+  const sent = async (id: number) => {
+    const at = moment(issued.get(id)!, "10:00");
+    await db.update(s.invoices).set({ sentAt: at }).where(eq(s.invoices.id, id));
+    await asOf(at, () => wf.audit(oskar, "invoice", id, "versendet", { demo: true }));
+  };
+  const paid = async (id: number, iso: string) => {
+    const paidAt = pastDay(iso);
+    await db.update(s.invoices).set({ status: "bezahlt", paidAt }).where(eq(s.invoices.id, id));
+    await asOf(moment(paidAt, "11:00"), () => wf.audit(oskar, "invoice", id, "bezahlt", { paidAt, demo: true }));
+  };
+  await sent(reBs);
+  await sent(reJhkp);
+  await sent(reMaler);
+  await paid(reBs, day(cur.from, 8));
+  await paid(reJhkp, day(cur.from, 12));
   await db.update(s.invoices).set({ status: "angenommen" }).where(eq(s.invoices.id, anDrei));
+  await asOf(moment(pastDay(day(cur.from, 14)), "15:00"), () => wf.audit(oskar, "invoice", anDrei, "angebot_angenommen", { demo: true }));
 
   // ---------------- Belege ----------------
   const receipt = await wf.demoReceiptPdf({ shop: "Tankstelle Kiel (Demo)", date: day(cur.from, 14), rate: 19, lines: [["Super E10 25,31 l", 4280]] });
@@ -151,5 +205,5 @@ export default (async (db, ctx) => {
       netCents: 20000, taxCents: 0, grossCents: 20000, reverseCharge: true, paymentMethod: "karte", paidOn: day(prev.from, 3), clientId: c.bs.id, supplierInvoiceNo: "FBADS-DEMO-000" },
   ];
   await db.insert(s.expenses).values(expenses.map((e) => ({ ...e, createdBy: oskar })));
-  return `${ids.length} Belege (5 Rechnungen festgeschrieben, 2 Angebote), ${expenses.length} Ausgaben`;
+  return `${ids.length} Rechnungen und Angebote (5 Rechnungen festgeschrieben), ${expenses.length} Ausgaben`;
 }) satisfies SeedPart;

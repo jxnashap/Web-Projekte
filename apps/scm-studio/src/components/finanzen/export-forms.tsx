@@ -1,23 +1,57 @@
 "use client";
 // Export abschließen (mit Bestätigung) und DATEV-Kontenzuordnung.
 import { Lock } from "lucide-react";
+import { useState } from "react";
 import { ActionForm } from "@/components/ui/action-form";
 import { Checkbox, Field, FormActions, FormGrid, Input, Select } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { completeExport, saveDatevSettings } from "@/lib/finanzen/actions";
-import type { DatevSettings } from "@/lib/finanzen/core";
+import { plural, type DatevSettings } from "@/lib/finanzen/core";
 import { EXPENSE_CATEGORIES } from "@/lib/labels";
 
-export function CompleteExportForm({ from, to, label, openCount, disabled }: { from: string; to: string; label: string; openCount: number; disabled: boolean }) {
+export function CompleteExportForm({
+  from,
+  to,
+  label,
+  openCount,
+  missingCount,
+  disabled,
+}: {
+  from: string;
+  to: string;
+  label: string;
+  openCount: number;
+  /** offene Ausgaben ohne Belegdatei */
+  missingCount: number;
+  disabled: boolean;
+}) {
+  const [confirmed, setConfirmed] = useState(false);
+  const [withoutReceipt, setWithoutReceipt] = useState(false);
+  const ready = confirmed && (missingCount === 0 || withoutReceipt);
   return (
-    <ActionForm action={completeExport} className="grid gap-3">
+    <ActionForm action={completeExport} className="grid gap-1">
       <input type="hidden" name="from" value={from} />
       <input type="hidden" name="to" value={to} />
       <input type="hidden" name="label" value={label} />
-      <Checkbox name="confirm" label="Das Paket geht an unsere Steuerberatung. Belege dieses Zeitraums danach festschreiben." disabled={disabled} />
-      <FormActions className="mt-1 justify-start">
-        <SubmitButton disabled={disabled} pendingText="Erstellt Paket …">
-          <Lock className="size-4" /> Export abschließen{openCount ? ` (${openCount} Belege)` : ""}
+      <Checkbox
+        name="confirm"
+        checked={confirmed}
+        onChange={(e) => setConfirmed(e.target.checked)}
+        label="Das Paket geht an unsere Steuerberatung. Belege dieses Zeitraums danach festschreiben."
+        disabled={disabled}
+      />
+      {missingCount > 0 && (
+        <Checkbox
+          name="ohneBeleg"
+          checked={withoutReceipt}
+          onChange={(e) => setWithoutReceipt(e.target.checked)}
+          label={`${plural(missingCount, "Ausgabe", "Ausgaben")} ohne Belegdatei trotzdem festschreiben (Datei lässt sich später nur noch nachreichen).`}
+          disabled={disabled}
+        />
+      )}
+      <FormActions className="mt-3 justify-start">
+        <SubmitButton disabled={disabled || !ready} pendingText="Erstellt Paket …">
+          <Lock className="size-4" /> Export abschließen{openCount ? ` (${plural(openCount, "Beleg", "Belege")})` : ""}
         </SubmitButton>
       </FormActions>
     </ActionForm>
@@ -28,11 +62,11 @@ export function DatevSettingsForm({ s, canEdit }: { s: DatevSettings; canEdit: b
   return (
     <ActionForm action={saveDatevSettings} className="grid gap-5">
       <FormGrid className="lg:grid-cols-4">
-        <Field label="Beraternummer" name="beraterNr" hint="Von eurer Steuerberatung">
-          <Input name="beraterNr" defaultValue={s.beraterNr} inputMode="numeric" placeholder="[PLATZHALTER]" disabled={!canEdit} />
+        <Field label="Beraternummer" name="beraterNr" hint="Von eurer Steuerberatung (bis 7 Ziffern)">
+          <Input name="beraterNr" defaultValue={s.beraterNr} inputMode="numeric" maxLength={7} disabled={!canEdit} />
         </Field>
-        <Field label="Mandantennummer" name="mandantNr" hint="Von eurer Steuerberatung">
-          <Input name="mandantNr" defaultValue={s.mandantNr} inputMode="numeric" placeholder="[PLATZHALTER]" disabled={!canEdit} />
+        <Field label="Mandantennummer" name="mandantNr" hint="Von eurer Steuerberatung (bis 5 Ziffern)">
+          <Input name="mandantNr" defaultValue={s.mandantNr} inputMode="numeric" maxLength={5} disabled={!canEdit} />
         </Field>
         <Field label="Kontenrahmen" name="kontenrahmen">
           <Select name="kontenrahmen" defaultValue={s.kontenrahmen} disabled={!canEdit}>
@@ -62,13 +96,13 @@ export function DatevSettingsForm({ s, canEdit }: { s: DatevSettings; canEdit: b
         <legend className="mb-2 text-[15px] font-semibold">Steuerschlüssel (BU) für Ausgaben</legend>
         <FormGrid className="lg:grid-cols-3">
           <Field label="Vorsteuer 19 %" name="buVorsteuer19">
-            <Input name="buVorsteuer19" defaultValue={s.buVorsteuer19} disabled={!canEdit} />
+            <Input name="buVorsteuer19" defaultValue={s.buVorsteuer19} maxLength={4} disabled={!canEdit} />
           </Field>
           <Field label="Vorsteuer 7 %" name="buVorsteuer7">
-            <Input name="buVorsteuer7" defaultValue={s.buVorsteuer7} disabled={!canEdit} />
+            <Input name="buVorsteuer7" defaultValue={s.buVorsteuer7} maxLength={4} disabled={!canEdit} />
           </Field>
-          <Field label="§ 13b (Reverse Charge)" name="buReverseCharge" hint="[PLATZHALTER] mit Steuerberatung festlegen">
-            <Input name="buReverseCharge" defaultValue={s.buReverseCharge} placeholder="leer" disabled={!canEdit} />
+          <Field label="§ 13b (Reverse Charge)" name="buReverseCharge" hint="Mit eurer Steuerberatung festlegen">
+            <Input name="buReverseCharge" defaultValue={s.buReverseCharge} placeholder="leer" maxLength={4} disabled={!canEdit} />
           </Field>
         </FormGrid>
       </fieldset>
@@ -82,7 +116,7 @@ export function DatevSettingsForm({ s, canEdit }: { s: DatevSettings; canEdit: b
       </fieldset>
       {canEdit ? (
         <FormActions>
-          <SubmitButton variant="secondary">Zuordnung speichern</SubmitButton>
+          <SubmitButton>Speichern</SubmitButton>
         </FormActions>
       ) : (
         <p className="text-[13px] text-muted">Ändern dürfen nur Inhaber.</p>
@@ -94,7 +128,7 @@ export function DatevSettingsForm({ s, canEdit }: { s: DatevSettings; canEdit: b
 function Konto({ name, label, v, d }: { name: string; label: string; v: string; d: boolean }) {
   return (
     <Field label={label} name={name}>
-      <Input name={name} defaultValue={v} inputMode="numeric" className="tabular-nums" disabled={d} />
+      <Input name={name} defaultValue={v} inputMode="numeric" className="tabular-nums" maxLength={9} disabled={d} />
     </Field>
   );
 }

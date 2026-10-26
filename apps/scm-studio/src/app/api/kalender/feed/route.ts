@@ -2,6 +2,7 @@
 import { and, asc, eq, gte, lte } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { safeEqual } from "@/lib/crypto";
+import { GOOGLE_CALENDAR_NAME } from "@/lib/google/calendar";
 import { EVENT_KINDS } from "@/lib/labels";
 import { buildIcs } from "@/lib/kalender/ical";
 import { getSetting } from "@/lib/settings";
@@ -41,13 +42,14 @@ export async function GET(request: Request) {
       updatedAt: e.updatedAt,
       createdAt: e.createdAt,
     })),
-    { name: "SCM Studio", host: "scm-studio", dayOf: (d) => todayIso(d) },
+    // gleicher Name wie der Google-Kalender, damit beide Wege im Handy gleich heißen
+    { name: GOOGLE_CALENDAR_NAME, host: "scm-studio", dayOf: (d) => todayIso(d) },
   );
 
   return new Response(body, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": 'inline; filename="scm-studio.ics"',
+      "Content-Disposition": 'inline; filename="scm-drehs.ics"',
       "Cache-Control": "private, max-age=300",
       "X-Robots-Tag": "noindex",
     },

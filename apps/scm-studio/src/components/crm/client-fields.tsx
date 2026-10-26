@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { useState } from "react";
 import type { Client } from "@/db/schema";
 import { Field, FormGrid, Input, Select, Textarea } from "@/components/ui/field";
-import { CLIENT_COLORS } from "@/lib/crm/labels";
+import { CLIENT_COLORS, colorName } from "@/lib/crm/labels";
 import { BRANCHEN, CLIENT_STATUS, LEGAL_FORMS } from "@/lib/labels";
 
 const euro = (cents: number | null | undefined) =>
@@ -13,7 +13,7 @@ const euro = (cents: number | null | undefined) =>
 
 function Section({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
   return (
-    <fieldset className="grid gap-4 border-t border-line pt-6 first:border-t-0 first:pt-0">
+    <fieldset className="grid gap-4 border-t border-hairline pt-6 first:border-t-0 first:pt-0">
       <div>
         <legend className="text-[15px] font-semibold">{title}</legend>
         {sub && <p className="mt-0.5 text-[13px] text-muted">{sub}</p>}
@@ -39,7 +39,10 @@ export function ClientFields({ client, defaultColor }: { client?: Client | null;
             <Input name="name" defaultValue={c?.name ?? ""} required autoComplete="organization" placeholder="So, wie er auf Rechnungen stehen soll" autoFocus={!c} />
           </Field>
           <Field label="Branche" name="branche">
-            <Select name="branche" defaultValue={c?.branche ?? "gastronomie"}>
+            <Select name="branche" defaultValue={c?.branche ?? ""} required>
+              <option value="" disabled>
+                Bitte wählen
+              </option>
               {Object.entries(BRANCHEN).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}
@@ -57,26 +60,26 @@ export function ClientFields({ client, defaultColor }: { client?: Client | null;
             </Select>
           </Field>
         </FormGrid>
-        <div className="grid gap-1.5">
-          <span id="farbe-label" className="text-[13px] font-semibold text-ink-2">
-            Farbe <span className="font-normal text-faint">für Kalender und Übersichten</span>
-          </span>
-          <div role="radiogroup" aria-labelledby="farbe-label" className="flex flex-wrap gap-2">
+        <fieldset className="grid gap-1.5">
+          <legend className="mb-1.5 text-[13px] font-medium text-ink-2">
+            Farbe <span className="font-normal text-muted">für Kalender und Übersichten · {colorName(color)}</span>
+          </legend>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {palette.map((col) => (
-              <label key={col} className="relative cursor-pointer">
+              <label key={col} className="relative cursor-pointer" title={colorName(col)}>
                 <input type="radio" name="color" value={col} checked={color === col} onChange={() => setColor(col)} className="peer sr-only" />
                 <span
-                  className="grid size-9 place-items-center rounded-full ring-offset-2 ring-offset-surface transition-shadow peer-focus-visible:ring-2 peer-focus-visible:ring-ink"
+                  className="grid size-11 place-items-center rounded-full ring-offset-2 ring-offset-surface transition-shadow peer-checked:ring-2 peer-checked:ring-ink/25 peer-focus-visible:ring-2 peer-focus-visible:ring-accent sm:size-9"
                   style={{ background: col }}
-                  title={col}
+                  aria-hidden
                 >
                   {color === col && <Check className="size-4 text-white" strokeWidth={3} />}
                 </span>
-                <span className="sr-only">Farbe {col}</span>
+                <span className="sr-only">{colorName(col)}</span>
               </label>
             ))}
           </div>
-        </div>
+        </fieldset>
       </Section>
 
       <Section title="Kontakt">
@@ -91,7 +94,7 @@ export function ClientFields({ client, defaultColor }: { client?: Client | null;
             <Input name="email" type="email" inputMode="email" defaultValue={c?.email ?? ""} autoComplete="email" />
           </Field>
           <Field label="Website" name="website" optional>
-            <Input name="website" defaultValue={c?.website ?? ""} placeholder="www.beispiel.de" inputMode="url" />
+            <Input name="website" defaultValue={c?.website ?? ""} placeholder="www.beispiel.de" inputMode="url" autoCapitalize="none" autoComplete="url" />
           </Field>
           <Field label="Instagram" name="instagram" optional hint="Benutzername oder Profil-Link">
             <Input name="instagram" defaultValue={c?.instagram ?? ""} placeholder="@benutzername" autoCapitalize="none" />
@@ -145,13 +148,13 @@ export function ClientFields({ client, defaultColor }: { client?: Client | null;
             <Input name="registerNumber" defaultValue={c?.registerNumber ?? ""} />
           </Field>
           <div className="grid gap-1.5 sm:col-span-2">
-            <label className="flex items-start gap-3 rounded-lg border border-line-2 bg-surface px-3 py-3 text-[14px]">
+            <label className="flex cursor-pointer items-start gap-3 rounded-[12px] bg-fill-2 px-3.5 py-3 text-[14px] transition-colors hover:bg-fill has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent">
               <input
                 type="checkbox"
                 name="isMerchant"
                 checked={merchant}
                 onChange={(e) => setMerchant(e.target.checked)}
-                className="mt-0.5 size-4 accent-[var(--color-accent)]"
+                className="mt-0.5 size-[18px] shrink-0 accent-[var(--color-accent)] focus-visible:outline-none"
               />
               <span>
                 <span className="font-semibold">Kaufmann im Sinne des HGB</span>

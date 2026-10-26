@@ -8,12 +8,14 @@ import { done, fail, parseForm, zBool, zOptDate, zOptText, zText, type ActionSta
 import { audit } from "@/lib/audit";
 import { assertUser } from "@/lib/auth";
 import { VIDEO_STATUS } from "@/lib/labels";
-import { monthIso } from "@/lib/time";
+import { monthIso, todayIso } from "@/lib/time";
 
 const STATUS_KEYS = VIDEO_STATUS.map((s) => s.key) as [string, ...string[]];
 
+const zUrl = z.url({ protocol: /^https?$/, error: "Link bitte vollständig mit https:// eingeben" }).max(500, "Der Link ist zu lang");
+
 const videoSchema = z.object({
-  clientId: z.coerce.number({ error: "Kunde wählen" }).int().positive("Kunde wählen"),
+  clientId: z.coerce.number({ error: "Bitte einen Kunden wählen" }).int().positive("Bitte einen Kunden wählen"),
   title: zText("Titel", 200),
   format: zOptText(80),
   status: z.enum(STATUS_KEYS).optional(), // fehlt im Bearbeiten-Formular (Status läuft dort über die Schrittleiste)
@@ -22,7 +24,7 @@ const videoSchema = z.object({
   shootDate: zOptDate,
   postDate: zOptDate,
   platform: z.enum(["instagram", "tiktok", "beide"]).optional(),
-  url: z.url({ protocol: /^https?$/, error: "Link muss mit https:// beginnen" }).max(500).optional(),
+  url: zUrl.optional(),
   assignee: z.coerce.number().int().positive().optional(),
   notes: zOptText(4000),
 });
@@ -79,6 +81,27 @@ export async function setVideoStatus(id: number, status: string): Promise<Action
   refresh();
   const label = VIDEO_STATUS.find((s) => s.key === status)?.label ?? status;
   return done(`„${v.title}“ steht jetzt auf ${label}.`);
+}
+
+const onlineSchema = z.object({ url: zUrl.optional(), postDate: zOptDate });
+
+/** Video auf „Online“ setzen, optional mit Link und Datum (für die Zahlen). */
+export async function markOnline(id: number, _: ActionState, fd: FormData): Promise<ActionState> {
+  const user = await assertUser();
+  const parsed = parseForm(onlineSchema, fd);
+  if (!parsed.success) return parsed.state;
+  const d = parsed.data;
+  const db = await getDb();
+  const [old] = await db.select().from(schema.videos).where(eq(schema.videos.id, id));
+  if (!old) return fail("Video nicht gefunden.");
+  const [v] = await db
+    .update(schema.videos)
+    .set({ status: "online", url: d.url ?? old.url, postDate: d.postDate ?? old.postDate ?? todayIso(), updatedAt: new Date() })
+    .where(eq(schema.videos.id, id))
+    .returning();
+  await audit(user.id, "video", id, "status", { status: "online", link: Boolean(v.url) });
+  refresh();
+  return done(`„${v.title}“ ist online.`);
 }
 
 export async function deleteVideo(id: number): Promise<ActionState> {

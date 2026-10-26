@@ -14,6 +14,7 @@ import { EVENT_KINDS } from "@/lib/labels";
 import { setSetting } from "@/lib/settings";
 import { berlinDateTime, todayIso } from "@/lib/time";
 import { addDaysIso, isIsoDay } from "./dates";
+import { asView, calHref } from "./href";
 
 const zTime = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Uhrzeit im Format HH:MM");
 const zId = z.coerce.number().int().positive();
@@ -32,12 +33,15 @@ const eventSchema = z
     clientId: zId.optional(),
     leadId: zId.optional(),
     teamIds: z.array(zId).optional(),
-    notes: z.string().max(4000).optional(),
+    notes: z.string().max(4000, "Notizen sind zu lang").optional(),
+    // Ansicht, aus der ein neuer Termin angelegt wurde (danach dorthin springen)
+    ansicht: z.string().max(10).optional(),
   })
   .superRefine((v, ctx) => {
     if (!v.allDay && !v.startTime) ctx.addIssue({ code: "custom", path: ["startTime"], message: "Beginn fehlt" });
     if (!v.allDay && !v.endTime) ctx.addIssue({ code: "custom", path: ["endTime"], message: "Ende fehlt" });
-    if (!v.title && !(v.kind === "dreh" && v.clientId)) ctx.addIssue({ code: "custom", path: ["title"], message: "Titel fehlt" });
+    if (!v.title && !(v.kind === "dreh" && v.clientId))
+      ctx.addIssue({ code: "custom", path: ["title"], message: v.kind === "dreh" ? "Titel fehlt (oder einen Kunden wählen)" : "Titel fehlt" });
   });
 
 export async function saveEvent(_: ActionState, fd: FormData): Promise<ActionState> {
@@ -56,7 +60,7 @@ export async function saveEvent(_: ActionState, fd: FormData): Promise<ActionSta
   } else {
     startsAt = berlinDateTime(v.startDate, v.startTime);
     endsAt = berlinDateTime(endDay, v.endTime);
-    if (endsAt <= startsAt) return fail("Das Ende liegt vor dem Beginn.", { endTime: ["Ende muss nach dem Beginn liegen"] });
+    if (endsAt <= startsAt) return fail("Das Ende liegt vor dem Beginn.", { endTime: ["Das Ende muss nach dem Beginn liegen"] });
   }
   if (endsAt.getTime() - startsAt.getTime() > 31 * 86_400_000) return fail("Ein Termin kann höchstens 31 Tage dauern.", { endDate: ["Zeitraum zu lang"] });
 
@@ -93,10 +97,12 @@ export async function saveEvent(_: ActionState, fd: FormData): Promise<ActionSta
   const eventId = id;
   after(() => mirrorEvent(eventId));
   refresh();
-  return done(v.id ? "Termin gespeichert" : "Termin angelegt", { id: eventId });
+  if (v.id) return done("Termin gespeichert", { id: eventId });
+  // Neu: zum Datum des Termins in der aktuellen Ansicht springen und ihn kurz hervorheben
+  return done("Termin angelegt", { id: eventId, redirectTo: calHref({ ansicht: asView(v.ansicht), datum: v.startDate, extra: { neu_id: eventId } }) });
 }
 
-export async function deleteEvent(id: number): Promise<ActionState> {
+export async function deleteEvent(id: number, view?: string): Promise<ActionState> {
   const user = await assertUser();
   const db = await getDb();
   const [row] = await db.delete(schema.events).where(eq(schema.events.id, id)).returning();
@@ -104,7 +110,7 @@ export async function deleteEvent(id: number): Promise<ActionState> {
   await audit(user.id, "event", id, "geloescht", { title: row.title, start: row.startsAt.toISOString() });
   after(() => deleteMirror(row.googleEventId));
   // kein refresh(): die Detailseite gibt es nicht mehr, der Client wechselt zum Kalender
-  return done("Termin gelöscht", { redirectTo: `/kalender?datum=${todayIso(row.startsAt)}` });
+  return done("Termin gelöscht", { redirectTo: calHref({ ansicht: asView(view), datum: todayIso(row.startsAt) }) });
 }
 
 /** Neuen geheimen Abo-Link erzeugen (der alte wird sofort ungültig). */

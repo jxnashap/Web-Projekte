@@ -18,11 +18,13 @@ export type Snapshot = {
 
 export type MetricKey = "views" | "reach" | "interactions";
 
-const SOURCE_RANK: Record<string, number> = { instagram: 4, tiktok: 3, csv: 2, manuell: 1 };
+// Schnittstellen zuerst; zwischen Hand und CSV gilt die Hand als bewusste Korrektur. Beim Speichern ersetzt
+// ohnehin der neuere der beiden Einträge den älteren (siehe actions.ts), das hier ist nur das Netz.
+const SOURCE_RANK: Record<string, number> = { instagram: 4, tiktok: 3, manuell: 2, csv: 1 };
 
-/** Pro Tag ein Messwert (bei mehreren Quellen gewinnt die API vor CSV vor manuell), aufsteigend sortiert. */
-export function dedupeSnapshots(rows: Snapshot[]): Snapshot[] {
-  const byDay = new Map<string, Snapshot>();
+/** Pro Tag ein Messwert (Schnittstelle vor manuell vor CSV), aufsteigend sortiert. */
+export function dedupeSnapshots<T extends Snapshot>(rows: T[]): T[] {
+  const byDay = new Map<string, T>();
   for (const r of rows) {
     const cur = byDay.get(r.measuredOn);
     if (!cur || (SOURCE_RANK[r.source] ?? 0) > (SOURCE_RANK[cur.source] ?? 0)) byDay.set(r.measuredOn, r);

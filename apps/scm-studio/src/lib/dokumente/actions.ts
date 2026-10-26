@@ -1,5 +1,6 @@
 "use server";
-// Server Actions für Dokumente: anlegen, bearbeiten, final machen, unterschreiben, widerrufen.
+// Server Actions für Dokumente: anlegen, bearbeiten, festhalten (zur Unterschrift freigeben bzw. ablegen),
+// unterschreiben, widerrufen.
 // Unterschriebene Dokumente sind in der Datenbank unveränderlich (Trigger), nur ein Widerruf wird vermerkt.
 import { and, eq } from "drizzle-orm";
 import { refresh } from "next/cache";
@@ -8,10 +9,10 @@ import { z } from "zod";
 import { getDb, schema } from "@/db";
 import type { Doc } from "@/db/schema";
 import { done, fail, formToObject, parseForm, type ActionState } from "@/lib/action";
-import { assertUser } from "@/lib/auth";
+import { assertUser, type CurrentUser } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { sha256 } from "@/lib/crypto";
-import { getCompany } from "@/lib/settings";
+import { getCompany, type Company } from "@/lib/settings";
 import { putFile } from "@/lib/storage";
 import { berlinDateTime, todayIso } from "@/lib/time";
 import { buildDrehplanSnapshot, buildReportSnapshot, partyOf } from "./data";
@@ -19,7 +20,9 @@ import type { SignProof } from "./pdf/types";
 import { buildRenderCtx, pdfFileName, renderDocument } from "./render";
 import {
   canonicalJson,
+  consentController,
   consentSigners,
+  controllerProblem,
   DEFAULT_CHECKLISTE,
   defaultVertrag,
   drehplanSchema,
@@ -31,9 +34,11 @@ import {
   strokesSchema,
   vertragSchema,
   ZWECK_KEYS,
+  zweckKeysFor,
   type DrehplanData,
   type EinwilligungData,
   type MonatsberichtData,
+  type PartySnapshot,
   type SignatureEntry,
   type VertragData,
 } from "./schema";
@@ -62,6 +67,23 @@ const dbError = (e: unknown) => {
   const msg = e instanceof Error ? e.message : String(e);
   return msg.includes("GoBD") || msg.includes("Unterschriebene") ? msg.replace(/^.*?(GoBD|Unterschriebene)/, "$1") : "Speichern fehlgeschlagen. Bitte erneut versuchen.";
 };
+
+/**
+ * Einwilligung an den Auftraggeber anpassen: ohne Kunden ist SCM verantwortlich, und der Zweck
+ * "Kanäle des Auftraggebers" entfällt. Liefert einen Feldfehler, wenn "Kunde" ohne Kunden gewählt ist.
+ */
+function fitConsent(data: EinwilligungData, hasClient: boolean): { data: EinwilligungData } | { error: ActionState } {
+  if (!hasClient && data.verantwortlich === "kunde")
+    return { error: fail("Ohne Auftraggeber ist SCM verantwortlich.", { verantwortlich: ["Ohne Auftraggeber bitte SCM wählen"] }) };
+  const allowed = zweckKeysFor(hasClient);
+  return { data: { ...data, zwecke: data.zwecke.filter((z) => allowed.includes(z)) } };
+}
+
+/** Prüft, ob die verantwortliche Stelle vollständig ist (Name, Anschrift, E-Mail für Datenschutzfragen). */
+function consentReady(data: Pick<EinwilligungData, "verantwortlich">, party: PartySnapshot | null, company: Company | null, hasClient: boolean): ActionState | null {
+  const problem = controllerProblem(consentController(data.verantwortlich, party, company), hasClient);
+  return problem ? fail(problem, { verantwortlich: [problem] }) : null;
+}
 
 // ------------------------------------------------------------------
 // Anlegen
@@ -93,13 +115,19 @@ export async function createDocument(_: ActionState, fd: FormData): Promise<Acti
   } else if (kind === "einwilligung") {
     const r = parseForm(einwilligungSchema, fd);
     if (!r.success) return r.state;
-    data = r.data;
+    const fitted = fitConsent(r.data, Boolean(client));
+    if ("error" in fitted) return fitted.error;
+    data = fitted.data;
     title = `Einwilligung ${r.data.personName} · ${fmtDay(r.data.drehtag)}`;
     templateVersion = LEGAL_TEMPLATE_VERSION;
     if (intent === "sign") {
-      // direkt am Set: Fassung festhalten und zur Unterschrift
+      // direkt am Set: Fassung festhalten und zur Unterschrift, aber nur mit vollständiger verantwortlicher Stelle
+      const party = client ? partyOf(client) : null;
+      const company = await getCompany();
+      const notReady = consentReady(fitted.data, party, company, Boolean(client));
+      if (notReady) return notReady;
       status = "final";
-      data = { ...data, party: client ? partyOf(client) : null, companySnapshot: await getCompany() };
+      data = { ...data, party, companySnapshot: company };
     }
   } else if (kind === "drehplan") {
     const extra = z.object({ drehtag: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Drehtag wählen"), eventId: z.coerce.number().int().positive().optional() });
@@ -157,35 +185,62 @@ export async function saveDocument(id: number, _: ActionState, fd: FormData): Pr
   const r = parseForm(schemaFor[doc.kind] as z.ZodType, fd);
   if (!r.success) return r.state;
   const t = z.object({ title: z.string().min(3, "Titel fehlt").max(160) }).safeParse(formToObject(fd));
-  if (!t.success) return fail("Titel fehlt.", { title: ["Titel fehlt"] });
+  if (!t.success) return fail("Bitte einen Titel eintragen.", { title: ["Titel fehlt"] });
+  let data = r.data as Record<string, unknown>;
+  if (doc.kind === "einwilligung") {
+    const fitted = fitConsent(r.data as EinwilligungData, Boolean(doc.clientId));
+    if ("error" in fitted) return fitted.error;
+    data = fitted.data;
+  }
   const db = await getDb();
   try {
     await db
       .update(schema.documents)
-      .set({ data: r.data as Record<string, unknown>, title: t.data.title, updatedAt: new Date() })
+      .set({ data, title: t.data.title, updatedAt: new Date() })
       .where(and(eq(schema.documents.id, id), eq(schema.documents.status, "entwurf")));
   } catch (e) {
     return fail(dbError(e));
   }
   await audit(user.id, "document", id, "bearbeitet");
+  // "Zur Unterschrift freigeben" bzw. "Abschließen und ablegen" sendet dasselbe Formular: erst speichern, dann
+  // festhalten. So geht keine ungespeicherte Änderung verloren.
+  if (fd.get("intent") === "final") {
+    const saved = await loadDoc(id);
+    if (!saved) return fail("Dokument nicht gefunden.");
+    const r2 = await finalizeLoaded(saved, user);
+    refresh();
+    return r2.ok ? r2 : { ...r2, error: `Gespeichert, aber noch nicht festgehalten. ${r2.error ?? ""}`.trim() };
+  }
   refresh();
   return done("Gespeichert");
 }
 
 // ------------------------------------------------------------------
-// Final machen / wieder öffnen / löschen
+// Festhalten / wieder öffnen / löschen
 // ------------------------------------------------------------------
 export async function finalizeDocument(id: number): Promise<ActionState> {
   const user = await assertUser();
   const doc = await loadDoc(id);
   if (!doc) return fail("Dokument nicht gefunden.");
-  if (doc.status !== "entwurf") return fail("Das Dokument ist schon final.");
+  const r = await finalizeLoaded(doc, user);
+  if (r.ok) refresh();
+  return r;
+}
+
+async function finalizeLoaded(doc: Doc, user: CurrentUser): Promise<ActionState> {
+  const id = doc.id;
+  if (doc.status !== "entwurf") return fail("Das Dokument ist schon freigegeben oder abgelegt.");
   if (!isDocKind(doc.kind)) return fail("Unbekannte Dokumentart.");
   const check = (schemaFor[doc.kind] as z.ZodType).safeParse(doc.data);
-  if (!check.success) return fail("Bitte zuerst alle Pflichtangaben speichern.");
+  if (!check.success) return fail("Bitte zuerst alle Pflichtangaben ausfüllen und speichern.");
   const client = await loadClient(doc.clientId);
   const company = await getCompany();
-  const data: Record<string, unknown> = { ...(doc.data as Record<string, unknown>), party: client ? partyOf(client) : null, companySnapshot: company };
+  const party = client ? partyOf(client) : null;
+  if (doc.kind === "einwilligung") {
+    const notReady = consentReady(doc.data as unknown as EinwilligungData, party, company, Boolean(client));
+    if (notReady) return notReady;
+  }
+  const data: Record<string, unknown> = { ...(doc.data as Record<string, unknown>), party, companySnapshot: company };
   if (doc.kind === "drehplan") {
     const d = doc.data as unknown as DrehplanData;
     data.snapshot = await buildDrehplanSnapshot(doc.clientId, { drehtag: d.drehtag, teamIds: d.teamIds ?? [] });
@@ -209,8 +264,7 @@ export async function finalizeDocument(id: number): Promise<ActionState> {
   } catch (e) {
     return fail(dbError(e));
   }
-  refresh();
-  return done(doc.kind === "vertrag" || doc.kind === "einwilligung" ? "Fassung festgehalten. Jetzt kann unterschrieben werden." : "Final gemacht und als PDF abgelegt");
+  return done(doc.kind === "vertrag" || doc.kind === "einwilligung" ? "Zur Unterschrift freigegeben" : "Abgeschlossen und als PDF abgelegt");
 }
 
 export async function reopenDocument(id: number): Promise<ActionState> {
@@ -269,7 +323,7 @@ export async function signAsScm(id: number, payloadJson: string): Promise<Action
   const user = await assertUser();
   const doc = await loadDoc(id);
   if (!doc || doc.kind !== "vertrag") return fail("Vertrag nicht gefunden.");
-  if (doc.status !== "final") return fail(doc.status === "entwurf" ? "Bitte den Vertrag zuerst final machen." : "Der Vertrag ist bereits unterschrieben.");
+  if (doc.status !== "final") return fail(doc.status === "entwurf" ? "Bitte den Vertrag zuerst zur Unterschrift freigeben." : "Der Vertrag ist bereits unterschrieben.");
   let parsed: unknown;
   try {
     parsed = JSON.parse(payloadJson);
@@ -295,7 +349,7 @@ export async function signDocument(id: number, payloadJson: string): Promise<Act
   const doc = await loadDoc(id);
   if (!doc || (doc.kind !== "vertrag" && doc.kind !== "einwilligung")) return fail("Dokument nicht gefunden.");
   if (doc.status === "unterschrieben") return fail("Dieses Dokument ist bereits unterschrieben.");
-  if (doc.status !== "final") return fail("Bitte das Dokument zuerst final machen.");
+  if (doc.status !== "final") return fail("Bitte das Dokument zuerst zur Unterschrift freigeben.");
   let parsed: unknown;
   try {
     parsed = JSON.parse(payloadJson);
@@ -323,13 +377,16 @@ export async function signDocument(id: number, payloadJson: string): Promise<Act
     signatures.push(scm, { role: "kunde", label: "Für den Auftraggeber", name: signerName, strokes: roundStrokes(kunde.strokes), signedAt: now, byUserId: user.id });
   } else {
     const d = data as unknown as EinwilligungData;
+    const notReady = consentReady(d, d.party ?? null, (data.companySnapshot as Company | undefined) ?? null, Boolean(doc.clientId));
+    if (notReady) return notReady;
     const needed = consentSigners(d);
     for (const n of needed) {
       const got = p.signatures.find((x) => x.role === n.role);
       if (!got) return fail(`Es fehlt: ${n.label}.`);
       signatures.push({ role: n.role, label: n.label, name: n.name, strokes: roundStrokes(got.strokes), signedAt: now, byUserId: user.id });
     }
-    const zwecke = (p.zwecke ?? d.zwecke ?? []) as EinwilligungData["zwecke"];
+    const allowed = zweckKeysFor(Boolean(doc.clientId));
+    const zwecke = ((p.zwecke ?? d.zwecke ?? []) as EinwilligungData["zwecke"]).filter((z) => allowed.includes(z));
     if (!zwecke.includes("aufnahme")) return fail("Ohne Einwilligung in die Aufnahme kann nicht gefilmt werden. Dann bitte nicht unterschreiben.");
     data.zweckeBeiUnterschrift = zwecke;
     data.zwecke = zwecke;

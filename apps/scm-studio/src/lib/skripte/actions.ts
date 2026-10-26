@@ -9,7 +9,7 @@ import { done, fail, parseForm, zOptText, zText, type ActionState } from "@/lib/
 import { audit } from "@/lib/audit";
 import { assertUser } from "@/lib/auth";
 import { generateScript } from "./ai";
-import { GenInput, ScriptDraft, type GenResult } from "./schema";
+import { GenInput, hookAndCta, ScriptDraft, type GenResult } from "./schema";
 
 const beatsJson = z
   .string()
@@ -30,91 +30,32 @@ const beatsJson = z
     }
   });
 
+// Hook und Aufruf stehen nur noch im Ablauf (Abschnitte „Hook“ und „Aufruf“) und werden beim Speichern abgeleitet.
 const scriptSchema = z.object({
   title: zText("Titel", 200),
   format: zOptText(80),
-  hook: zOptText(500),
   beats: beatsJson,
   caption: zOptText(2200),
-  cta: zOptText(500),
-  status: z.enum(["entwurf", "final"]).default("entwurf"),
   clientId: z.coerce.number().int().positive().optional(),
+  /** Speichern und zugleich: Status setzen oder eine Kopie anlegen (Knöpfe im Seitenkopf) */
+  intent: z.enum(["speichern", "final", "entwurf", "duplizieren"]).optional(),
 });
 
-export async function saveScript(id: number, _: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await assertUser();
-  const parsed = parseForm(scriptSchema, fd);
-  if (!parsed.success) return parsed.state;
-  const d = parsed.data;
+/** Ein fertiges Skript bringt ein verknüpftes Video von „Idee“ auf „Skript“. */
+async function bumpVideo(videoId: number | null) {
+  if (!videoId) return;
   const db = await getDb();
-  const [s] = await db
-    .update(schema.scripts)
-    .set({
-      title: d.title,
-      format: d.format ?? null,
-      hook: d.hook ?? null,
-      beats: d.beats,
-      caption: d.caption ?? null,
-      cta: d.cta ?? null,
-      status: d.status,
-      clientId: d.clientId ?? null,
-      updatedAt: new Date(),
-    })
-    .where(eq(schema.scripts.id, id))
-    .returning();
-  if (!s) return fail("Skript nicht gefunden.");
-  await audit(user.id, "skript", id, "geändert", { status: s.status, beats: d.beats.length });
-  refresh();
-  return done("Skript gespeichert.");
+  const [v] = await db.select().from(schema.videos).where(eq(schema.videos.id, videoId));
+  if (v?.status === "idee") await db.update(schema.videos).set({ status: "skript", updatedAt: new Date() }).where(eq(schema.videos.id, v.id));
 }
 
-export async function setScriptStatus(id: number, status: "entwurf" | "final"): Promise<ActionState> {
-  const user = await assertUser();
+async function copyOf(orig: typeof schema.scripts.$inferSelect, userId: number) {
   const db = await getDb();
-  const [s] = await db.update(schema.scripts).set({ status, updatedAt: new Date() }).where(eq(schema.scripts.id, id)).returning();
-  if (!s) return fail("Skript nicht gefunden.");
-  // Finales Skript bringt ein verknüpftes Video von "Idee" auf "Skript"
-  if (status === "final" && s.videoId) {
-    const [v] = await db.select().from(schema.videos).where(eq(schema.videos.id, s.videoId));
-    if (v?.status === "idee") await db.update(schema.videos).set({ status: "skript", updatedAt: new Date() }).where(eq(schema.videos.id, v.id));
-  }
-  await audit(user.id, "skript", id, "status", { status });
-  refresh();
-  return done(status === "final" ? "Skript ist final." : "Skript ist wieder ein Entwurf.");
-}
-
-export async function createBlankScript(): Promise<ActionState> {
-  const user = await assertUser();
-  const db = await getDb();
-  const [s] = await db
-    .insert(schema.scripts)
-    .values({
-      title: "Neues Skript",
-      source: "manuell",
-      createdBy: user.id,
-      beats: [
-        { tc: "00:00", label: "Hook", text: "" },
-        { tc: "00:02", label: "Wiedererkennen", text: "" },
-        { tc: "00:10", label: "Steigerung", text: "" },
-        { tc: "00:20", label: "Pointe", text: "" },
-        { tc: "00:26", label: "Aufruf", text: "" },
-      ],
-    })
-    .returning();
-  await audit(user.id, "skript", s.id, "angelegt", { source: "manuell" });
-  return done("Leeres Skript angelegt.", { redirectTo: `/skripte/${s.id}`, id: s.id });
-}
-
-export async function duplicateScript(id: number): Promise<ActionState> {
-  const user = await assertUser();
-  const db = await getDb();
-  const [orig] = await db.select().from(schema.scripts).where(eq(schema.scripts.id, id));
-  if (!orig) return fail("Skript nicht gefunden.");
   const [copy] = await db
     .insert(schema.scripts)
     .values({
       clientId: orig.clientId,
-      title: `${orig.title} (Kopie)`,
+      title: `${orig.title} (Kopie)`.slice(0, 200),
       format: orig.format,
       hook: orig.hook,
       beats: orig.beats,
@@ -124,10 +65,96 @@ export async function duplicateScript(id: number): Promise<ActionState> {
       source: orig.source,
       model: orig.model,
       briefing: orig.briefing,
+      createdBy: userId,
+    })
+    .returning();
+  await audit(userId, "skript", copy.id, "dupliziert", { von: orig.id });
+  return copy;
+}
+
+/** Editor speichern. Mit intent=final/entwurf wird zugleich der Status gesetzt, mit intent=duplizieren danach kopiert. */
+export async function saveScript(id: number, _: ActionState, fd: FormData): Promise<ActionState> {
+  const user = await assertUser();
+  const parsed = parseForm(scriptSchema, fd);
+  if (!parsed.success) return parsed.state;
+  const d = parsed.data;
+  const { hook, cta } = hookAndCta(d.beats);
+  const status = d.intent === "final" ? "final" : d.intent === "entwurf" ? "entwurf" : undefined;
+  const db = await getDb();
+  const [s] = await db
+    .update(schema.scripts)
+    .set({
+      title: d.title,
+      format: d.format ?? null,
+      hook,
+      beats: d.beats,
+      caption: d.caption ?? null,
+      cta,
+      ...(status ? { status } : {}),
+      clientId: d.clientId ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.scripts.id, id))
+    .returning();
+  if (!s) return fail("Skript nicht gefunden.");
+  await audit(user.id, "skript", id, "geändert", { status: s.status, schritte: d.beats.length });
+  if (status === "final") await bumpVideo(s.videoId);
+  if (d.intent === "duplizieren") {
+    const copy = await copyOf(s, user.id);
+    return done("Gespeichert und Kopie angelegt.", { redirectTo: `/skripte/${copy.id}`, id: copy.id });
+  }
+  refresh();
+  if (status === "final") return done("Gespeichert und als fertig markiert.");
+  if (status === "entwurf") return done("Gespeichert. Das Skript ist wieder ein Entwurf.");
+  return done("Skript gespeichert.");
+}
+
+/** Status ohne Editor setzen (Drehbuch-Ansicht). */
+export async function setScriptStatus(id: number, status: "entwurf" | "final"): Promise<ActionState> {
+  const user = await assertUser();
+  const db = await getDb();
+  const [s] = await db.update(schema.scripts).set({ status, updatedAt: new Date() }).where(eq(schema.scripts.id, id)).returning();
+  if (!s) return fail("Skript nicht gefunden.");
+  if (status === "final") await bumpVideo(s.videoId);
+  await audit(user.id, "skript", id, "status", { status });
+  refresh();
+  return done(status === "final" ? "Skript ist als fertig markiert." : "Skript ist wieder ein Entwurf.");
+}
+
+/** Leeres Skript aus dem Editor anlegen (erst beim Speichern, ein Fehlklick legt nichts an). */
+export async function createScript(_: ActionState, fd: FormData): Promise<ActionState> {
+  const user = await assertUser();
+  const parsed = parseForm(scriptSchema, fd);
+  if (!parsed.success) return parsed.state;
+  const d = parsed.data;
+  const { hook, cta } = hookAndCta(d.beats);
+  const db = await getDb();
+  const [s] = await db
+    .insert(schema.scripts)
+    .values({
+      title: d.title,
+      format: d.format ?? null,
+      hook,
+      beats: d.beats,
+      caption: d.caption ?? null,
+      cta,
+      clientId: d.clientId ?? null,
+      status: d.intent === "final" ? "final" : "entwurf",
+      source: "manuell",
       createdBy: user.id,
     })
     .returning();
-  await audit(user.id, "skript", copy.id, "dupliziert", { von: id });
+  await audit(user.id, "skript", s.id, "angelegt", { source: "manuell" });
+  return done("Skript angelegt.", { redirectTo: `/skripte/${s.id}`, id: s.id });
+}
+
+/** Kopie aus dem gespeicherten Stand (Drehbuch-Ansicht; im Editor über saveScript mit intent=duplizieren). */
+export async function duplicateScript(id: number): Promise<ActionState> {
+  const user = await assertUser();
+  const db = await getDb();
+  const [orig] = await db.select().from(schema.scripts).where(eq(schema.scripts.id, id));
+  if (!orig) return fail("Skript nicht gefunden.");
+  const copy = await copyOf(orig, user.id);
   return done("Kopie angelegt.", { redirectTo: `/skripte/${copy.id}`, id: copy.id });
 }
 
@@ -218,6 +245,7 @@ export async function saveGenerated(_: ActionState, fd: FormData): Promise<Actio
     ...(b.shot ? { shot: b.shot } : {}),
   }));
   const caption = [draft.caption, draft.hashtags.join(" ")].filter(Boolean).join("\n\n");
+  const derived = hookAndCta(beats);
   const [s] = await db
     .insert(schema.scripts)
     .values({
@@ -225,10 +253,10 @@ export async function saveGenerated(_: ActionState, fd: FormData): Promise<Actio
       videoId: d.videoId ?? null,
       title: d.title,
       format: d.format ?? null,
-      hook,
+      hook: derived.hook ?? hook,
       beats,
       caption,
-      cta: draft.cta,
+      cta: derived.cta ?? draft.cta,
       status: "entwurf",
       source: d.source,
       model: d.source === "ki" ? (d.model ?? null) : null,

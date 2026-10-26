@@ -1,31 +1,35 @@
-import { ArrowLeft, CheckCircle2, Copy, FileDown, RotateCcw, Trash2 } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { DrehbuchView } from "@/components/skripte/drehbuch-view";
 import { ScriptEditor } from "@/components/skripte/script-editor";
+import { ScriptHeaderActions } from "@/components/skripte/script-header-actions";
 import { SourceBadge } from "@/components/skripte/source-badge";
 import { ActionForm } from "@/components/ui/action-form";
 import { Badge, Dot } from "@/components/ui/badge";
-import { LinkButton } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
-import { ActionButton } from "@/components/ui/confirm-action";
 import { Field, Select } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DetailSkeleton } from "@/components/ui/skeleton";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { LinkTabs } from "@/components/ui/tabs";
 import { dateTime, monthLabel } from "@/lib/format";
 import { videoStatus } from "@/lib/labels";
 import { deleteScript, duplicateScript, linkToVideo, saveScript, setScriptStatus } from "@/lib/skripte/actions";
-import { getScript, getScriptOptions } from "@/lib/skripte/data";
+import { getScript, getScriptOptions, getScriptTitle } from "@/lib/skripte/data";
 import { modelLabel } from "@/lib/skripte/pricing";
-
-export const metadata: Metadata = { title: "Skript" };
+import { scriptFormId, scriptStatusLabel } from "@/lib/skripte/schema";
 
 type Params = Promise<{ id: string }>;
 type SP = Promise<Record<string, string | string[] | undefined>>;
+
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const id = Number((await params).id);
+  const title = Number.isInteger(id) && id > 0 ? await getScriptTitle(id) : null;
+  return { title: title ? `${title} · Skripte` : "Skript" };
+}
 
 export default function SkriptPage({ params, searchParams }: { params: Params; searchParams: SP }) {
   return (
@@ -49,16 +53,14 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
 
   return (
     <>
-      <Link href="/skripte" className="mb-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted hover:text-ink">
-        <ArrowLeft className="size-4" /> Alle Skripte
-      </Link>
       <PageHeader
         scene="Szene 05 · Skripte"
+        back={{ href: "/skripte", label: "Skripte" }}
         title={s.title}
         description={
           <span className="inline-flex flex-wrap items-center gap-2">
             {client ? (
-              <Link href={`/kunden/${client.id}`} className="inline-flex items-center gap-1.5 font-semibold text-ink-2 hover:underline">
+              <Link href={`/kunden/${client.id}`} className="hit inline-flex items-center gap-1.5 font-semibold text-ink-2 hover:underline">
                 <Dot color={client.color} /> {client.name}
               </Link>
             ) : (
@@ -66,27 +68,21 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
             )}
             {s.format && <span>· {s.format}</span>}
             <SourceBadge source={s.source} />
-            <Badge tone={s.status === "final" ? "ok" : "neutral"}>{s.status === "final" ? "Final" : "Entwurf"}</Badge>
+            <Badge tone={s.status === "final" ? "ok" : "neutral"}>{scriptStatusLabel(s.status)}</Badge>
           </span>
         }
         actions={
-          <>
-            <LinkButton href={`/api/skripte/${s.id}/pdf`} target="_blank" variant="secondary" prefetch={false}>
-              <FileDown className="size-4" /> PDF
-            </LinkButton>
-            <ActionButton action={duplicateScript.bind(null, s.id)} variant="secondary" size="md">
-              <Copy className="size-4" /> Duplizieren
-            </ActionButton>
-            {s.status === "final" ? (
-              <ActionButton action={setScriptStatus.bind(null, s.id, "entwurf")} variant="secondary" size="md">
-                <RotateCcw className="size-4" /> Wieder Entwurf
-              </ActionButton>
-            ) : (
-              <ActionButton action={setScriptStatus.bind(null, s.id, "final")} variant="primary" size="md">
-                <CheckCircle2 className="size-4" /> Final
-              </ActionButton>
-            )}
-          </>
+          <ScriptHeaderActions
+            title={s.title}
+            status={s.status}
+            editing={view === "bearbeiten"}
+            pdfHref={`/api/skripte/${s.id}/pdf`}
+            setFinal={setScriptStatus.bind(null, s.id, "final")}
+            setDraft={setScriptStatus.bind(null, s.id, "entwurf")}
+            duplicate={duplicateScript.bind(null, s.id)}
+            remove={deleteScript.bind(null, s.id)}
+            formId={scriptFormId(s.id)}
+          />
         }
       />
 
@@ -103,9 +99,10 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
           ) : (
             <Card className="p-5 sm:p-6">
               <ScriptEditor
-                key={s.updatedAt.toISOString()}
+                key={s.id}
+                formId={scriptFormId(s.id)}
                 action={saveScript.bind(null, s.id)}
-                script={{ title: s.title, format: s.format, hook: s.hook, beats: s.beats, caption: s.caption, cta: s.cta, status: s.status, clientId: s.clientId }}
+                script={{ title: s.title, format: s.format, hook: s.hook, beats: s.beats, caption: s.caption, cta: s.cta, clientId: s.clientId }}
                 clients={opts.clients}
               />
             </Card>
@@ -115,13 +112,19 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
         <aside className="grid content-start gap-6">
           <Card>
             <CardHeader title="Video" sub={video ? "Verknüpft" : "Noch nicht verknüpft"} />
-            <div className="grid gap-4 p-5">
+            <div className="grid gap-4 px-5 pb-5">
               {video && (
-                <Link href={`/produktion/${video.id}`} className="rounded-xl border border-line bg-canvas p-3 hover:border-line-2">
-                  <div className="font-semibold">{video.title}</div>
-                  <div className="mt-1 text-[12px] text-muted">
-                    {videoStatus(video.status).label} · {monthLabel(video.month)}
+                <Link
+                  href={`/produktion/${video.id}`}
+                  className="squircle flex items-center gap-3 rounded-[14px] bg-sunken p-3 transition-colors hover:bg-fill"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold">{video.title}</div>
+                    <div className="mt-0.5 text-[13px] text-muted">
+                      {videoStatus(video.status).label} · {monthLabel(video.month)}
+                    </div>
                   </div>
+                  <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
                 </Link>
               )}
               <ActionForm action={linkToVideo.bind(null, s.id)} className="grid gap-2">
@@ -137,7 +140,7 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
                 </Field>
                 <div className="flex justify-end">
                   <SubmitButton variant="secondary" size="sm">
-                    Übernehmen
+                    Verknüpfen
                   </SubmitButton>
                 </div>
               </ActionForm>
@@ -146,7 +149,7 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
 
           <Card>
             <CardHeader title="Infos" />
-            <dl className="grid gap-3 p-5 text-[13px]">
+            <dl className="grid gap-3 px-5 pb-5 text-[14px]">
               <div className="flex justify-between gap-3">
                 <dt className="text-muted">Entstanden</dt>
                 <dd className="text-right">{s.source === "ki" ? `KI (${modelLabel(s.model ?? "")})` : s.source === "demo" ? "Demo-Generator" : "Von Hand"}</dd>
@@ -162,37 +165,15 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
                 <dd className="text-right">{dateTime(s.updatedAt)}</dd>
               </div>
               {s.briefing && (
-                <div className="border-t border-line pt-3">
+                <div className="border-t border-hairline pt-3">
                   <dt className="text-muted">Briefing</dt>
                   <dd className="mt-1 whitespace-pre-line text-ink-2">{s.briefing}</dd>
                 </div>
               )}
             </dl>
           </Card>
-
-          <Card>
-            <CardHeader title="Skript löschen" />
-            <div className="p-5">
-              <ActionButton action={deleteScript.bind(null, s.id)} confirm={`„${s.title}“ wirklich löschen?`} variant="danger">
-                <Trash2 className="size-4" /> Löschen
-              </ActionButton>
-            </div>
-          </Card>
         </aside>
       </div>
     </>
-  );
-}
-
-function DetailSkeleton() {
-  return (
-    <div className="grid gap-6">
-      <Skeleton className="h-4 w-32" />
-      <Skeleton className="h-16 w-2/3" />
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-        <Skeleton className="h-[640px]" />
-        <Skeleton className="h-72" />
-      </div>
-    </div>
   );
 }

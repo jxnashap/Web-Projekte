@@ -12,4 +12,4 @@ export function seriesColorMap(allClientIds: number[]): Map<number, string> {
 export const INK = "#1d1d1f";
 export const ACCENT = "#e1251b";
 export const GRID = "#e8e8ed";
-export const AXIS = "#86868b";
+export const AXIS = "#6e6e73"; // Achsentext: 5:1 auf Weiß (WCAG AA)

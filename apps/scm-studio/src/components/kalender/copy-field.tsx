@@ -3,7 +3,7 @@ import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-/** Nur-Lese-Feld mit Kopierknopf (z. B. Abo-Link, Verbindungslink). */
+/** Nur-Lese-Feld mit Kopierknopf (z. B. Abo-Link, Verbindungslink). Gefüllt wie ein Eingabefeld, ohne Rahmen. */
 export function CopyField({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -13,7 +13,7 @@ export function CopyField({ value, label }: { value: string; label: string }) {
         value={value}
         aria-label={label}
         onFocus={(e) => e.currentTarget.select()}
-        className="h-10 min-w-0 flex-1 rounded-lg border border-line-2 bg-sunken px-3 font-mono text-[12px] text-ink-2 focus:border-ink focus:outline-none"
+        className="h-11 min-w-0 flex-1 rounded-[var(--radius-control)] border border-transparent bg-sunken px-3 text-[14px] text-ink-2 focus:border-accent focus:bg-surface focus:outline-none sm:h-10 sm:text-[13px]"
       />
       <button
         type="button"
@@ -27,7 +27,7 @@ export function CopyField({ value, label }: { value: string; label: string }) {
             toast.error("Kopieren nicht möglich. Bitte den Link markieren und kopieren.");
           }
         }}
-        className="grid size-10 shrink-0 place-items-center rounded-full border border-line-2 bg-surface text-ink-2 hover:border-ink"
+        className="grid size-11 shrink-0 place-items-center rounded-full bg-fill text-ink-2 transition-colors hover:bg-[rgb(120_120_128/0.18)] hover:text-ink sm:size-10"
         aria-label={`${label} kopieren`}
       >
         {copied ? <Check className="size-4 text-ok" /> : <Copy className="size-4" />}

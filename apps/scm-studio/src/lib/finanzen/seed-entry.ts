@@ -2,3 +2,4 @@
 export { cancelInvoice, createReminder, finalizeInvoice, offerToInvoice } from "./workflow";
 export { demoReceiptPdf } from "./demo";
 export { putFile } from "@/lib/storage";
+export { audit } from "@/lib/audit";
