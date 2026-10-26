@@ -5,7 +5,7 @@
 import { Command } from "cmdk";
 import { FileText, Inbox, LogOut, Plus, ReceiptEuro, ScrollText, Search, Users, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { logout } from "@/app/login/actions";
 import { NAV } from "./nav";
 import { QUICK_ACTIONS } from "./quick-actions";
@@ -67,10 +67,14 @@ export function CommandMenu({ entries }: { entries: CommandEntry[] }) {
   const [, start] = useTransition();
   const router = useRouter();
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const [isMac, setIsMac] = useState(true);
+  // Tastenkürzel passend zum System anzeigen (Server: Mac-Schreibweise)
+  const isMac = useSyncExternalStore(
+    () => () => {},
+    () => /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent),
+    () => true,
+  );
 
   useEffect(() => {
-    setIsMac(/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent));
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
