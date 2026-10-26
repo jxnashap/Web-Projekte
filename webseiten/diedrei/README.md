@@ -24,7 +24,7 @@ Quelle der Inhalte: diedreibar.de (Texte, Fotos, Logo, Weinkarte-PDF vom
 
 | Seite | Inhalt |
 |---|---|
-| `index.html` | Hero mit Claim „Jeder Schluck erzählt eine Geschichte.“ und Heute-Status · Intro · 3 Kacheln · Laufband · Stimmen (Google) · Öffnungszeiten + Reservierung |
+| `index.html` | Hero mit Claim „Jeder Schluck erzählt eine Geschichte.“ und Heute-Status · Intro · 3 Kacheln · Laufband · Stimmen (Google) · Öffnungszeiten + Reservierung · Folge uns (Instagram @die_drei_weinbar, TikTok @diedreiweinbar) |
 | `bar.html` | Atmosphäre · Galerie · Weine · Feiern · Brotzeit |
 | `weinkarte.html` | komplette Karte (17 Kategorien, 115 Einträge) mit Sprungnavigation und PDF |
 | `besuch.html` | Zeiten (heute markiert) · Adresse · Reservierung · Anfahrt als Link |

@@ -550,6 +550,27 @@ body.loaded .hero-media img{transform:none}
 .award span{font:500 .66rem/1 var(--sans);font-style:normal;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
 .note{font-size:.92rem;color:var(--fg-dim);padding-left:1.1rem;border-left:1px solid var(--accent);max-width:var(--measure)}
 
+/* Folge uns: Instagram + TikTok als ruhige Link-Karten */
+.social{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(2rem,6vw,6rem);align-items:end}
+.social-head .lbl{margin-bottom:1.1rem}
+.social-links{display:grid;border-top:1px solid var(--line)}
+.social-card{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1.4rem;
+  padding:1.6rem .2rem;border-bottom:1px solid var(--line);color:var(--fg);
+  transition:background-color .45s ease,padding .6s var(--ease)}
+.social-card:hover{background:var(--blush);padding-inline:1rem}
+.sc-ico{display:grid;place-items:center;width:3.2rem;height:3.2rem;border-radius:50%;
+  border:1px solid var(--line-2);color:var(--accent)}
+.sc-ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.sc-ico .dot{fill:currentColor}
+.sc-txt{display:flex;flex-direction:column;gap:.3rem}
+.sc-name{font-family:var(--serif);font-weight:340;font-size:clamp(1.4rem,2.4vw,1.85rem);line-height:1.1;
+  font-variation-settings:"SOFT" 100,"WONK" 0}
+.sc-handle{font-size:.92rem;color:var(--fg-dim)}
+.sc-arrow svg{width:24px;height:10px;stroke:var(--accent);stroke-width:1.3;fill:none;transition:transform .6s var(--ease)}
+.social-card:hover .sc-arrow svg{transform:translateX(6px)}
+@media(max-width:880px){.social{grid-template-columns:1fr;align-items:start}}
+@media(prefers-reduced-motion:reduce){.social-card,.social-card:hover{transition:none;padding-inline:.2rem}}
+
 /* Galerie-Mosaik */
 .mosaic{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:clamp(.7rem,1.4vw,1.4rem)}
 .mosaic .rv-img{grid-column:span 4;aspect-ratio:4/5}

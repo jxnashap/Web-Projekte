@@ -307,3 +307,14 @@ Nützlich für die Website, aber **nicht belegt** – nur mit Bestätigung des B
 - [PLATZHALTER: Rechtliche Prüfung von Impressum (DDG/MStV) und Datenschutzerklärung]
 - [PLATZHALTER: Bildrechte der 20 Originalfotos / Fotograf-Credit]
 - [PLATZHALTER: Datum „Stand“ der neuen Datenschutzerklärung]
+
+## Nachtrag: Social-Media-Profile (geprüft 26.10.2026)
+
+- **Instagram:** `@die_drei_weinbar` → https://www.instagram.com/die_drei_weinbar/
+  (Quelle: Link auf diedreibar.de, `home.md`; ebenso restaurantguru). Ein Konto
+  „diedreiweinbar“ auf Instagram ist nicht belegt (Instagram blockt anonyme Abrufe).
+- **TikTok:** `@diedreiweinbar` → https://www.tiktok.com/@diedreiweinbar
+  (Quelle: `.preview-cache/dd/social/tiktok-diedreiweinbar.html` + oEmbed; Nickname
+  „DieDreiWeinbar“, Bio: „Die Drei Weinbar · Wein, Freunde, gute Abende in Kiel ·
+  📍 Knooper Weg 189 | Kiel“). Varianten die_drei_weinbar / diedrei_weinbar /
+  diedrei.weinbar existieren auf TikTok nicht (statusCode 10221).

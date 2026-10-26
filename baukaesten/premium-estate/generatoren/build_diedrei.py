@@ -35,7 +35,10 @@ ZIP_CITY = "24118 Kiel"
 TEL = "+4943171978976"
 TEL_TXT = "0431 / 71978976"
 MAIL = "info@diedreibar.de"
-IG = "https://www.instagram.com/die_drei_weinbar/"
+IG = "https://www.instagram.com/die_drei_weinbar/"   # so auf diedreibar.de verlinkt
+IG_HANDLE = "@die_drei_weinbar"
+TIKTOK = "https://www.tiktok.com/@diedreiweinbar"     # Profil geprüft (Bio: Knooper Weg 189 | Kiel)
+TT_HANDLE = "@diedreiweinbar"
 YELP = "https://yelp.de/biz/WB2g2Ljv48X9yp3cV70TaQ"
 GOOGLE = "https://g.co/kgs/jAAEs6p"
 OSM = "https://www.openstreetmap.org/search?query=Knooper%20Weg%20189%2C%2024118%20Kiel"
@@ -79,6 +82,10 @@ ARROW = '<svg viewBox="0 0 24 10" aria-hidden="true"><path d="M0 5h22M18 1l4 4-4
 PHONE = ('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h3.2l1.6 4.2-2.1 1.3a11 11 0 0 0 '
          '5.8 5.8l1.3-2.1L19 13.8V17a2 2 0 0 1-2.2 2A15.8 15.8 0 0 1 3 5.2 2 2 0 0 1 5 3z"/></svg>')
 DOWN = ('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg>')
+IG_ICON = ('<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/>'
+           '<circle cx="12" cy="12" r="4"/><circle class="dot" cx="17.2" cy="6.8" r=".6"/></svg>')
+TT_ICON = ('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 3.5v11.25a3.25 3.25 0 1 1-3.25-3.25"/>'
+           '<path d="M13.5 3.5c.35 2.55 2.15 4.3 4.75 4.55"/></svg>')
 EXT = ' target="_blank" rel="noopener"'
 
 
@@ -200,7 +207,7 @@ def jsonld():
         "paymentAccepted": "Bargeld, EC-Karte, Kreditkarte, NFC",
         "currenciesAccepted": "EUR",
         "foundingDate": "2024",
-        "sameAs": [IG, YELP],
+        "sameAs": [IG, TIKTOK, YELP],
     }
     data.update(EXTRA_LD)
     return ('<script type="application/ld+json">'
@@ -290,7 +297,7 @@ def header(active):
   <div class="nav-meta">
     <p><span class="today" data-today></span></p>
     <p>{NAME_LONG}<br>{STREET} · {ZIP_CITY}<br><a href="tel:{TEL}">{TEL_TXT}</a></p>
-    <div class="row"><a href="{IG}"{EXT}>Instagram</a><a href="{YELP}"{EXT}>Yelp</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></div>
+    <div class="row"><a href="{IG}"{EXT}>Instagram</a><a href="{TIKTOK}"{EXT}>TikTok</a><a href="{YELP}"{EXT}>Yelp</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></div>
   </div>
 </div>
 <main id="main">
@@ -341,6 +348,7 @@ def footer():
           <p class="lbl">Folge uns</p>
           <ul>
             <li><a href="{IG}"{EXT}>Instagram</a></li>
+            <li><a href="{TIKTOK}"{EXT}>TikTok</a></li>
             <li><a href="{YELP}"{EXT}>Yelp</a></li>
             <li><a href="{GOOGLE}"{EXT}>Google</a></li>
           </ul>
@@ -691,9 +699,34 @@ def page_index():
     </div>
   </div>
 </section>
-"""
+{social()}"""
     out += footer()
     return out
+
+
+def social():
+    """„Folge uns“: Instagram + TikTok als einfache Links (keine Einbettung → keine Drittanbieter-Requests)."""
+    cards = ""
+    for i, (href, name, handle, icon) in enumerate(
+            [(IG, "Instagram", IG_HANDLE, IG_ICON), (TIKTOK, "TikTok", TT_HANDLE, TT_ICON)], 1):
+        cards += f"""
+      <a class="social-card rv" data-d="{i}" href="{href}"{EXT} aria-label="{name}: {handle} (öffnet in neuem Tab)">
+        <span class="sc-ico">{icon}</span>
+        <span class="sc-txt"><span class="sc-name">{name}</span><span class="sc-handle">{handle}</span></span>
+        <span class="sc-arrow">{ARROW}</span>
+      </a>"""
+    return f"""
+<section class="sec">
+  <div class="wrap social">
+    <div class="social-head">
+      <p class="lbl rv">Folge uns</p>
+      <h2 class="d2 split">Wein, Freunde, gute Abende – <em>auch auf Instagram &amp; TikTok.</em></h2>
+    </div>
+    <div class="social-links">{cards}
+    </div>
+  </div>
+</section>
+"""
 
 
 TILE_SIZES = "(max-width: 639px) 100vw, (max-width: 1320px) 29vw, 370px"
@@ -838,7 +871,7 @@ def page_besuch():
         <div><dt>Telefon</dt><dd><a class="ul num" href="tel:{TEL}">{TEL_TXT}</a></dd></div>
         <div><dt>E-Mail</dt><dd><a class="ul" href="mailto:{MAIL}">{MAIL}</a></dd></div>
         <div><dt>Bezahlen</dt><dd>Bargeld, EC-Karte, Kreditkarte und kontaktlos (NFC)</dd></div>
-        <div><dt>Online</dt><dd><a class="ul" href="{IG}"{EXT}>Instagram</a> · <a class="ul" href="{YELP}"{EXT}>Yelp</a> · <a class="ul" href="{GOOGLE}"{EXT}>Google</a></dd></div>
+        <div><dt>Online</dt><dd><a class="ul" href="{IG}"{EXT}>Instagram</a> · <a class="ul" href="{TIKTOK}"{EXT}>TikTok</a> · <a class="ul" href="{YELP}"{EXT}>Yelp</a> · <a class="ul" href="{GOOGLE}"{EXT}>Google</a></dd></div>
       </dl>
     </div>
   </div>
