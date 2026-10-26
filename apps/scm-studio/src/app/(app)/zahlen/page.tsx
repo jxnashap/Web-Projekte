@@ -165,7 +165,7 @@ async function Overview({ days, clientId }: { days: Period; clientId?: number })
   const perDay = o.now.views / o.days;
   return (
     <div className="grid gap-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <Stat label="Aufrufe" value={num(o.now.views)} sub={<Delta value={change(o.now.views, o.before.views)} />} />
         <Stat label="Interaktionen" value={num(o.now.interactions)} sub={<Delta value={change(o.now.interactions, o.before.interactions)} />} />
         <Stat

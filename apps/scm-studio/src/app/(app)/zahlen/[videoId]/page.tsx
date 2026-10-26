@@ -96,7 +96,7 @@ async function Detail({ params }: { params: Params }) {
         </EmptyState>
       ) : (
         <div className="grid gap-6">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             <Stat label="Aufrufe" value={num(latest.views)} sub={`Stand ${dateDe(latest.measuredOn)}`} />
             <Stat label="Reichweite" value={latest.reach === null ? "k. A." : num(latest.reach)} sub="erreichte Konten" />
             <Stat label="Interaktionen" value={num(inter)} sub={`${num(latest.likes)} Likes · ${num(latest.comments)} Kommentare`} />

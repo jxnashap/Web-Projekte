@@ -12,24 +12,24 @@ function Inner({ clients }: { clients: Opt[] }) {
   const pathname = usePathname();
   return (
     <div className="w-full sm:w-64">
-    <Select
-      aria-label="Kunde"
-      value={sp.get("kunde") ?? ""}
-      onChange={(e) => {
-        const next = new URLSearchParams(sp.toString());
-        if (e.target.value) next.set("kunde", e.target.value);
-        else next.delete("kunde");
-        const q = next.toString();
-        router.push(q ? `${pathname}?${q}` : pathname, { scroll: false });
-      }}
-    >
-      <option value="">Alle Kunden</option>
-      {clients.map((c) => (
-        <option key={c.id} value={c.id}>
-          {c.name}
-        </option>
-      ))}
-    </Select>
+      <Select
+        aria-label="Kunde"
+        value={sp.get("kunde") ?? ""}
+        onChange={(e) => {
+          const next = new URLSearchParams(sp.toString());
+          if (e.target.value) next.set("kunde", e.target.value);
+          else next.delete("kunde");
+          const q = next.toString();
+          router.push(q ? `${pathname}?${q}` : pathname, { scroll: false });
+        }}
+      >
+        <option value="">Alle Kunden</option>
+        {clients.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </Select>
     </div>
   );
 }
