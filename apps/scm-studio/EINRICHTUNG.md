@@ -37,8 +37,8 @@ Die Reihenfolge unten ist so gewählt, dass ihr nach jedem Schritt prüfen könn
    - Texte auf Deutsch, Absender „SCM Studio“. Für eigene Absenderadresse SMTP unter „Emails → SMTP Settings“ eintragen.
 7. **Project Settings → API Keys**: Publishable Key (`sb_publishable_…`) und Secret Key (`sb_secret_…`) notieren.
 8. **Project Settings → Database → Connection string**:
-   - Transaction Pooler (Port 6543) → `DATABASE_URL`
-   - Session Pooler (Port 5432) → `MIGRATION_DATABASE_URL`
+   - **Session Pooler (Port 5432)** → `DATABASE_URL` und `MIGRATION_DATABASE_URL`
+     (nicht den Transaction Pooler 6543: damit blieben Seiten hängen; nicht „Direct connection“: nur IPv6)
 
 ## 2. Datenbank füllen (einmalig, vom eigenen Rechner)
 
@@ -54,7 +54,7 @@ Danach im Supabase **SQL Editor** den Inhalt von `supabase/setup.sql` ausführen
 Echte Grunddaten ohne Demo (Firmendaten laut Impressum + Team):
 
 ```bash
-DATABASE_URL="postgresql://…:6543/postgres" npm run bootstrap -- \
+DATABASE_URL="postgresql://…:5432/postgres" npm run bootstrap -- \
   "Oskar von Esebeck|EMAIL|admin" "Yannick Ruch|EMAIL|admin" "Andreas Mattolat|EMAIL|admin"
 ```
 
