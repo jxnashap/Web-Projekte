@@ -21,7 +21,7 @@ body{font-family:var(--sans);font-size:10.6pt;line-height:1.5;color:var(--ink);
   -webkit-print-color-adjust:exact;print-color-adjust:exact;font-variant-numeric:tabular-nums}
 
 .page{width:210mm;height:297mm;position:relative;overflow:hidden;background:var(--white);
-  padding:24mm 18mm 22mm;page-break-after:always;break-after:page;margin:0 auto 8mm}
+  padding:22mm 18mm 19mm;page-break-after:always;break-after:page;margin:0 auto 8mm}
 .page:last-child{page-break-after:auto;break-after:auto}
 @media print{html,body{background:none}.page{margin:0}}
 
@@ -33,23 +33,24 @@ body{font-family:var(--sans);font-size:10.6pt;line-height:1.5;color:var(--ink);
 .foot{position:absolute;left:18mm;right:18mm;bottom:8.5mm;display:flex;justify-content:space-between;gap:8mm;
   font-family:var(--mono);font-size:7pt;color:var(--ink-faint);border-top:.6pt solid var(--line);padding-top:2.4mm}
 .foot b{color:var(--ink-dim);font-weight:700}
+.foot span:last-child{white-space:nowrap}
 
 /* Typografie */
 .lbl{font-family:var(--mono);font-size:8pt;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);
   display:flex;align-items:center;gap:2.2mm;margin-bottom:3mm}
 .lbl::before{content:"";width:2.2mm;height:2.2mm;border-radius:50%;background:var(--red-btn);flex:0 0 auto}
 h1,h2,h3{font-family:var(--display);font-stretch:72%;font-weight:850;text-transform:uppercase;line-height:.96;letter-spacing:.005em}
-h2{font-size:27pt;margin-bottom:4.5mm}
+h2{font-size:26pt;margin-bottom:4mm}
 h2 em,h1 em{font-style:normal;color:var(--red)}
 h3{font-size:13.5pt;margin:0 0 2mm;line-height:1.05}
 p{margin-bottom:2.6mm}
-.lead{font-size:12.4pt;line-height:1.45;color:var(--ink);margin-bottom:6mm;max-width:158mm}
+.lead{font-size:12pt;line-height:1.42;color:var(--ink);margin-bottom:5mm;max-width:162mm}
 .small{font-size:8.6pt;line-height:1.45;color:var(--ink-dim)}
 .mono{font-family:var(--mono)}
 strong{font-weight:700}
 .red{color:var(--red)}
 a{color:inherit;text-decoration:none}
-.sec{margin-top:6.5mm}
+.sec{margin-top:5.5mm}
 
 /* Titelseite */
 .cover{background:var(--bg);color:var(--fg);padding:20mm 18mm}
@@ -75,22 +76,22 @@ a{color:inherit;text-decoration:none}
 .cover .rec::before{content:"";width:2.2mm;height:2.2mm;border-radius:50%;background:var(--red-dark-bg)}
 
 /* Kurz gesagt: nummerierte Punkte */
-.points{list-style:none;counter-reset:p;display:grid;gap:3.6mm}
+.points{list-style:none;counter-reset:p;display:grid;gap:2.4mm}
 .points li{counter-increment:p;display:grid;grid-template-columns:11mm 1fr;gap:3mm;align-items:start;
-  padding:3.6mm 4mm 3.6mm 3mm;background:var(--paper);border-radius:2.5mm}
+  padding:2.8mm 4mm 2.8mm 3mm;background:var(--paper);border-radius:2.5mm;line-height:1.42}
 .points li::before{content:counter(p,decimal-leading-zero);font-family:var(--mono);font-weight:700;font-size:11pt;color:var(--red);padding-top:.4mm}
 .points li strong{display:block;font-size:11.4pt;margin-bottom:.6mm}
 
 /* Drei Hebel */
 .levers{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}
-.lever{border:.8pt solid var(--ink);border-radius:2.5mm;padding:4mm}
+.lever{border:.8pt solid var(--ink);border-radius:2.5mm;padding:3.4mm 3.6mm}
 .lever .n{font-family:var(--mono);font-size:8pt;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin-bottom:2mm}
 .lever h3{font-size:14pt}
 .lever p{font-size:9.4pt;line-height:1.45;margin:0}
 
 /* Tabellen */
 table{width:100%;border-collapse:collapse;font-size:9.6pt}
-th,td{text-align:left;padding:2.1mm 2.4mm;vertical-align:top;border-bottom:.6pt solid var(--line)}
+th,td{text-align:left;padding:1.7mm 2.4mm;vertical-align:top;border-bottom:.6pt solid var(--line)}
 th{font-family:var(--mono);font-weight:700;font-size:7.8pt;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-dim);border-bottom:1pt solid var(--ink)}
 td.num,th.num{text-align:right;white-space:nowrap}
 tr.sum td{font-weight:700;border-top:1pt solid var(--ink);border-bottom:none}
@@ -107,16 +108,16 @@ tr.minus td.num{color:var(--red)}
 
 /* Monatsleiste: vom Rechnungsbetrag zur Belastung */
 .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:.8pt solid var(--ink);border-radius:2.5mm;overflow:hidden}
-.flow div{padding:4mm 3.6mm;border-right:.6pt solid var(--line)}
-.flow div:last-child{border-right:none;background:var(--bg);color:var(--fg)}
+.flow>div{padding:3.6mm 3.6mm;border-right:.6pt solid var(--line)}
+.flow>div:last-child{border-right:none;background:var(--bg);color:var(--fg)}
 .flow .k{font-family:var(--mono);font-size:7.6pt;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-dim);min-height:9mm}
-.flow div:last-child .k{color:rgba(245,243,239,.75)}
+.flow>div:last-child .k{color:rgba(245,243,239,.75)}
 .flow .v{font-family:var(--display);font-stretch:80%;font-weight:800;font-size:19pt;line-height:1.1;margin-top:1mm}
 .flow .m{font-size:8pt;color:var(--ink-faint);margin-top:1mm;line-height:1.35}
-.flow div:last-child .m{color:rgba(245,243,239,.7)}
+.flow>div:last-child .m{color:rgba(245,243,239,.7)}
 
 /* Kästen */
-.box{border-left:1.6mm solid var(--red-btn);background:var(--paper);padding:4mm 5mm;border-radius:0 2.5mm 2.5mm 0;margin-top:5mm}
+.box{border-left:1.6mm solid var(--red-btn);background:var(--paper);padding:3.6mm 4.6mm;border-radius:0 2.5mm 2.5mm 0;margin-top:5mm}
 .box h3{font-size:12pt}
 .box p:last-child,.box ul:last-child{margin-bottom:0}
 .box.dark{background:var(--bg);color:var(--fg);border-left-color:var(--red-dark-bg)}
@@ -127,7 +128,7 @@ ul.dots li{padding-left:5mm;position:relative}
 ul.dots li::before{content:"";position:absolute;left:0;top:2.1mm;width:1.8mm;height:1.8mm;border-radius:50%;background:var(--red-btn)}
 
 /* Checkliste */
-.check{list-style:none;display:grid;gap:2.6mm}
+.check{list-style:none;display:grid;gap:2.2mm}
 .check li{display:grid;grid-template-columns:7mm 1fr;gap:2.6mm;align-items:start}
 .check li::before{content:"";width:4.6mm;height:4.6mm;border:1pt solid var(--ink);border-radius:1mm;margin-top:.5mm}
 .check li strong{display:block}
@@ -136,3 +137,12 @@ ul.dots li::before{content:"";position:absolute;left:0;top:2.1mm;width:1.8mm;hei
 .src{font-size:7.9pt;line-height:1.45;color:var(--ink-dim);columns:2;column-gap:7mm}
 .src li{margin:0 0 1.4mm 3.6mm;break-inside:avoid}
 .ph{background:repeating-linear-gradient(135deg,#fde3e1 0 4px,#fff 4px 8px);color:var(--red);font-weight:700;padding:0 1mm}
+
+/* Balken: Anteil, den das Finanzamt trägt (Skala 0 bis 50 %) */
+.bars{display:grid;gap:2mm}
+.bar{display:grid;grid-template-columns:62mm 1fr 18mm;gap:3mm;align-items:center;font-size:9.2pt}
+.bar .t{color:var(--ink-dim)}
+.bar .track{height:4.2mm;background:var(--paper);border-radius:1mm;overflow:hidden}
+.bar .track i{display:block;height:100%;background:var(--red-btn)}
+.bar:last-child .track i{background:var(--ink)}
+.bar .v{font-family:var(--mono);font-weight:700;text-align:right}
