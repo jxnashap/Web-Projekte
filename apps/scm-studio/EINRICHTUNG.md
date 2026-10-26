@@ -85,6 +85,14 @@ und `STUDIO_PREVIEW_PASSWORD` (Passwort für die Anmeldung). Was ihr dort eingeb
 Es verschwindet, sobald Vercel die Funktion neu startet, und mehrere gleichzeitige Instanzen sehen je ihren eigenen Stand.
 Echte Daten erst nach Schritt 1 bis 3 mit `DATABASE_URL`.
 
+**Aktueller Testlink (Stand 26.10.2026):** Vercel-Projekt `scm-studio` im persönlichen Team `jscharp12-2003's projects`
+(dort liegt auch `my-immo-app`; getrennte Projekte ohne gemeinsame Schlüssel, Domains oder Datenbank).
+Root Directory `apps/scm-studio`, Production Branch `claude/vigilant-hamilton-6xflb8`,
+Adresse `https://scm-studio-jscharp12-2003s-projects.vercel.app`.
+Unter Deployment Protection „Standard Protection“, damit die Hauptadresse ohne Vercel-Login erreichbar ist
+(die App hat ihr eigenes Passwort). Vor dem Livegang in ein eigenes Team „SCM Creatives“ umziehen
+(Project Settings → General → Transfer Project).
+
 ## 5. KI-Skripte (OpenAI)
 
 1. platform.openai.com → **eigenes Projekt** „SCM Studio“, API-Key anlegen → `OPENAI_API_KEY`.
