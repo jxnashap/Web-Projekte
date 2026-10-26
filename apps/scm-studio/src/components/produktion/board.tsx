@@ -6,7 +6,8 @@
 import { ArrowRight, Camera, Check, ChevronLeft, ChevronRight, ExternalLink, FolderOpen, GripVertical, ScrollText, Send } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Badge, Dot } from "@/components/ui/badge";
+import { ClientAvatar } from "@/components/crm/client-avatar";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Menu, menuItemClass } from "@/components/ui/menu";
 import { cn } from "@/lib/cn";
@@ -175,7 +176,7 @@ function VideoCard({ v, onMove }: { v: BoardVideo; onMove: (id: number, status: 
       className="group relative p-3 transition-shadow hover:shadow-[var(--shadow-raised)]"
     >
       <div className="flex items-center gap-2 text-[13px] text-muted">
-        <Dot color={v.clientColor} />
+        <ClientAvatar client={{ id: v.clientId, name: v.clientName, color: v.clientColor, logoPath: v.clientLogo }} size={20} />
         <span className="min-w-0 flex-1 truncate">{v.clientName}</span>
         {v.isTest && <Badge tone="warn">Test</Badge>}
         <GripVertical className="hidden size-3.5 shrink-0 text-muted opacity-0 group-hover:opacity-100 lg:block" aria-hidden />

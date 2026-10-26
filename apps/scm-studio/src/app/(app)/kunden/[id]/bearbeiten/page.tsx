@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { ClientFields } from "@/components/crm/client-fields";
+import { LogoEditor } from "@/components/crm/logo-editor";
 import { ActionForm } from "@/components/ui/action-form";
 import { LinkButton } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -51,6 +52,10 @@ async function EditClient({ params }: Props) {
     <>
       <PageHeader back={{ href: `/kunden/${id}`, label: client.name }} title="Kundendaten bearbeiten" />
       <div className="grid max-w-4xl gap-6">
+        <Card className="p-5 sm:p-7">
+          <h2 className="mb-3 text-[15px] font-semibold">Logo</h2>
+          <LogoEditor client={{ id: client.id, name: client.name, color: client.color, logoPath: client.logoPath }} size={72} variant="full" />
+        </Card>
         <Card className="p-5 sm:p-7">
           <ActionForm action={updateClient.bind(null, id)}>
             <ClientFields client={client} branchen={branchen} />

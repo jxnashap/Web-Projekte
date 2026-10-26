@@ -1,0 +1,1 @@
+ALTER TABLE "studio"."clients" ADD COLUMN "logo_path" text;

@@ -7,6 +7,7 @@ import { Card, ListRow } from "@/components/ui/card";
 import type { Kontingent } from "@/lib/data/kontingent";
 import { dateShort, eurShort, time } from "@/lib/format";
 import { BRANCHEN, CLIENT_STATUS, EVENT_KINDS } from "@/lib/labels";
+import { ClientAvatar } from "./client-avatar";
 import { ContactIcons } from "./contact-links";
 import { KontingentMini, KontingentTiny } from "./kontingent-mini";
 
@@ -30,14 +31,16 @@ export function ClientCard({
     <Card className="relative flex flex-col transition-shadow has-[a[data-card]:focus-visible]:ring-2 has-[a[data-card]:focus-visible]:ring-accent has-[a[data-card]:focus-visible]:ring-offset-2 has-[a[data-card]:hover]:shadow-[var(--shadow-raised)]">
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="flex items-center gap-2 text-[17px] font-semibold">
-              <span className="size-2.5 shrink-0 rounded-full" style={{ background: c.color }} aria-hidden />
-              <Link href={`/kunden/${c.id}`} data-card className="truncate outline-none after:absolute after:inset-0 after:rounded-[inherit]">
-                {c.name}
-              </Link>
-            </h2>
-            <p className="truncate pl-4.5 text-[13px] text-muted">{[BRANCHEN[c.branche] ?? c.branche, c.ort ?? c.city].filter(Boolean).join(" · ")}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <ClientAvatar client={c} size={40} />
+            <div className="min-w-0">
+              <h2 className="text-[17px] font-semibold">
+                <Link href={`/kunden/${c.id}`} data-card className="block truncate outline-none after:absolute after:inset-0 after:rounded-[inherit]">
+                  {c.name}
+                </Link>
+              </h2>
+              <p className="truncate text-[13px] text-muted">{[BRANCHEN[c.branche] ?? c.branche, c.ort ?? c.city].filter(Boolean).join(" · ")}</p>
+            </div>
           </div>
           {st && <Badge tone={st.tone}>{st.label}</Badge>}
         </div>
@@ -80,7 +83,7 @@ export function ClientRow({ client: c, kontingent, nextEvent }: { client: Client
   const paket = c.packageVideos ? `${c.packageVideos} Videos` : c.status === "test" ? "Testvideos" : "Kein Paket";
   return (
     <ListRow href={`/kunden/${c.id}`} className="py-3">
-      <span className="size-2.5 shrink-0 rounded-full" style={{ background: c.color }} aria-hidden />
+      <ClientAvatar client={c} size={36} />
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2">
           <span className="truncate text-[16px] font-semibold">{c.name}</span>

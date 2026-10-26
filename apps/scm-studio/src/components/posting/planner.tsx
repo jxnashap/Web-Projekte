@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ActionForm } from "@/components/ui/action-form";
-import { Badge, Dot } from "@/components/ui/badge";
+import { ClientAvatar } from "@/components/crm/client-avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
@@ -105,7 +106,7 @@ export function Planner({ mode, days, month, today, now, posts, queue }: { mode:
                   <GripVertical className="hidden size-4 shrink-0 text-muted lg:block" aria-hidden />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5 text-[12px] text-muted">
-                      <Dot color={q.clientColor} />
+                      <ClientAvatar client={{ id: q.clientId, name: q.clientName, color: q.clientColor, logoPath: q.clientLogo }} size={18} />
                       <span className="truncate">{q.clientName}</span>
                     </span>
                     <span className="block truncate text-[14px] font-semibold text-ink">{q.title}</span>
@@ -239,7 +240,10 @@ function PostCard({ p, now, onOpen, wide }: { p: PostItem; now: number; onOpen: 
         ) : null}
       </span>
       <span className={cn("line-clamp-2 text-[13px] font-semibold leading-snug text-ink", wide && "text-[15px]")}>{p.title}</span>
-      <span className="truncate text-[11px] text-muted">{p.clientName}</span>
+      <span className="flex min-w-0 items-center gap-1 text-[11px] text-muted">
+        <ClientAvatar client={{ id: p.clientId, name: p.clientName, color: p.clientColor, logoPath: p.clientLogo }} size={16} />
+        <span className="truncate">{p.clientName}</span>
+      </span>
     </button>
   );
 }

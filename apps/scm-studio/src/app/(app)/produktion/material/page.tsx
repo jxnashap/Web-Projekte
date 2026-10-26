@@ -4,7 +4,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { ProduktionTabs } from "@/components/produktion/tabs";
-import { Dot } from "@/components/ui/badge";
+import { ClientAvatar } from "@/components/crm/client-avatar";
 import { LinkButton } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty";
 import { PageHeader } from "@/components/ui/page-header";
@@ -56,14 +56,9 @@ async function ClientList() {
             href={`/produktion/material/${c.id}`}
             className="squircle flex min-h-24 items-center gap-4 rounded-[var(--radius-card)] bg-surface p-4 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-raised)]"
           >
-            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-fill-2 text-ink-2">
-              <FolderOpen className="size-6" aria-hidden />
-            </span>
+            <ClientAvatar client={c} size={48} />
             <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-2">
-                <Dot color={c.color} />
-                <span className="truncate text-[17px] font-semibold tracking-[-0.02em] text-ink">{c.name}</span>
-              </span>
+              <span className="block truncate text-[17px] font-semibold tracking-[-0.02em] text-ink">{c.name}</span>
               <span className="mt-0.5 block text-[13px] text-muted">
                 {c.files === 0
                   ? "Noch leer"

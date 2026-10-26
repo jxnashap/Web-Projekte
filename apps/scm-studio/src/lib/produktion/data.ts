@@ -23,6 +23,7 @@ export type BoardVideo = {
   clientId: number;
   clientName: string;
   clientColor: string;
+  clientLogo: string | null;
   assignee: { id: number; initials: string; name: string } | null;
   hasScript: boolean;
 };
@@ -40,6 +41,7 @@ export async function getBoard(f: BoardFilter) {
       v: schema.videos,
       clientName: schema.clients.name,
       clientColor: schema.clients.color,
+      clientLogo: schema.clients.logoPath,
       tmId: schema.teamMembers.id,
       tmInitials: schema.teamMembers.initials,
       tmName: schema.teamMembers.name,
@@ -57,7 +59,7 @@ export async function getBoard(f: BoardFilter) {
       )
     : new Set<number | null>();
 
-  const videos: BoardVideo[] = rows.map(({ v, clientName, clientColor, tmId, tmInitials, tmName }) => ({
+  const videos: BoardVideo[] = rows.map(({ v, clientName, clientColor, clientLogo, tmId, tmInitials, tmName }) => ({
     id: v.id,
     title: v.title,
     format: v.format,
@@ -72,6 +74,7 @@ export async function getBoard(f: BoardFilter) {
     clientId: v.clientId,
     clientName,
     clientColor,
+    clientLogo,
     assignee: tmId ? { id: tmId, initials: tmInitials!, name: tmName! } : null,
     hasScript: Boolean(v.scriptId) || withScript.has(v.id),
   }));

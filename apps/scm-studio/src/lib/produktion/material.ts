@@ -54,6 +54,7 @@ export async function listMaterialClients() {
       id: schema.clients.id,
       name: schema.clients.name,
       color: schema.clients.color,
+      logoPath: schema.clients.logoPath,
       status: schema.clients.status,
       materialUrl: schema.clients.materialUrl,
       files: sql<number>`count(${schema.materials.id})::int`,

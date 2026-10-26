@@ -9,6 +9,7 @@ import { ActiveTabIntoView } from "@/components/crm/active-tab-into-view";
 import { ContactIcons, ContactList } from "@/components/crm/contact-links";
 import { DirtySubmit } from "@/components/crm/dirty-submit";
 import { KontingentMini } from "@/components/crm/kontingent-mini";
+import { LogoEditor } from "@/components/crm/logo-editor";
 import { ActionForm } from "@/components/ui/action-form";
 import { Badge } from "@/components/ui/badge";
 import { buttonClass, LinkButton } from "@/components/ui/button";
@@ -81,7 +82,7 @@ async function ClientDetail({ params, searchParams }: Props) {
         back={{ href: "/kunden", label: "Kunden" }}
         title={
           <span className="inline-flex items-center gap-3">
-            <span className="inline-block size-4 shrink-0 rounded-full sm:size-5" style={{ background: client.color }} aria-hidden />
+            <LogoEditor client={{ id: client.id, name: client.name, color: client.color, logoPath: client.logoPath }} size={52} />
             <span className="break-words">{client.name}</span>
           </span>
         }

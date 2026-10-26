@@ -19,6 +19,7 @@ export type PostItem = {
   clientId: number;
   clientName: string;
   clientColor: string;
+  clientLogo: string | null;
   format: string | null;
 };
 
@@ -42,6 +43,7 @@ const select = {
   v: schema.videos,
   clientName: schema.clients.name,
   clientColor: schema.clients.color,
+  clientLogo: schema.clients.logoPath,
 };
 
 /** Geplante Posts und schon gepostete Videos zwischen from (inkl.) und to (exkl.), YYYY-MM-DD. */
@@ -65,7 +67,7 @@ export async function getPosts(from: string, to: string, clientId?: number): Pro
     )
     .orderBy(asc(schema.videos.scheduledAt), asc(schema.videos.id));
   const captions = await scriptCaptions(rows.map((r) => r.v.id));
-  return rows.map(({ v, clientName, clientColor }) => ({
+  return rows.map(({ v, clientName, clientColor, clientLogo }) => ({
     id: v.id,
     title: v.title,
     status: v.status,
@@ -77,6 +79,7 @@ export async function getPosts(from: string, to: string, clientId?: number): Pro
     clientId: v.clientId,
     clientName,
     clientColor,
+    clientLogo,
     format: v.format,
   }));
 }
@@ -92,7 +95,7 @@ export async function getReadyToPost(clientId?: number): Promise<PostItem[]> {
     .where(and(eq(schema.videos.status, "fertig"), isNull(schema.videos.scheduledAt), clientId ? eq(schema.videos.clientId, clientId) : undefined))
     .orderBy(asc(schema.videos.month), asc(schema.videos.id));
   const captions = await scriptCaptions(rows.map((r) => r.v.id));
-  return rows.map(({ v, clientName, clientColor }) => ({
+  return rows.map(({ v, clientName, clientColor, clientLogo }) => ({
     id: v.id,
     title: v.title,
     status: v.status,
@@ -104,6 +107,7 @@ export async function getReadyToPost(clientId?: number): Promise<PostItem[]> {
     clientId: v.clientId,
     clientName,
     clientColor,
+    clientLogo,
     format: v.format,
   }));
 }

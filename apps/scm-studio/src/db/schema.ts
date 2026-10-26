@@ -68,6 +68,7 @@ export const clients = studio.table(
     tiktok: text("tiktok"),
     materialUrl: text("material_url"), // Ordner für Rohmaterial (Google Drive, Dropbox), große Dateien liegen dort
     creativeProfile: jsonb("creative_profile").$type<CreativeProfile>(), // Kreativprofil für die Creative Engine
+    logoPath: text("logo_path"), // Logo als Profilbild (Ablage: logos/<Kunde>/…, quadratisch verkleinert im Browser)
     packageVideos: integer("package_videos"), // 4 | 8 | 12
     packagePriceCents: integer("package_price_cents"), // netto pro Monat
     startDate: date("start_date"),
