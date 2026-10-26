@@ -1,42 +1,130 @@
 [
  {
-  "url": "-",
-  "mode": "transcribe",
-  "model": "medium",
-  "prompt": "Malerbetrieb, Baustelle, Kunde, Nachbar, Material im Schuppen, gegenrechnen.",
-  "src": ".preview-cache/scm/video-DeuGwFgs_PK.mp4",
-  "path": ".preview-cache/scm/transkripte/medium-maler-rohwer.txt"
+  "url": "https://www.gesetze-im-internet.de/estg/__4.html",
+  "path": ".preview-cache/scm/steuern/gesetze/estg-4.html"
  },
  {
-  "url": "-",
-  "mode": "transcribe",
-  "model": "medium",
-  "prompt": "Mittagstisch in Kiel, Date, Jungs, kurz aufs Klo, ist hier noch ein Platz frei.",
-  "src": ".preview-cache/scm/video-DetkcAvpH3H.mp4",
-  "path": ".preview-cache/scm/transkripte/medium-jan-hein-klaas-pit.txt"
+  "url": "https://www.gesetze-im-internet.de/estg/__4h.html",
+  "path": ".preview-cache/scm/steuern/gesetze/estg-4h.html"
  },
  {
-  "url": "-",
-  "mode": "transcribe",
-  "model": "medium",
-  "prompt": "Steakhouse, Pommes, mehrere Teller bestellen, jeder kann von jedem nehmen.",
-  "src": ".preview-cache/scm/video-Det_06XPmbX.mp4",
-  "path": ".preview-cache/scm/transkripte/medium-das-kleine-steakhouse.txt"
+  "url": "https://www.gesetze-im-internet.de/estg/__5.html",
+  "path": ".preview-cache/scm/steuern/gesetze/estg-5.html"
  },
  {
-  "url": "-",
-  "mode": "transcribe",
-  "model": "medium",
-  "prompt": "Kletterwald Travemünde, Lehrerinnen und Lehrer, Klettern oder Teambuilding, Förderung des Bildungsministeriums, Schulklassen.",
-  "src": ".preview-cache/scm/video-DerbG9WBf2C.mp4",
-  "path": ".preview-cache/scm/transkripte/medium-kletterwald-travemuende.txt"
+  "url": "https://www.gesetze-im-internet.de/estg/__6.html",
+  "path": ".preview-cache/scm/steuern/gesetze/estg-6.html"
  },
  {
-  "url": "-",
-  "mode": "transcribe",
-  "model": "medium",
-  "prompt": "Immobilie rund um Kiel, Kronshagen, Schwentinental und Eckernförde, junge Familien, Kitas, Schulen, Einkaufsmöglichkeiten, Ärzte.",
-  "src": ".preview-cache/scm/video-DepDiWkN88H.mp4",
-  "path": ".preview-cache/scm/transkripte/medium-bs-ortsanalyse.txt"
+  "url": "https://www.gesetze-im-internet.de/estg/__7.html",
+  "path": ".preview-cache/scm/steuern/gesetze/estg-7.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/estg/__11.html",
+  "path": ".preview-cache/scm/steuern/gesetze/estg-11.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/estg/__32a.html",
+  "path": ".preview-cache/scm/steuern/gesetze/estg-32a.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/estg/__35.html",
+  "path": ".preview-cache/scm/steuern/gesetze/estg-35.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/estg/__9.html",
+  "path": ".preview-cache/scm/steuern/gesetze/estg-9.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/estg/__7g.html",
+  "path": ".preview-cache/scm/steuern/gesetze/estg-7g.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/ustg_1980/__3a.html",
+  "path": ".preview-cache/scm/steuern/gesetze/ustg-3a.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/ustg_1980/__13b.html",
+  "path": ".preview-cache/scm/steuern/gesetze/ustg-13b.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/ustg_1980/__14.html",
+  "path": ".preview-cache/scm/steuern/gesetze/ustg-14.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/ustg_1980/__15.html",
+  "path": ".preview-cache/scm/steuern/gesetze/ustg-15.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/ustg_1980/__19.html",
+  "path": ".preview-cache/scm/steuern/gesetze/ustg-19.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/ustg_1980/__27.html",
+  "path": ".preview-cache/scm/steuern/gesetze/ustg-27.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/ustg_1980/__13.html",
+  "path": ".preview-cache/scm/steuern/gesetze/ustg-13.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/gewstg/__11.html",
+  "path": ".preview-cache/scm/steuern/gesetze/gewstg-11.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/gewstg/__16.html",
+  "path": ".preview-cache/scm/steuern/gesetze/gewstg-16.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/gewstg/__8.html",
+  "path": ".preview-cache/scm/steuern/gesetze/gewstg-8.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/kstg_1977/__23.html",
+  "path": ".preview-cache/scm/steuern/gesetze/kstg-23.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/solzg_1995/__3.html",
+  "path": ".preview-cache/scm/steuern/gesetze/solzg-3.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/solzg_1995/__4.html",
+  "path": ".preview-cache/scm/steuern/gesetze/solzg-4.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/ao_1977/__141.html",
+  "path": ".preview-cache/scm/steuern/gesetze/ao-141.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/ao_1977/__147.html",
+  "path": ".preview-cache/scm/steuern/gesetze/ao-147.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/stberg/__2.html",
+  "path": ".preview-cache/scm/steuern/gesetze/stberg-2.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/stberg/__4.html",
+  "path": ".preview-cache/scm/steuern/gesetze/stberg-4.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/stberg/__5.html",
+  "path": ".preview-cache/scm/steuern/gesetze/stberg-5.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/stberg/__6.html",
+  "path": ".preview-cache/scm/steuern/gesetze/stberg-6.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/hgb/__248.html",
+  "path": ".preview-cache/scm/steuern/gesetze/hgb-248.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/hgb/__255.html",
+  "path": ".preview-cache/scm/steuern/gesetze/hgb-255.html"
+ },
+ {
+  "url": "https://www.gesetze-im-internet.de/uwg_2004/__5.html",
+  "path": ".preview-cache/scm/steuern/gesetze/uwg-5.html"
  }
 ]
