@@ -1,0 +1,43 @@
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  // eigener Ausgabeordner pro Dev-Server möglich (NEXT_DIST_DIR), damit mehrere Vorschauen parallel laufen
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+  cacheComponents: true,
+  partialPrefetching: true,
+  // PGlite lädt WASM-Dateien zur Laufzeit; e-invoice-eu liest Schemas und ICC-Profile aus dem Paket.
+  serverExternalPackages: ["@electric-sql/pglite", "@e-invoice-eu/core"],
+  // Schriften für die PDFs liegen als TTF in assets/fonts und müssen in jede Function mit.
+  outputFileTracingIncludes: {
+    "/*": ["./assets/fonts/**/*"],
+    "/**": ["./assets/fonts/**/*"],
+  },
+  experimental: {
+    // Belege (Fotos/PDF) gehen lokal per Server Action hoch. Auf Vercel gilt zusätzlich das Limit
+    // der Plattform (4,5 MB pro Anfrage), deshalb verkleinert der Browser Fotos vor dem Hochladen.
+    serverActions: { bodySizeLimit: "10mb" },
+  },
+  turbopack: {
+    rules: {
+      "*.css": {
+        loaders: ["@tailwindcss/turbopack"],
+        as: "*.css",
+      },
+    },
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;
