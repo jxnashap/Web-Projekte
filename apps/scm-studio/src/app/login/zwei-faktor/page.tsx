@@ -25,8 +25,7 @@ async function Mfa({ searchParams }: { searchParams: Promise<{ weiter?: string }
 export default function ZweiFaktorPage({ searchParams }: { searchParams: Promise<{ weiter?: string }> }) {
   return (
     <AuthCard
-      scene="Klappe, die zweite"
-      title="Zwei-Faktor"
+      title="Zwei-Faktor-Code"
       intro="Zum Schutz von Kunden- und Finanzdaten braucht jede Anmeldung zusätzlich einen Code aus eurer Authenticator-App."
     >
       <Suspense fallback={<Skeleton className="h-56" />}>

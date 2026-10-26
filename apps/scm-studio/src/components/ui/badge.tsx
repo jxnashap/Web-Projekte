@@ -2,7 +2,7 @@ import { cn } from "@/lib/cn";
 import type { Tone } from "@/lib/labels";
 
 const tones: Record<Tone, string> = {
-  neutral: "bg-sunken text-ink-2",
+  neutral: "bg-fill text-ink-2",
   accent: "bg-accent-soft text-accent-ink",
   ok: "bg-ok-soft text-ok",
   warn: "bg-warn-soft text-warn",
@@ -12,7 +12,7 @@ const tones: Record<Tone, string> = {
 
 export function Badge({ tone = "neutral", className, children }: { tone?: Tone; className?: string; children: React.ReactNode }) {
   return (
-    <span className={cn("inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-[12px] font-semibold whitespace-nowrap", tones[tone], className)}>
+    <span className={cn("inline-flex h-[22px] items-center gap-1 whitespace-nowrap rounded-full px-2 text-[12px] font-semibold", tones[tone], className)}>
       {children}
     </span>
   );

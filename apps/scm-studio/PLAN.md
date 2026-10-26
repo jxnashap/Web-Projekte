@@ -50,7 +50,11 @@ Stand: 26.10.2026 · Next.js 16.4.3 · React 19.3.1 · Recherche mit Quellen: `d
 - **Drei Ansichten** wo es Mengen gibt (Board, Liste, Kalender), Zustand in der URL (teilbar, Zurück-Knopf funktioniert).
 - **Handy am Set**: große Tippflächen, Unterschrift im Vollbild, Belegfoto direkt aus der Kamera.
 - **Sprache**: Deutsch, ihr-Form, keine Gedankenstriche, Fachbegriffe erklärt (z. B. § 13b, Kleinbetrag).
-- **Marke**: Papierweiß, Tinte, ein Signalrot; Archivo schmal-fett für Titel, Courier Prime für Drehbuch-Elemente und Etiketten.
+- **Apple-Stil**: Systemschrift (SF Pro auf iPhone/Mac, sonst Inter), große Titel, hellgrauer Grund mit weißen Karten und weichen Schatten,
+  Glas-Material in Kopfzeile, Seitenleiste und Tab-Leiste, gefüllte Eingabefelder, iOS-Segmented-Control, Spotlight-Suche (⌘K),
+  Blätter von unten auf dem Handy, installierbar auf dem Homescreen (Web-App-Manifest).
+- **Marke**: eigenes App-Icon für SCM Studio (Sucherrahmen mit rotem Aufnahmeknopf, `public/brand/`), Signalrot als einziger Akzent;
+  Courier Prime nur für Drehbuch-Elemente. Kundendokumente (PDF) tragen weiter das SCM-Creatives-Logo auf Weiß.
 - **Ehrlich**: Demo-Werte sind sichtbar markiert, Unbelegtes steht als [PLATZHALTER] im Text.
 
 ## 4. Architektur

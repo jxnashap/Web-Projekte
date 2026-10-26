@@ -17,15 +17,15 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       aria-label={title}
-      className="m-0 mt-auto max-h-[85dvh] w-full max-w-none overflow-y-auto rounded-t-2xl border border-line bg-surface p-0 pb-[env(safe-area-inset-bottom)] text-ink shadow-[var(--shadow-pop)] backdrop:bg-ink/30 sm:m-auto sm:max-w-md sm:rounded-2xl"
+      className="squircle m-0 mt-auto max-h-[85dvh] w-full max-w-none overflow-y-auto rounded-t-[26px] border-0 bg-surface p-0 pb-[env(safe-area-inset-bottom)] text-ink shadow-[var(--shadow-pop)] backdrop:bg-black/25 sm:m-auto sm:max-w-md sm:rounded-[22px]"
     >
       {open && (
         <div className="px-4 pb-4 pt-3">
-          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line-2 sm:hidden" aria-hidden />
+          <div className="mx-auto mb-3 h-[5px] w-9 rounded-full bg-line-2 sm:hidden" aria-hidden />
           <div className="mb-2 flex items-center justify-between px-2">
-            <h2 className="text-[15px] font-semibold">{title}</h2>
-            <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-full text-muted hover:bg-sunken" aria-label="Schließen">
-              <X className="size-4" />
+            <h2 className="text-[20px] font-bold tracking-[-0.025em]">{title}</h2>
+            <button type="button" onClick={onClose} className="grid size-[30px] place-items-center rounded-full bg-fill text-muted hover:text-ink" aria-label="Schließen">
+              <X className="size-4" strokeWidth={2.4} />
             </button>
           </div>
           {children}

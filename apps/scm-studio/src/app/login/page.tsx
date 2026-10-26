@@ -34,7 +34,7 @@ async function TeamLogin({ searchParams }: { searchParams: SP }) {
 
 export default function LoginPage({ searchParams }: { searchParams: SP }) {
   return (
-    <AuthCard scene="Klappe, die erste" title="Anmelden" intro="Kunden, Skripte, Drehs, Zahlen und Finanzen von SCM Creatives.">
+    <AuthCard title="Bei SCM Studio anmelden" intro="Kunden, Skripte, Drehs, Zahlen und Finanzen an einem Ort.">
       <Suspense fallback={<Skeleton className="h-56" />}>
         <TeamLogin searchParams={searchParams} />
       </Suspense>

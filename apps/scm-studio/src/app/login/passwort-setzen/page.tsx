@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Passwort setzen" };
 
 export default function PasswortSetzenPage() {
   return (
-    <AuthCard scene="Neue Rolle" title="Passwort setzen" intro="Mindestens 12 Zeichen. Danach richtet ihr den Zwei-Faktor-Code ein.">
+    <AuthCard title="Passwort festlegen" intro="Mindestens 12 Zeichen. Danach richtet ihr den Zwei-Faktor-Code ein.">
       <SetPasswordForm />
     </AuthCard>
   );

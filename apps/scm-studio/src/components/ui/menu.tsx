@@ -26,7 +26,7 @@ export function Menu({ children, label = "Mehr", align = "right", trigger }: { c
         aria-expanded={open}
         aria-label={label}
         onClick={() => setOpen((o) => !o)}
-        className="grid size-8 place-items-center rounded-full text-muted hover:bg-sunken hover:text-ink"
+        className="grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-fill hover:text-ink"
       >
         {trigger ?? <MoreHorizontal className="size-4" />}
       </button>
@@ -35,7 +35,7 @@ export function Menu({ children, label = "Mehr", align = "right", trigger }: { c
           role="menu"
           onClick={() => setOpen(false)}
           className={cn(
-            "absolute z-40 mt-1 min-w-48 overflow-hidden rounded-xl border border-line bg-surface p-1 shadow-[var(--shadow-pop)]",
+            "material-light absolute z-40 mt-1.5 min-w-52 overflow-hidden rounded-[14px] p-1.5 shadow-[var(--shadow-pop)]",
             align === "right" ? "right-0" : "left-0",
           )}
         >
@@ -47,4 +47,4 @@ export function Menu({ children, label = "Mehr", align = "right", trigger }: { c
 }
 
 export const menuItemClass =
-  "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[14px] text-ink-2 hover:bg-sunken hover:text-ink";
+  "flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-[7px] text-left text-[14px] text-ink hover:bg-accent hover:text-white [&_svg]:text-muted hover:[&_svg]:text-white";

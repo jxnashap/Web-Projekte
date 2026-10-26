@@ -1,8 +1,9 @@
 import { cn } from "@/lib/cn";
 import { FieldError } from "./action-form";
 
+// Apple-Formularfelder: gefüllt statt umrandet, Fokus mit weichem Ring im Akzent.
 const control =
-  "w-full rounded-lg border border-line-2 bg-surface px-3 text-[14px] text-ink placeholder:text-faint transition-colors hover:border-faint focus:border-ink focus:outline-none";
+  "w-full rounded-[var(--radius-control)] border border-transparent bg-sunken px-3 text-[15px] text-ink transition-[background-color,border-color,box-shadow] duration-150 hover:bg-[#ececf0] focus:border-accent/45 focus:bg-surface focus:shadow-[0_0_0_4px_rgb(225_37_27/0.12)] focus:outline-none disabled:opacity-60 aria-[invalid=true]:border-accent/60";
 
 /** Beschriftetes Feld. Mit `name` erscheinen Feldfehler aus einem umgebenden ActionForm automatisch. */
 export function Field({
@@ -24,7 +25,7 @@ export function Field({
 }) {
   return (
     <label className={cn("grid content-start gap-1.5", className)}>
-      <span className="text-[13px] font-semibold text-ink-2">
+      <span className="text-[13px] font-medium text-ink-2">
         {label}
         {optional && <span className="ml-1 font-normal text-faint">optional</span>}
       </span>
@@ -43,11 +44,11 @@ export function FormGrid({ className, ...p }: React.HTMLAttributes<HTMLDivElemen
 
 /** Fußzeile eines Formulars mit Knöpfen rechts. */
 export function FormActions({ className, ...p }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("mt-6 flex flex-wrap items-center justify-end gap-2", className)} {...p} />;
+  return <div className={cn("mt-7 flex flex-wrap items-center justify-end gap-2", className)} {...p} />;
 }
 
 export function Input({ className, ...p }: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn(control, "h-10", className)} {...p} />;
+  return <input className={cn(control, "h-11 sm:h-10", className)} {...p} />;
 }
 
 export function Textarea({ className, ...p }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
@@ -56,8 +57,8 @@ export function Textarea({ className, ...p }: React.TextareaHTMLAttributes<HTMLT
 
 export function Select({ className, children, ...p }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select className={cn(control, "h-10 appearance-none bg-[length:12px] bg-[right_12px_center] bg-no-repeat pr-8", className)}
-      style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%236b6b72' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E\")" }}
+    <select className={cn(control, "h-11 appearance-none bg-[length:10px] bg-[right_12px_center] bg-no-repeat pr-8 sm:h-10", className)}
+      style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16' fill='none' stroke='%236e6e73' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3'/%3E%3C/svg%3E\")" }}
       {...p}>
       {children}
     </select>
@@ -66,8 +67,8 @@ export function Select({ className, children, ...p }: React.SelectHTMLAttributes
 
 export function Checkbox({ label, ...p }: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return (
-    <label className="inline-flex items-center gap-2 text-sm text-ink-2">
-      <input type="checkbox" className="size-4 accent-[var(--color-accent)]" {...p} />
+    <label className="inline-flex min-h-8 items-center gap-2.5 text-[15px] text-ink">
+      <input type="checkbox" className="size-[18px] rounded accent-[var(--color-accent)]" {...p} />
       {label}
     </label>
   );

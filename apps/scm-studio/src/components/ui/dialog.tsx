@@ -40,7 +40,7 @@ export function Dialog({
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       className={cn(
-        "m-auto max-h-[92dvh] w-[calc(100vw-24px)] overflow-visible rounded-2xl border border-line bg-surface p-0 text-ink shadow-[var(--shadow-pop)] backdrop:bg-ink/30 backdrop:backdrop-blur-[2px]",
+        "squircle m-auto max-h-[92dvh] w-[calc(100vw-24px)] overflow-visible rounded-[22px] border-0 bg-surface p-0 text-ink shadow-[var(--shadow-pop)] backdrop:bg-black/25 backdrop:backdrop-blur-[3px]",
         size === "md" && "max-w-lg",
         size === "lg" && "max-w-2xl",
         size === "xl" && "max-w-4xl",
@@ -49,16 +49,16 @@ export function Dialog({
       {open && (
         <DialogCtx.Provider value={{ close: onClose }}>
           <div className="flex max-h-[92dvh] flex-col">
-            <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-4">
-              <div>
-                <h2 className="text-[17px] font-semibold">{title}</h2>
-                {description && <p className="mt-0.5 text-[13px] text-muted">{description}</p>}
+            <div className="flex items-start justify-between gap-4 px-6 pb-2 pt-5">
+              <div className="min-w-0">
+                <h2 className="text-[20px] font-bold tracking-[-0.025em]">{title}</h2>
+                {description && <p className="mt-1 text-[14px] text-muted">{description}</p>}
               </div>
-              <button type="button" onClick={onClose} className="-mr-2 grid size-8 place-items-center rounded-full text-muted hover:bg-sunken hover:text-ink" aria-label="Schließen">
-                <X className="size-4" />
+              <button type="button" onClick={onClose} className="-mr-1 grid size-[30px] shrink-0 place-items-center rounded-full bg-fill text-muted transition-colors hover:bg-[rgb(120_120_128/0.2)] hover:text-ink" aria-label="Schließen">
+                <X className="size-4" strokeWidth={2.4} />
               </button>
             </div>
-            <div className="overflow-y-auto px-6 py-5">{children}</div>
+            <div className="overflow-y-auto px-6 pb-6 pt-3">{children}</div>
           </div>
         </DialogCtx.Provider>
       )}

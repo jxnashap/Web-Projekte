@@ -18,9 +18,8 @@ export default function HeutePage() {
   return (
     <>
       <PageHeader
-        scene="Szene 01 · Heute"
+        eyebrow={<Suspense fallback={"\u00a0"}>{<Today />}</Suspense>}
         title={<Suspense fallback="Guten Tag">{<Greeting />}</Suspense>}
-        description={<Suspense fallback=" ">{<Today />}</Suspense>}
         actions={
           <>
             <LinkButton href="/skripte/neu" variant="secondary">Skript schreiben</LinkButton>
@@ -43,7 +42,7 @@ async function Greeting() {
 
 async function Today() {
   await connection();
-  return <>Heute ist {dateLong(new Date())}. Das steht an.</>;
+  return <>{dateLong(new Date()).replace(/ \d{4}$/, "")}</>;
 }
 
 function DashboardSkeleton() {
@@ -120,7 +119,7 @@ async function Dashboard() {
           </ul>
         </Card>
       )}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <Stat label="Drehs in 7 Tagen" value={d.shootsThisWeek} sub={d.agenda.length ? `${d.agenda.length} Termine insgesamt` : "Keine Termine"} />
         <Stat label="In Produktion" value={d.inProduction} sub="Videos von Idee bis Schnitt" />
         <Stat
@@ -141,9 +140,9 @@ async function Dashboard() {
             <ul className="divide-y divide-line">
               {d.agenda.map(({ e, clientName, clientColor }) => (
                 <li key={e.id} className="flex items-center gap-4 px-5 py-3.5">
-                  <div className="w-16 shrink-0 text-center">
-                    <div className="font-mono text-[11px] uppercase text-muted">{dateShort(e.startsAt)}</div>
-                    <div className="text-[15px] font-bold">{time(e.startsAt)}</div>
+                  <div className="w-14 shrink-0 text-center tabular-nums">
+                    <div className="text-[12px] font-semibold text-accent-ink">{dateShort(e.startsAt)}</div>
+                    <div className="text-[16px] font-semibold tracking-[-0.02em]">{time(e.startsAt)}</div>
                   </div>
                   <div className="h-10 w-1 rounded-full" style={{ background: clientColor ?? "var(--color-line-2)" }} />
                   <div className="min-w-0 flex-1">
@@ -158,7 +157,7 @@ async function Dashboard() {
         </Card>
 
         <Card>
-          <CardHeader title={`Kontingent ${monthLabel(d.month)}`} sub="Fertige Videos je Paket" action={<LinkButton href="/produktion" variant="ghost" size="sm">Produktion <ArrowUpRight className="size-4" /></LinkButton>} />
+          <CardHeader title={`Kontingent ${monthLabel(d.month).replace(/ \d{4}$/, "")}`} sub="Fertige Videos je Paket" action={<LinkButton href="/produktion" variant="ghost" size="sm">Produktion <ArrowUpRight className="size-4" /></LinkButton>} />
           <div className="grid gap-4 p-5">
             {d.kontingente.length === 0 ? <EmptyState title="Keine aktiven Pakete" /> : d.kontingente.map((k) => <KontingentBar key={k.clientId} k={k} />)}
           </div>
@@ -203,13 +202,13 @@ async function Dashboard() {
           <ol className="divide-y divide-line">
             {d.top.map((v, i) => (
               <li key={v.videoId} className="flex items-center gap-3 px-5 py-3">
-                <span className="w-5 font-mono text-[13px] text-muted">{i + 1}</span>
+                <span className="w-5 text-[15px] font-semibold tabular-nums text-faint">{i + 1}</span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold">{v.title}</div>
                   <div className="truncate text-[13px] text-muted">{v.clientName}</div>
                 </div>
-                <div className="text-right">
-                  <div className="font-bold">{compact(v.views)}</div>
+                <div className="text-right tabular-nums">
+                  <div className="font-semibold">{compact(v.views)}</div>
                   <div className="text-[12px] text-muted">{num(v.likes)} Likes</div>
                 </div>
               </li>

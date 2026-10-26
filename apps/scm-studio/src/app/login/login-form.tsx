@@ -25,7 +25,7 @@ export function LoginForm({ team, next }: { team: { id: number; name: string }[]
         <Input name="password" type="password" autoComplete="current-password" required />
       </Field>
       <FormMessage error={state.error} />
-      <SubmitButton pendingText="Anmelden …" className="mt-2 w-full">
+      <SubmitButton pendingText="Anmelden …" className="mt-1 h-11 w-full text-[15px]">
         Anmelden
       </SubmitButton>
     </form>
@@ -46,7 +46,7 @@ export function EmailLoginForm({ next, notice }: { next: string; notice?: string
         <Input name="password" type="password" autoComplete="current-password" required />
       </Field>
       <FormMessage error={state.error} />
-      <SubmitButton pendingText="Anmelden …" className="mt-2 w-full">
+      <SubmitButton pendingText="Anmelden …" className="mt-1 h-11 w-full text-[15px]">
         Weiter
       </SubmitButton>
       <Link href="/login/passwort-vergessen" className="text-center text-[13px] text-muted underline-offset-2 hover:text-ink hover:underline">

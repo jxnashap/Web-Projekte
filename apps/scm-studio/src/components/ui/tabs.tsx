@@ -6,29 +6,29 @@ export type TabItem = { href: string; label: string; count?: number; active?: bo
 /** Reiter als Links (Zustand in der URL, damit Zurück-Knopf und Teilen funktionieren). */
 export function LinkTabs({ items, className }: { items: TabItem[]; className?: string }) {
   return (
-    <nav className={cn("-mx-1 flex gap-1 overflow-x-auto border-b border-line px-1", className)} aria-label="Bereiche">
+    <nav className={cn("-mx-1 flex gap-1 overflow-x-auto border-b border-line px-1 [scrollbar-width:none]", className)} aria-label="Bereiche">
       {items.map((t) => (
         <Link
           key={t.href}
           href={t.href}
           aria-current={t.active ? "page" : undefined}
           className={cn(
-            "relative -mb-px flex h-10 shrink-0 items-center gap-2 border-b-2 px-3 text-[14px] font-semibold transition-colors",
-            t.active ? "border-accent text-ink" : "border-transparent text-muted hover:text-ink",
+            "relative -mb-px flex h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-[15px] transition-colors",
+            t.active ? "border-accent font-semibold text-ink" : "border-transparent font-medium text-muted hover:text-ink",
           )}
         >
           {t.label}
-          {t.count !== undefined && <span className="rounded-full bg-sunken px-1.5 font-mono text-[11px] text-ink-2">{t.count}</span>}
+          {t.count !== undefined && <span className="rounded-full bg-fill px-1.5 text-[12px] font-semibold tabular-nums text-ink-2">{t.count}</span>}
         </Link>
       ))}
     </nav>
   );
 }
 
-/** Umschalter für Ansichten (Board/Liste/Kalender) als Links. */
+/** Umschalter für Ansichten (Board/Liste/Kalender) als Links, im Stil des iOS-Segmented-Control. */
 export function Segmented({ items, className }: { items: TabItem[]; className?: string }) {
   return (
-    <div className={cn("inline-flex rounded-full border border-line-2 bg-surface p-0.5", className)} role="tablist">
+    <div className={cn("inline-flex rounded-[9px] bg-fill p-[2px]", className)} role="tablist">
       {items.map((t) => (
         <Link
           key={t.href}
@@ -37,8 +37,8 @@ export function Segmented({ items, className }: { items: TabItem[]; className?: 
           aria-selected={t.active}
           scroll={false}
           className={cn(
-            "flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold transition-colors",
-            t.active ? "bg-ink text-white" : "text-ink-2 hover:bg-sunken",
+            "flex h-7 min-w-16 items-center justify-center gap-1.5 rounded-[7px] px-3 text-[13px] transition-[background-color,box-shadow] duration-200",
+            t.active ? "bg-surface font-semibold text-ink shadow-[var(--shadow-thumb)]" : "font-medium text-ink hover:bg-fill-2",
           )}
         >
           {t.label}

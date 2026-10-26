@@ -8,8 +8,8 @@ export function Table({ className, ...p }: React.TableHTMLAttributes<HTMLTableEl
   );
 }
 export function Th({ className, ...p }: React.ThHTMLAttributes<HTMLTableCellElement>) {
-  return <th className={cn("border-b border-line px-4 py-2.5 text-left text-[12px] font-semibold uppercase tracking-wide text-muted", className)} {...p} />;
+  return <th className={cn("border-b border-line px-4 py-2.5 text-left text-[12px] font-semibold text-muted", className)} {...p} />;
 }
 export function Td({ className, ...p }: React.TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td className={cn("border-b border-line px-4 py-3 align-middle", className)} {...p} />;
+  return <td className={cn("border-b border-line/70 px-4 py-3 align-middle", className)} {...p} />;
 }

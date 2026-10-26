@@ -9,11 +9,11 @@ export function KontingentBar({ k, compact = false }: { k: Kontingent; compact?:
     <div className="grid gap-1.5">
       <div className="flex items-baseline justify-between gap-3 text-[13px]">
         <span className="truncate font-semibold">{k.name}</span>
-        <span className={`shrink-0 font-mono text-[12px] ${tone}`}>
+        <span className={`shrink-0 text-[12px] font-medium tabular-nums ${tone}`}>
           {k.fertig}/{k.soll} fertig{!compact && k.geplant < k.soll ? ` · ${k.soll - k.geplant} nicht geplant` : ""}
         </span>
       </div>
-      <div className="relative h-2 overflow-hidden rounded-full bg-sunken" role="img" aria-label={`${k.fertig} von ${k.soll} Videos fertig, ${k.geplant} geplant`}>
+      <div className="relative h-1.5 overflow-hidden rounded-full bg-fill" role="img" aria-label={`${k.fertig} von ${k.soll} Videos fertig, ${k.geplant} geplant`}>
         <div className="absolute inset-y-0 left-0 rounded-full opacity-25" style={{ width: `${pctPlanned}%`, background: k.color }} />
         <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pctDone}%`, background: k.color }} />
       </div>
