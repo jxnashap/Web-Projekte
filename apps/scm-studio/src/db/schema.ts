@@ -467,10 +467,11 @@ export const documents = studio.table(
     templateVersion: text("template_version"),
     fileId: integer("file_id"),
     contentHash: text("content_hash"),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }), // Papierkorb: nach 14 Tagen endgültig gelöscht
     createdAt: created(),
     updatedAt: updated(),
   },
-  (t) => [index("documents_kind_idx").on(t.kind), index("documents_client_idx").on(t.clientId)],
+  (t) => [index("documents_kind_idx").on(t.kind), index("documents_client_idx").on(t.clientId), index("documents_deleted_idx").on(t.deletedAt)],
 ).enableRLS();
 
 // ------------------------------------------------------------------

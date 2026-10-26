@@ -11,12 +11,12 @@ export default function DokumentNotFound() {
         icon={<SearchX className="size-5" />}
         title="Dokument nicht gefunden"
         action={
-          <LinkButton href="/dokumente" variant="secondary">
-            Zu den Dokumenten
+          <LinkButton href="/dokumente/papierkorb" variant="secondary">
+            Zum Papierkorb
           </LinkButton>
         }
       >
-        Dieses Dokument gibt es nicht (mehr). Vielleicht wurde der Entwurf gelöscht oder der Link ist alt.
+        Dieses Dokument gibt es nicht (mehr). Vielleicht liegt es im Papierkorb, wurde endgültig gelöscht oder der Link ist alt.
       </EmptyState>
     </>
   );

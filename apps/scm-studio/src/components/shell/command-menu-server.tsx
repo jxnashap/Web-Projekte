@@ -1,4 +1,4 @@
-import { asc, desc, eq, notInArray } from "drizzle-orm";
+import { asc, desc, eq, isNull, notInArray } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { CommandMenu, type CommandEntry } from "./command-menu";
@@ -29,7 +29,7 @@ export async function CommandMenuServer() {
       .orderBy(desc(s.invoices.createdAt))
       .limit(60),
     db.select({ id: s.scripts.id, title: s.scripts.title }).from(s.scripts).orderBy(desc(s.scripts.updatedAt)).limit(60),
-    db.select({ id: s.documents.id, title: s.documents.title, kind: s.documents.kind }).from(s.documents).orderBy(desc(s.documents.updatedAt)).limit(60),
+    db.select({ id: s.documents.id, title: s.documents.title, kind: s.documents.kind }).from(s.documents).where(isNull(s.documents.deletedAt)).orderBy(desc(s.documents.updatedAt)).limit(60),
   ]);
 
   const KIND: Record<string, string> = { rechnung: "Rechnung", angebot: "Angebot", storno: "Storno" };

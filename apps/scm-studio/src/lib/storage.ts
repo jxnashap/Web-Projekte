@@ -75,6 +75,17 @@ export async function verifyFile(id: number): Promise<boolean> {
   return Boolean(f && sha256(f.data) === f.meta.sha256);
 }
 
+/** Dateien in der Ablage löschen (Supabase in Paketen zu 100). Fehler beim Aufräumen brechen nichts ab. */
+export async function removeObjects(keys: string[]) {
+  if (keys.length === 0) return;
+  if (integrations.supabaseStorage()) {
+    const sb = await supabaseAdmin();
+    for (let i = 0; i < keys.length; i += 100) await sb.storage.from(SUPABASE_BUCKET).remove(keys.slice(i, i + 100));
+  } else {
+    await Promise.all(keys.map((k) => fs.rm(path.join(/*turbopackIgnore: true*/ localRoot(), k), { force: true })));
+  }
+}
+
 /** Link zur Auslieferung über die App (prüft die Anmeldung). */
 export const fileHref = (id: number, download = false) => `/api/dateien/${id}${download ? "?download=1" : ""}`;
 

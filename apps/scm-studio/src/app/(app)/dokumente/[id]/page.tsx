@@ -19,7 +19,7 @@ import { DetailSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { Client, Doc } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
-import { deleteDocument, reopenDocument, revokeConsent, saveDocument } from "@/lib/dokumente/actions";
+import { reopenDocument, revokeConsent, saveDocument, trashDocument } from "@/lib/dokumente/actions";
 import { buildDrehplanSnapshot, buildReportSnapshot, getDocument, getTeam, isLegalApproved, partyOf } from "@/lib/dokumente/data";
 import {
   consentController,
@@ -30,6 +30,7 @@ import {
   NUTZUNGSDAUER,
   ROLLEN,
   SIGNER_SHORT,
+  TRASH_DAYS,
   ZWECKE,
   type DrehplanData,
   type EinwilligungData,
@@ -88,13 +89,16 @@ async function Detail({ params }: { params: P }) {
   const consent = doc.kind === "einwilligung" ? consentIssueOf(doc, client, company) : null;
   const signBlocked = doc.status === "final" && Boolean(consent?.current);
   const pdfInHeader = doc.status === "unterschrieben" || (doc.status === "final" && !legal);
+  const signed = doc.status === "unterschrieben";
   const remove = {
-    action: deleteDocument.bind(null, doc.id),
+    action: trashDocument.bind(null, doc.id),
     label: doc.status === "entwurf" ? "Entwurf löschen" : "Dokument löschen",
     confirm: {
-      title: doc.status === "entwurf" ? "Entwurf löschen?" : "Dokument löschen?",
-      message: doc.status === "entwurf" ? "Der Entwurf wird endgültig entfernt." : "Das Dokument ist noch nicht unterschrieben und wird endgültig entfernt.",
-      confirmLabel: "Löschen",
+      title: signed ? "Unterschriebenes Dokument löschen?" : doc.status === "entwurf" ? "Entwurf löschen?" : "Dokument löschen?",
+      message: signed
+        ? `Es kommt in den Papierkorb und wird nach ${TRASH_DAYS} Tagen samt PDF endgültig gelöscht, damit fehlt dann auch der Nachweis der Unterschrift. Löscht so nur Test- oder Fehldokumente. Bis dahin könnt ihr es im Papierkorb wiederherstellen.`
+        : `Es kommt in den Papierkorb und wird nach ${TRASH_DAYS} Tagen endgültig gelöscht. Bis dahin könnt ihr es dort wiederherstellen.`,
+      confirmLabel: "In den Papierkorb",
       tone: "danger" as const,
     },
   };
@@ -174,6 +178,7 @@ async function Detail({ params }: { params: P }) {
                 <a href={`${pdfHref}?download=1`} className={buttonClass("secondary", "md")}>
                   <Download className="size-4" /> PDF laden
                 </a>
+                <DocMenu remove={remove} />
               </>
             )}
           </>

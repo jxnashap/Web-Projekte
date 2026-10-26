@@ -9,6 +9,9 @@ export const REPORT_TEMPLATE_VERSION = "2026-10-v1";
 export type DocKind = "vertrag" | "einwilligung" | "drehplan" | "monatsbericht";
 export const DOC_KIND_KEYS: DocKind[] = ["vertrag", "einwilligung", "drehplan", "monatsbericht"];
 export const isDocKind = (k: unknown): k is DocKind => typeof k === "string" && (DOC_KIND_KEYS as string[]).includes(k);
+/** Tage im Papierkorb, danach wird ein gelöschtes Dokument samt PDF endgültig entfernt. */
+export const TRASH_DAYS = 14;
+
 export const needsSignature = (k: string) => k === "vertrag" || k === "einwilligung";
 
 type StatusInfo = { label: string; tone: "neutral" | "info" | "ok" | "warn" | "accent" };

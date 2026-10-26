@@ -1,4 +1,4 @@
-import { ChevronRight, FileSignature, Plus, SearchX } from "lucide-react";
+import { ChevronRight, FileSignature, Plus, SearchX, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { FilterBar, FilterSelect } from "@/components/crm/filter-bar";
@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { ListSkeleton } from "@/components/ui/skeleton";
 import { LinkTabs } from "@/components/ui/tabs";
 import { UrlSearch } from "@/components/ui/url-search";
-import { getClientOptions, listDocuments, type DocRow } from "@/lib/dokumente/data";
+import { countTrash, getClientOptions, listDocuments, type DocRow } from "@/lib/dokumente/data";
 import { DOC_KIND_KEYS, docStatus, isDocKind, STATUS_FILTER, statusFiltersFor, ZWECKE, type DocKind, type EinwilligungData, type ZweckKey } from "@/lib/dokumente/schema";
 import { dateDe, dateShort } from "@/lib/format";
 import { DOC_KINDS } from "@/lib/labels";
@@ -64,7 +64,7 @@ async function DocumentList({ searchParams }: { searchParams: SP }) {
   // Status nur, wenn er zur Art passt (Drehpläne werden nie unterschrieben)
   const status = rawStatus && rawStatus in STATUS_FILTER && (!activeArt || STATUS_FILTER[rawStatus].kinds.includes(activeArt)) ? rawStatus : undefined;
   const q = one(sp.q)?.trim() || undefined;
-  const [all, clients] = await Promise.all([listDocuments({ kunde, status, q }), getClientOptions()]);
+  const [all, clients, trash] = await Promise.all([listDocuments({ kunde, status, q }), getClientOptions(), countTrash()]);
   const docs = activeArt ? all.filter((d) => d.kind === activeArt) : all;
   const countOf = (k?: DocKind) => (k ? all.filter((d) => d.kind === k).length : all.length);
 
@@ -149,6 +149,11 @@ async function DocumentList({ searchParams }: { searchParams: SP }) {
             ))}
           </ul>
         </Card>
+      )}
+      {trash > 0 && (
+        <Link href="/dokumente/papierkorb" className="inline-flex items-center gap-1.5 justify-self-start rounded-lg text-[14px] text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          <Trash2 className="size-4" aria-hidden /> Papierkorb ({trash})
+        </Link>
       )}
     </div>
   );

@@ -1,8 +1,9 @@
 "use server";
 // Server Actions für Dokumente: anlegen, bearbeiten, festhalten (zur Unterschrift freigeben bzw. ablegen),
-// unterschreiben, widerrufen.
+// unterschreiben, widerrufen, in den Papierkorb legen.
 // Unterschriebene Dokumente sind in der Datenbank unveränderlich (Trigger), nur ein Widerruf wird vermerkt.
-import { and, eq } from "drizzle-orm";
+// Gelöscht wird über den Papierkorb: 14 Tage wiederherstellbar, danach endgültig (auch unterschriebene).
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
@@ -16,6 +17,7 @@ import { getCompany, type Company } from "@/lib/settings";
 import { putFile } from "@/lib/storage";
 import { berlinDateTime, todayIso } from "@/lib/time";
 import { buildDrehplanSnapshot, buildReportSnapshot, partyOf } from "./data";
+import { purgeDocuments } from "./papierkorb";
 import type { SignProof } from "./pdf/types";
 import { buildRenderCtx, pdfFileName, renderDocument } from "./render";
 import {
@@ -32,6 +34,7 @@ import {
   monatsberichtSchema,
   REPORT_TEMPLATE_VERSION,
   strokesSchema,
+  TRASH_DAYS,
   vertragSchema,
   ZWECK_KEYS,
   zweckKeysFor,
@@ -52,7 +55,7 @@ const monthName = (ym: string) => new Intl.DateTimeFormat("de-DE", { month: "lon
 async function loadDoc(id: number): Promise<Doc | null> {
   if (!Number.isInteger(id) || id <= 0) return null;
   const db = await getDb();
-  const [doc] = await db.select().from(schema.documents).where(eq(schema.documents.id, id));
+  const [doc] = await db.select().from(schema.documents).where(and(eq(schema.documents.id, id), isNull(schema.documents.deletedAt)));
   return doc ?? null;
 }
 
@@ -292,20 +295,49 @@ export async function reopenDocument(id: number): Promise<ActionState> {
   return done("Wieder als Entwurf geöffnet");
 }
 
-export async function deleteDocument(id: number): Promise<ActionState> {
+/** In den Papierkorb legen: jedes Dokument, auch unterschriebene (z. B. Test-Einwilligungen). */
+export async function trashDocument(id: number): Promise<ActionState> {
   const user = await assertUser();
   const doc = await loadDoc(id);
   if (!doc) return fail("Dokument nicht gefunden.");
-  if (doc.status === "unterschrieben") return fail("Unterschriebene Dokumente werden aus Nachweisgründen nicht gelöscht.");
   const db = await getDb();
   try {
-    await db.delete(schema.documents).where(eq(schema.documents.id, id));
+    await db.update(schema.documents).set({ deletedAt: new Date() }).where(eq(schema.documents.id, id));
   } catch (e) {
     return fail(dbError(e));
   }
-  await audit(user.id, "document", id, "geloescht", { kind: doc.kind, title: doc.title });
+  await audit(user.id, "document", id, "papierkorb", { kind: doc.kind, title: doc.title, status: doc.status });
   refresh();
-  return done("Dokument gelöscht", { redirectTo: "/dokumente" });
+  return done(`In den Papierkorb gelegt, ${TRASH_DAYS} Tage wiederherstellbar`, { redirectTo: "/dokumente" });
+}
+
+export async function restoreDocument(id: number): Promise<ActionState> {
+  const user = await assertUser();
+  if (!Number.isInteger(id) || id <= 0) return fail("Dokument nicht gefunden.");
+  const db = await getDb();
+  const [doc] = await db
+    .update(schema.documents)
+    .set({ deletedAt: null })
+    .where(and(eq(schema.documents.id, id), isNotNull(schema.documents.deletedAt)))
+    .returning({ id: schema.documents.id, title: schema.documents.title });
+  if (!doc) return fail("Das Dokument liegt nicht mehr im Papierkorb.");
+  await audit(user.id, "document", id, "wiederhergestellt", { title: doc.title });
+  refresh();
+  return done("Dokument wiederhergestellt");
+}
+
+/** Sofort endgültig löschen (nur aus dem Papierkorb). */
+export async function purgeDocument(id: number): Promise<ActionState> {
+  const user = await assertUser();
+  if (!Number.isInteger(id) || id <= 0) return fail("Dokument nicht gefunden.");
+  try {
+    const n = await purgeDocuments([id], user.id);
+    if (n === 0) return fail("Das Dokument liegt nicht mehr im Papierkorb.");
+  } catch (e) {
+    return fail(dbError(e));
+  }
+  refresh();
+  return done("Endgültig gelöscht");
 }
 
 // ------------------------------------------------------------------

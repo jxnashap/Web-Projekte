@@ -57,6 +57,13 @@
       "when": 1793048632109,
       "tag": "0007_kunden_logo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793057034529,
+      "tag": "0008_dokumente_papierkorb",
+      "breakpoints": true
     }
   ]
 }

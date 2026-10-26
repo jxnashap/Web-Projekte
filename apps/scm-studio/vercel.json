@@ -5,6 +5,7 @@
   "crons": [
     { "path": "/api/cron/instagram", "schedule": "17 4 * * *" },
     { "path": "/api/cron/google", "schedule": "23 4 * * *" },
-    { "path": "/api/cron/trends", "schedule": "41 1 * * *" }
+    { "path": "/api/cron/trends", "schedule": "41 1 * * *" },
+    { "path": "/api/cron/aufraeumen", "schedule": "53 2 * * *" }
   ]
 }

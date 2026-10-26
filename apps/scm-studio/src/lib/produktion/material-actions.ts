@@ -7,8 +7,8 @@ import { getDb, schema } from "@/db";
 import { done, fail, type ActionState } from "@/lib/action";
 import { audit } from "@/lib/audit";
 import { assertUser } from "@/lib/auth";
-import { SUPABASE_BUCKET, supabaseAdmin } from "@/lib/storage";
-import { keyBelongsTo, materialInFolder, materialKey, materialLinks, removeObjects, uploadMode, writeLocal } from "./material";
+import { removeObjects, SUPABASE_BUCKET, supabaseAdmin } from "@/lib/storage";
+import { keyBelongsTo, materialInFolder, materialKey, materialLinks, uploadMode, writeLocal } from "./material";
 import { cleanFolder, isJunkFile, MAX_FILES_PER_UPLOAD, MAX_MATERIAL_BYTES } from "./material-shared";
 
 /** Gleichnamige Dateien im selben Ordner ersetzen: ältere Einträge samt Datei entfernen. */

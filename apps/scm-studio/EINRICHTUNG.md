@@ -106,9 +106,11 @@ Unter Deployment Protection „Standard Protection“, damit die Hauptadresse oh
 (Project Settings → General → Transfer Project).
 
 **Supabase (Stand 26.10.2026):** Organisation „SCM Studio“, Projekt `scm-studio` in Frankfurt (eu-central-1),
-Projekt-Ref `urpyssyupahnhjrjawsl`. Migrationen 0000 bis 0007 und `supabase/setup.sql` sind eingespielt
+Projekt-Ref `urpyssyupahnhjrjawsl`. Migrationen 0000 bis 0008 und `supabase/setup.sql` sind eingespielt
 (Bucket `studio` mit 50 MB je Datei, das Maximum von Supabase Free),
 Firmendaten angelegt, Demo-Modus aus. Team angelegt (Oskar, Yannick, Jonas, alle Inhaber). Offen: Zugänge einrichten (Schritt 3).
+Gelöschte Dokumente liegen 14 Tage im Papierkorb (Dokumente → Papierkorb), danach löscht der Vercel Cron
+`/api/cron/aufraeumen` (02:53 UTC) sie samt PDF endgültig. Rechnungen, Belege und Exporte bleiben unveränderlich.
 
 ## 5. KI-Skripte (OpenAI)
 

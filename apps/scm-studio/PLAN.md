@@ -39,7 +39,7 @@ Stand: 26.10.2026 · Next.js 16.4.3 · React 19.3.1 · Recherche mit Quellen: `d
 | 07 | **Kalender** | Monat/Woche/Liste, iCal-Abo, Google-Spiegelung |
 | 07 | **Zahlen** | Aufrufe, Reichweite, Interaktionen je Video/Kunde/Format, CSV-Import, Instagram-Anbindung |
 | 08 | **Finanzen** | Angebote, Rechnungen (E-Rechnung), Storno, Erinnerungen, Belege mit Foto, USt-Vorschau, DATEV-Export |
-| 09 | **Dokumente** | Dienstleistungsvertrag, Einwilligung mit Unterschrift am Set, Drehplan, Monatsbericht |
+| 09 | **Dokumente** | Dienstleistungsvertrag, Einwilligung mit Unterschrift am Set, Drehplan, Monatsbericht. Löschen über den Papierkorb: 14 Tage wiederherstellbar, danach räumt `/api/cron/aufraeumen` nachts endgültig auf (auch unterschriebene Test-Dokumente samt PDF) |
 | 10 | **Einstellungen** | Firma, Team, Branchen (feste plus eigene, z. B. Fahrschule), Nummernkreise, Anbindungen, KI, Rechtliches, Datenschutz |
 
 Überall: ⌘K-Befehlsmenü mit deutschen Suchwörtern, „Neu“-Aktionen per `?neu=1`, Handy-Navigation unten für den Einsatz am Set.

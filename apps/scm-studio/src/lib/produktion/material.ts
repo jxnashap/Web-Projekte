@@ -34,17 +34,6 @@ export async function readLocal(key: string): Promise<Uint8Array> {
   return new Uint8Array(await fs.readFile(localPath(key)));
 }
 
-/** Dateien in der Ablage löschen (Supabase in Paketen zu 100). Fehler beim Aufräumen brechen nichts ab. */
-export async function removeObjects(keys: string[]) {
-  if (keys.length === 0) return;
-  if (integrations.supabaseStorage()) {
-    const sb = await supabaseAdmin();
-    for (let i = 0; i < keys.length; i += 100) await sb.storage.from(SUPABASE_BUCKET).remove(keys.slice(i, i + 100));
-  } else {
-    await Promise.all(keys.map((k) => fs.rm(localPath(k), { force: true })));
-  }
-}
-
 /** Kunden mit Anzahl und Größe ihres Materials (ohne beendete Kunden, außer sie haben noch Material). */
 export async function listMaterialClients() {
   await requireUser();

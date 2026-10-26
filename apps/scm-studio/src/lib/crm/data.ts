@@ -1,6 +1,6 @@
 // Datenzugriff für Anfragen und Kunden (nur Server). Jede Funktion prüft die Anmeldung.
 import "server-only";
-import { and, asc, count, desc, eq, gte, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { getKontingente, type Kontingent } from "@/lib/data/kontingent";
@@ -145,7 +145,7 @@ export async function getClientCounts(id: number) {
   const [[v], [i], [d]] = await Promise.all([
     db.select({ n: count() }).from(videos).where(eq(videos.clientId, id)),
     db.select({ n: count() }).from(invoices).where(eq(invoices.clientId, id)),
-    db.select({ n: count() }).from(documents).where(eq(documents.clientId, id)),
+    db.select({ n: count() }).from(documents).where(and(eq(documents.clientId, id), isNull(documents.deletedAt))),
   ]);
   return { videos: v?.n ?? 0, invoices: i?.n ?? 0, documents: d?.n ?? 0 };
 }
@@ -209,7 +209,7 @@ export async function getClientInvoices(id: number) {
 export async function getClientDocuments(id: number) {
   await requireUser();
   const db = await getDb();
-  return db.select().from(documents).where(eq(documents.clientId, id)).orderBy(desc(documents.updatedAt));
+  return db.select().from(documents).where(and(eq(documents.clientId, id), isNull(documents.deletedAt))).orderBy(desc(documents.updatedAt));
 }
 
 export async function getClientHistory(id: number) {
@@ -230,7 +230,7 @@ export async function clientDependencies(id: number) {
   const [[v], [i], [d], [e], [x], [s]] = await Promise.all([
     db.select({ n: count() }).from(videos).where(eq(videos.clientId, id)),
     db.select({ n: count() }).from(invoices).where(eq(invoices.clientId, id)),
-    db.select({ n: count() }).from(documents).where(eq(documents.clientId, id)),
+    db.select({ n: count() }).from(documents).where(and(eq(documents.clientId, id), isNull(documents.deletedAt))),
     db.select({ n: count() }).from(events).where(eq(events.clientId, id)),
     db.select({ n: count() }).from(schema.expenses).where(eq(schema.expenses.clientId, id)),
     db.select({ n: count() }).from(schema.scripts).where(eq(schema.scripts.clientId, id)),

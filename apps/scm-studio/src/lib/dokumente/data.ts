@@ -1,12 +1,13 @@
 // Datenzugriff für Dokumente (nur Server). Jede Funktion prüft die Anmeldung.
 import "server-only";
-import { and, asc, desc, eq, gte, inArray, lte, ne, or, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, isNull, lte, ne, or, type SQL } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import type { Client, Doc } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { getKontingente } from "@/lib/data/kontingent";
 import { getCompany, getSetting, isDemo } from "@/lib/settings";
 import { berlinDateTime, monthRange, shiftMonth, todayIso } from "@/lib/time";
+import { daysLeft, purgeAt } from "./papierkorb";
 import {
   consentController,
   controllerProblem,
@@ -41,14 +42,14 @@ export type DocRow = Doc & { clientName: string | null; clientColor: string | nu
 export async function listDocuments(f: { art?: string; kunde?: number; status?: string; q?: string }): Promise<DocRow[]> {
   await requireUser();
   const db = await getDb();
-  const where: SQL[] = [];
+  const where: SQL[] = [isNull(schema.documents.deletedAt)];
   if (f.art && isDocKind(f.art)) where.push(eq(schema.documents.kind, f.art));
   if (f.kunde) where.push(eq(schema.documents.clientId, f.kunde));
   const rows = await db
     .select({ d: schema.documents, clientName: schema.clients.name, clientColor: schema.clients.color })
     .from(schema.documents)
     .leftJoin(schema.clients, eq(schema.documents.clientId, schema.clients.id))
-    .where(where.length ? and(...where) : undefined)
+    .where(and(...where))
     .orderBy(desc(schema.documents.updatedAt));
   const q = f.q?.trim().toLowerCase();
   return rows
@@ -61,10 +62,33 @@ export async function getDocument(id: number): Promise<{ doc: Doc; client: Clien
   await requireUser();
   if (!Number.isInteger(id) || id <= 0) return null;
   const db = await getDb();
-  const [doc] = await db.select().from(schema.documents).where(eq(schema.documents.id, id));
+  const [doc] = await db.select().from(schema.documents).where(and(eq(schema.documents.id, id), isNull(schema.documents.deletedAt)));
   if (!doc) return null;
   const client = doc.clientId ? ((await db.select().from(schema.clients).where(eq(schema.clients.id, doc.clientId)))[0] ?? null) : null;
   return { doc, client };
+}
+
+export type TrashRow = DocRow & { purgeAt: Date; daysLeft: number };
+
+/** Dokumente im Papierkorb, zuletzt gelöschte zuerst, mit Datum der endgültigen Löschung. */
+export async function listTrash(): Promise<TrashRow[]> {
+  await requireUser();
+  const db = await getDb();
+  const rows = await db
+    .select({ d: schema.documents, clientName: schema.clients.name, clientColor: schema.clients.color })
+    .from(schema.documents)
+    .leftJoin(schema.clients, eq(schema.documents.clientId, schema.clients.id))
+    .where(isNotNull(schema.documents.deletedAt))
+    .orderBy(desc(schema.documents.deletedAt));
+  const now = Date.now();
+  return rows.map((r) => ({ ...r.d, clientName: r.clientName, clientColor: r.clientColor, purgeAt: purgeAt(r.d.deletedAt!), daysLeft: daysLeft(r.d.deletedAt!, now) }));
+}
+
+export async function countTrash(): Promise<number> {
+  await requireUser();
+  const db = await getDb();
+  const [r] = await db.select({ n: count() }).from(schema.documents).where(isNotNull(schema.documents.deletedAt));
+  return r?.n ?? 0;
 }
 
 export async function getClientOptions() {
