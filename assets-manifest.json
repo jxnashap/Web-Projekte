@@ -1,52 +1,34 @@
 [
  {
-  "url": "https://www.tiktok.com/@diedreiweinbar",
-  "path": ".preview-cache/dd/social/tiktok-diedreiweinbar.html"
- },
- {
-  "url": "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@diedreiweinbar",
-  "path": ".preview-cache/dd/social/tiktok-oembed-diedreiweinbar.json"
- },
- {
-  "url": "https://www.tiktok.com/@die_drei_weinbar",
-  "path": ".preview-cache/dd/social/tiktok-die_drei_weinbar.html"
- },
- {
-  "url": "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@die_drei_weinbar",
-  "path": ".preview-cache/dd/social/tiktok-oembed-die_drei_weinbar.json"
- },
- {
-  "url": "https://www.tiktok.com/@diedrei_weinbar",
-  "path": ".preview-cache/dd/social/tiktok-diedrei_weinbar.html"
- },
- {
-  "url": "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@diedrei_weinbar",
-  "path": ".preview-cache/dd/social/tiktok-oembed-diedrei_weinbar.json"
- },
- {
-  "url": "https://www.tiktok.com/@diedrei.weinbar",
-  "path": ".preview-cache/dd/social/tiktok-diedrei.weinbar.html"
- },
- {
-  "url": "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@diedrei.weinbar",
-  "path": ".preview-cache/dd/social/tiktok-oembed-diedrei.weinbar.json"
- },
- {
-  "url": "https://i.instagram.com/api/v1/users/web_profile_info/?username=diedreiweinbar",
-  "path": ".preview-cache/dd/social/ig-diedreiweinbar.json",
+  "url": "https://www.instagram.com/diedreiweinbar/",
+  "path": ".preview-cache/dd/social/ig-page-diedreiweinbar.html",
   "headers": [
-   "x-ig-app-id: 936619743392459"
+   "User-Agent: facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
   ]
  },
  {
-  "url": "https://i.instagram.com/api/v1/users/web_profile_info/?username=die_drei_weinbar",
-  "path": ".preview-cache/dd/social/ig-die_drei_weinbar.json",
+  "url": "https://www.instagram.com/api/v1/users/web_profile_info/?username=diedreiweinbar",
+  "path": ".preview-cache/dd/social/ig2-diedreiweinbar.json",
   "headers": [
-   "x-ig-app-id: 936619743392459"
+   "x-ig-app-id: 936619743392459",
+   "X-Requested-With: XMLHttpRequest",
+   "Referer: https://www.instagram.com/"
   ]
  },
  {
-  "url": "https://r.jina.ai/https://www.tiktok.com/@diedreiweinbar",
-  "path": ".preview-cache/dd/social/tiktok-diedreiweinbar.md"
+  "url": "https://www.instagram.com/die_drei_weinbar/",
+  "path": ".preview-cache/dd/social/ig-page-die_drei_weinbar.html",
+  "headers": [
+   "User-Agent: facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+  ]
+ },
+ {
+  "url": "https://www.instagram.com/api/v1/users/web_profile_info/?username=die_drei_weinbar",
+  "path": ".preview-cache/dd/social/ig2-die_drei_weinbar.json",
+  "headers": [
+   "x-ig-app-id: 936619743392459",
+   "X-Requested-With: XMLHttpRequest",
+   "Referer: https://www.instagram.com/"
+  ]
  }
 ]
