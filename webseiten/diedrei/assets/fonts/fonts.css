@@ -1,0 +1,49 @@
+/* DIE DREI – selbst gehostete Schriften (SIL Open Font License 1.1, keine Drittanbieter-Requests).
+   Fraunces (Undercase Type) – variabel: wght 300–600, opsz 9–144 (font-optical-sizing:auto greift automatisch),
+     SOFT fest 100, WONK fest 0 (keine font-variation-settings nötig).
+   fraunces-ext.woff2 – Latin Extended-A (z. B. „Zýmē“), lädt nur bei Bedarf.
+   Fraunces Italic – gleiche Achsen; aufgeteilt in Kern (ASCII + Deutsch) und -ext (übrige Latin-1-Zeichen),
+     -ext lädt der Browser nur, wenn solche Zeichen kursiv vorkommen.
+   Inter (Rasmus Andersson) – variabel: wght 300–600, opsz fest 14 (Text-Optik).
+   Hinweis: Fraunces enthält keine Pfeile/Häkchen (→ ← ✓) und kein ‰/† – Inter hat sie;
+   z. B. font-family: "Fraunces", "Inter", Georgia, serif; damit fallen diese Zeichen sauber auf Inter zurück. */
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url("fraunces.woff2") format("woff2");
+  unicode-range: U+0020-007E,U+00A0-00A3,U+00A7,U+00A9,U+00AB,U+00AD-00AE,U+00B0-00B1,U+00B7,U+00BB-00CF,U+00D1-00DD,U+00DF-00EF,U+00F1-00FD,U+00FF,U+0131,U+0152-0153,U+02C6,U+02DA,U+02DC,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2039-203A,U+2044,U+20AC,U+2122,U+2212;
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url("fraunces-ext.woff2") format("woff2");
+  unicode-range: U+0100-0130,U+0132-0148,U+014A-0151,U+0154-017E,U+0218-021B;
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: italic;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url("fraunces-italic.woff2") format("woff2");
+  unicode-range: U+0020-007E,U+00A0,U+00AB,U+00AD,U+00B7,U+00BB,U+00C4,U+00D6,U+00DC,U+00DF,U+00E4,U+00E9,U+00F6,U+00FC,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+20AC;
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: italic;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url("fraunces-italic-ext.woff2") format("woff2");
+  unicode-range: U+00A1-00A3,U+00A7,U+00A9,U+00AE,U+00B0-00B1,U+00BC-00C3,U+00C5-00CF,U+00D1-00D5,U+00D7-00DB,U+00DD,U+00E0-00E3,U+00E5-00E8,U+00EA-00EF,U+00F1-00F5,U+00F7-00FB,U+00FD,U+00FF,U+0131,U+0152-0153,U+02C6,U+02DA,U+02DC,U+2039-203A,U+2044,U+2122,U+2212;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url("inter.woff2") format("woff2");
+  unicode-range: U+0020-007E,U+00A0-00AC,U+00AE-0148,U+014A-017F,U+0192,U+0218-021B,U+02BC,U+02C6,U+02DA,U+02DC,U+2007-200B,U+2010-2015,U+2018-201E,U+2020-2022,U+2026,U+202F-2030,U+2032-2033,U+2039-203A,U+2044,U+20AC,U+2116,U+2122,U+2190-2193,U+2212,U+2713;
+}

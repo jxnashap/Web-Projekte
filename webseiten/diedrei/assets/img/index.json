@@ -1,0 +1,340 @@
+[
+ {
+  "slug": "flammkuchen",
+  "orientation": "quer",
+  "s": {
+   "w": 1000,
+   "h": 667,
+   "bytes": 43286
+  },
+  "l": {
+   "w": 1920,
+   "h": 1280,
+   "bytes": 90748
+  },
+  "alt": "Frisch gebackener Flammkuchen mit buntem Gemüse auf einem hellen Holzbrett, dahinter Salz- und Pfeffermühle und eine kupferfarbene Tischleuchte",
+  "fokus": "center 70%",
+  "quelle": "1-DSC09632.jpg"
+ },
+ {
+  "slug": "teller-tisch",
+  "orientation": "quer",
+  "s": {
+   "w": 1000,
+   "h": 667,
+   "bytes": 59682
+  },
+  "l": {
+   "w": 1920,
+   "h": 1280,
+   "bytes": 157114
+  },
+  "alt": "Brotzeitteller mit Käsewürfeln, Weintrauben, Oliven, kleinen Tomaten, Chips und Crackern sowie einem Schälchen Dip, daneben eine kupferfarbene Tischleuchte",
+  "fokus": "45% 40%",
+  "quelle": "2-DSC09668.jpg"
+ },
+ {
+  "slug": "teller-glas",
+  "orientation": "quer",
+  "s": {
+   "w": 1000,
+   "h": 667,
+   "bytes": 53484
+  },
+  "l": {
+   "w": 1920,
+   "h": 1280,
+   "bytes": 139146
+  },
+  "alt": "Brotzeitteller mit Käse, Weintrauben, Oliven, Chips und Dip; eine Hand greift zum Teller, im Vordergrund ein Glas mit hellem Wein",
+  "fokus": "40% 50%",
+  "quelle": "3-DSC09669.jpg"
+ },
+ {
+  "slug": "dip-cracker",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 30144
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 50556
+  },
+  "alt": "Ein Cracker wird in einen cremigen, rosafarbenen Dip getaucht, davor Weintrauben, Käsewürfel und Chips",
+  "fokus": "center 45%",
+  "quelle": "7-DSC09699.jpg"
+ },
+ {
+  "slug": "gaeste-sekt",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 33296
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 57608
+  },
+  "alt": "Zwei Gäste am Tisch, davor zwei beschlagene Schaumweingläser und ein Brotzeitteller mit Käse, Weintrauben und Chips",
+  "quelle": "11-DSC09743.jpg"
+ },
+ {
+  "slug": "bar-detail",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 33404
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 57526
+  },
+  "alt": "Weinflaschen in verzinkten Kühleimern vor orangeroter Wand, darüber ein Zitrusbäumchen mit kleinen orangefarbenen Früchten",
+  "fokus": "center 55%",
+  "quelle": "12-DSC09765.jpg"
+ },
+ {
+  "slug": "raum-weinschrank",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 90722
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 178246
+  },
+  "alt": "Gastraum mit orangefarbenen Wänden, Glühbirnen-Pendelleuchten, zwei verglasten Weinschränken, einem Weinfass und Flaschenregalen; vorn ein runder Tisch mit dunklen Stühlen",
+  "fokus": "center 60%",
+  "quelle": "13-DSC09775.jpg"
+ },
+ {
+  "slug": "kaeseplatte",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 38840
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 71070
+  },
+  "alt": "Käseplatte mit Weichkäse, Käsewürfeln, Oliven, Weintrauben und Chips auf einem Tisch im Freien, daneben Gläser und ein blauer Untersetzer mit „DIE DREI“-Logo",
+  "fokus": "center 65%",
+  "quelle": "14-DSC09778.jpg"
+ },
+ {
+  "slug": "rose-flaschen",
+  "orientation": "quer",
+  "s": {
+   "w": 1000,
+   "h": 667,
+   "bytes": 54784
+  },
+  "l": {
+   "w": 1920,
+   "h": 1280,
+   "bytes": 178194
+  },
+  "alt": "Drei Flaschen Roséwein in geriffeltem Glas und zwei Bierflaschen auf einem Schrank vor orangefarbener Wand, darüber eine leuchtende Pendelleuchte",
+  "fokus": "35% 55%",
+  "quelle": "15-DSC09785.jpg"
+ },
+ {
+  "slug": "tresen-fenster",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 53930
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 94246
+  },
+  "alt": "Blick über den Tresen mit Windlicht und Blumenstrauß in den hellen Gastraum mit Fensterfront, blauer Sitzbank und Glühbirnen-Pendelleuchten",
+  "fokus": "center 55%",
+  "quelle": "20-DSC09816.jpg"
+ },
+ {
+  "slug": "raum-panorama",
+  "orientation": "quer",
+  "s": {
+   "w": 1000,
+   "h": 667,
+   "bytes": 71436
+  },
+  "l": {
+   "w": 1920,
+   "h": 1280,
+   "bytes": 178704
+  },
+  "alt": "Gastraum mit orangefarbenen Wänden, vielen Glühbirnen-Pendelleuchten, runden Tischen mit dunklen Stühlen, blauer Sitzbank, Weinschrank und Weinfass; rechts die geöffnete Glastür",
+  "fokus": "center 55%",
+  "quelle": "21-DSC09822.jpg"
+ },
+ {
+  "slug": "eingang-terrasse",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 73106
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 130122
+  },
+  "alt": "Außenansicht mit weißen Fenstertüren und einem bunt gestalteten Schild mit „DIE DREI“-Schriftzug, davor ein Weinfass und Bistrotische auf dem Gehweg",
+  "fokus": "center 40%",
+  "quelle": "22-IMG_9919.jpg"
+ },
+ {
+  "slug": "spiegel-raum",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 60314
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 108992
+  },
+  "alt": "Heller Gastraum mit dunklen Stühlen; in einem großen schwarzen Rahmen zeigt sich der orangefarbene Barbereich mit Glühbirnen-Leuchten und Flaschenregalen",
+  "fokus": "center 35%",
+  "quelle": "26-DSC09606-1.jpg"
+ },
+ {
+  "slug": "raum-sofa",
+  "orientation": "quer",
+  "s": {
+   "w": 1000,
+   "h": 667,
+   "bytes": 57454
+  },
+  "l": {
+   "w": 1920,
+   "h": 1280,
+   "bytes": 134562
+  },
+  "alt": "Heller Bereich des Gastraums mit runden Tischen, dunklen Schalenstühlen, blauer Sitzbank am Fenster und Glühbirnen-Pendelleuchten; hinten der Blick in den orangefarbenen Bereich",
+  "quelle": "27-DSC09602.jpg"
+ },
+ {
+  "slug": "nische-blau",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 59600
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 100968
+  },
+  "alt": "Sitznische mit dunkelblauer Polsterbank, rotem Kissen und kleinem runden Tisch vor orangefarbener Wand, im Vordergrund Zweige mit hängenden Glühbirnen",
+  "fokus": "60% 60%",
+  "quelle": "28-DSC09597.jpg"
+ },
+ {
+  "slug": "tresen",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 82476
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 156544
+  },
+  "alt": "Der Tresen vor orangefarbener Wand mit Gläser- und Flaschenregalen, Blumen und Glühbirnen-Pendelleuchten unter einem Metallgitter an der Decke",
+  "fokus": "center 65%",
+  "quelle": "29-DSC09592.jpg"
+ },
+ {
+  "slug": "weinkuehlschrank",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 62472
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 107834
+  },
+  "alt": "Reihen heller Weinflaschen mit bunten „DIE DREI“-Etiketten hinter den Glastüren einer beleuchteten Vitrine",
+  "fokus": "center 40%",
+  "quelle": "30-DSC09573.jpg"
+ },
+ {
+  "slug": "zitronen-korken",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 43452
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 74834
+  },
+  "alt": "Zitrusfrüchte an einem Zweig über einer Schale mit Korken, im Hintergrund unscharf Flaschen vor orangefarbener Wand",
+  "fokus": "35% 40%",
+  "quelle": "31-DSC09569.jpg"
+ },
+ {
+  "slug": "sauternes-kiste",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 35368
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 88506
+  },
+  "alt": "Holzkiste mit der Aufschrift „Sauternes“ und Flaschen mit goldgelbem Wein auf einem Regal vor orangefarbener Wand",
+  "fokus": "center 55%",
+  "quelle": "32-DSC09543.jpg"
+ },
+ {
+  "slug": "raum-lampen",
+  "orientation": "hoch",
+  "s": {
+   "w": 667,
+   "h": 1000,
+   "bytes": 102774
+  },
+  "l": {
+   "w": 1067,
+   "h": 1600,
+   "bytes": 199468
+  },
+  "alt": "Gastraum mit Glühbirnen-Pendelleuchten unter einem Metallgitter an der Decke, dahinter der Tresen mit verglaster Flaschenvitrine und Regalen, vorn runde Tische mit dunklen Stühlen",
+  "fokus": "center 55%",
+  "quelle": "33-DSC09535.jpg"
+ }
+]
