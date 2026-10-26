@@ -60,3 +60,18 @@ Formular (Validierung → `mailto:`), Google-Maps-2-Klick-Lösung, CTA-Band, Foo
   (kleines JS, ein Observer, passive Listener).
 - **SEO lokal:** JSON-LD (`DrivingSchool`/`LocalBusiness`) mit Adresse, Zeiten,
   `sameAs`; sprechende Titles/Descriptions, Canonical, Sitemap, Rechtsseiten `noindex`.
+
+## Projektstand lets-drive-kiel (Übergabe)
+
+QA (`tools/shot.js`): 9 Seiten × Desktop/Mobil – Reveals n/n, 0 Fehler, 0 Fremd-Requests,
+kein Overflow, Ordner 1,5 MB (ZIP 1,4 MB in `auslieferung/`).
+
+Vor Livegang vom Kunden klären (alle als `[PLATZHALTER]` sichtbar markiert):
+- Impressum: Steuernummer 20/031/64345 war im Original als „Umsatzsteuer-ID" beschriftet → prüfen.
+- Datenschutz: rechtlich prüfen lassen, Hoster + Log-Speicherdauer eintragen.
+- AGB: Text vom Kunden (Original-Seite war leer).
+- Kontaktformular: aktuell `mailto:`; optional Formular-Backend anbinden.
+- Stimmen: gekürzte öffentliche Google-Bewertungen (Vorname + Initial) – Freigabe bestätigen.
+- Bilder: Fahrschulauto = Original des Kunden; übrige Fotos sind KI-Symbolbilder (Higgsfield,
+  im Impressum vermerkt) – gern durch echte Fotos ersetzen (gleiche Dateinamen/Seitenverhältnisse).
+- Original-Logo liegt freigestellt unter `assets/img/logo-original.png`, falls gewünscht.

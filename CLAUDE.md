@@ -11,6 +11,9 @@ Repo für alle Website-Projekte. Struktur:
 - `webseiten/myimmoapp/` – MyImmo-SaaS für private Vermieter (Premium-Estate v2,
   Fraunces/Outfit, Gold/Charcoal, Higgsfield-Video-Hero + Scroll-Scrub,
   echte App-Screenshots) · PR #8
+- `webseiten/lets-drive-kiel/` – Fahrschule Let's Drive Kiel (Ruhig-Modern, Anthrazit
+  #151414/Fahrschul-Grün #139d27/Off-White, Manrope selbst gehostet, 0 Fremd-Requests,
+  1,5 MB) · Branch `claude/tender-edison-vwar5s`
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
@@ -27,6 +30,11 @@ ihren ursprünglichen Branches (PR #1/#2).
   mit Blur, Scroll-Scrub-Kapitel, Video-Scrub, 3D-Tilt, Spotlight, Video-Hero
   (AV1+H264), Gerät-Rahmen, Float-Chips. Higgsfield-Rezept: Still (Nano Banana,
   2 Cr.) → Kling 3.0 Turbo Bild-zu-Video (7,5–10 Cr.).
+
+- `baukaesten/ruhig-modern/` – helle, ruhige Dienstleister-Bauweise (eine Akzentfarbe,
+  eine Schrift, Weißraum, dezente Reveals), DSGVO-sauber ohne externe Requests
+  (Font lokal, Maps per 2-Klick), WCAG-AA-Kontraste. QA-Tool `tools/shot.js` meldet
+  zusätzlich Fremd-Hosts + Gesamtgröße. Erstes Projekt: lets-drive-kiel.
 
 ## Arbeitsweise
 - Pro Projekt ein Branch `claude/<projekt>` + ein PR; Auslieferung als ZIP nach `auslieferung/`.

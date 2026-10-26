@@ -522,7 +522,7 @@ INDEX_BODY = f"""<section class="hero hero-home">
 </section>
 
 <section class="section section-dark">
-  <div class="wrap split">
+  <div class="wrap split-6-4">
     <figure class="media rv-img"><img src="assets/img/fahrschulauto-851.webp" alt="Weißes Fahrschulauto von {BRAND} bei Nacht an einem beleuchteten Hafenbecken" width="851" height="315" loading="lazy" decoding="async"></figure>
     <div>
       <p class="eyebrow rv">Unsere Fahrzeuge</p>
