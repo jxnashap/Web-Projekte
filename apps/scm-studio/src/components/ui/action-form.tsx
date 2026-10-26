@@ -1,8 +1,10 @@
 "use client";
-// Formular für Server Actions mit Rückmeldung: zeigt Erfolg/Fehler als Toast, Feldfehler am Feld,
-// schließt einen umgebenden Dialog und behält Eingaben bei Fehlern (kein automatisches Zurücksetzen).
+// Formular für Server Actions mit Rückmeldung: Erfolg/Fehler als Toast, Feldfehler am Feld, schließt einen
+// umgebenden Dialog und behält Eingaben bei Fehlern (kein automatisches Zurücksetzen).
+// Die Rückmeldung läuft direkt in der Fortsetzung des Absendens, nicht in einem Effekt: so geht sie auch dann
+// nicht verloren, wenn das Formular nach refresh() verschwindet (z. B. nach "bezahlt" oder "festschreiben").
 import { useRouter } from "next/navigation";
-import { createContext, startTransition, useActionState, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { ActionState } from "@/lib/action";
 import { useDialog } from "./dialog";
@@ -28,25 +30,11 @@ export function ActionForm({
   onSuccess?: (s: ActionState) => void;
   id?: string;
 }) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, setState] = useState<ActionState>({});
+  const [pending, start] = useTransition();
   const ref = useRef<HTMLFormElement>(null);
   const dialog = useDialog();
   const router = useRouter();
-  const last = useRef<ActionState>(state);
-
-  useEffect(() => {
-    if (state === last.current) return;
-    last.current = state;
-    if (state.ok) {
-      if (toastOnSuccess && state.message) toast.success(state.message);
-      if (resetOnSuccess) ref.current?.reset();
-      dialog?.close();
-      onSuccess?.(state);
-      if (state.redirectTo) router.push(state.redirectTo);
-    } else if (state.error) {
-      toast.error(state.error);
-    }
-  }, [state, toastOnSuccess, resetOnSuccess, dialog, onSuccess, router]);
 
   return (
     <FormCtx.Provider value={{ state, pending }}>
@@ -55,12 +43,36 @@ export function ActionForm({
         ref={ref}
         className={className}
         noValidate
+        aria-busy={pending}
         onSubmit={(e) => {
           e.preventDefault();
-          const fd = new FormData(e.currentTarget);
+          if (pending) return;
+          const form = e.currentTarget;
+          const fd = new FormData(form);
           const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
           if (submitter?.name) fd.set(submitter.name, submitter.value);
-          startTransition(() => formAction(fd));
+          start(async () => {
+            let result: ActionState;
+            try {
+              // Actions, die redirect() aufrufen, lösen die Navigation selbst aus und liefern nichts zurück.
+              result = (await action(state, fd)) ?? {};
+            } catch (err) {
+              // redirect()/notFound() von Next nicht verschlucken
+              if (err && typeof err === "object" && "digest" in err && String((err as { digest: unknown }).digest).startsWith("NEXT_")) throw err;
+              console.error(err);
+              result = { ok: false, error: "Das hat nicht geklappt. Bitte noch einmal versuchen." };
+            }
+            setState(result);
+            if (result.ok) {
+              if (toastOnSuccess && result.message) toast.success(result.message);
+              if (resetOnSuccess) form.reset();
+              dialog?.close();
+              onSuccess?.(result);
+              if (result.redirectTo) router.push(result.redirectTo);
+            } else if (result.error) {
+              toast.error(result.error);
+            }
+          });
         }}
       >
         {children}

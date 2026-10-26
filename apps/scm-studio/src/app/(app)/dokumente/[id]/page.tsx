@@ -89,7 +89,7 @@ async function Detail({ params }: { params: P }) {
                 <Dot color={client.color} /> {client.name}
               </Link>
             )}
-            {doc.templateVersion && <span className="text-[13px]">Vorlage {doc.templateVersion}</span>}
+            {doc.templateVersion && legal && <span className="text-[13px]">Vorlage {doc.templateVersion}</span>}
           </span>
         }
         actions={
@@ -196,7 +196,7 @@ async function Detail({ params }: { params: P }) {
         <Card className="flex flex-col overflow-hidden xl:sticky xl:top-24 xl:self-start">
           <CardHeader
             title="PDF-Vorschau"
-            sub={doc.status === "entwurf" ? "Nach dem Speichern aktualisiert" : doc.fileId ? "Abgelegte Fassung" : "Fassung zur Unterschrift"}
+            sub={doc.status === "entwurf" ? "Nach dem Speichern aktualisiert" : doc.fileId ? "Abgelegte Fassung" : doc.status === "unterschrieben" ? "Unterschriebene Fassung" : "Fassung zur Unterschrift"}
             action={
               <a href={pdfHref} target="_blank" rel="noreferrer" className={buttonClass("ghost", "sm")}>
                 Öffnen <ExternalLink className="size-4" />
@@ -283,7 +283,7 @@ async function Summary({ docId }: { docId: number }) {
   const rows: [string, React.ReactNode][] = [["Status", DOC_STATUS[doc.status]?.label ?? doc.status]];
   if (doc.kind === "einwilligung") rows.push(["Zwecke", zwecke.map((z) => ZWECKE[z]?.label ?? z).join(", ") || "keine"]);
   if (scm && doc.status === "final") rows.push(["SCM", `unterschrieben von ${scm.name}, ${dateTime(scm.signedAt)}`]);
-  for (const s of signatures) rows.push([`Unterschrift ${SIGNER_SHORT[s.role] ?? ""}`.trim(), `${s.name}, ${dateTime(s.signedAt)}`]);
+  for (const s of signatures) rows.push([SIGNER_SHORT[s.role] ?? "Unterschrift", `unterschrieben von ${s.name}, ${dateTime(s.signedAt)}`]);
   if (doc.signMeta) {
     rows.push(["Inhalts-Hash", <span key="h" className="break-all font-mono text-[12px]">{doc.signMeta.versionHash}</span>]);
     if (doc.signMeta.place) rows.push(["Ort", doc.signMeta.place]);
