@@ -1,34 +1,56 @@
 [
  {
-  "url": "https://www.instagram.com/diedreiweinbar/",
-  "path": ".preview-cache/dd/social/ig-page-diedreiweinbar.html",
+  "url": "https://www.facebook.com/diedreiweinbar",
+  "path": ".preview-cache/dd/social/fb-diedreiweinbar.html",
   "headers": [
    "User-Agent: facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
   ]
  },
  {
-  "url": "https://www.instagram.com/api/v1/users/web_profile_info/?username=diedreiweinbar",
-  "path": ".preview-cache/dd/social/ig2-diedreiweinbar.json",
-  "headers": [
-   "x-ig-app-id: 936619743392459",
-   "X-Requested-With: XMLHttpRequest",
-   "Referer: https://www.instagram.com/"
-  ]
- },
- {
-  "url": "https://www.instagram.com/die_drei_weinbar/",
-  "path": ".preview-cache/dd/social/ig-page-die_drei_weinbar.html",
+  "url": "https://www.facebook.com/diedreibar",
+  "path": ".preview-cache/dd/social/fb-diedreibar.html",
   "headers": [
    "User-Agent: facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
   ]
  },
  {
-  "url": "https://www.instagram.com/api/v1/users/web_profile_info/?username=die_drei_weinbar",
-  "path": ".preview-cache/dd/social/ig2-die_drei_weinbar.json",
+  "url": "https://www.facebook.com/diedreiweinbarkiel",
+  "path": ".preview-cache/dd/social/fb-diedreiweinbarkiel.html",
   "headers": [
-   "x-ig-app-id: 936619743392459",
-   "X-Requested-With: XMLHttpRequest",
-   "Referer: https://www.instagram.com/"
+   "User-Agent: facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
   ]
+ },
+ {
+  "url": "https://www.facebook.com/DieDreiWeinbar.Kiel",
+  "path": ".preview-cache/dd/social/fb-DieDreiWeinbar.Kiel.html",
+  "headers": [
+   "User-Agent: facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+  ]
+ },
+ {
+  "url": "https://www.facebook.com/diedrei.weinbar",
+  "path": ".preview-cache/dd/social/fb-diedrei.weinbar.html",
+  "headers": [
+   "User-Agent: facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+  ]
+ },
+ {
+  "url": "https://www.facebook.com/diedreikiel",
+  "path": ".preview-cache/dd/social/fb-diedreikiel.html",
+  "headers": [
+   "User-Agent: facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+  ]
+ },
+ {
+  "url": "https://r.jina.ai/https://www.facebook.com/diedreiweinbar",
+  "path": ".preview-cache/dd/social/fb-jina-diedreiweinbar.md"
+ },
+ {
+  "url": "https://html.duckduckgo.com/html/?q=%22DIE+DREI%22+Weinbar+Kiel+site%3Afacebook.com",
+  "path": ".preview-cache/dd/social/ddg-fb.html"
+ },
+ {
+  "url": "https://html.duckduckgo.com/html/?q=diedreiweinbar+facebook",
+  "path": ".preview-cache/dd/social/ddg-fb2.html"
  }
 ]
