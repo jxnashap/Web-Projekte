@@ -15,6 +15,20 @@
       "when": 1792983431604,
       "tag": "0001_gobd_schutz",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793012925134,
+      "tag": "0002_fk_indizes",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793012926359,
+      "tag": "0003_funktionen_suchpfad",
+      "breakpoints": true
     }
   ]
 }

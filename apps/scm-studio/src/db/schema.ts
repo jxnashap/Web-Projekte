@@ -103,7 +103,7 @@ export const leads = studio.table(
     createdAt: created(),
     updatedAt: updated(),
   },
-  (t) => [index("leads_stage_idx").on(t.stage)],
+  (t) => [index("leads_stage_idx").on(t.stage), index("leads_client_idx").on(t.clientId)],
 ).enableRLS();
 
 // ------------------------------------------------------------------
@@ -130,7 +130,7 @@ export const videos = studio.table(
     createdAt: created(),
     updatedAt: updated(),
   },
-  (t) => [index("videos_client_idx").on(t.clientId), index("videos_month_idx").on(t.month)],
+  (t) => [index("videos_client_idx").on(t.clientId), index("videos_month_idx").on(t.month), index("videos_assignee_idx").on(t.assignee)],
 ).enableRLS();
 
 export type ScriptBeat = { tc: string; label: string; text: string; shot?: string };
@@ -152,7 +152,11 @@ export const scripts = studio.table("scripts", {
   createdBy: integer("created_by").references(() => teamMembers.id, { onDelete: "set null" }),
   createdAt: created(),
   updatedAt: updated(),
-}).enableRLS();
+}, (t) => [
+  index("scripts_client_idx").on(t.clientId),
+  index("scripts_video_idx").on(t.videoId),
+  index("scripts_created_by_idx").on(t.createdBy),
+]).enableRLS();
 
 export const events = studio.table(
   "events",
@@ -172,7 +176,7 @@ export const events = studio.table(
     createdAt: created(),
     updatedAt: updated(),
   },
-  (t) => [index("events_start_idx").on(t.startsAt)],
+  (t) => [index("events_start_idx").on(t.startsAt), index("events_client_idx").on(t.clientId), index("events_lead_idx").on(t.leadId)],
 ).enableRLS();
 
 // ------------------------------------------------------------------
@@ -216,7 +220,7 @@ export const socialAccounts = studio.table("social_accounts", {
   connectedAt: timestamp("connected_at", { withTimezone: true }),
   lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
   createdAt: created(),
-}).enableRLS();
+}, (t) => [index("social_accounts_client_idx").on(t.clientId)]).enableRLS();
 
 // ------------------------------------------------------------------
 // Finanzen: Angebote, Rechnungen, Ausgaben (GoBD: festgeschriebene Belege
@@ -267,7 +271,11 @@ export const invoices = studio.table(
     createdAt: created(),
     updatedAt: updated(),
   },
-  (t) => [uniqueIndex("invoices_number_uq").on(t.kind, t.number), index("invoices_status_idx").on(t.status)],
+  (t) => [
+    uniqueIndex("invoices_number_uq").on(t.kind, t.number),
+    index("invoices_status_idx").on(t.status),
+    index("invoices_client_idx").on(t.clientId),
+  ],
 ).enableRLS();
 
 export const invoiceItems = studio.table("invoice_items", {
@@ -279,7 +287,7 @@ export const invoiceItems = studio.table("invoice_items", {
   unit: text("unit").notNull().default("Stück"),
   unitPriceCents: integer("unit_price_cents").notNull(),
   taxRate: real("tax_rate").notNull().default(19),
-}).enableRLS();
+}, (t) => [index("invoice_items_invoice_idx").on(t.invoiceId)]).enableRLS();
 
 export const numberSequences = studio.table(
   "number_sequences",
@@ -316,7 +324,7 @@ export const expenses = studio.table(
     createdBy: integer("created_by"),
     createdAt: created(),
   },
-  (t) => [index("expenses_date_idx").on(t.date)],
+  (t) => [index("expenses_date_idx").on(t.date), index("expenses_client_idx").on(t.clientId)],
 ).enableRLS();
 
 // ------------------------------------------------------------------
@@ -343,7 +351,7 @@ export const documents = studio.table(
     createdAt: created(),
     updatedAt: updated(),
   },
-  (t) => [index("documents_kind_idx").on(t.kind)],
+  (t) => [index("documents_kind_idx").on(t.kind), index("documents_client_idx").on(t.clientId)],
 ).enableRLS();
 
 // ------------------------------------------------------------------
