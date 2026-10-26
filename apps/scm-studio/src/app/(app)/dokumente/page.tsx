@@ -45,6 +45,9 @@ export default function DokumentePage({ searchParams }: { searchParams: SP }) {
             <LinkButton href="/dokumente/neu" className="max-sm:hidden">
               <Plus className="size-4" /> Neues Dokument
             </LinkButton>
+            <LinkButton href="/dokumente/papierkorb" variant="secondary" className="w-11 px-0 sm:w-[38px]" aria-label="Papierkorb" title="Papierkorb">
+              <Trash2 className="size-4" aria-hidden />
+            </LinkButton>
           </>
         }
       />
@@ -150,11 +153,9 @@ async function DocumentList({ searchParams }: { searchParams: SP }) {
           </ul>
         </Card>
       )}
-      {trash > 0 && (
-        <Link href="/dokumente/papierkorb" className="inline-flex items-center gap-1.5 justify-self-start rounded-lg text-[14px] text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-          <Trash2 className="size-4" aria-hidden /> Papierkorb ({trash})
-        </Link>
-      )}
+      <Link href="/dokumente/papierkorb" className="inline-flex items-center gap-1.5 justify-self-start rounded-lg text-[14px] text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+        <Trash2 className="size-4" aria-hidden /> Papierkorb{trash > 0 ? ` (${trash})` : ""}
+      </Link>
     </div>
   );
 }
