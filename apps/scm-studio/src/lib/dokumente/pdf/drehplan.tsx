@@ -1,7 +1,7 @@
 // Drehplan im Drehbuch-Look: Szenen in Courier Prime, sonst ruhiges Weiß mit Logo. Sprache: ihr-Form (Team und Kunde).
 import { Text, View } from "@react-pdf/renderer";
-import { KeyValues, P, PdfDocument, PdfPage, s, Section, Title } from "@/lib/pdf/components";
-import { C, MM, PAGE } from "@/lib/pdf/theme";
+import { BLOCK_GAP, HeadingAnchor, KeyValues, P, PdfDocument, PdfPage, s, Section, Title } from "@/lib/pdf/components";
+import { C, PAGE } from "@/lib/pdf/theme";
 import { lines, type DrehplanData } from "../schema";
 import { Bullets, CheckRow, DemoNote, fmtDate } from "./common";
 import type { RenderCtx } from "./types";
@@ -89,7 +89,8 @@ export function DrehplanPdf({ ctx }: { ctx: RenderCtx }) {
           </Section>
         ) : null}
         {snap.videos.map((v, i) => (
-          <View key={v.id} style={{ marginBottom: 6 * MM }} wrap>
+          <View key={v.id} style={{ marginBottom: BLOCK_GAP }} wrap minPresenceAhead={-BLOCK_GAP}>
+            <HeadingAnchor />
             <View style={{ flexDirection: "row", alignItems: "baseline", borderBottomWidth: 0.8, borderBottomColor: C.ink, paddingBottom: 3, marginBottom: 4 }} minPresenceAhead={60}>
               <Text style={[s.mono, { fontSize: 9, fontWeight: 700, color: C.accent, width: 62 }]}>{`SZENE ${String(i + 1).padStart(2, "0")}`}</Text>
               <Text style={[s.h2, { marginBottom: 0, flex: 1 }]}>{v.title}</Text>

@@ -60,27 +60,30 @@ export function Paragraph({ n, title, items }: { n: number; title: string; items
   const rendered = items.map((it, i) => {
     if (typeof it !== "string")
       return (
-        <View key={i} style={{ paddingLeft: numbered ? 18 : 0 }}>
+        <View key={i} style={{ paddingLeft: 34 + (numbered ? 18 : 0) }}>
           <Bullets items={it.bullets.map(nb)} />
         </View>
       );
     return (
-      <View key={i} style={{ flexDirection: "row" }} wrap={false}>
+      <View key={i} style={{ flexDirection: "row", paddingLeft: 34 }} wrap={false}>
         {numbered ? <Text style={[s.p, { width: 18, color: C.muted }]}>({absNo[i]})</Text> : null}
         <P style={{ flex: 1 }}>{nb(it)}</P>
       </View>
     );
   });
   return (
-    <View style={{ marginBottom: 5 * MM }}>
+    // Abstand oben statt unten: react-pdf zählt einen unteren Außenabstand zur Höhe und schob sonst einen
+    // Paragraphen, der noch auf die Seite passt, komplett auf die nächste
+    <View style={{ marginTop: n === 1 ? 0 : 5 * MM }}>
+      {/* Überschrift und erster Absatz bleiben zusammen, damit keine Überschrift allein unten auf der Seite steht */}
       <View wrap={false}>
         <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 4 }}>
           <Text style={[s.label, { width: 34, color: C.accent }]}>{`§\u00a0${n}`}</Text>
           <Text style={[s.h2, { marginBottom: 0 }]}>{title}</Text>
         </View>
-        <View style={{ paddingLeft: 34 }}>{rendered[0]}</View>
+        {rendered[0]}
       </View>
-      <View style={{ paddingLeft: 34 }}>{rendered.slice(1)}</View>
+      {rendered.slice(1)}
     </View>
   );
 }

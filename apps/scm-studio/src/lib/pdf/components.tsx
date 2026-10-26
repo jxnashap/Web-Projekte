@@ -216,9 +216,20 @@ export function Title({ kicker, children, sub }: { kicker?: string; children: Re
   );
 }
 
+/**
+ * Seitenumbruch-Regeln von react-pdf, die Blöcke mit Überschrift brauchen:
+ * - Der untere Außenabstand zählt als Platz, der noch auf die Seite muss. Ein Block, der gerade so passt,
+ *   rutschte sonst ganz auf die nächste Seite; `minPresenceAhead={-BLOCK_GAP}` gleicht genau das aus.
+ * - minPresenceAhead wirkt nicht beim ersten Kind eines Blocks. Der leere Anker davor sorgt dafür,
+ *   dass eine Überschrift mit ihrem Inhalt umbricht, statt allein unten auf der Seite zu stehen.
+ */
+export const BLOCK_GAP = 6 * MM;
+export const HeadingAnchor = () => <View />;
+
 export function Section({ title, number, children, style, wrap = true }: { title?: string; number?: string; children: React.ReactNode; style?: Style; wrap?: boolean }) {
   return (
-    <View style={[{ marginBottom: 6 * MM }, style ?? {}]} wrap={wrap}>
+    <View style={[{ marginBottom: BLOCK_GAP }, style ?? {}]} wrap={wrap} minPresenceAhead={-BLOCK_GAP}>
+      {title ? <HeadingAnchor /> : null}
       {title ? (
         <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 4 }} minPresenceAhead={40}>
           {number ? <Text style={[s.label, { width: 26, color: C.accent }]}>{number}</Text> : null}

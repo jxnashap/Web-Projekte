@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   // eigener Ausgabeordner pro Dev-Server möglich (NEXT_DIST_DIR), damit mehrere Vorschauen parallel laufen
   distDir: process.env.NEXT_DIST_DIR || ".next",
   cacheComponents: true,
+  // Das Next-Symbol unten links liegt sonst auf dem Profil und dem Tab "Heute"; Fehler zeigt Next trotzdem an
+  devIndicators: false,
   partialPrefetching: true,
   // PGlite lädt WASM-Dateien zur Laufzeit; e-invoice-eu liest Schemas und ICC-Profile aus dem Paket.
   serverExternalPackages: ["@electric-sql/pglite", "@e-invoice-eu/core"],

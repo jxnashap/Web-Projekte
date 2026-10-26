@@ -112,6 +112,10 @@ export function MonatsberichtPdf({ ctx }: { ctx: RenderCtx }) {
               ) : (
                 <P>In diesem Monat gab es keine Videos.</P>
               )}
+              {/* Quelle direkt unter der Tabelle, sonst steht die eine Zeile womöglich allein auf einer neuen Seite */}
+              <Text style={[s.small, { marginTop: 2 * MM }]}>
+                {`Zahlen laut Plattform-Statistik, Stand ${r.stand ? fmtDate(r.stand) : "ohne Messwert"}. Interaktionen = Likes, Kommentare, geteilte und gespeicherte Beiträge. ${posted.length !== r.videos.length ? "Die Tabelle enthält auch Videos aus dem Paket dieses Monats, die erst später online gehen." : ""}`}
+              </Text>
             </Section>
             {r.prevTotals.videos ? (
               <Section title="Vormonat zum Vergleich">
@@ -125,9 +129,6 @@ export function MonatsberichtPdf({ ctx }: { ctx: RenderCtx }) {
                 <P>{d.ausblick}</P>
               </Section>
             ) : null}
-            <Text style={[s.small, { marginTop: 2 * MM }]}>
-              {`Zahlen laut Plattform-Statistik, Stand ${r.stand ? fmtDate(r.stand) : "ohne Messwert"}. Interaktionen = Likes, Kommentare, geteilte und gespeicherte Beiträge. ${posted.length !== r.videos.length ? "Die Tabelle enthält auch Videos aus dem Paket dieses Monats, die erst später online gehen." : ""}`}
-            </Text>
           </>
         )}
       </PdfPage>

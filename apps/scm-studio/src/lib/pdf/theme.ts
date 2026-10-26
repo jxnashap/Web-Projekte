@@ -32,6 +32,8 @@ export function registerFonts() {
       { src: path.join(dir, "Archivo-CondensedExtraBold.ttf"), fontWeight: 800 },
     ],
   });
+  // Neue Schriftdateien vorher mit scripts/fonts-zerlegen.py vorbereiten (keine zusammengesetzten Glyphen),
+  // sonst fehlen nach einigen PDFs im selben Serverprozess z. B. Punkte und Zeilen brechen mitten im Wort.
   Font.register({
     family: "Courier Prime",
     fonts: [
