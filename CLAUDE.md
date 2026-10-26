@@ -13,7 +13,8 @@ Repo für alle Website-Projekte. Struktur:
   echte App-Screenshots) · PR #8
 - `webseiten/diedrei/` – Weinbar DIE DREI Kiel, ruhig-moderne Variante „Quiet Rosé“
   (Beere #5B0041/Porzellan/Blush, Fraunces/Inter self-hosted, Original-Fotos +
-  SVG-Logo, komplette Weinkarte aus PDF, keine Drittanbieter → kein Cookie-Banner,
+  SVG-Logo, komplette Weinkarte aus PDF, Event-Ticker (Afterwork, EVENTS im Generator),
+  Google Maps per 2-Klick, sonst keine Drittanbieter → kein Cookie-Banner,
   ≈4,1 MB, ZIP in auslieferung/) · Branch `claude/kind-goodall-rs48pg`
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf

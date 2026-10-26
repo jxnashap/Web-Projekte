@@ -265,5 +265,21 @@
     spy();
   }
 
+  /* ---------- Karte: Google Maps erst nach Klick (2-Klick-Lösung, nichts gespeichert) ---------- */
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('[data-map-load]');
+    var box = btn && btn.closest('.map-consent');
+    if (!box) return;
+    var f = document.createElement('iframe');
+    f.className = 'map-frame';
+    f.src = box.getAttribute('data-map-src');
+    f.title = box.getAttribute('data-map-title') || 'Google Maps';
+    f.loading = 'lazy';
+    f.referrerPolicy = 'no-referrer-when-downgrade';
+    f.setAttribute('allowfullscreen', '');
+    box.replaceWith(f);
+    f.focus();
+  });
+
   wake();
 })();

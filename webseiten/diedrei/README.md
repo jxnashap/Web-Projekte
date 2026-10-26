@@ -1,8 +1,8 @@
 # DIE DREI – Weinbar Kiel
 
 Neubau der Website von diedreibar.de: ruhig, modern, in der Beerenfarbe des
-Originals (`#5B0041`). Statisch, ohne Drittanbieter-Requests (Fonts lokal,
-keine Karten-Einbettung, kein Tracking), deshalb ohne Cookie-Banner.
+Originals (`#5B0041`). Statisch, ohne Drittanbieter-Requests beim Aufruf (Fonts lokal, kein Tracking;
+Google Maps nur per 2-Klick-Lösung), deshalb ohne Cookie-Banner.
 Quelle der Inhalte: diedreibar.de (Texte, Fotos, Logo, Weinkarte-PDF vom
 07.05.2025), Impressum und Falstaff. Texte sind neu formuliert, Unbelegtes ist als
 `[PLATZHALTER: …]` markiert.
@@ -24,10 +24,10 @@ Quelle der Inhalte: diedreibar.de (Texte, Fotos, Logo, Weinkarte-PDF vom
 
 | Seite | Inhalt |
 |---|---|
-| `index.html` | Hero mit Claim „Jeder Schluck erzählt eine Geschichte.“ und Heute-Status · Intro · 3 Kacheln · Laufband · Stimmen (Google) · Öffnungszeiten + Reservierung |
+| `index.html` | Hero mit Claim „Jeder Schluck erzählt eine Geschichte.“ und Heute-Status · Event-Ticker · Intro · 3 Kacheln · Laufband · Stimmen (Google) · Öffnungszeiten + Reservierung · Events (Afterwork, „Coming Soon“) |
 | `bar.html` | Atmosphäre · Galerie · Weine · Feiern · Brotzeit |
 | `weinkarte.html` | komplette Karte (17 Kategorien, 115 Einträge) mit Sprungnavigation und PDF |
-| `besuch.html` | Zeiten (heute markiert) · Adresse · Reservierung · Anfahrt als Link |
+| `besuch.html` | Zeiten (heute markiert) · Adresse · Reservierung · Anfahrt mit Google-Maps-Karte (2-Klick-Lösung wie Let's Drive Kiel) + Route planen |
 | `impressum.html` / `datenschutz.html` | Rechtstexte (Datenschutz als Entwurf) |
 | `404.html` | Fehlerseite im Seitendesign (`noindex`, root-relative Pfade) |
 | alle Seiten | Social-Icons in der Footer-Grundzeile und im Mobil-Menü: Instagram @die_drei_weinbar, TikTok @diedreiweinbar (Facebook folgt, sobald die URL bekannt ist: `FACEBOOK` im Generator) |
@@ -49,6 +49,12 @@ Quelle der Inhalte: diedreibar.de (Texte, Fotos, Logo, Weinkarte-PDF vom
   altes Weinkarten-PDF → `/assets/weinkarte.pdf`) und setzt `ErrorDocument 404 /404.html`.
   Bei einem anderen Hoster (nginx, Netlify …) dieselben Regeln sinngemäß übertragen.
   `robots.txt` verweist auf `sitemap.xml` (6 Seiten, https://diedreibar.de/…).
+- **Events:** Termine im Generator unter `EVENTS` eintragen (`titel`, `datum` JJJJ-MM-TT, `zeit`, `text`).
+  Leer → Ticker und Events-Block zeigen „Coming Soon“; mit Terminen → Datumsliste,
+  Ticker mit Daten und schema.org-`Event`-JSON-LD. Vergangene Termine fallen beim Bauen heraus
+  (also nach einem Termin neu bauen).
+- **Karte:** `.map-consent` lädt das Google-Maps-iframe erst nach Klick (`js/script.js`), nichts
+  wird gespeichert; Datenschutzerklärung Abschnitt 5 beschreibt das.
 - Gesamtgröße: rund 4,1 MB (Limit 10 MB), Auslieferung: `auslieferung/diedrei-website.zip`
 
 ## Vor dem Livegang klären
@@ -58,5 +64,6 @@ Quelle der Inhalte: diedreibar.de (Texte, Fotos, Logo, Weinkarte-PDF vom
 - **Impressum:** Registerangaben der Verwaltungs-GmbH, Hinweis Verbraucherstreitbeilegung
 - **Datenschutz:** Hoster, AV-Vertrag, Log-Speicherdauer, E-Mail-Anbieter, Stand-Datum
 - Einverständnis zur Namensnennung der Rezensenten und zur Falstaff-Erwähnung
+- **Afterwork-Termine** eintragen, sobald sie feststehen (`EVENTS` im Generator)
 - **Facebook-Seite**: URL vom Betreiber erfragen und im Generator bei `FACEBOOK` eintragen
 - Fotonachweis (Urheber der Originalfotos)

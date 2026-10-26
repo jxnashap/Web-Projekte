@@ -494,6 +494,22 @@ body.loaded .hero-media img{transform:none}
 .mq-track span::after{content:"·";margin-left:clamp(2.4rem,5.2vw,4.8rem);color:var(--accent);font-style:normal}
 @keyframes mq{to{transform:translateX(-50%)}}
 
+/* Event-Ticker unter dem Hero (nutzt die Laufband-Animation, klein und leise) */
+.ticker{display:flex;align-items:center;gap:1.1rem;padding:.8rem 0 .8rem var(--pad);overflow:hidden;
+  background:var(--blush-2);color:var(--berry);border-bottom:1px solid var(--line)}
+.tk-tag{flex:none;padding:.55rem .9rem;border-radius:999px;background:var(--berry);color:var(--porcelain);
+  font:500 .64rem/1 var(--sans);letter-spacing:.22em;text-transform:uppercase}
+.tk-view{flex:1;min-width:0;overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 2.5rem,#000 calc(100% - 2.5rem),transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 2.5rem,#000 calc(100% - 2.5rem),transparent)}
+.tk-track{--mq-s:60s}
+.tk-track span{font:500 .72rem/1.2 var(--sans);font-style:normal;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--berry);padding-inline:1.3rem}
+.tk-track span::after{content:"·";margin-left:2.6rem;color:var(--berry);opacity:.5}
+.tk-track i{font:italic 340 1.02rem/1 var(--serif);letter-spacing:.01em;text-transform:none;
+  font-variation-settings:"SOFT" 100,"WONK" 0}
+.ticker:hover .tk-track,.ticker:focus-visible .tk-track{animation-play-state:paused}
+
 /* Zitat-Statement */
 .statement{text-align:center;max-width:960px;margin-inline:auto}
 .statement .d2{font-weight:300}
@@ -549,6 +565,44 @@ body.loaded .hero-media img{transform:none}
   font-size:1.08rem;line-height:1.35;color:var(--fg);font-variation-settings:"SOFT" 100,"WONK" 0}
 .award span{font:500 .66rem/1 var(--sans);font-style:normal;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
 .note{font-size:.92rem;color:var(--fg-dim);padding-left:1.1rem;border-left:1px solid var(--accent);max-width:var(--measure)}
+
+/* Events: Afterwork (Coming Soon bzw. Terminliste) */
+.events{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(2rem,6vw,6rem);align-items:start}
+.events-head .lbl{margin-bottom:1.1rem}
+.events-head .d2{margin-bottom:1.4rem}
+.ev-list{display:grid;gap:1rem}
+.ev-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.6rem;align-items:start;
+  padding:clamp(1.6rem,3vw,2.4rem);background:var(--blush);border:1px solid var(--line)}
+.ev-card h3{font-family:var(--serif);font-weight:340;font-size:clamp(1.5rem,2.6vw,2rem);line-height:1.1;
+  color:var(--fg);font-variation-settings:"SOFT" 100,"WONK" 0}
+.ev-meta{margin:.6rem 0 .9rem;font:500 .7rem/1.5 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--berry)}
+.ev-badge{justify-self:start;padding:.6rem .9rem;border-radius:999px;background:var(--berry);color:var(--porcelain);
+  font:500 .64rem/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;white-space:nowrap}
+.ev-date{display:grid;justify-items:center;min-width:4.4rem;padding:.85rem .6rem;border:1px solid var(--line-2);color:var(--fg)}
+.ev-date b{font-family:var(--serif);font-weight:340;font-size:1.6rem;line-height:1}
+.ev-date span{margin-top:.45rem;font:500 .62rem/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--berry)}
+@media(max-width:880px){.events{grid-template-columns:1fr}}
+@media(max-width:520px){.ev-card{grid-template-columns:1fr;gap:1.1rem}}
+
+/* Karte: Google Maps erst nach Klick (2-Klick-Lösung, wie Let's Drive Kiel) */
+.map-consent,.map-frame{width:100%;min-height:clamp(340px,38vw,480px)}
+.map-consent{position:relative;isolation:isolate;overflow:hidden;display:grid;place-items:center;
+  padding:2rem;background:var(--blush);border:1px solid var(--line);text-align:center}
+.map-consent::before{ /* stilles Stadtraster, zur Mitte ausgeblendet */
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(rgba(91,0,65,.07) 1px,transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg,rgba(91,0,65,.07) 1px,transparent 1px) 0 0/44px 44px;
+  -webkit-mask-image:radial-gradient(farthest-side,transparent 34%,#000 100%);
+  mask-image:radial-gradient(farthest-side,transparent 34%,#000 100%)}
+.map-consent>div{display:grid;justify-items:center;gap:1rem;max-width:25rem}
+.map-pin{display:grid;place-items:center;width:3.2rem;height:3.2rem;border-radius:50%;background:var(--berry);color:var(--porcelain)}
+.map-pin svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round}
+.map-addr{font-family:var(--serif);font-size:1.2rem;line-height:1.45;color:var(--fg)}
+.map-addr strong{font-weight:400;color:var(--fg)}
+.map-consent small{display:block;font-size:.86rem;line-height:1.6;color:var(--fg-dim)}
+.map-frame{display:block;height:clamp(340px,38vw,480px);border:1px solid var(--line);background:var(--blush)}
+html:not(.js) .map-consent [data-map-load]{display:none}
+@media(max-width:639px){.map-row .sr-body{order:-1}} /* mobil: erst Überschrift, dann Karte */
 
 /* Galerie-Mosaik */
 .mosaic{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:clamp(.7rem,1.4vw,1.4rem)}

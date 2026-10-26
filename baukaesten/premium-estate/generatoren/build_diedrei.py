@@ -12,6 +12,7 @@ Quellen (nur belegte Fakten):
 Aufruf:  python3 build_diedrei.py            (schreibt nach webseiten/diedrei/)
 Daten: generatoren/diedrei-daten/ (weinkarte.json, datenschutz-entwurf.html, fakten.md); überschreibbar per DD_SCRATCH
 """
+import datetime
 import html
 import json
 import os
@@ -46,6 +47,15 @@ YELP = "https://yelp.de/biz/WB2g2Ljv48X9yp3cV70TaQ"
 GOOGLE = "https://g.co/kgs/jAAEs6p"
 OSM = "https://www.openstreetmap.org/search?query=Knooper%20Weg%20189%2C%2024118%20Kiel"
 GMAPS = "https://www.google.com/maps/search/?api=1&query=DIE%20DREI%20Weinbar%2C%20Knooper%20Weg%20189%2C%2024118%20Kiel"
+ROUTE = "https://www.google.com/maps/dir/?api=1&amp;destination=Knooper+Weg+189,+24118+Kiel"
+# Karte nur per 2-Klick-Lösung (wie Let's Drive Kiel): iframe entsteht erst nach Klick (js/script.js)
+MAP_EMBED = "https://www.google.com/maps?q=Knooper+Weg+189,+24118+Kiel&amp;output=embed"
+
+# Events: Afterwork-Partys sind angekündigt, Termine stehen noch aus → Ticker + Block zeigen „Coming Soon".
+# Sobald Termine feststehen, hier eintragen – Ticker, Events-Block und JSON-LD folgen automatisch.
+# Vergangene Termine fallen beim Bauen heraus.
+#   {"titel": "Afterwork-Party", "datum": "2026-11-14", "zeit": "18:00", "text": "Feierabend bei DIE DREI."}
+EVENTS = []
 PDF = "assets/weinkarte.pdf"
 STAND = "07.05.2025"
 
@@ -91,6 +101,8 @@ TT_ICON = ('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 3.5v11.25
            '<path d="M13.5 3.5c.35 2.55 2.15 4.3 4.75 4.55"/></svg>')
 FB_ICON = ('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3.5h-2a4 4 0 0 0-4 4v13"/>'
            '<path d="M6.5 10.5h8"/></svg>')
+PIN = ('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0'
+       'c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>')
 
 
 def socials():
@@ -610,6 +622,7 @@ def page_index():
                 "Jeder Schluck erzählt <em>eine Geschichte.</em>", pos="50% 34%", foot=foot,
                 mobile="gaeste-sekt", mpos="22% 40%",
                 alt="Käseplatte und Weingläser an einem Tisch der Weinbar DIE DREI")
+    out += ticker()
     out += f"""
 <section class="sec">
   <div class="wrap intro">
@@ -714,9 +727,98 @@ def page_index():
     </div>
   </div>
 </section>
-"""
+{events_section()}"""
     out += footer()
     return out
+
+
+WTAG = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+
+
+def upcoming():
+    """Eingetragene Termine ab heute, chronologisch."""
+    today = datetime.date.today()
+    out = []
+    for ev in EVENTS:
+        d = datetime.date.fromisoformat(ev["datum"])
+        if d >= today:
+            out.append(dict(ev, _d=d))
+    return sorted(out, key=lambda e: (e["_d"], e.get("zeit", "")))
+
+
+def ev_when(ev, sep=" · "):
+    d = ev["_d"]
+    s = f'{WTAG[d.weekday()]}{sep}{d.day:02d}.{d.month:02d}.'
+    return s + (f'{sep}ab {ev["zeit"]} Uhr' if ev.get("zeit") else "")
+
+
+def ticker():
+    """Schmales Event-Band unter dem Hero; Inhalt doppelt → nahtlose Schleife (wie das Laufband)."""
+    evs = upcoming()
+    if evs:
+        items = [f'{ev["titel"]} · {ev_when(ev, " ")}' for ev in evs[:4]]
+        label = "Events: " + "; ".join(items)
+    else:
+        items = ["Afterwork-Partys bei DIE DREI", "<i>Coming Soon</i>", "Termine folgen in Kürze"]
+        label = "Events: Afterwork-Partys bei DIE DREI – coming soon, Termine folgen in Kürze"
+    run = "".join(f"<span>{t}</span>" for t in items) * 3
+    return f"""
+<a class="ticker" href="#events" aria-label="{esc(label)}">
+  <span class="tk-tag">Events</span>
+  <span class="tk-view" aria-hidden="true"><span class="mq-track tk-track">{run}{run}</span></span>
+</a>
+"""
+
+
+def events_section():
+    evs = upcoming()
+    note = (f'Termine kündigen wir hier und auf <a class="ul" href="{IG}"{EXT}>Instagram</a> und '
+            f'<a class="ul" href="{TIKTOK}"{EXT}>TikTok</a> an.')
+    if evs:
+        cards = "".join(f"""
+      <article class="ev-card rv" data-d="{min(i, 3)}">
+        <p class="ev-date"><b>{ev["_d"].day:02d}.{ev["_d"].month:02d}.</b><span>{WTAG[ev["_d"].weekday()]}</span></p>
+        <div>
+          <h3>{ev["titel"]}</h3>
+          <p class="ev-meta">{ev_when(ev)} · {STREET}</p>
+          {f'<p>{ev["text"]}</p>' if ev.get("text") else ""}
+        </div>
+      </article>""" for i, ev in enumerate(evs, 1))
+        ld = [{"@context": "https://schema.org", "@type": "Event", "name": ev["titel"],
+               "startDate": ev["datum"] + (f'T{ev["zeit"]}' if ev.get("zeit") else ""),
+               "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+               "location": {"@type": "Place", "name": NAME_LONG,
+                            "address": {"@type": "PostalAddress", "streetAddress": STREET,
+                                        "postalCode": "24118", "addressLocality": "Kiel",
+                                        "addressCountry": "DE"}}} for ev in evs]
+        body = (cards + '\n      <script type="application/ld+json">'
+                + json.dumps(ld, ensure_ascii=False, separators=(",", ":")) + "</script>")
+        head_txt = 'Die nächsten <em>Termine.</em>'
+    else:
+        body = f"""
+      <article class="ev-card ev-card--soon rv" data-d="1">
+        <p class="ev-badge">Coming Soon</p>
+        <div>
+          <h3>Afterwork-Party</h3>
+          <p class="ev-meta">Termine folgen · {STREET} · Kiel</p>
+          <p>Der Feierabend bekommt einen festen Platz: Bald laden wir regelmäßig zur Afterwork-Party ein –
+          mit einem guten Glas Wein in bester Gesellschaft.</p>
+        </div>
+      </article>"""
+        head_txt = 'Afterwork bei DIE DREI – <em>coming soon.</em>'
+    return f"""
+<section class="sec" id="events">
+  <div class="wrap events">
+    <div class="events-head">
+      <p class="lbl rv">Events</p>
+      <h2 class="d2 split">{head_txt}</h2>
+      <p class="rv" data-d="1">{note}</p>
+    </div>
+    <div class="ev-list">{body}
+    </div>
+  </div>
+</section>
+"""
 
 
 TILE_SIZES = "(max-width: 639px) 100vw, (max-width: 1320px) 29vw, 370px"
@@ -883,19 +985,26 @@ def page_besuch():
   </div>
 </section>
 
-<section class="sec">
-  <div class="wrap split-row">
-    {figure("tresen-fenster", SR_SIZES, cls="sr-media", plx="0.04")}
+<section class="sec" id="anfahrt">
+  <div class="wrap split-row map-row">
+    <div class="map-consent" data-map-src="{MAP_EMBED}"
+         data-map-title="Google Maps: {NAME_LONG}, {STREET}, {ZIP_CITY}">
+      <div>
+        <span class="map-pin">{PIN}</span>
+        <p class="map-addr"><strong>{NAME_LONG}</strong><br>{STREET} · {ZIP_CITY}</p>
+        <p><small>Zum Schutz Deiner Daten laden wir die Karte erst nach Deinem Klick. Dabei werden Daten
+        an Google übertragen – mehr dazu in der <a class="ul" href="datenschutz.html#google-maps">Datenschutzerklärung</a>.</small></p>
+        <button class="btn" type="button" data-map-load>Karte laden (Google Maps)</button>
+      </div>
+    </div>
     <div class="sr-body">
       <p class="lbl rv">Anfahrt</p>
       <h2 class="d2 split">So findest Du <em>zu uns.</em></h2>
       <p class="rv" data-d="1">Du findest DIE DREI am Knooper Weg 189 in Kiel.</p>
       <div class="btns rv" data-d="2">
-        <a class="btn" href="{OSM}"{EXT}>In OpenStreetMap öffnen</a>
-        <a class="btn btn--ghost" href="{GMAPS}"{EXT}>Google Maps</a>
+        <a class="btn" href="{ROUTE}"{EXT} aria-label="Route planen – öffnet Google Maps in einem neuen Tab">Route planen</a>
+        <a class="btn btn--ghost" href="{OSM}"{EXT}>OpenStreetMap</a>
       </div>
-      <p class="note rv" data-d="3">Wir binden bewusst keine Karte ein: Erst wenn Du einen der Links öffnest,
-      werden Daten an den jeweiligen Kartendienst übertragen.</p>
     </div>
   </div>
 </section>
@@ -1107,14 +1216,14 @@ def page_datenschutz():
     frag = re.sub(r"(?is)<!--.*?-->", "", frag).strip()
     # Darstellung: Sektionen ohne eigene .legal-Klasse (Wrapper liefert sie),
     # Dokumenttitel entfällt (steht bereits als H1 im Seitenkopf)
-    frag = frag.replace('<section class="legal">', "<section>")
+    frag = re.sub(r'<section class="legal"', "<section", frag)
     frag = re.sub(r"(?s)^<section>\s*<h2>Datenschutzerklärung</h2>\s*", '<section class="legal-intro">\n  ', frag)
     if FACEBOOK:
         frag = frag.replace("<li>TikTok (unser Profil)</li>",
                             "<li>TikTok (unser Profil)</li>\n    <li>Facebook (unser Profil)</li>")
     return legal_page("datenschutz.html", "Datenschutz – DIE DREI Weinbar Kiel",
-                      "Datenschutzerklärung der Website der Weinbar DIE DREI in Kiel – statische Seite "
-                      "ohne Cookies, ohne Tracking, ohne Drittanbieter-Inhalte.",
+                      "Datenschutzerklärung der Weinbar DIE DREI in Kiel: keine Cookies, kein Tracking, "
+                      "Google Maps nur nach Ihrem Klick.",
                       "Rechtliches", "Datenschutz", frag)
 
 
