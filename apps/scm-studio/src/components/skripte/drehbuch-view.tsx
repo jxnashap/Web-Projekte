@@ -46,7 +46,11 @@ export function DrehbuchView({ script, clientName }: { script: Script; clientNam
               <span className="text-accent-ink tabular-nums">{b.tc}</span>
             </div>
             <p className="mt-2 whitespace-pre-line text-[16px] leading-relaxed text-ink">{b.text || "…"}</p>
-            {b.shot && <p className="mt-1 text-[14px] text-muted">(Einstellung: {b.shot})</p>}
+            {b.action && <p className="mt-1 text-[15px] text-ink-2">({b.action})</p>}
+            {b.shot && <p className="mt-1 text-[14px] text-muted">(Kamera: {b.shot})</p>}
+            {b.overlay && <p className="mt-1 text-[14px] text-muted">(Text im Bild: {b.overlay})</p>}
+            {b.sound && <p className="mt-1 text-[14px] text-muted">(Ton: {b.sound})</p>}
+            {b.cut && <p className="mt-1 text-[14px] text-muted">(Schnitt: {b.cut})</p>}
           </li>
         ))}
         {beats.length === 0 && (

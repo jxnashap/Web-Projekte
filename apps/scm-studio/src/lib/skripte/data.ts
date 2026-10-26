@@ -55,7 +55,14 @@ export async function getScriptOptions() {
   await requireUser();
   const db = await getDb();
   const clients = await db
-    .select({ id: schema.clients.id, name: schema.clients.name, branche: schema.clients.branche, ort: schema.clients.ort, color: schema.clients.color })
+    .select({
+      id: schema.clients.id,
+      name: schema.clients.name,
+      branche: schema.clients.branche,
+      ort: schema.clients.ort,
+      color: schema.clients.color,
+      creativeProfile: schema.clients.creativeProfile,
+    })
     .from(schema.clients)
     .where(ne(schema.clients.status, "beendet"))
     .orderBy(asc(schema.clients.name));

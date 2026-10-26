@@ -8,7 +8,11 @@ import type { Company } from "@/lib/settings";
 import { videoStatus } from "@/lib/labels";
 import { lengthLabel, mergeHookAndCta, scriptStatusLabel } from "./schema";
 
-type Beat = { tc: string; label: string; text: string; shot?: string };
+type Beat = { tc: string; label: string; text: string; shot?: string; action?: string; overlay?: string; sound?: string; cut?: string };
+
+/** Zusatzzeilen einer Szene (Creative Engine), in Klammern unter dem Haupttext. */
+const extras = (pairs: [string, string | undefined][]) =>
+  pairs.filter(([, v]) => v?.trim()).map(([k, v]) => `${k}: ${v!.trim()}`).join("\n");
 
 // Öffnende Anführungszeichen gehören an das folgende Wort (ein Leerzeichen dahinter wäre eine Bruchstelle am Zeilenende).
 const bindQuotes = (v: string) => v.replace(/([„‚])\s+/g, "$1");
@@ -59,13 +63,40 @@ export function DrehbuchPdf({
                 key: "text",
                 label: "Text und Handlung",
                 width: "50%",
-                render: (b) => <Text style={[mono, { paddingRight: 8 }]}>{bindQuotes(t(b.text)) || " "}</Text>,
+                render: (b) => {
+                  const more = extras([["Handlung", b.action], ["Text im Bild", b.overlay]]);
+                  return (
+                    <View style={{ paddingRight: 8 }}>
+                      <Text style={mono}>{bindQuotes(t(b.text)) || " "}</Text>
+                      {more ? <Text style={[s.p, { fontSize: 8, color: C.muted, marginTop: 2 }]}>{bindQuotes(t(more))}</Text> : null}
+                    </View>
+                  );
+                },
               },
-              { key: "shot", label: "Einstellung", width: "22%", render: (b) => <Text style={[s.p, { fontSize: 8.5 }]}>{bindQuotes(t(b.shot))}</Text> },
+              {
+                key: "shot",
+                label: "Kamera und Schnitt",
+                width: "22%",
+                render: (b) => <Text style={[s.p, { fontSize: 8.5 }]}>{bindQuotes(t([b.shot, extras([["Ton", b.sound], ["Schnitt", b.cut]])].filter(Boolean).join("\n")))}</Text>,
+              },
             ]}
             rows={beats}
           />
         </Section>
+        {script.production ? (
+          <View wrap={false}>
+            <Section title="Drehaufwand">
+              <KeyValues
+                rows={[
+                  ["Personen", `${script.production.actors}${script.production.roles.length ? ` (${t(script.production.roles.join(", "))})` : ""}`],
+                  ["Drehort", t(script.production.location) || "offen"],
+                  ["Requisiten", t(script.production.props.join(", ")) || "keine"],
+                  ["Drehzeit", `ca. ${script.production.minutes} Minuten`],
+                ]}
+              />
+            </Section>
+          </View>
+        ) : null}
         {script.caption ? (
           <View wrap={false}>
             <Section title="Caption">

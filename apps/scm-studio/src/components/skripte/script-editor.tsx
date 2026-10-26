@@ -14,12 +14,18 @@ import { cn } from "@/lib/cn";
 import { BAUPLAN, FORMATS, mergeHookAndCta, tc, toSec } from "@/lib/skripte/schema";
 import { useLeaveGuard } from "@/components/ui/use-leave-guard";
 
-type Beat = { key: number; tc: string; label: string; text: string; shot: string };
+type Beat = { key: number; tc: string; label: string; text: string; shot: string; action: string; overlay: string; sound: string; cut: string };
+const EXTRA = [
+  { k: "action", label: "Handlung", placeholder: "Was im Bild passiert" },
+  { k: "overlay", label: "Text im Bild", placeholder: "Einblendung" },
+  { k: "sound", label: "Ton", placeholder: "Musik, Stille, Soundeffekt" },
+  { k: "cut", label: "Schnitt", placeholder: "Cut, Zoom, Übergang, Tempo" },
+] as const;
 export type ScriptData = {
   title: string;
   format: string | null;
   hook: string | null;
-  beats: { tc: string; label: string; text: string; shot?: string }[];
+  beats: { tc: string; label: string; text: string; shot?: string; action?: string; overlay?: string; sound?: string; cut?: string }[];
   caption: string | null;
   cta: string | null;
   clientId: number | null;
@@ -57,7 +63,17 @@ export function ScriptEditor({
   formId: string;
 }) {
   const [beats, setBeats] = useState<Beat[]>(() =>
-    mergeHookAndCta(script.beats, script.hook, script.cta).map((b, i) => ({ key: i + 1, tc: b.tc, label: b.label, text: b.text, shot: b.shot ?? "" })),
+    mergeHookAndCta(script.beats, script.hook, script.cta).map((b, i) => ({
+      key: i + 1,
+      tc: b.tc,
+      label: b.label,
+      text: b.text,
+      shot: b.shot ?? "",
+      action: b.action ?? "",
+      overlay: b.overlay ?? "",
+      sound: b.sound ?? "",
+      cut: b.cut ?? "",
+    })),
   );
   const keyRef = useRef(beats.length + 1);
   const [dirty, setDirty] = useState(false);
@@ -97,7 +113,7 @@ export function ScriptEditor({
       const last = bs[bs.length - 1];
       const at = last ? tc((toSec(last.tc) ?? 0) + 4) : "00:00";
       const label = BAUPLAN[Math.min(bs.length, BAUPLAN.length - 1)];
-      return [...bs, { key, tc: at, label, text: "", shot: "" }];
+      return [...bs, { key, tc: at, label, text: "", shot: "", action: "", overlay: "", sound: "", cut: "" }];
     });
     setDirty(true);
     // neues Textfeld fokussieren
@@ -201,7 +217,7 @@ export function ScriptEditor({
                   <Textarea
                     value={b.text}
                     onChange={(e) => update(b.key, { text: e.target.value })}
-                    placeholder="Was gesagt wird oder im Bild steht"
+                    placeholder="Was gesagt wird (Rolle: Text) oder im Bild steht"
                     rows={2}
                     className="field-sizing-content min-h-[72px] resize-none bg-surface"
                   />
@@ -216,6 +232,26 @@ export function ScriptEditor({
                     className="field-sizing-content min-h-11 resize-none bg-surface py-[9px] text-[15px] text-ink-2 sm:min-h-10 sm:text-[14px]"
                   />
                 </label>
+                <details className="group" open={EXTRA.some((x) => b[x.k])}>
+                  <summary className="inline-flex min-h-9 cursor-pointer list-none items-center gap-1 text-[13px] font-semibold text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">
+                    Handlung, Text im Bild, Ton, Schnitt
+                    <span className="font-normal text-muted">{EXTRA.filter((x) => b[x.k]).length || ""}</span>
+                  </summary>
+                  <div className="mt-1 grid gap-2 sm:grid-cols-2">
+                    {EXTRA.map((x) => (
+                      <label key={x.k} className="grid gap-1">
+                        <span className="text-[12px] font-medium text-muted">{x.label}</span>
+                        <Textarea
+                          value={b[x.k]}
+                          onChange={(e) => update(b.key, { [x.k]: e.target.value })}
+                          placeholder={x.placeholder}
+                          rows={1}
+                          className="field-sizing-content min-h-10 resize-none bg-surface py-[9px] text-[14px] text-ink-2"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </details>
               </li>
             ))}
           </ol>
@@ -225,7 +261,7 @@ export function ScriptEditor({
               <Plus className="size-4" /> Schritt hinzufügen
             </Button>
           </div>
-          <input type="hidden" name="beats" value={JSON.stringify(beats.map(({ tc: t, label, text, shot }) => ({ tc: t, label, text, shot })))} />
+          <input type="hidden" name="beats" value={JSON.stringify(beats.map((b) => ({ tc: b.tc, label: b.label, text: b.text, shot: b.shot, action: b.action, overlay: b.overlay, sound: b.sound, cut: b.cut })))} />
         </fieldset>
 
         <Field label="Caption" name="caption" optional hint="Text unter dem Beitrag, gern mit Hashtags">

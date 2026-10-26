@@ -8,8 +8,7 @@ import type { ScriptBeat } from "@/db/schema";
 import { done, fail, parseForm, zOptText, zText, type ActionState } from "@/lib/action";
 import { audit } from "@/lib/audit";
 import { assertUser } from "@/lib/auth";
-import { generateScript } from "./ai";
-import { GenInput, hookAndCta, ScriptDraft, type GenResult } from "./schema";
+import { hookAndCta } from "./schema";
 
 const beatsJson = z
   .string()
@@ -17,13 +16,15 @@ const beatsJson = z
   .transform((s, ctx) => {
     if (!s) return [] as ScriptBeat[];
     try {
+      const opt = z.string().max(600).optional();
       const arr = z
-        .array(z.object({ tc: z.string().max(10), label: z.string().max(60), text: z.string().max(2000), shot: z.string().max(300).optional() }))
+        .array(z.object({ tc: z.string().max(10), label: z.string().max(60), text: z.string().max(2000), shot: opt, action: opt, overlay: opt, sound: opt, cut: opt }))
         .max(40)
         .parse(JSON.parse(s));
-      return arr
-        .map((b) => ({ tc: b.tc.trim(), label: b.label.trim(), text: b.text.trim(), ...(b.shot?.trim() ? { shot: b.shot.trim() } : {}) }))
-        .filter((b) => b.text || b.label);
+      // optionale Felder nur speichern, wenn gefüllt
+      const extra = (b: (typeof arr)[number]) =>
+        Object.fromEntries((["shot", "action", "overlay", "sound", "cut"] as const).flatMap((k) => (b[k]?.trim() ? [[k, b[k]!.trim()]] : [])));
+      return arr.map((b) => ({ tc: b.tc.trim(), label: b.label.trim(), text: b.text.trim(), ...extra(b) }) as ScriptBeat).filter((b) => b.text || b.label);
     } catch {
       ctx.addIssue({ code: "custom", message: "Der Ablauf konnte nicht gelesen werden." });
       return z.NEVER;
@@ -197,117 +198,6 @@ export async function deleteScript(id: number): Promise<ActionState> {
   await db.delete(schema.scripts).where(eq(schema.scripts.id, id));
   await audit(user.id, "skript", id, "gelöscht", { title: s.title });
   return done(`„${s.title}“ ist gelöscht.`, { redirectTo: "/skripte" });
-}
-
-// ------------------------------------------------------------------
-// KI-Generator
-// ------------------------------------------------------------------
-export type GenState = { ok?: boolean; error?: string; fieldErrors?: Record<string, string[] | undefined>; result?: GenResult; at?: number };
-
-async function contextFor(input: GenInput) {
-  const db = await getDb();
-  let clientId = input.clientId;
-  if (!clientId && input.videoId) {
-    const [v] = await db.select({ clientId: schema.videos.clientId }).from(schema.videos).where(eq(schema.videos.id, input.videoId));
-    clientId = v?.clientId;
-  }
-  if (!clientId) return { branche: "unternehmen", region: null, clientName: null };
-  const [c] = await db.select().from(schema.clients).where(eq(schema.clients.id, clientId));
-  return { branche: c?.branche ?? "unternehmen", region: c?.ort ?? c?.city ?? null, clientName: c?.name ?? null };
-}
-
-export async function generateAction(_: GenState, fd: FormData): Promise<GenState> {
-  const user = await assertUser();
-  const parsed = parseForm(GenInput, fd);
-  if (!parsed.success) return { ok: false, error: parsed.state.error, fieldErrors: parsed.state.fieldErrors, at: Date.now() };
-  const input = parsed.data;
-  let previous: ScriptDraft | null = null;
-  if (input.refine && input.previous) {
-    try {
-      const p = ScriptDraft.safeParse(JSON.parse(input.previous));
-      if (p.success) previous = p.data;
-    } catch {
-      previous = null;
-    }
-  }
-  if (input.refine && !previous) return { ok: false, error: "Erst ein Skript erzeugen, dann verfeinern.", at: Date.now() };
-  const ctx = await contextFor(input);
-  const r = await generateScript(input, ctx, previous, user.id);
-  if (!r.ok) return { ok: false, error: r.error, at: Date.now() };
-  return { ok: true, result: r.result, at: Date.now() };
-}
-
-const saveGenSchema = z.object({
-  draft: z.string().min(2, "Kein Entwurf vorhanden"),
-  hookChoice: z.string().max(500).optional(),
-  title: zText("Titel", 200),
-  clientId: z.coerce.number().int().positive().optional(),
-  videoId: z.coerce.number().int().positive().optional(),
-  ideaId: z.coerce.number().int().positive().optional(),
-  format: zOptText(80),
-  briefing: zOptText(1500),
-  source: z.enum(["ki", "demo"]),
-  model: z.string().max(60).optional(),
-});
-
-export async function saveGenerated(_: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await assertUser();
-  const parsed = parseForm(saveGenSchema, fd);
-  if (!parsed.success) return parsed.state;
-  const d = parsed.data;
-  let draft: ScriptDraft;
-  try {
-    draft = ScriptDraft.parse(JSON.parse(d.draft));
-  } catch {
-    return fail("Der Entwurf ist beschädigt. Bitte neu erzeugen.");
-  }
-  const db = await getDb();
-  let clientId = d.clientId ?? null;
-  if (d.videoId) {
-    const [v] = await db.select().from(schema.videos).where(eq(schema.videos.id, d.videoId));
-    if (!v) return fail("Video nicht gefunden.");
-    clientId = clientId ?? v.clientId;
-  }
-  const hook = d.hookChoice?.trim() || draft.hook;
-  const beats: ScriptBeat[] = draft.beats.map((b, i) => ({
-    tc: b.tc,
-    label: b.label,
-    text: i === 0 && b.label === "Hook" ? hook : b.text,
-    ...(b.shot ? { shot: b.shot } : {}),
-  }));
-  const caption = [draft.caption, draft.hashtags.join(" ")].filter(Boolean).join("\n\n");
-  const derived = hookAndCta(beats);
-  const [s] = await db
-    .insert(schema.scripts)
-    .values({
-      clientId,
-      videoId: d.videoId ?? null,
-      title: d.title,
-      format: d.format ?? null,
-      hook: derived.hook ?? hook,
-      beats,
-      caption,
-      cta: derived.cta ?? draft.cta,
-      status: "entwurf",
-      source: d.source,
-      model: d.source === "ki" ? (d.model ?? null) : null,
-      briefing: d.briefing ?? null,
-      ideaId: d.ideaId ?? null,
-      createdBy: user.id,
-    })
-    .returning();
-  await adoptIdea(d.ideaId);
-  if (d.videoId) {
-    await db.update(schema.scripts).set({ videoId: null }).where(eq(schema.scripts.videoId, d.videoId));
-    await db.update(schema.scripts).set({ videoId: d.videoId }).where(eq(schema.scripts.id, s.id));
-    const [v] = await db.select().from(schema.videos).where(eq(schema.videos.id, d.videoId));
-    await db
-      .update(schema.videos)
-      .set({ scriptId: s.id, status: v?.status === "idee" ? "skript" : v?.status, updatedAt: new Date() })
-      .where(eq(schema.videos.id, d.videoId));
-  }
-  await audit(user.id, "skript", s.id, "angelegt", { source: d.source, videoId: d.videoId ?? null, ideeId: d.ideaId ?? null });
-  return done("Skript gespeichert.", { redirectTo: `/skripte/${s.id}`, id: s.id });
 }
 
 /** Skript mit einem Video verknüpfen (videoId leer = lösen). */

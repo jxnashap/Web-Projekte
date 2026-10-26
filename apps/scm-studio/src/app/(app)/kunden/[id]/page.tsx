@@ -1,5 +1,5 @@
 import { docStatus } from "@/lib/dokumente/schema";
-import { AlertCircle, ArrowUpRight, CalendarPlus, ChevronDown, Clapperboard, FileSignature, FileText, Pencil, Plus, Receipt, ScrollText } from "lucide-react";
+import { AlertCircle, ArrowUpRight, CalendarPlus, ChevronDown, FileSignature, FileText, FolderOpen, Pencil, Plus, Receipt, ScrollText, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -22,6 +22,8 @@ import { Table, Td, Th } from "@/components/ui/table";
 import { LinkTabs } from "@/components/ui/tabs";
 import type { Client } from "@/db/schema";
 import { updateClientNotes } from "@/lib/crm/actions";
+import { PROFILE_FIELDS } from "@/lib/skripte/engine/profile";
+import { saveCreativeProfile } from "@/lib/skripte/engine/profile-actions";
 import {
   getClient,
   getClientCounts,
@@ -41,6 +43,7 @@ const TABS = [
   { key: "videos", label: "Videos" },
   { key: "rechnungen", label: "Rechnungen" },
   { key: "dokumente", label: "Dokumente" },
+  { key: "profil", label: "Kreativprofil" },
   { key: "notizen", label: "Notizen" },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
@@ -115,6 +118,7 @@ async function ClientDetail({ params, searchParams }: Props) {
         {tab === "videos" && <VideosTab id={id} />}
         {tab === "rechnungen" && <InvoicesTab id={id} />}
         {tab === "dokumente" && <DocumentsTab id={id} />}
+        {tab === "profil" && <ProfileTab client={client} />}
         {tab === "notizen" && <NotesTab client={client} />}
       </Suspense>
     </>
@@ -124,8 +128,9 @@ async function ClientDetail({ params, searchParams }: Props) {
 /** "Für diesen Kunden …": Anlegen mit Kunde vorbelegt. Grau, damit der rote Neu-Knopf der Kopfzeile die einzige rote Aktion bleibt. */
 function QuickActions({ id }: { id: number }) {
   const items = [
-    { href: `/produktion?neu=1&kunde=${id}`, label: "Video-Idee anlegen", icon: Clapperboard },
-    { href: `/skripte/neu?kunde=${id}`, label: "Skript schreiben", icon: ScrollText },
+    { href: `/skripte/neu?kunde=${id}`, label: "Ideen und Skript mit KI", icon: Sparkles },
+    { href: `/skripte/leer?kunde=${id}`, label: "Skript selbst schreiben", icon: ScrollText },
+    { href: `/produktion/material/${id}`, label: "Material hochladen", icon: FolderOpen },
     { href: `/kalender?neu=1&kunde=${id}`, label: "Termin anlegen", icon: CalendarPlus },
     { href: `/finanzen/rechnungen/neu?kunde=${id}`, label: "Rechnung schreiben", icon: Receipt },
     { href: `/finanzen/rechnungen/neu?art=angebot&kunde=${id}`, label: "Angebot schreiben", icon: FileText },
@@ -565,6 +570,40 @@ async function DocumentsTab({ id }: { id: number }) {
           );
         })}
       </ul>
+    </Card>
+  );
+}
+
+// ------------------------------------------------------------------
+// Kreativprofil (für die Creative Engine)
+// ------------------------------------------------------------------
+function ProfileTab({ client: c }: { client: Client }) {
+  const p = c.creativeProfile ?? {};
+  return (
+    <Card className="max-w-4xl">
+      <CardHeader
+        title="Kreativprofil"
+        sub="Das weiß die KI über diesen Kunden, wenn sie Ideen und Skripte entwickelt. Rollen statt Namen, keine Personendaten."
+        action={
+          <LinkButton href={`/skripte/neu?kunde=${c.id}`} variant="ghost" size="sm">
+            <Sparkles className="size-4" /> Ideen entwickeln
+          </LinkButton>
+        }
+      />
+      <div className="px-5 pb-5">
+        <ActionForm action={saveCreativeProfile.bind(null, c.id)}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {PROFILE_FIELDS.map((f) => (
+              <Field key={f.key} label={f.label} name={f.key} optional hint={f.hint}>
+                <Textarea name={f.key} defaultValue={p[f.key] ?? ""} placeholder={f.placeholder} rows={3} />
+              </Field>
+            ))}
+          </div>
+          <FormActions>
+            <DirtySubmit>Profil speichern</DirtySubmit>
+          </FormActions>
+        </ActionForm>
+      </div>
     </Card>
   );
 }

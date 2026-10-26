@@ -59,7 +59,7 @@ export default function SkriptePage({ searchParams }: { searchParams: SP }) {
             </Suspense>
             <NewBlankButton />
             <LinkButton href="/skripte/neu">
-              <Sparkles className="size-4" /> Mit KI schreiben
+              <Sparkles className="size-4" /> Creative Engine
             </LinkButton>
           </>
         }

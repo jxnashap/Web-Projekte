@@ -67,6 +67,7 @@ export const clients = studio.table(
     instagram: text("instagram"),
     tiktok: text("tiktok"),
     materialUrl: text("material_url"), // Ordner für Rohmaterial (Google Drive, Dropbox), große Dateien liegen dort
+    creativeProfile: jsonb("creative_profile").$type<CreativeProfile>(), // Kreativprofil für die Creative Engine
     packageVideos: integer("package_videos"), // 4 | 8 | 12
     packagePriceCents: integer("package_price_cents"), // netto pro Monat
     startDate: date("start_date"),
@@ -135,7 +136,28 @@ export const videos = studio.table(
   (t) => [index("videos_client_idx").on(t.clientId), index("videos_month_idx").on(t.month), index("videos_assignee_idx").on(t.assignee)],
 ).enableRLS();
 
-export type ScriptBeat = { tc: string; label: string; text: string; shot?: string };
+/**
+ * Eine Szene. tc = Beginn (MM:SS), label = Abschnitt (Hook, Aufruf …), text = gesprochener Text bzw. Dialog,
+ * shot = Kamera/Einstellung. Optional (Creative Engine): Handlung, Text im Bild, Ton, Schnitt.
+ */
+export type ScriptBeat = { tc: string; label: string; text: string; shot?: string; action?: string; overlay?: string; sound?: string; cut?: string };
+/** Drehaufwand eines Skripts oder einer Idee. */
+export type Production = { actors: number; roles: string[]; props: string[]; location: string; minutes: number };
+/** Alternativen zum Testen: weitere Hooks und Pointen. */
+export type Alternatives = { hooks: string[]; punchlines: string[] };
+/** Bewertung eines Konzepts durch die Creative Engine (je 1 bis 10). */
+export type ConceptScores = { hook: number; originality: number; feasibility: number; fit: number; reason: string };
+/** Kreativprofil eines Kunden: was die KI über Marke, Zielgruppe und Drehmöglichkeiten wissen soll. */
+export type CreativeProfile = {
+  marke?: string;
+  zielgruppe?: string;
+  tonalitaet?: string;
+  personen?: string;
+  orte?: string;
+  requisiten?: string;
+  tabus?: string;
+  gutLief?: string;
+};
 
 export const scripts = studio.table("scripts", {
   id: serial("id").primaryKey(),
@@ -151,6 +173,13 @@ export const scripts = studio.table("scripts", {
   source: text("source").notNull().default("manuell"), // manuell | ki | demo
   model: text("model"),
   briefing: text("briefing"),
+  // Creative Engine: Kategorien (kombinierbar), Ziel, Zieldauer, Handlung, Drehaufwand, Alternativen
+  categories: jsonb("categories").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+  goal: text("goal"),
+  durationSeconds: integer("duration_seconds"),
+  concept: text("concept"),
+  production: jsonb("production").$type<Production>(),
+  alternatives: jsonb("alternatives").$type<Alternatives>(),
   ideaId: integer("idea_id").references(() => ideas.id, { onDelete: "set null" }),
   createdBy: integer("created_by").references(() => teamMembers.id, { onDelete: "set null" }),
   createdAt: created(),
@@ -199,6 +228,11 @@ export const ideas = studio.table(
     status: text("status").notNull().default("offen"), // vorschlag (aus der Recherche, noch nicht gesichtet) | offen | verworfen
     source: text("source").notNull().default("eigene"), // eigene | recherche
     trend: text("trend"), // Name des Trends, auf dem die Idee aufbaut
+    categories: jsonb("categories").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    goal: text("goal"),
+    mechanic: text("mechanic"), // kreative Mechanik: was das Konzept anders macht
+    scores: jsonb("scores").$type<ConceptScores>(),
+    production: jsonb("production").$type<Production>(),
     sources: jsonb("sources").$type<TrendSource[]>().notNull().default(sql`'[]'::jsonb`),
     runId: integer("run_id").references(() => trendRuns.id, { onDelete: "set null" }),
     videoId: integer("video_id").references(() => videos.id, { onDelete: "set null" }), // eingeplant als Video

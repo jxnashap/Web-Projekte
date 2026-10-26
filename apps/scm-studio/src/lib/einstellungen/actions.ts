@@ -9,6 +9,7 @@ import { assertAdmin, type CurrentUser } from "@/lib/auth";
 import { LEGAL_TEMPLATE_VERSION } from "@/lib/dokumente/schema";
 import { getCompany, setSetting, type Company } from "@/lib/settings";
 import { todayIso } from "@/lib/time";
+import { REFERENZEN_KEY } from "@/lib/skripte/engine/referenzen";
 import { aiSchema, companySchema, legalSchema, privacySchema } from "./schema";
 
 async function admin(): Promise<CurrentUser | null> {
@@ -51,6 +52,18 @@ export async function saveCompany(_: ActionState, fd: FormData): Promise<ActionS
   await audit(me.id, "settings", null, "firma", { changed });
   refresh();
   return done("Firmendaten gespeichert");
+}
+
+/** Referenz-Skripte für die Creative Engine (Qualitätsmaßstab). Leer = Startwert aus den echten SCM-Reels. */
+export async function saveReferenzen(_: ActionState, fd: FormData): Promise<ActionState> {
+  const me = await admin();
+  if (!me) return fail(NO_ADMIN);
+  const text = String(fd.get("referenzen") ?? "").trim();
+  if (text.length > 12000) return fail("Bitte kürzer fassen.", { referenzen: ["Höchstens 12.000 Zeichen"] });
+  await setSetting(REFERENZEN_KEY, text);
+  await audit(me.id, "settings", null, "referenzen", { zeichen: text.length });
+  refresh();
+  return done(text ? "Referenz-Skripte gespeichert." : "Startwert wiederhergestellt.");
 }
 
 export async function saveAi(_: ActionState, fd: FormData): Promise<ActionState> {

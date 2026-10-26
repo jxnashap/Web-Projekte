@@ -63,6 +63,7 @@ const ACTION: Record<string, string> = {
   google_verbunden: "Google Kalender verbunden",
   ical_token_neu: "Kalender-Abo erneuert",
   ki: "KI-Modell gespeichert",
+  referenzen: "Referenz-Skripte gespeichert",
   vorlagen_freigegeben: "Vorlagen anwaltlich freigegeben",
   vorlagen_freigabe_entfernt: "Freigabe der Vorlagen entfernt",
   dupliziert: "dupliziert",

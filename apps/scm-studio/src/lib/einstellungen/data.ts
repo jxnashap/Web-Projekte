@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth";
 import { authMode } from "@/lib/auth-mode";
 import { getCompany, getSetting, isDemo } from "@/lib/settings";
 import { monthRange, monthIso } from "@/lib/time";
+import { DEFAULT_REFERENZEN, REFERENZEN_KEY } from "@/lib/skripte/engine/referenzen";
 import { AI_DEFAULT, type AiSettings, type PrivacySettings } from "./schema";
 
 export type Integration = { key: string; label: string; purpose: string; vars: string[]; optional?: string[]; ok: boolean; missing: string[]; later?: boolean };
@@ -37,7 +38,7 @@ export async function getSettingsOverview() {
   const db = await getDb();
   const year = Number(monthIso().slice(0, 4));
   const { from } = monthRange(monthIso());
-  const [company, team, sequences, ai, legal, privacy, demo, aiRuns] = await Promise.all([
+  const [company, team, sequences, ai, legal, privacy, demo, aiRuns, referenzen] = await Promise.all([
     getCompany(),
     db.select().from(schema.teamMembers).orderBy(asc(schema.teamMembers.id)),
     db.select().from(schema.numberSequences).where(eq(schema.numberSequences.year, year)),
@@ -46,6 +47,7 @@ export async function getSettingsOverview() {
     getSetting<PrivacySettings>("privacy", { avv: {} }),
     isDemo(),
     db.select({ n: count() }).from(schema.aiRuns).where(and(gte(schema.aiRuns.at, new Date(`${from}T00:00:00Z`)))),
+    getSetting<string>(REFERENZEN_KEY, ""),
   ]);
   const integrations = getIntegrations();
   return {
@@ -58,6 +60,7 @@ export async function getSettingsOverview() {
     privacy: { avv: privacy?.avv ?? {} },
     demo,
     aiRunsMonth: aiRuns[0]?.n ?? 0,
+    referenzen: referenzen.trim() || DEFAULT_REFERENZEN,
     integrations,
     authMode: authMode(),
   };

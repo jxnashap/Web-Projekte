@@ -16,7 +16,7 @@ import { integrations } from "@/lib/env";
 import { getSetting } from "@/lib/settings";
 import { getAiConfig } from "./ai";
 import { DEFAULT_RICHTUNG, type Richtung } from "./richtung";
-import { cleanDraft } from "./schema";
+import { noDashes } from "./schema";
 
 export const RICHTUNG_KEY = "trends.richtung";
 /** Unbearbeitete Vorschläge räumen sich nach so vielen Tagen selbst weg (landen unter „Verworfen“). */
@@ -115,7 +115,7 @@ function seenUrls(output: OpenAI.Responses.ResponseOutputItem[]): { urls: Set<st
   return { urls, searches };
 }
 
-const clean = (t: string) => cleanDraft({ title: t, hook: "", hookVariants: [], beats: [], caption: "", cta: "", hashtags: [] }, null).title;
+const clean = (t: string) => noDashes(t.replace(/\{\{\s*BETRIEB\s*\}\}/g, "[BETRIEB]"));
 
 export type TrendResult = { ok: true; runId: number; trends: number; ideas: number } | { ok: false; error: string; runId?: number };
 

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { DrehModus } from "@/components/skripte/dreh-modus";
 import { DrehbuchView } from "@/components/skripte/drehbuch-view";
 import { ScriptEditor } from "@/components/skripte/script-editor";
 import { ScriptHeaderActions } from "@/components/skripte/script-header-actions";
@@ -20,7 +21,9 @@ import { videoStatus } from "@/lib/labels";
 import { deleteScript, duplicateScript, linkToVideo, saveScript, setScriptStatus } from "@/lib/skripte/actions";
 import { getScript, getScriptOptions, getScriptTitle } from "@/lib/skripte/data";
 import { modelLabel } from "@/lib/skripte/pricing";
-import { scriptFormId, scriptStatusLabel } from "@/lib/skripte/schema";
+import type { Script } from "@/db/schema";
+import { categoryLabel } from "@/lib/skripte/engine/shared";
+import { mergeHookAndCta, scriptFormId, scriptStatusLabel } from "@/lib/skripte/schema";
 
 type Params = Promise<{ id: string }>;
 type SP = Promise<Record<string, string | string[] | undefined>>;
@@ -44,7 +47,7 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
   const id = Number(raw);
   if (!Number.isInteger(id) || id <= 0) notFound();
   const sp = await searchParams;
-  const view = sp.ansicht === "drehbuch" ? "drehbuch" : "bearbeiten";
+  const view = sp.ansicht === "drehbuch" ? "drehbuch" : sp.ansicht === "dreh" ? "dreh" : "bearbeiten";
   const [row, opts] = await Promise.all([getScript(id), getScriptOptions()]);
   if (!row) notFound();
   const { s, client, video, author, ideaTitle } = row;
@@ -93,10 +96,19 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
             items={[
               { href: `/skripte/${s.id}`, label: "Bearbeiten", active: view === "bearbeiten" },
               { href: `/skripte/${s.id}?ansicht=drehbuch`, label: "Drehbuch", active: view === "drehbuch" },
+              { href: `/skripte/${s.id}?ansicht=dreh`, label: "Drehmodus", active: view === "dreh" },
             ]}
           />
           {view === "drehbuch" ? (
             <DrehbuchView script={s} clientName={client?.name ?? null} />
+          ) : view === "dreh" ? (
+            <DrehModus
+              scriptId={s.id}
+              version={String(new Date(s.updatedAt).getTime())}
+              title={s.title}
+              beats={mergeHookAndCta(s.beats, s.hook, s.cta)}
+              production={s.production}
+            />
           ) : (
             <Card className="p-5 sm:p-6">
               <ScriptEditor
@@ -111,6 +123,7 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
         </div>
 
         <aside className="grid content-start gap-6">
+          {(s.concept || s.categories.length > 0 || s.production || s.alternatives) && <ConceptCard s={s} />}
           <Card>
             <CardHeader title="Video" sub={video ? "Verknüpft" : "Noch nicht verknüpft"} />
             <div className="grid gap-4 px-5 pb-5">
@@ -176,5 +189,72 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
         </aside>
       </div>
     </>
+  );
+}
+
+/** Was die Creative Engine zum Skript mitgibt: Kategorien, Ziel, Handlung, Drehaufwand, Alternativen. */
+function ConceptCard({ s }: { s: Script }) {
+  const p = s.production;
+  return (
+    <Card>
+      <CardHeader
+        title="Konzept"
+        sub={[s.categories.map(categoryLabel).join(" + "), s.goal, s.durationSeconds ? `${s.durationSeconds} Sekunden` : null].filter(Boolean).join(" · ") || undefined}
+      />
+      <div className="grid gap-3 px-5 pb-5 text-[14px]">
+        {s.concept && <p className="leading-relaxed text-ink-2">{s.concept}</p>}
+        {p && (
+          <dl className="grid gap-1 border-t border-hairline pt-3">
+            <div>
+              <dt className="inline text-muted">Personen: </dt>
+              <dd className="inline">
+                {p.actors}
+                {p.roles.length ? ` (${p.roles.join(", ")})` : ""}
+              </dd>
+            </div>
+            {p.location && (
+              <div>
+                <dt className="inline text-muted">Drehort: </dt>
+                <dd className="inline">{p.location}</dd>
+              </div>
+            )}
+            {p.props.length > 0 && (
+              <div>
+                <dt className="inline text-muted">Requisiten: </dt>
+                <dd className="inline">{p.props.join(", ")}</dd>
+              </div>
+            )}
+            <div>
+              <dt className="inline text-muted">Drehzeit: </dt>
+              <dd className="inline">ca. {p.minutes} Minuten</dd>
+            </div>
+          </dl>
+        )}
+        {s.alternatives && (s.alternatives.hooks.length > 0 || s.alternatives.punchlines.length > 0) && (
+          <div className="grid gap-2 border-t border-hairline pt-3">
+            {s.alternatives.hooks.length > 0 && (
+              <div>
+                <div className="text-[13px] font-semibold text-muted">Alternative Hooks</div>
+                <ul className="mt-1 grid gap-1 text-ink-2">
+                  {s.alternatives.hooks.map((h) => (
+                    <li key={h}>„{h}“</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {s.alternatives.punchlines.length > 0 && (
+              <div>
+                <div className="text-[13px] font-semibold text-muted">Alternative Pointen</div>
+                <ul className="mt-1 grid gap-1 text-ink-2">
+                  {s.alternatives.punchlines.map((h) => (
+                    <li key={h}>„{h}“</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </Card>
   );
 }

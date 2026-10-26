@@ -1,5 +1,6 @@
 // Demo-Daten Ideen: eigene Video-Ideen des Teams, eine davon schon als Video eingeplant.
 // Vorschläge aus der Trend-Recherche gibt es in den Demo-Daten bewusst nicht: die stammen nur aus echten, belegten Quellen.
+import { eq } from "drizzle-orm";
 import * as s from "../../src/db/schema";
 import type { SeedPart } from "../seed";
 
@@ -44,6 +45,20 @@ const part: SeedPart = async (db, ctx) => {
     },
   ];
   const inserted = await db.insert(s.ideas).values(rows).returning();
+
+  // Kreativprofil für den Malerbetrieb, nur aus der Analyse seiner öffentlichen Reels (21.10.2026)
+  await db
+    .update(s.clients)
+    .set({
+      creativeProfile: {
+        marke: "Malermeisterbetrieb aus der Region Kiel. [PLATZHALTER: Besonderheit des Betriebs]",
+        tonalitaet: "Baustellen-Humor, Kunden-Stereotype zum Wiedererkennen, trocken und norddeutsch",
+        personen: "Meister und Azubi spielen in Sketchen mit",
+        orte: "Baustellen bei Kunden, Firmenwagen",
+        gutLief: "Kunden-Sketch „Mein Nachbar hätte das anders gemacht“ (209 Likes, 24 Kommentare), Serie „Ein Tag als Azubi“",
+      },
+    })
+    .where(eq(s.clients.id, clients.maler.id));
 
   return `${inserted.length} Ideen`;
 };

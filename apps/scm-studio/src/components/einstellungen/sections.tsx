@@ -6,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { ActionButton } from "@/components/ui/confirm-action";
-import { Checkbox, Field, FormActions, FormGrid, Input } from "@/components/ui/field";
+import { Checkbox, Field, FormActions, FormGrid, Input, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { TeamMember } from "@/db/schema";
 import { LEGAL_TEMPLATE_VERSION } from "@/lib/dokumente/schema";
-import { checkAuditChain, revokeLegalApproval, saveAi, saveCompany, saveLegalApproval, savePrivacy, setDemoMode } from "@/lib/einstellungen/actions";
+import { checkAuditChain, revokeLegalApproval, saveAi, saveCompany, saveLegalApproval, savePrivacy, saveReferenzen, setDemoMode } from "@/lib/einstellungen/actions";
 import type { getSettingsOverview } from "@/lib/einstellungen/data";
 import { nextNumber, SEQ_LABEL } from "@/lib/einstellungen/data";
 import { AVV_PROVIDERS } from "@/lib/einstellungen/schema";
@@ -307,7 +307,7 @@ export function AnbindungenPane({ o }: { o: O }) {
 export function KiPane({ o, isAdmin }: { o: O; isAdmin: boolean }) {
   const key = o.integrations.find((i) => i.key === "openai")?.ok;
   return (
-    <Pane title="KI für Skripte" intro="Welches OpenAI-Modell die Skript-Entwürfe schreibt. Die Videos selbst produziert SCM ohne KI.">
+    <Pane title="KI für Skripte" intro="Welches OpenAI-Modell die Creative Engine nutzt und woran sie sich orientiert. Die Videos selbst produziert SCM ohne KI.">
       <AdminNote isAdmin={isAdmin} />
       <Group>
         <Row icon={Sparkles} tone={key ? "green" : "orange"} label="OpenAI-Zugang" value={key ? "eingerichtet" : "fehlt, Beispieltexte"} />
@@ -317,6 +317,24 @@ export function KiPane({ o, isAdmin }: { o: O; isAdmin: boolean }) {
         <CardHeader title="Modell" />
         <div className="px-5 pb-5 pt-1">
           <AiForm action={saveAi} value={o.ai} disabled={!isAdmin} />
+        </div>
+      </Card>
+      <Card>
+        <CardHeader
+          title="Referenz-Skripte"
+          sub="Eure besten echten Skripte als Maßstab für Humor, Tempo und Originalität. Die Creative Engine orientiert sich daran, kopiert aber nicht. Rollen statt Namen."
+        />
+        <div className="px-5 pb-5 pt-1">
+          <ActionForm action={saveReferenzen} className="grid gap-3">
+            <Field label="Skripte, eins je Absatz" name="referenzen" hint="Leer speichern stellt den Startwert aus euren Reels wieder her.">
+              <Textarea name="referenzen" defaultValue={o.referenzen} rows={14} readOnly={!isAdmin} className="min-h-80 text-[14px]" />
+            </Field>
+            {isAdmin && (
+              <div className="flex justify-end">
+                <SubmitButton variant="secondary">Speichern</SubmitButton>
+              </div>
+            )}
+          </ActionForm>
         </div>
       </Card>
       <p className="px-1 text-[12px] leading-relaxed text-muted">
