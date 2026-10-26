@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { ActionButton } from "@/components/ui/confirm-action";
-import { Checkbox, Field, FormActions, FormGrid, Input, Select } from "@/components/ui/field";
+import { Checkbox, Field, FormActions, FormGrid, Input } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { TeamMember } from "@/db/schema";
 import { LEGAL_TEMPLATE_VERSION } from "@/lib/dokumente/schema";
@@ -15,12 +15,13 @@ import type { getSettingsOverview } from "@/lib/einstellungen/data";
 import { nextNumber, SEQ_LABEL } from "@/lib/einstellungen/data";
 import { AVV_PROVIDERS } from "@/lib/einstellungen/schema";
 import { dateDe, dateTime } from "@/lib/format";
-import { inviteTeamMember, setTeamMemberActive, setTeamMemberRole } from "@/lib/team/actions";
+import { createAccessLink, inviteTeamMember, setTeamMemberActive, setTeamMemberRole } from "@/lib/team/actions";
 import { todayIso } from "@/lib/time";
 import { AiForm } from "./ai-form";
 import { AUDIT_ENTITY, auditAction, auditHref } from "./audit-labels";
 import { DemoSwitch } from "./demo-switch";
 import { Group, Row, RowIcon, StatusDot } from "./grouped";
+import { TeamInviteCard } from "./team-invite";
 import { TeamMemberRow } from "./team-member";
 
 type O = Awaited<ReturnType<typeof getSettingsOverview>>;
@@ -187,8 +188,8 @@ export function TeamPane({ o, isAdmin, meId }: { o: O; isAdmin: boolean; meId: n
       title="Team"
       intro={
         o.authMode === "supabase"
-          ? "Zugang nur per Einladung. Bei der ersten Anmeldung richtet jede Person die Zwei-Faktor-Anmeldung (TOTP) ein."
-          : "In der Vorschau melden sich alle mit dem gemeinsamen Vorschau-Passwort an. Mit Supabase kommen Einladung per E-Mail und Zwei-Faktor dazu."
+          ? "Zugang nur per Einladung: Ihr schickt jeder Person einen Zugangslink. Bei der ersten Anmeldung richtet sie ein Passwort und die Zwei-Faktor-Anmeldung (TOTP) ein."
+          : "In der Vorschau melden sich alle mit dem gemeinsamen Vorschau-Passwort an. Mit Supabase kommen Zugangslinks und Zwei-Faktor dazu."
       }
     >
       <Group
@@ -211,6 +212,7 @@ export function TeamPane({ o, isAdmin, meId }: { o: O; isAdmin: boolean; meId: n
               makeTeam={setTeamMemberRole.bind(null, m.id, "team")}
               makeAdmin={setTeamMemberRole.bind(null, m.id, "admin")}
               toggleActive={setTeamMemberActive.bind(null, m.id, !m.active)}
+              accessLink={o.authMode === "supabase" ? createAccessLink.bind(null, m.id) : undefined}
             >
               <MemberInfo m={m} me={false} authMode={o.authMode} />
             </TeamMemberRow>
@@ -221,30 +223,7 @@ export function TeamPane({ o, isAdmin, meId }: { o: O; isAdmin: boolean; meId: n
           ),
         )}
       </Group>
-      {isAdmin && (
-        <Card>
-          <CardHeader title="Person einladen" sub={o.authMode === "supabase" ? "Die Person bekommt eine E-Mail mit dem Link zur Anmeldung." : undefined} />
-          <ActionForm action={inviteTeamMember} resetOnSuccess className="grid gap-4 px-5 pb-5 pt-1">
-            <FormGrid>
-              <Field label="Name" name="name">
-                <Input name="name" autoComplete="off" />
-              </Field>
-              <Field label="E-Mail" name="email">
-                <Input name="email" type="email" autoComplete="off" />
-              </Field>
-              <Field label="Rolle" name="role" hint="Inhaber dürfen Einstellungen, Festschreiben und Export">
-                <Select name="role" defaultValue="team">
-                  <option value="team">Team</option>
-                  <option value="admin">Inhaber</option>
-                </Select>
-              </Field>
-            </FormGrid>
-            <FormActions className="mt-0">
-              <SubmitButton>{o.authMode === "supabase" ? "Einladung senden" : "Person anlegen"}</SubmitButton>
-            </FormActions>
-          </ActionForm>
-        </Card>
-      )}
+      {isAdmin && <TeamInviteCard supabase={o.authMode === "supabase"} action={inviteTeamMember} />}
     </Pane>
   );
 }

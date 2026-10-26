@@ -62,9 +62,21 @@ Die E-Mail-Adressen des Teams sind noch **[PLATZHALTER]**. In der Vorschau stehe
 
 ## 3. Team einladen
 
-Supabase → **Authentication → Users → Invite user** mit genau den Adressen aus Schritt 2.
-Die Person klickt den Link, setzt ein Passwort, richtet die Authenticator-App ein und ist drin.
-Wer nicht in `team_members` steht oder auf inaktiv gesetzt ist, kommt nicht hinein.
+Ohne eigenen Mailversand (SMTP) stellt Supabase E-Mails nur an Mitglieder der Supabase-Organisation zu.
+Darum läuft der Zugang über **Zugangslinks**, die ihr selbst weitergebt (z. B. per WhatsApp):
+
+1. **Erste Person** (Inhaber) einmalig in Supabase anlegen: **Authentication → Users → Add user → Create new user**,
+   E-Mail genau wie in `team_members`, vorläufiges Passwort, **„Auto Confirm User“** an.
+   Damit in der App anmelden und die Authenticator-App einrichten.
+2. **Alle weiteren** in der App unter **Einstellungen → Team**: „Person einladen“ oder eine Person antippen und
+   **„Zugangslink erzeugen“**. Den Link mit „Senden“ teilen. Die Person tippt auf „Weiter“, legt ihr Passwort fest
+   und richtet die Zwei-Faktor-Anmeldung ein.
+3. Passwort vergessen: Ein Inhaber erzeugt einen neuen Zugangslink (gleicher Weg).
+
+Gültigkeit der Links: in Supabase beim E-Mail-Anbieter unter „Email OTP Expiration“ (Standard 3600 Sekunden, bis 86400).
+Der Link wird erst beim Tippen auf „Weiter“ eingelöst, Link-Vorschauen in Messengern verbrauchen ihn nicht.
+Wer nicht in `team_members` steht oder gesperrt ist, kommt nicht hinein.
+Mit eigenem SMTP (Supabase → Authentication → Emails → SMTP Settings) funktioniert zusätzlich „Passwort vergessen“ per E-Mail.
 
 ## 4. Vercel-Projekt anlegen
 
@@ -95,8 +107,7 @@ Unter Deployment Protection „Standard Protection“, damit die Hauptadresse oh
 
 **Supabase (Stand 26.10.2026):** Organisation „SCM Studio“, Projekt `scm-studio` in Frankfurt (eu-central-1),
 Projekt-Ref `urpyssyupahnhjrjawsl`. Migrationen 0000 bis 0003 und `supabase/setup.sql` sind eingespielt,
-Firmendaten angelegt, Demo-Modus aus. Offen: Team anlegen und einladen, Auth-Einstellungen (Schritt 1, Punkte 3 bis 6),
-Werte in Vercel eintragen.
+Firmendaten angelegt, Demo-Modus aus. Team angelegt (Oskar, Yannick, Jonas, alle Inhaber). Offen: Zugänge einrichten (Schritt 3).
 
 ## 5. KI-Skripte (OpenAI)
 

@@ -13,6 +13,8 @@ export type ActionState = {
   redirectTo?: string;
   /** optional: frische ID z. B. nach dem Anlegen */
   id?: number;
+  /** optional: erzeugter Link zum Weitergeben (z. B. Zugangslink fürs Team) */
+  link?: string;
 };
 
 export const idle: ActionState = {};

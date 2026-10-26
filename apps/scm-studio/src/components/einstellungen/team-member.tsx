@@ -1,5 +1,5 @@
 "use client";
-// Teamzeile: für Inhaber antippbar, öffnet ein Blatt mit Rolle (Team oder Inhaber) und "Zugang sperren".
+// Teamzeile: für Inhaber antippbar, öffnet ein Blatt mit Rolle (Team oder Inhaber), Zugangslink und "Zugang sperren".
 import { ChevronRight } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { useConfirm } from "@/components/ui/confirm";
 import { Dialog } from "@/components/ui/dialog";
 import type { ActionState } from "@/lib/action";
 import { cn } from "@/lib/cn";
+import { AccessLinkShare } from "./access-link";
 import { rowFocusClass } from "./grouped";
 
 type Act = () => Promise<ActionState>;
@@ -21,6 +22,7 @@ export function TeamMemberRow({
   makeTeam,
   makeAdmin,
   toggleActive,
+  accessLink,
 }: {
   name: string;
   email: string;
@@ -31,8 +33,11 @@ export function TeamMemberRow({
   makeTeam: Act;
   makeAdmin: Act;
   toggleActive: Act;
+  /** nur mit Supabase: erzeugt einen einmaligen Zugangslink zum Weitergeben */
+  accessLink?: Act;
 }) {
   const [open, setOpen] = useState(false);
+  const [link, setLink] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const ask = useConfirm();
 
@@ -57,7 +62,15 @@ export function TeamMemberRow({
         {children}
         <ChevronRight className="size-[18px] shrink-0 text-line-2" aria-hidden />
       </button>
-      <Dialog open={open} onClose={() => setOpen(false)} title={name} description={email}>
+      <Dialog
+        open={open}
+        onClose={() => {
+          setOpen(false);
+          setLink(null);
+        }}
+        title={name}
+        description={email}
+      >
         <div className="grid gap-6">
           <fieldset className="grid gap-2">
             <legend className="mb-2 text-[13px] font-medium text-ink-2">Rolle</legend>
@@ -84,6 +97,31 @@ export function TeamMemberRow({
             </div>
             <p className="text-[13px] text-muted">Inhaber dürfen Einstellungen ändern, Rechnungen festschreiben und exportieren.</p>
           </fieldset>
+          {accessLink && active && (
+            <div className="grid gap-3 border-t border-hairline pt-5">
+              <p className="text-[13px] font-medium text-ink-2">Zugang</p>
+              {link ? (
+                <AccessLinkShare link={link} name={name} />
+              ) : (
+                <>
+                  <Button
+                    variant="secondary"
+                    disabled={pending}
+                    onClick={() =>
+                      start(async () => {
+                        const r = await accessLink();
+                        if (r?.link) setLink(r.link);
+                        else if (r?.error) toast.error(r.error);
+                      })
+                    }
+                  >
+                    Zugangslink erzeugen
+                  </Button>
+                  <p className="text-[13px] text-muted">Zum ersten Einrichten oder wenn {name.split(/\s+/)[0]} das Passwort vergessen hat.</p>
+                </>
+              )}
+            </div>
+          )}
           <div className="grid gap-2 border-t border-hairline pt-5">
             {active ? (
               <Button

@@ -104,6 +104,21 @@ export async function requestPasswordReset(_: LoginState, formData: FormData): P
   return { info: "Wenn die Adresse zum Team gehört, kommt gleich eine E-Mail mit einem Link." };
 }
 
+/** Löst einen Zugangslink ein (Einladung oder Passwort neu setzen). Läuft erst nach dem Tippen auf "Weiter",
+ *  damit Link-Vorschauen in WhatsApp oder Mailprogrammen den einmaligen Link nicht vorher verbrauchen. */
+export async function redeemAccessLink(_: LoginState, formData: FormData): Promise<LoginState> {
+  if (await throttled()) return { error: "Zu viele Versuche. Bitte in ein paar Minuten noch einmal." };
+  const tokenHash = String(formData.get("token_hash") ?? "");
+  const type = String(formData.get("type") ?? "");
+  if (authMode() !== "supabase" || !tokenHash || (type !== "invite" && type !== "recovery")) {
+    return { error: "Dieser Link ist unvollständig. Bitte einen neuen Zugangslink anfordern." };
+  }
+  const client = await sb();
+  const { error } = await client.auth.verifyOtp({ token_hash: tokenHash, type });
+  if (error) return { error: "Der Link ist abgelaufen oder wurde schon benutzt. Bitte beim Inhaber einen neuen Zugangslink anfordern." };
+  redirect("/login/passwort-setzen");
+}
+
 export async function setNewPassword(_: LoginState, formData: FormData): Promise<LoginState> {
   const password = String(formData.get("password") ?? "");
   const repeat = String(formData.get("repeat") ?? "");

@@ -75,6 +75,7 @@ const ACTION: Record<string, string> = {
   deaktiviert: "Zugang gesperrt",
   reaktiviert: "wieder aufgenommen",
   eingeladen: "eingeladen",
+  zugangslink: "Zugangslink erzeugt",
   csv_import: "per CSV importiert",
 };
 
