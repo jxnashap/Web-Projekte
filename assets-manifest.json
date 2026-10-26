@@ -1,98 +1,10 @@
 [
- {
-  "url": "https://www.lets-drive-kiel.de/kontakt/",
-  "path": ".preview-cache/ldk/kontakt.html"
- },
- {
-  "url": "https://r.jina.ai/https://www.lets-drive-kiel.de/kontakt/",
-  "path": ".preview-cache/ldk/kontakt-jina.md"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/fahrerlaubnisklassen/",
-  "path": ".preview-cache/ldk/fahrerlaubnisklassen.html"
- },
- {
-  "url": "https://r.jina.ai/https://www.lets-drive-kiel.de/fahrerlaubnisklassen/",
-  "path": ".preview-cache/ldk/fahrerlaubnisklassen-jina.md"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/theorieunterricht/",
-  "path": ".preview-cache/ldk/theorieunterricht.html"
- },
- {
-  "url": "https://r.jina.ai/https://www.lets-drive-kiel.de/theorieunterricht/",
-  "path": ".preview-cache/ldk/theorieunterricht-jina.md"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/jobs/",
-  "path": ".preview-cache/ldk/jobs.html"
- },
- {
-  "url": "https://r.jina.ai/https://www.lets-drive-kiel.de/jobs/",
-  "path": ".preview-cache/ldk/jobs-jina.md"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/impressum/",
-  "path": ".preview-cache/ldk/impressum.html"
- },
- {
-  "url": "https://r.jina.ai/https://www.lets-drive-kiel.de/impressum/",
-  "path": ".preview-cache/ldk/impressum-jina.md"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/datenschutzerklarung/",
-  "path": ".preview-cache/ldk/datenschutzerklarung.html"
- },
- {
-  "url": "https://r.jina.ai/https://www.lets-drive-kiel.de/datenschutzerklarung/",
-  "path": ".preview-cache/ldk/datenschutzerklarung-jina.md"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/agb/",
-  "path": ".preview-cache/ldk/agb.html"
- },
- {
-  "url": "https://r.jina.ai/https://www.lets-drive-kiel.de/agb/",
-  "path": ".preview-cache/ldk/agb-jina.md"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/wp-sitemap-posts-page-1.xml",
-  "path": ".preview-cache/ldk/sitemap-pages.xml"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/wp-json/wp/v2/pages?per_page=50&_fields=id,slug,link,title,content",
-  "path": ".preview-cache/ldk/wp-pages.json"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/wp-json/wp/v2/media?per_page=100&_fields=id,source_url,media_details,alt_text",
-  "path": ".preview-cache/ldk/wp-media.json"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/wp-content/uploads/go-x/style.css",
-  "path": ".preview-cache/ldk/gox-style.css"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/wp-content/uploads/go-x/u/d2853a76-35aa-456c-97f9-8cab035b12f5/image.jpg",
-  "path": ".preview-cache/ldk-assets/hero-auto.jpg"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/wp-content/uploads/go-x/u/811eb8bd-6fad-4156-99c9-a9dd85832b7e/image.jpg",
-  "path": ".preview-cache/ldk-assets/logo.jpg"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/wp-content/uploads/go-x/u/811eb8bd-6fad-4156-99c9-a9dd85832b7e/image-455x239.jpg",
-  "path": ".preview-cache/ldk-assets/logo-455.jpg"
- },
- {
-  "url": "https://www.lets-drive-kiel.de/wp-content/uploads/go-x/u/64212493-59f4-4257-b83c-02e76d354180/w192,h192,rtfit,bg,el1,ex1,fpng/image.png",
-  "path": ".preview-cache/ldk-assets/favicon-192.png"
- },
- {
-  "url": "https://r.jina.ai/https://www.golocal.de/kiel/fahrschulen/fahrschule-lets-drive-kiel-9z88k/",
-  "path": ".preview-cache/ldk/golocal-jina.md"
- },
- {
-  "url": "https://api.microlink.io/?url=https%3A%2F%2Fwww.lets-drive-kiel.de%2Ffahrerlaubnisklassen%2F&screenshot=true&meta=false&viewport.width=1440&viewport.height=2400&embed=screenshot.url",
-  "path": ".preview-cache/ldk/shot-klassen.png"
- }
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011126_6987585a-ec40-484e-b692-cdade6612a2e.png", "path": ".preview-cache/ldk-assets/hf-hero.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011024_f16e3d1e-e9e5-4570-aa7b-7b87a9c5a91c.png", "path": ".preview-cache/ldk-assets/hf-theorie.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011125_4585cc51-3b9d-4aea-9334-469bb88bcf3f.png", "path": ".preview-cache/ldk-assets/hf-fahrstunde.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011024_f7f812dd-390b-4d1b-8929-e8ac2df39ff2.png", "path": ".preview-cache/ldk-assets/hf-motorrad.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011024_9adda808-03cf-4fe5-96a9-29a56c0e9d16.png", "path": ".preview-cache/ldk-assets/hf-anhaenger.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011024_0e6f8213-85c3-40f0-b95f-e25ba363ddc0.png", "path": ".preview-cache/ldk-assets/hf-schluessel.png" },
+  { "url": "https://www.lets-drive-kiel.de/preisliste/", "path": ".preview-cache/ldk/preisliste.html" },
+  { "url": "https://www.lets-drive-kiel.de/landingpage/", "path": ".preview-cache/ldk/landingpage.html" }
 ]
