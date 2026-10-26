@@ -32,9 +32,14 @@ export async function connect(): Promise<DB> {
     const postgres = (await import("postgres")).default;
     // Supabase Session Pooler (Port 5432). Mit dem Transaction Pooler (6543) blieben Seiten mit vielen parallelen
     // Abfragen hängen: die Abfragen liefen in der Datenbank durch, die Antworten kamen nicht an.
-    // prepare false und max_pipeline 1 halten die Verbindungen schlicht; wenige Verbindungen je Function-Instanz.
+    // prepare false und max_pipeline 1 halten die Verbindungen schlicht.
     // (max_pipeline fehlt in den Typen von postgres.js, existiert aber; Standard 100.)
-    const options = { prepare: false, max: Number(process.env.DB_POOL_MAX ?? 5), max_pipeline: 1, idle_timeout: 20, connect_timeout: 10 };
+    // Der Session Pooler erlaubt nur so viele Verbindungen wie seine Pool Size (Supabase Free: 15) für ALLE
+    // Function-Instanzen zusammen, auch für die alten nach einem Redeploy. Mit 5 je Instanz war das schnell voll
+    // ("max clients reached in session mode"). Deshalb höchstens 2 je Instanz, Leerlauf nach 5 Sekunden schließen,
+    // jede Verbindung nach 5 Minuten erneuern.
+    const max = Math.min(Math.max(Number(process.env.DB_POOL_MAX) || 2, 1), 3);
+    const options = { prepare: false, max, max_pipeline: 1, idle_timeout: 5, max_lifetime: 300, connect_timeout: 10 };
     let client: ReturnType<typeof postgres>;
     try {
       client = postgres(url, options as Parameters<typeof postgres>[1]);
