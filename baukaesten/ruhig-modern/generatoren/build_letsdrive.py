@@ -59,14 +59,9 @@ LEGAL_NAV = [
 # ------------------------------------------------------------------
 # SVG-Bausteine
 # ------------------------------------------------------------------
-# Marke = assets/img/brand-mark.svg (Agent „Assets“), inline für 0 Requests
-BRAND_MARK = (
-    '<svg viewBox="0 0 32 32" aria-hidden="true">'
-    '<rect width="32" height="32" rx="8" fill="#139d27"/>'
-    '<path d="M9 32C10.1 21 19.2 19.5 20.3 7a1.2 1.2 0 0 1 2.4 0c1.1 12.5-5.8 14-4.7 25z" fill="#fff"/>'
-    '<path d="M13.5 30c0-9 8-10.5 8-21" fill="none" stroke="#139d27" stroke-width="1.1" '
-    'stroke-dasharray="2.2 2"/></svg>'
-)
+# Original-Logo, vektorisiert mit trace_logo.py (Seitenverhältnis 2000:1050):
+# logo.svg = Originalfarben (helle Flächen), logo-dark.svg = für dunkle Flächen
+LOGO_W, LOGO_H = 200, 105
 
 # Manrope enthält kein ★ → Sterne als SVG (Vorgabe Integrator)
 STAR = ('<svg class="star" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.3 5.9.9-4.25 '
@@ -268,10 +263,19 @@ def head(fname, title, desc, noindex=False, extra=""):
 """
 
 
-def brand_link():
-    return (f'<a class="brand" href="index.html" aria-label="{BRAND} – Startseite">'
-            f'<span class="brand-mark" aria-hidden="true">{BRAND_MARK}</span>'
-            f'<span class="brand-text"><strong>Let’s Drive</strong><small>Fahrschule Kiel</small></span></a>')
+def brand_link(on_dark=False):
+    """Logo-Link. Header: beide Varianten, CSS zeigt je nach Untergrund eine;
+    Footer (immer dunkel): nur die dunkle Variante."""
+    # Dunkle Variante lazy: auf Unterseiten bleibt sie im Header unsichtbar
+    # (display:none) und wird dann erst für den Footer geladen.
+    img = (f'<img class="brand-logo{{cls}}" src="assets/img/{{src}}" alt="" '
+           f'width="{LOGO_W}" height="{LOGO_H}"{{lazy}} decoding="async">')
+    if on_dark:
+        logos = img.format(cls="", src="logo-dark.svg", lazy=' loading="lazy"')
+    else:
+        logos = (img.format(cls=" brand-logo-light", src="logo.svg", lazy="")
+                 + img.format(cls=" brand-logo-dark", src="logo-dark.svg", lazy=' loading="lazy"'))
+    return f'<a class="brand" href="index.html" aria-label="{BRAND} – Startseite">{logos}</a>'
 
 
 def nav_items(active, indent):
@@ -320,7 +324,7 @@ def footer():
 <footer class="site-footer">
   <div class="wrap footer-grid">
     <div class="footer-brand">
-      {brand_link()}
+      {brand_link(on_dark=True)}
       <p>Mehr als nur fahren – wir bringen dich sicher ans Ziel. Deine Fahrschule am Ravensberg in Kiel.</p>
       <a class="footer-social" href="{FB}" target="_blank" rel="noopener" aria-label="{FULL} auf Facebook (öffnet in neuem Tab)">{icon("facebook", 20)}<span>Facebook</span></a>
     </div>
@@ -370,6 +374,7 @@ LD = {
     "name": FULL,
     "url": BASE,
     "image": BASE + "assets/img/og-image.jpg",
+    "logo": BASE + "assets/img/logo.png",
     "telephone": "+49 431 86923",
     "faxNumber": "+49 431 8065298",
     "email": MAIL,
@@ -1038,7 +1043,7 @@ IMPRESSUM = f"""    <h2>Angaben gemäß §&nbsp;5 DDG</h2>
     <p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 
     <h2>Bildnachweis</h2>
-    <p>Foto Fahrschulauto: {FULL}. Alle weiteren Fotos sind KI-generierte Symbolbilder.</p>"""
+    <p>Logo und Foto Fahrschulauto: {FULL}. Alle weiteren Fotos sind KI-generierte Symbolbilder.</p>"""
 
 PAGES["impressum.html"] = legal_page(
     "impressum.html", "impressum", "Impressum", "Impressum",

@@ -13,6 +13,8 @@ ruhig-modern/
 ├── css/style.css            Design-System (Tokens in :root, Komponenten)
 ├── js/script.js             Header, Mobile-Nav, Reveals, Tabs, Bürozeiten, Formular, Map-Consent
 ├── generatoren/build_letsdrive.py   erzeugt alle Seiten + sitemap.xml + robots.txt
+├── generatoren/trace_logo.py        Original-Logo (JPG/PNG) → logo.svg, logo-dark.svg, Icon-SVG
+├── tools/render_brand.js    Favicon-PNG, Touch-/Manifest-Icons, logo.png, og-image.jpg aus den SVGs
 └── tools/shot.js            QA: Screenshots Desktop/Mobil, Reveal-Zählung, Fremd-Host-Check, Größe
 ```
 
@@ -64,7 +66,7 @@ Formular (Validierung → `mailto:`), Google-Maps-2-Klick-Lösung, CTA-Band, Foo
 ## Projektstand lets-drive-kiel (Übergabe)
 
 QA (`tools/shot.js`): 9 Seiten × Desktop/Mobil – Reveals n/n, 0 Fehler, 0 Fremd-Requests,
-kein Overflow, Ordner 1,5 MB (ZIP 1,4 MB in `auslieferung/`).
+kein Overflow, Ordner 1,6 MB (ZIP in `auslieferung/`).
 
 Vor Livegang vom Kunden klären (alle als `[PLATZHALTER]` sichtbar markiert):
 - Impressum: Steuernummer 20/031/64345 war im Original als „Umsatzsteuer-ID" beschriftet → prüfen.
@@ -74,4 +76,25 @@ Vor Livegang vom Kunden klären (alle als `[PLATZHALTER]` sichtbar markiert):
 - Stimmen: gekürzte öffentliche Google-Bewertungen (Vorname + Initial) – Freigabe bestätigen.
 - Bilder: Fahrschulauto = Original des Kunden; übrige Fotos sind KI-Symbolbilder (Higgsfield,
   im Impressum vermerkt) – gern durch echte Fotos ersetzen (gleiche Dateinamen/Seitenverhältnisse).
-- Original-Logo liegt freigestellt unter `assets/img/logo-original.png`, falls gewünscht.
+
+## Original-Logo übernehmen (Logo-Pipeline)
+
+Kunden-Logos liegen oft nur als kleines JPG vor. `trace_logo.py` vektorisiert sie
+farbschichtweise (Grün- und Dunkelanteil getrennt maskiert, 2× hochskaliert,
+potrace) zu gestochen scharfen SVGs in Originalfarben – ~57 KB, gzip ~19 KB:
+
+```
+pip install potracer numpy pillow
+python3 generatoren/trace_logo.py logo.jpg <site>/assets/img   # logo.svg, logo-dark.svg, logo-icon.svg
+mv <site>/assets/img/logo-icon.svg <site>/favicon.svg
+node tools/render_brand.js <site>                                # PNG-Icons, logo.png, og-image.jpg
+```
+
+- **Hell** (`logo.svg`): Originalfarben – Header auf Papier, Mobilmenü.
+- **Dunkel** (`logo-dark.svg`): wie auf dem Original-Flyer – grüner Schriftzug, dunkel
+  gefüllte Wörter („Kiel", „FAHRSCHULE") hell mit grüner Kontur. Header über dem
+  dunklen Hero + Footer; CSS schaltet über `body.has-dark-hero`/`.is-scrolled`/`nav-open`.
+- **Icon**: einzelner Buchstabe per Flood-Fill isoliert, Strich optisch verstärkt
+  (16–32 px lesbar). Schwellen (`split_y`, `kiel_x`, Startspalte) sind logo-spezifisch.
+- Header 100 px (Logo 80 px, gescrollt ×0,76), mobil 76 px (Logo 60 px): Schreibschrift-
+  Logos brauchen Höhe, sonst wird der dünne Strich unlesbar.
