@@ -93,6 +93,11 @@ Unter Deployment Protection „Standard Protection“, damit die Hauptadresse oh
 (die App hat ihr eigenes Passwort). Vor dem Livegang in ein eigenes Team „SCM Creatives“ umziehen
 (Project Settings → General → Transfer Project).
 
+**Supabase (Stand 26.10.2026):** Organisation „SCM Studio“, Projekt `scm-studio` in Frankfurt (eu-central-1),
+Projekt-Ref `urpyssyupahnhjrjawsl`. Migrationen 0000 bis 0003 und `supabase/setup.sql` sind eingespielt,
+Firmendaten angelegt, Demo-Modus aus. Offen: Team anlegen und einladen, Auth-Einstellungen (Schritt 1, Punkte 3 bis 6),
+Werte in Vercel eintragen.
+
 ## 5. KI-Skripte (OpenAI)
 
 1. platform.openai.com → **eigenes Projekt** „SCM Studio“, API-Key anlegen → `OPENAI_API_KEY`.
