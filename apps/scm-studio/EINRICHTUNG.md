@@ -115,7 +115,9 @@ Ohne `DATABASE_URL` startet die App auf Vercel nicht sinnvoll (die lokale Vorsch
 
 1. Gleichen geheimen Wert setzen: im Studio `LEADS_WEBHOOK_SECRET`, im Vercel-Projekt der Website `STUDIO_LEADS_SECRET`
    und `STUDIO_LEADS_URL=https://studio.scm-creatives.de/api/anfragen/eingang`.
-2. Den Code-Schnipsel aus `docs/website-anbindung.md` in `webseiten/scm-creatives/api/anfrage.js` übernehmen.
+2. Die Weiterleitung ist in `webseiten/scm-creatives/api/anfrage.js` schon eingebaut und wird mit den beiden Variablen aktiv
+   (Details und Testergebnis: `docs/website-anbindung.md`). Zusätzlich im Studio eine Rate-Limit-Regel der Vercel-Firewall
+   für `/api/anfragen/eingang` anlegen.
 
 ## 9. Vor dem Livegang (Checkliste)
 
@@ -127,5 +129,13 @@ Ohne `DATABASE_URL` startet die App auf Vercel nicht sinnvoll (die lokale Vorsch
 - [ ] Eine echte Rechnung festschreiben und mit einem Validator (Mustang oder KoSIT) prüfen.
 - [ ] AV-Verträge abschließen: Supabase, Vercel, OpenAI, Google, Meta. Datenschutzerklärung der Website ergänzen.
 - [ ] Backups: Supabase Pro (tägliche Backups) oder eigener täglicher Export.
-- [ ] Test-Route entfernen: `src/app/api/dev/` (nur für die Vorschau).
+- [ ] Offene Vertragspunkte klären (stehen als [PLATZHALTER] in den PDFs und unter Einstellungen → Rechtliches): Übertrag oder
+      Verfall nicht abgerufener Videos, Frist bei abgesagten Drehs, Umgang mit veröffentlichten Videos nach Widerruf,
+      Aufbewahrung der Einwilligungsnachweise, Kontakt für Datenschutzfragen, AV-Vertrag als Anlage, ob SCM Kaufmann ist.
+- [ ] DATEV: Berater- und Mandantennummer, BU-Schlüssel für § 13b, SKR03-Konten mit der Steuerberatung abstimmen und
+      einen EXTF-Import einmal testen (Einstellungen in Finanzen → Export).
+- [ ] Demo-IBAN DE02120300000000202051 ersetzen (nur in der Vorschau gesetzt) und Firmendaten vervollständigen.
+- [ ] KI: Modell-IDs und Preise (`src/lib/skripte/pricing.ts`) mit der OpenAI-Modellliste abgleichen.
+- [ ] Instagram: API-Version v25.0 und Kennzahlnamen mit einem echten Business-Konto prüfen; Link zur Datenschutzerklärung
+      auf der Kundenseite `/verbinden/…` eintragen.
 - [ ] Demo-Modus ist nach `npm run bootstrap` aus. Keine Demo-Daten in die echte Datenbank seeden.
