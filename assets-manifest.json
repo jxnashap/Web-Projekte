@@ -1,130 +1,52 @@
 [
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/06/dd-logo-white.png",
-  "path": ".preview-cache/dd/brand/dd-logo-white.png"
+  "url": "https://www.tiktok.com/@diedreiweinbar",
+  "path": ".preview-cache/dd/social/tiktok-diedreiweinbar.html"
  },
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/06/dd-logo-black.png",
-  "path": ".preview-cache/dd/brand/dd-logo-black.png"
+  "url": "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@diedreiweinbar",
+  "path": ".preview-cache/dd/social/tiktok-oembed-diedreiweinbar.json"
  },
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/06/dd-favicon.png",
-  "path": ".preview-cache/dd/brand/dd-favicon.png"
+  "url": "https://www.tiktok.com/@die_drei_weinbar",
+  "path": ".preview-cache/dd/social/tiktok-die_drei_weinbar.html"
  },
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/06/hero-image.svg",
-  "path": ".preview-cache/dd/brand/hero-image.svg"
+  "url": "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@die_drei_weinbar",
+  "path": ".preview-cache/dd/social/tiktok-oembed-die_drei_weinbar.json"
  },
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/06/diedreisocialmedia.png",
-  "path": ".preview-cache/dd/brand/diedreisocialmedia.png"
+  "url": "https://www.tiktok.com/@diedrei_weinbar",
+  "path": ".preview-cache/dd/social/tiktok-diedrei_weinbar.html"
  },
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/1-DSC09632.jpg",
-  "path": ".preview-cache/dd/photos/1-DSC09632.jpg"
+  "url": "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@diedrei_weinbar",
+  "path": ".preview-cache/dd/social/tiktok-oembed-diedrei_weinbar.json"
  },
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/11-DSC09743.jpg",
-  "path": ".preview-cache/dd/photos/11-DSC09743.jpg"
+  "url": "https://www.tiktok.com/@diedrei.weinbar",
+  "path": ".preview-cache/dd/social/tiktok-diedrei.weinbar.html"
  },
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/12-DSC09765.jpg",
-  "path": ".preview-cache/dd/photos/12-DSC09765.jpg"
+  "url": "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@diedrei.weinbar",
+  "path": ".preview-cache/dd/social/tiktok-oembed-diedrei.weinbar.json"
  },
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/13-DSC09775.jpg",
-  "path": ".preview-cache/dd/photos/13-DSC09775.jpg"
+  "url": "https://i.instagram.com/api/v1/users/web_profile_info/?username=diedreiweinbar",
+  "path": ".preview-cache/dd/social/ig-diedreiweinbar.json",
+  "headers": [
+   "x-ig-app-id: 936619743392459"
+  ]
  },
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/14-DSC09778.jpg",
-  "path": ".preview-cache/dd/photos/14-DSC09778.jpg"
+  "url": "https://i.instagram.com/api/v1/users/web_profile_info/?username=die_drei_weinbar",
+  "path": ".preview-cache/dd/social/ig-die_drei_weinbar.json",
+  "headers": [
+   "x-ig-app-id: 936619743392459"
+  ]
  },
  {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/15-DSC09785.jpg",
-  "path": ".preview-cache/dd/photos/15-DSC09785.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/2-DSC09668.jpg",
-  "path": ".preview-cache/dd/photos/2-DSC09668.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/20-DSC09816.jpg",
-  "path": ".preview-cache/dd/photos/20-DSC09816.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/21-DSC09822.jpg",
-  "path": ".preview-cache/dd/photos/21-DSC09822.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/22-IMG_9919.jpg",
-  "path": ".preview-cache/dd/photos/22-IMG_9919.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/26-DSC09606-1.jpg",
-  "path": ".preview-cache/dd/photos/26-DSC09606-1.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/27-DSC09602.jpg",
-  "path": ".preview-cache/dd/photos/27-DSC09602.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/28-DSC09597.jpg",
-  "path": ".preview-cache/dd/photos/28-DSC09597.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/29-DSC09592.jpg",
-  "path": ".preview-cache/dd/photos/29-DSC09592.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/3-DSC09669.jpg",
-  "path": ".preview-cache/dd/photos/3-DSC09669.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/30-DSC09573.jpg",
-  "path": ".preview-cache/dd/photos/30-DSC09573.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/31-DSC09569.jpg",
-  "path": ".preview-cache/dd/photos/31-DSC09569.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/32-DSC09543.jpg",
-  "path": ".preview-cache/dd/photos/32-DSC09543.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/33-DSC09535.jpg",
-  "path": ".preview-cache/dd/photos/33-DSC09535.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2024/07/7-DSC09699.jpg",
-  "path": ".preview-cache/dd/photos/7-DSC09699.jpg"
- },
- {
-  "url": "https://diedreibar.de/wp-content/uploads/2025/05/Karte-Webseite-07.05.2025.pdf",
-  "path": ".preview-cache/dd/weinkarte.pdf"
- },
- {
-  "url": "https://diedreibar.de/page-sitemap.xml",
-  "path": ".preview-cache/dd/page-sitemap.xml"
- },
- {
-  "url": "https://r.jina.ai/https://www.falstaff.com/de/weinbars/die-drei-weinbar",
-  "path": ".preview-cache/dd/falstaff.md"
- },
- {
-  "url": "https://r.jina.ai/https://www.toogoodtogo.com/de/find/kiel/diedreiweinbar/other/50055690894768672",
-  "path": ".preview-cache/dd/toogoodtogo.md"
- },
- {
-  "url": "https://r.jina.ai/https://branchenbuch.meinestadt.de/kiel/company/501785219",
-  "path": ".preview-cache/dd/meinestadt.md"
- },
- {
-  "url": "https://r.jina.ai/https://www.yelp.de/biz/WB2g2Ljv48X9yp3cV70TaQ",
-  "path": ".preview-cache/dd/yelp.md"
- },
- {
-  "url": "https://r.jina.ai/https://diedreibar.de/datenschutz/",
-  "path": ".preview-cache/dd/datenschutz.md"
+  "url": "https://r.jina.ai/https://www.tiktok.com/@diedreiweinbar",
+  "path": ".preview-cache/dd/social/tiktok-diedreiweinbar.md"
  }
 ]
