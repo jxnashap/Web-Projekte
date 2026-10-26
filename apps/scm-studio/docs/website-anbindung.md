@@ -8,7 +8,7 @@ ohne die beiden Umgebungsvariablen unten wirkungslos. Fehler beim Studio blockie
 
 | Wo | Variable | Wert |
 |---|---|---|
-| Vercel-Projekt der Website | `STUDIO_LEADS_URL` | `https://<studio-domain>/api/anfragen/eingang` **[PLATZHALTER bis Domain feststeht]** |
+| Vercel-Projekt der Website | `STUDIO_LEADS_URL` | `https://scm-studio.vercel.app/api/anfragen/eingang` (bei eigener Domain anpassen) |
 | Vercel-Projekt der Website | `STUDIO_LEADS_SECRET` | langer Zufallswert (`openssl rand -hex 32`) |
 | Vercel-Projekt des Studios | `LEADS_WEBHOOK_SECRET` | derselbe Wert |
 
