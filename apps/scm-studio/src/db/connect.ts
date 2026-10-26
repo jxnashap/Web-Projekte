@@ -18,8 +18,10 @@ async function connectDemoSnapshot(): Promise<DB> {
   const { drizzle } = await import("drizzle-orm/pglite");
   const dir = path.join(/*turbopackIgnore: true*/ process.cwd(), ".data", "demo");
   const files = process.env.FILES_DIR ?? DEMO_FILES_DIR;
-  if (!fs.existsSync(files)) fs.cpSync(path.join(dir, "files"), files, { recursive: true });
-  const client = await PGlite.create({ loadDataDir: new Blob([fs.readFileSync(path.join(dir, "pglite.tar.gz"))]) });
+  // turbopackIgnore: Pfade erst zur Laufzeit bekannt; sonst verfolgt der Bundler das ganze Projekt in jede Function
+  if (!fs.existsSync(/*turbopackIgnore: true*/ files)) fs.cpSync(/*turbopackIgnore: true*/ path.join(dir, "files"), files, { recursive: true });
+  const tar = fs.readFileSync(/*turbopackIgnore: true*/ path.join(dir, "pglite.tar.gz"));
+  const client = await PGlite.create({ loadDataDir: new Blob([tar]) });
   return drizzle(client, { schema }) as unknown as DB;
 }
 

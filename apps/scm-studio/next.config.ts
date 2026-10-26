@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     "/*": ["./assets/fonts/**/*", "./.data/demo/**/*"],
     "/**": ["./assets/fonts/**/*", "./.data/demo/**/*"],
   },
+  // Mit echter Datenbank (DATABASE_URL schon beim Build) brauchen die Functions weder PGlite (über 20 MB)
+  // noch lokale Daten: kleinere Functions, schnellere Kaltstarts.
+  ...(process.env.DATABASE_URL ? { outputFileTracingExcludes: { "/**": ["./node_modules/@electric-sql/pglite/**/*", "./.data/**/*"] } } : {}),
   experimental: {
     // Belege (Fotos/PDF) gehen lokal per Server Action hoch. Auf Vercel gilt zusätzlich das Limit
     // der Plattform (4,5 MB pro Anfrage), deshalb verkleinert der Browser Fotos vor dem Hochladen.
