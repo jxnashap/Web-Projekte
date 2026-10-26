@@ -1,6 +1,7 @@
 // Formular für ein Video (Anlegen und Bearbeiten).
 // Anlegen (compact): erst grob mit Titel, Kunde und Monat, alles Weitere hinter „Mehr Details“. Neue Videos starten als Idee.
 import { ChevronDown } from "lucide-react";
+import Link from "next/link";
 import type { Video } from "@/db/schema";
 import { ActionForm } from "@/components/ui/action-form";
 import { Checkbox, Field, FormActions, FormGrid, Input, Select, Textarea } from "@/components/ui/field";
@@ -81,7 +82,20 @@ export function VideoForm({
         <Field label="Titel oder Idee" name="title" className="sm:col-span-2">
           <Input name="title" defaultValue={video?.title ?? ""} placeholder="z. B. Der Kunde, der alles besser weiß" required />
         </Field>
-        <Field label="Kunde" name="clientId">
+        <Field
+          label="Kunde"
+          name="clientId"
+          hint={
+            options.clients.length === 0 ? (
+              <>
+                Noch keine Kunden angelegt.{" "}
+                <Link href="/kunden/neu" className="font-medium text-accent-ink underline">
+                  Ersten Kunden anlegen
+                </Link>
+              </>
+            ) : undefined
+          }
+        >
           <Select name="clientId" defaultValue={String(video?.clientId ?? defaults?.clientId ?? "")} required>
             <option value="" disabled>
               Kunde wählen
