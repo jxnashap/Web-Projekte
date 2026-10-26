@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Impressum · DIE DREI Weinbar Kiel</title>
+<title>Impressum – DIE DREI Weinbar Kiel</title>
 <meta name="description" content="Impressum der DIE DREI GmbH &amp; Co. KG, Knooper Weg 189, 24118 Kiel.">
 <link rel="canonical" href="https://diedreibar.de/impressum.html">
 <meta name="theme-color" content="#5B0041">
@@ -11,7 +11,7 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
 <meta property="og:site_name" content="DIE DREI · Weinbar · Kiel">
-<meta property="og:title" content="Impressum · DIE DREI Weinbar Kiel">
+<meta property="og:title" content="Impressum – DIE DREI Weinbar Kiel">
 <meta property="og:description" content="Impressum der DIE DREI GmbH &amp; Co. KG, Knooper Weg 189, 24118 Kiel.">
 <meta property="og:url" content="https://diedreibar.de/impressum.html">
 <meta property="og:image" content="https://diedreibar.de/assets/brand/og.jpg">
@@ -19,7 +19,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="DIE DREI · Weinbar · Kiel">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Impressum · DIE DREI Weinbar Kiel">
+<meta name="twitter:title" content="Impressum – DIE DREI Weinbar Kiel">
 <meta name="twitter:description" content="Impressum der DIE DREI GmbH &amp; Co. KG, Knooper Weg 189, 24118 Kiel.">
 <meta name="twitter:image" content="https://diedreibar.de/assets/brand/og.jpg">
 <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
@@ -49,12 +49,12 @@
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav-overlay" aria-label="Menü öffnen"><span class="mb-ico" aria-hidden="true"><i></i><i></i></span></button>
   </div>
 </header>
-<div class="nav-overlay" id="nav-overlay">
-  <nav class="nav-list" aria-label="Menü">
-    <a href="index.html"><i>01</i>Start</a>
-    <a href="bar.html"><i>02</i>Die Bar</a>
-    <a href="weinkarte.html"><i>03</i>Weinkarte</a>
-    <a href="besuch.html"><i>04</i>Besuch</a>
+<div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Menü">
+  <nav class="nav-list" aria-label="Seiten">
+    <a href="index.html"><i aria-hidden="true">01</i>Start</a>
+    <a href="bar.html"><i aria-hidden="true">02</i>Die Bar</a>
+    <a href="weinkarte.html"><i aria-hidden="true">03</i>Weinkarte</a>
+    <a href="besuch.html"><i aria-hidden="true">04</i>Besuch</a>
   </nav>
   <div class="nav-meta">
     <p><span class="today" data-today></span></p>
@@ -107,10 +107,6 @@
       <h2>Bildnachweis</h2>
       <p>Fotos: <mark class="ph">[PLATZHALTER: Urheber/in bzw. Fotograf/in der Originalfotos]</mark></p>
 
-      <p class="note" style="margin-top:2.5rem">Die Rechtsgrundlagen wurden gegenüber dem bisherigen Impressum
-      aktualisiert (§ 5 DDG statt § 5 TMG, § 18 Abs. 2 MStV statt § 55 Abs. 2 RStV).
-      <mark class="ph">[PLATZHALTER: rechtliche Prüfung von Impressum und Datenschutzerklärung vor Veröffentlichung]</mark></p>
-
     </div>
   </div>
 </section>
@@ -123,6 +119,15 @@
         <p class="d3">Jeder Schluck erzählt <em>eine Geschichte.</em></p>
       </div>
       <div class="foot-cols">
+        <nav class="foot-col" aria-label="Seiten im Fußbereich">
+          <p class="lbl">Seiten</p>
+          <ul>
+            <li><a href="index.html">Start</a></li>
+            <li><a href="bar.html">Die Bar</a></li>
+            <li><a href="weinkarte.html">Weinkarte</a></li>
+            <li><a href="besuch.html">Besuch</a></li>
+          </ul>
+        </nav>
         <div class="foot-col">
           <p class="lbl">Adresse</p>
           <p>DIE DREI Weinbar Kiel<br>Knooper Weg 189<br>24118 Kiel</p>

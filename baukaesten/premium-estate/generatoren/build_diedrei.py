@@ -90,16 +90,17 @@ def esc(s):
 # Bilder (Asset-Vertrag: assets/img/<slug>-s.webp / -l.webp + index.json)
 # ------------------------------------------------------------------
 def _load_index():
-    for base in (SITE, DEV_ASSETS):
-        if not base:
-            continue
-        p = os.path.join(base, "assets", "img", "index.json")
+    """Bild-Index (Maße, Alt-Texte, Fokus) — liegt bei den Generator-Daten, nicht im Webordner."""
+    cands = [os.path.join(SCRATCH, "img-index.json")]
+    cands += [os.path.join(b, "assets", "img", "index.json") for b in (SITE, DEV_ASSETS) if b]
+    for p in cands:
+        base = SITE
         if os.path.exists(p):
             with open(p, encoding="utf-8") as f:
                 data = json.load(f)
             items = data if isinstance(data, list) else data.get("images", [])
             return {d["slug"]: d for d in items}, base
-    raise SystemExit("assets/img/index.json fehlt")
+    raise SystemExit("img-index.json fehlt")
 
 
 IMG, IMG_BASE = _load_index()
@@ -132,6 +133,31 @@ def img(slug, sizes, alt=None, eager=False, pos=None, cls="", plx=None, decorati
     if plx:
         return f'<div class="plx-in" data-plx="{plx}">{tag}</div>'
     return tag
+
+
+def srcset(slug):
+    d = IMG[slug]
+    return f'assets/img/{slug}-s.webp {d["s"]["w"]}w, assets/img/{slug}-l.webp {d["l"]["w"]}w'
+
+
+# Art-Direction: Hochformat-Motiv für schmale Hochkant-Screens (Telefone), sonst Querformat.
+# Dieselbe Media-Query steuert <source> und das Preload (siehe head()).
+MOBILE_MQ = "(max-width: 599px)"
+DESKTOP_MQ = "(min-width: 600px)"
+
+
+def picture(slug, mobile_slug, sizes="100vw", pos=None, mpos=None, alt=None):
+    """alt muss auf BEIDE Motive passen (eine <img> für beide Quellen)."""
+    d, m = IMG[slug], IMG[mobile_slug]
+    pos = pos or d.get("fokus")
+    mpos = mpos or m.get("fokus")
+    return (f'<picture>'
+            f'<source media="{MOBILE_MQ}" srcset="{srcset(mobile_slug)}" sizes="100vw" '
+            f'width="{m["l"]["w"]}" height="{m["l"]["h"]}">'
+            f'<img src="assets/img/{slug}-l.webp" srcset="{srcset(slug)}" sizes="{sizes}" '
+            f'width="{d["l"]["w"]}" height="{d["l"]["h"]}" alt="{esc(alt or d.get("alt", ""))}" '
+            f'loading="eager" fetchpriority="high" decoding="async"'
+            f' style="--pos:{pos};--mpos:{mpos}"></picture>')
 
 
 def figure(slug, sizes, cls="", pos=None, plx=None, d=None, alt=None):
@@ -170,7 +196,7 @@ def jsonld():
             "closes": "23:00",
         }],
         "hasMenu": BASE + "weinkarte.html",
-        "acceptsReservations": "True",
+        "acceptsReservations": True,
         "paymentAccepted": "Bargeld, EC-Karte, Kreditkarte, NFC",
         "currenciesAccepted": "EUR",
         "foundingDate": "2024",
@@ -184,16 +210,18 @@ def jsonld():
 EXTRA_LD = {}  # wird nach Lesen von fakten.md ggf. ergänzt (z. B. priceRange, geo)
 
 
-def head(path, title, desc, light=False, ld=False, preload_hero=None, hero_sizes="100vw"):
+def head(path, title, desc, light=False, ld=False, preload=(), robots="index, follow"):
+    """preload: [(slug, sizes, media|None), …] — je Hero-Quelle ein Preload mit passender Media-Query."""
+    assert len(title) <= 60, f"title zu lang ({len(title)}): {title}"
+    assert len(desc) <= 155, f"description zu lang ({len(desc)}): {desc}"
     url = BASE + ("" if path == "index.html" else path)
     og = BASE + "assets/brand/og.jpg"
     body_cls = ' class="page-light"' if light else ""
     pre = ""
-    if preload_hero:
-        d = IMG[preload_hero]
-        pre = (f'\n<link rel="preload" as="image" href="assets/img/{preload_hero}-l.webp" '
-               f'imagesrcset="assets/img/{preload_hero}-s.webp {d["s"]["w"]}w, '
-               f'assets/img/{preload_hero}-l.webp {d["l"]["w"]}w" imagesizes="{hero_sizes}" fetchpriority="high">')
+    for slug, sizes, media in preload:
+        mq = f' media="{media}"' if media else ""
+        pre += (f'\n<link rel="preload" as="image"{mq} imagesrcset="{srcset(slug)}" '
+                f'imagesizes="{sizes}" fetchpriority="high">')
     fav_svg = ('\n<link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">'
                if asset_exists("assets/brand/favicon.svg") else "")
     return f"""<!DOCTYPE html>
@@ -205,7 +233,7 @@ def head(path, title, desc, light=False, ld=False, preload_hero=None, hero_sizes
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{url}">
 <meta name="theme-color" content="#5B0041">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="{robots}">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
 <meta property="og:site_name" content="DIE DREI · Weinbar · Kiel">
@@ -242,7 +270,7 @@ def header(active):
         f'\n      <a class="nav-link" href="{h}"{" aria-current=\"page\"" if h == active else ""}>{t}</a>'
         for h, t in NAV[1:])
     mob = "".join(
-        f'\n    <a href="{h}"{" aria-current=\"page\"" if h == active else ""}><i>{i:02d}</i>{t}</a>'
+        f'\n    <a href="{h}"{" aria-current=\"page\"" if h == active else ""}><i aria-hidden="true">{i:02d}</i>{t}</a>'
         for i, (h, t) in enumerate(NAV, 1))
     return f"""<header class="site-header">
   <a class="brand" href="index.html" aria-label="DIE DREI – zur Startseite">
@@ -256,8 +284,8 @@ def header(active):
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav-overlay" aria-label="Menü öffnen"><span class="mb-ico" aria-hidden="true"><i></i><i></i></span></button>
   </div>
 </header>
-<div class="nav-overlay" id="nav-overlay">
-  <nav class="nav-list" aria-label="Menü">{mob}
+<div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Menü">
+  <nav class="nav-list" aria-label="Seiten">{mob}
   </nav>
   <div class="nav-meta">
     <p><span class="today" data-today></span></p>
@@ -275,7 +303,8 @@ def hours_list(cls="hours", attrs=True):
         t = f'{h[0]} – {h[1]} Uhr' if h else "Ruhetag"
         da = f' data-day="{d}"' if attrs else ""
         c = ' class="is-closed"' if not h else ""
-        rows += f'\n      <li{da}{c}><span class="h-day">{name}</span><span class="h-time num">{t}</span></li>'
+        rows += (f'\n      <li{da}{c}><span class="h-day">{name} <span class="h-badge">Heute</span></span> '
+                 f'<span class="h-time num">{t}</span></li>')
     return f'<ul class="{cls}" aria-label="Öffnungszeiten">{rows}\n    </ul>'
 
 
@@ -289,6 +318,15 @@ def footer():
         <p class="d3">Jeder Schluck erzählt <em>eine Geschichte.</em></p>
       </div>
       <div class="foot-cols">
+        <nav class="foot-col" aria-label="Seiten im Fußbereich">
+          <p class="lbl">Seiten</p>
+          <ul>
+            <li><a href="index.html">Start</a></li>
+            <li><a href="bar.html">Die Bar</a></li>
+            <li><a href="weinkarte.html">Weinkarte</a></li>
+            <li><a href="besuch.html">Besuch</a></li>
+          </ul>
+        </nav>
         <div class="foot-col">
           <p class="lbl">Adresse</p>
           <p>{NAME_LONG}<br>{STREET}<br>{ZIP_CITY}</p>
@@ -321,17 +359,18 @@ def footer():
 """
 
 
-def hero(slug, label, title, lead="", page=False, pos=None, foot="", split=False):
+def hero(slug, label, title, lead="", page=False, pos=None, foot="", split=False, mobile=None, mpos=None,
+         alt=None):
     """Vollbild-Hero (Querformat) oder Split-Hero (Hochformat: Beeren-Textfeld + Foto),
     damit Hochformat-Fotos nie hochskaliert werden."""
     if split:
         lead_html = f'\n      <p class="lead rv" data-d="2">{lead}</p>' if lead else ""
         foot_html = f'\n      <div class="hero-foot rv" data-d="3">{foot}\n      </div>' if foot else ""
         return f"""<section class="hero hero--split">
-  <div class="hero-media">{img(slug, "(max-width: 880px) 100vw, 50vw", eager=True, pos=pos)}</div>
+  <div class="hero-media">{img(slug, SPLIT_SIZES, eager=True, pos=pos)}</div>
   <div class="hero-inner">
       <p class="lbl rv" data-d="1">{label}</p>
-      <h1 class="d1 split">{title}</h1>{lead_html}{foot_html}
+      <h1 class="d1 rise">{title}</h1>{lead_html}{foot_html}
   </div>
 </section>
 """
@@ -339,13 +378,16 @@ def hero(slug, label, title, lead="", page=False, pos=None, foot="", split=False
     lead_html = f'\n      <p class="lead rv" data-d="2">{lead}</p>' if lead else ""
     foot_html = f'\n      <div class="hero-foot rv" data-d="3">{foot}\n      </div>' if foot else ""
     return f"""<section class="{cls}">
-  <div class="hero-media" data-plx="0.05">{img(slug, "100vw", eager=True, pos=pos)}</div>
+  <div class="hero-media" data-plx="0.05">{picture(slug, mobile, pos=pos, mpos=mpos, alt=alt) if mobile else img(slug, "100vw", eager=True, pos=pos)}</div>
   <div class="hero-inner wrap">
       <p class="lbl rv" data-d="1">{label}</p>
-      <h1 class="d1 split">{title}</h1>{lead_html}{foot_html}
+      <h1 class="d1 rise">{title}</h1>{lead_html}{foot_html}
   </div>
 </section>
 """
+
+
+SPLIT_SIZES = "(max-width: 599px) 100vw, 50vw"
 
 
 def page_head(label, title, lead=""):
@@ -445,7 +487,7 @@ def wk_rows(cat):
         if g and g != last_group and g != title and g != prev_name:
             blocks[-1].append(f'<li class="wk-row wk-grp"><p class="wk-name">{esc(g)}</p></li>')
         last_group = g
-        yr = f'<span class="yr">{e["jahrgang"]}</span>' if e.get("jahrgang") else ""
+        yr = f'<span class="yr">{e["jahrgang"]}</span> ' if e.get("jahrgang") else ""
         name = esc(e["name"]).replace(" (NEU)", ' <span class="wk-tag">neu</span>')
         if sub or lead_dots:
             name = '<span class="dots" aria-hidden="true">…</span> ' + name
@@ -462,21 +504,22 @@ def wk_rows(cat):
             meta.append(fmt_menge(e["menge"]))
         if e.get("beschreibung"):
             meta.append(e["beschreibung"])
-        meta_html = f'<span class="wk-meta">{esc(" · ".join(meta))}</span>' if meta else ""
+        meta_html = f' <span class="wk-meta">{esc(" · ".join(meta))}</span>' if meta else ""
         cells = []
         if single:
             val = fmt_price(pr[idx]) if idx is not None else None
             cells.append(f'<span class="wk-p num">{val}</span>' if val
-                         else '<span class="wk-p na" aria-hidden="true">–</span>')
+                         else '<span class="wk-p na"></span>')
         else:
             for i, s_ in enumerate(sp):
                 val = fmt_price(pr[i]) if i < len(pr) else None
                 lab, men = col_label(s_, short=True)
                 labtxt = " ".join(x for x in (lab, men) if x)
                 if val:
-                    cells.append(f'<span class="wk-p num"><span class="lab">{esc(labtxt)}</span>{val}</span>')
+                    cells.append(f' <span class="wk-p num"><span class="lab">{esc(labtxt)}'
+                                 f'<span class="sr-only">: </span></span>{val}</span>')
                 else:
-                    cells.append('<span class="wk-p na" aria-hidden="true">–</span>')
+                    cells.append('<span class="wk-p na"></span>')
         cls = "wk-row wk-sub" if sub else "wk-row"
         blocks[-1].append(f'<li class="{cls}"><p class="wk-name">{yr}{name}{hint}{meta_html}</p>'
                           f'<div class="wk-prices">{"".join(cells)}</div></li>')
@@ -532,23 +575,25 @@ CHIP_SHORT = {"schaumweine": "Schaumwein", "weissweine": "Weißwein", "roseweine
 # ------------------------------------------------------------------
 def page_index():
     foot = f"""
-        <div class="hero-meta"><span class="today" data-today></span><span>{STREET} · Kiel</span></div>
-        <div class="btns"><a class="btn btn--light" href="weinkarte.html">Zur Weinkarte</a>{tel_btn("btn btn--ghost", "Tisch reservieren")}</div>"""
+        <div class="hero-meta"><span class="today" data-today></span> <span>{STREET} · Kiel</span></div>
+        <div class="btns"><a class="btn btn--light" href="weinkarte.html">Zur Weinkarte</a></div>"""
     out = head("index.html",
-               "DIE DREI · Weinbar in Kiel – Jeder Schluck erzählt eine Geschichte",
-               "DIE DREI, Deine Weinbar in Kiel am Knooper Weg 189: sorgfältig ausgewählte Weine "
-               "von Klassikern bis zu verborgenen Schätzen, Brotzeit und Flammkuchen. Mi–So ab 17 Uhr.",
-               ld=True, preload_hero="teller-glas")
+               "DIE DREI – Deine Weinbar in Kiel",
+               "Deine Weinbar in Kiel am Knooper Weg 189: Weine von Klassikern bis zu verborgenen "
+               "Schätzen, dazu Brotzeit und Flammkuchen. Mi–So ab 17 Uhr.",
+               ld=True, preload=[("gaeste-sekt", "100vw", MOBILE_MQ), ("teller-glas", "100vw", DESKTOP_MQ)])
     out += header("index.html")
     out += hero("teller-glas", "Weinbar · Kiel · seit 2024",
-                "Jeder Schluck erzählt <em>eine Geschichte.</em>", pos="50% 34%", foot=foot)
+                "Jeder Schluck erzählt <em>eine Geschichte.</em>", pos="50% 34%", foot=foot,
+                mobile="gaeste-sekt", mpos="22% 40%",
+                alt="Käseplatte und Weingläser an einem Tisch der Weinbar DIE DREI")
     out += f"""
 <section class="sec">
   <div class="wrap intro">
     <div class="intro-aside">
       <p class="lbl rv">Willkommen</p>
       <div class="line-h"></div>
-      <p class="award rv" data-d="1"><span>Falstaff</span>Weinangebot 44/50 Punkte</p>
+      <p class="award rv" data-d="1"><span>Falstaff</span> Weinangebot 44/50 Punkte</p>
     </div>
     <div class="intro-body">
       <h2 class="d2 split">Wo sich Lebensfreude und die Faszination für Wein <em>vereinen.</em></h2>
@@ -557,7 +602,7 @@ def page_index():
       <p class="rv" data-d="2">Bei uns erlebst Du die Vielfalt des Weins – von klassischen Rebsorten bis zu
       verborgenen Schätzen kleiner Winzer. Jeder Schluck spiegelt sein Terroir und die Leidenschaft der Winzer
       wider. Lass Dich auf eine Reise durch die Welt der Weine mitnehmen.</p>
-      <p class="sig rv" data-d="3">Dein Team von DIE DREI<span>Wo Wein und Kultur zusammenfließen.</span></p>
+      <p class="sig rv" data-d="3">Dein Team von DIE DREI <span>Wo Wein und Kultur zusammenfließen.</span></p>
     </div>
   </div>
 </section>
@@ -574,24 +619,24 @@ def page_index():
     </div>
     <div class="tiles">
       <article class="tile">
-        {figure("raum-sofa", "(max-width: 880px) 100vw, 30vw", pos="62% 50%")}
-        <p class="t-num rv">01</p>
+        {figure("raum-sofa", TILE_SIZES, pos="62% 50%")}
+        <p class="t-num rv" aria-hidden="true">01</p>
         <h3 class="rv">Die Bar</h3>
         <p class="rv" data-d="1">Einladend, gemütlich und unvergesslich: gemütliche Räume, stimmungsvolle
         Musik und eine liebevolle Einrichtung.</p>
         {btn_line("bar.html", "Die Bar entdecken", 2)}
       </article>
       <article class="tile">
-        {figure("weinkuehlschrank", "(max-width: 880px) 100vw, 30vw", pos="50% 40%")}
-        <p class="t-num rv">02</p>
+        {figure("weinkuehlschrank", TILE_SIZES, pos="50% 40%")}
+        <p class="t-num rv" aria-hidden="true">02</p>
         <h3 class="rv">Die Weinkarte</h3>
         <p class="rv" data-d="1">Von Klassikern bis zu verborgenen Schätzen – sorgfältig ausgewählt von
         unserem erfahrenen Sommelier, im Glas oder als Flasche.</p>
         {btn_line("weinkarte.html", "Zur Weinkarte", 2)}
       </article>
       <article class="tile">
-        {figure("kaeseplatte", "(max-width: 880px) 100vw, 30vw", pos="50% 62%")}
-        <p class="t-num rv">03</p>
+        {figure("kaeseplatte", TILE_SIZES, pos="50% 62%")}
+        <p class="t-num rv" aria-hidden="true">03</p>
         <h3 class="rv">Brotzeit</h3>
         <p class="rv" data-d="1">Für den kleinen Hunger: Käse allerlei mit Brot und Dip, Flammkuchen
         und mehr – genau das Richtige zum Wein.</p>
@@ -651,6 +696,12 @@ def page_index():
     return out
 
 
+TILE_SIZES = "(max-width: 639px) 100vw, (max-width: 1320px) 29vw, 370px"
+GAL_P = "(max-width: 760px) 46vw, (max-width: 1320px) 21vw, 285px"
+GAL_W = "(max-width: 760px) 92vw, (max-width: 1320px) 42vw, 590px"
+# hohes Querformat-Motiv im 2-Zeilen-Slot: sichtbare Breite × (1920/1280) = gerenderte Bildbreite
+GAL_T = "(max-width: 760px) 170vw, (max-width: 1320px) 82vw, 1100px"
+SR_SIZES = "(max-width: 639px) 100vw, (max-width: 1320px) 46vw, 640px"
 MQ = "".join(f"<span>{w}</span>" for w in ("Weißwein", "Rotwein", "Roséwein", "Champagner", "Prosecco"))
 
 
@@ -659,29 +710,30 @@ def voices():
     out = f"""
       <figure class="voice voice--lead rv">
         <blockquote><p>{lead[1]}</p></blockquote>
-        <figcaption><b>{lead[0]}</b><span>via Google Rezensionen</span></figcaption>
+        <figcaption><b>{lead[0]}</b> <span>via Google Rezensionen</span></figcaption>
       </figure>"""
     for i, (n, q) in enumerate(REVIEWS[1:], 1):
         out += f"""
       <figure class="voice rv" data-d="{i}">
         <blockquote><p>{q}</p></blockquote>
-        <figcaption><b>{n}</b><span>via Google Rezensionen</span></figcaption>
+        <figcaption><b>{n}</b> <span>via Google Rezensionen</span></figcaption>
       </figure>"""
     return out
 
 
 def page_bar():
     out = head("bar.html",
-               "Die Bar · DIE DREI Weinbar Kiel – einladend, gemütlich, unvergesslich",
-               "Gemütliche Räume, stimmungsvolle Musik und liebevolle Einrichtung: die Weinbar DIE DREI "
-               "am Knooper Weg 189 in Kiel – seit 2024. Dazu Brotzeit und Flammkuchen.",
-               preload_hero="raum-panorama")
+               "Die Bar – DIE DREI Weinbar Kiel",
+               "Gemütliche Räume, stimmungsvolle Musik, liebevolle Einrichtung: die Weinbar DIE DREI am "
+               "Knooper Weg 189 in Kiel – seit 2024. Dazu Brotzeit und Flammkuchen.",
+               preload=[("raum-lampen", "100vw", MOBILE_MQ), ("raum-panorama", "100vw", DESKTOP_MQ)])
     out += header("bar.html")
     out += hero("raum-panorama", "Die Bar",
                 "Einladend, gemütlich <em>und unvergesslich.</em>",
                 lead="Bei uns steht der Genuss im Vordergrund – ob Du einen langen Tag ausklingen lässt "
                      "oder einen besonderen Abend suchst.",
-                page=True, pos="50% 55%")
+                page=True, pos="50% 55%", mobile="raum-lampen", mpos="40% 50%",
+                alt="Gastraum der Weinbar DIE DREI mit orangefarbenen Wänden, Hängeleuchten und Weinregalen")
     out += f"""
 <section class="sec">
   <div class="wrap intro">
@@ -706,19 +758,20 @@ def page_bar():
 <section class="sec-tight" style="padding-top:0">
   <div class="wrap">
     <div class="gallery">
-      {figure("tresen-fenster", "(max-width: 760px) 50vw, 24vw")}
-      {figure("nische-blau", "(max-width: 760px) 50vw, 24vw", d=1)}
-      {figure("raum-sofa", "(max-width: 760px) 100vw, 48vw", cls="g-wide", d=2)}
-      {figure("teller-tisch", "(max-width: 760px) 100vw, 48vw", cls="g-wide", pos="50% 40%")}
-      {figure("gaeste-sekt", "(max-width: 760px) 50vw, 24vw", d=1)}
-      {figure("zitronen-korken", "(max-width: 760px) 50vw, 24vw", d=2)}
+      {figure("rose-flaschen", GAL_T, cls="g-tall", pos="38% 50%")}
+      {figure("nische-blau", GAL_P, d=1)}
+      {figure("bar-detail", GAL_P, d=2)}
+      {figure("tresen", GAL_P, d=3)}
+      {figure("zitronen-korken", GAL_P, d=1)}
+      {figure("spiegel-raum", GAL_P, d=2)}
+      {figure("dip-cracker", GAL_P, d=3)}
     </div>
   </div>
 </section>
 
 <section class="sec sec-blush">
   <div class="wrap split-row">
-    {figure("raum-weinschrank", "(max-width: 880px) 100vw, 55vw", cls="sr-media tall", plx="0.04")}
+    {figure("raum-weinschrank", SR_SIZES, cls="sr-media tall", plx="0.04")}
     <div class="sr-body">
       <p class="lbl rv">Unsere Weine</p>
       <h2 class="d2 split">Von Kennern <em>für Genießer.</em></h2>
@@ -732,28 +785,22 @@ def page_bar():
 </section>
 
 <section class="sec sec-berry">
-  <div class="wrap intro">
-    <div class="intro-aside">
-      <p class="lbl rv">Feiern bei uns</p>
-      <div class="line-h"></div>
-    </div>
-    <div class="intro-body">
-      <h2 class="d2 split">Du planst eine <em>größere Feier?</em></h2>
-      <p class="lead rv" data-d="1">Dann ruf uns an – wir freuen uns auf Deine telefonische Reservierung
-      und besprechen alles Weitere persönlich.</p>
-      <div class="btns rv" data-d="2">{tel_btn("btn btn--light", TEL_TXT)}<a class="btn btn--ghost" href="besuch.html">Besuch planen</a></div>
-    </div>
+  <div class="wrap statement">
+    <p class="lbl rv">Feiern bei uns</p>
+    <h2 class="d2 split" style="margin-top:1.2rem">Du planst eine <em>größere Feier?</em></h2>
+    <p class="lead rv" data-d="1">Dann freuen wir uns auf Deinen Anruf.</p>
+    <div class="btns btns--center rv" data-d="2">{tel_btn("btn btn--light", TEL_TXT)}<a class="btn btn--ghost" href="besuch.html">Besuch planen</a></div>
   </div>
 </section>
 
 <section class="sec" id="brotzeit">
   <div class="wrap split-row flip">
-    {figure("flammkuchen", "(max-width: 880px) 100vw, 55vw", cls="sr-media square", pos="50% 70%", plx="0.04")}
+    {figure("flammkuchen", SR_SIZES, cls="sr-media square", pos="50% 70%", plx="0.04")}
     <div class="sr-body">
       <p class="lbl rv">Brotzeit &amp; Kleinigkeiten</p>
       <h2 class="d2 split">Für den <em>kleinen Hunger.</em></h2>
-      <p class="rv" data-d="1">Zum Wein gibt es Brotzeit mit Käse und Schinken, frischen Flammkuchen und
-      ein paar feine Kleinigkeiten.</p>
+      <p class="rv" data-d="1">Zum Wein gibt es Brotzeit mit Käse und Schinken, Flammkuchen und weitere
+      Kleinigkeiten.</p>
       <div class="rv" data-d="2" style="width:100%">{brotzeit_teaser()}</div>
       <p class="note rv" data-d="3">Auszug aus unserer Karte, Stand {STAND}. Preise laut aktueller Karte vor Ort.</p>
       {btn_line("weinkarte.html#" + BROTZEIT_ID, "Ganze Karte ansehen", 3)}
@@ -767,12 +814,12 @@ def page_bar():
 
 def page_besuch():
     foot = f"""
-        <div class="hero-meta"><span class="today" data-today></span><span>{STREET} · {ZIP_CITY}</span></div>"""
+        <div class="hero-meta"><span class="today" data-today></span> <span>{STREET} · {ZIP_CITY}</span></div>"""
     out = head("besuch.html",
-               "Besuch & Reservierung · DIE DREI Weinbar Kiel – Öffnungszeiten & Anfahrt",
-               "Öffnungszeiten, Adresse und telefonische Reservierung der Weinbar DIE DREI: Knooper Weg 189, "
-               "24118 Kiel. Mittwoch bis Sonntag 17–23 Uhr, Montag und Dienstag Ruhetag.",
-               ld=True, preload_hero="eingang-terrasse", hero_sizes="(max-width: 880px) 100vw, 50vw")
+               "Öffnungszeiten & Anfahrt – DIE DREI Weinbar Kiel",
+               "Öffnungszeiten, Adresse und telefonische Reservierung: DIE DREI, Knooper Weg 189, 24118 Kiel. "
+               "Mi–So 17–23 Uhr, Mo und Di Ruhetag.",
+               ld=True, preload=[("eingang-terrasse", SPLIT_SIZES, None)])
     out += header("besuch.html")
     out += hero("eingang-terrasse", "Besuch",
                 "Schön, dass Du <em>vorbeikommst.</em>", split=True, foot=foot)
@@ -807,7 +854,7 @@ def page_besuch():
     </div>
     <div class="rv" data-d="2" style="display:flex;flex-direction:column;gap:1.4rem;align-items:flex-start;padding-top:.4rem">
       <a class="phone-xl num" href="tel:{TEL}">{TEL_TXT}</a>
-      <p>Reservierungen und Anfragen für Feiern nehmen wir telefonisch entgegen – zu unseren Öffnungszeiten.</p>
+      <p>Reservierungen und Anfragen für Feiern nehmen wir telefonisch entgegen.</p>
       {tel_btn("btn btn--light", "Jetzt anrufen")}
     </div>
   </div>
@@ -815,7 +862,7 @@ def page_besuch():
 
 <section class="sec">
   <div class="wrap split-row">
-    {figure("tresen-fenster", "(max-width: 880px) 100vw, 55vw", cls="sr-media", plx="0.04")}
+    {figure("tresen-fenster", SR_SIZES, cls="sr-media", plx="0.04")}
     <div class="sr-body">
       <p class="lbl rv">Anfahrt</p>
       <h2 class="d2 split">So findest Du <em>zu uns.</em></h2>
@@ -880,8 +927,8 @@ def brotzeit_teaser():
             continue
         price = fmt_price((e.get("preise") or [None])[0])
         sub = sub or e.get("beschreibung") or ""
-        sub_html = f'<span class="m-sub">{esc(sub)}</span>' if sub else ""
-        rows += (f'\n        <li><span class="m-name">{esc(label or e["name"])}</span>'
+        sub_html = f' <span class="m-sub">{esc(sub)}</span>' if sub else ""
+        rows += (f'\n        <li><span class="m-name">{esc(label or e["name"])}</span> '
                  f'<span class="m-price">{price}</span>{sub_html}</li>')
     return f'<ul class="menu-list">{rows}\n      </ul>'
 
@@ -899,10 +946,10 @@ def _ausser_haus_note():
 
 def page_weinkarte():
     out = head("weinkarte.html",
-               "Weinkarte · DIE DREI Weinbar Kiel – Schaumwein, Weiß, Rosé, Rot & Brotzeit",
-               "Die komplette Karte der Weinbar DIE DREI in Kiel: Schaumweine, Weiß-, Rosé-, Rot- und "
-               f"Süßweine im Glas und als Flasche, dazu Brotzeit, Flammkuchen und Getränke. Stand {WK['stand']}.",
-               preload_hero="sauternes-kiste", hero_sizes="(max-width: 880px) 100vw, 50vw")
+               "Weinkarte – DIE DREI Weinbar Kiel",
+               "Die Karte der Weinbar DIE DREI in Kiel: Schaum-, Weiß-, Rosé-, Rot- und Süßweine im Glas "
+               f"und als Flasche, dazu Brotzeit und Flammkuchen. Stand {WK['stand']}.",
+               preload=[("sauternes-kiste", SPLIT_SIZES, None)])
     out += header("weinkarte.html")
     out += hero("sauternes-kiste", "Unsere Weinkarte",
                 "Von Klassikern bis zu <em>verborgenen Schätzen.</em>",
@@ -921,7 +968,7 @@ def page_weinkarte():
     drinks = "".join(wk_cat(CATS[i]) for i in DRINK_IDS)
     out += f"""
 <section class="sec">
-  <div class="wrap wk-intro">
+  <div class="wrap wk-intro wk-measure">
     <div>
       <p class="lbl rv">Die Karte</p>
       <h2 class="d2 split" style="margin-top:1.1rem">Finde Deinen <em>persönlichen Favoriten.</em></h2>
@@ -930,7 +977,7 @@ def page_weinkarte():
       Lieblingsweine.</p>
     </div>
     <div class="wk-stand rv" data-d="2">
-      <p class="award"><span>Falstaff</span>Weinangebot 44/50 Punkte</p>
+      <p class="award"><span>Falstaff</span> Weinangebot 44/50 Punkte</p>
       <p>Stand {WK['stand']} – Preise laut aktueller Karte vor Ort.</p>
       <a class="btn" href="{PDF}" target="_blank" rel="noopener" type="application/pdf">{DOWN}Karte als PDF</a>{ah}
     </div>
@@ -941,7 +988,7 @@ def page_weinkarte():
   <div class="wk-chips">{chips}</div>
 </nav>
 
-<div class="wrap wk-body">
+<div class="wrap wk-body wk-measure">
   <div class="wk-group" id="weine">
     <p class="lbl rv">Weine &amp; Schaumweine</p>
     <h2 class="d2 split">Im Glas <em>oder als Flasche.</em></h2>{wines}
@@ -957,7 +1004,7 @@ def page_weinkarte():
   <div class="wk-foot sec-tight" style="padding-bottom:var(--sec)">
     <div class="line-h"></div>
     <div class="wk-end">
-      <p class="rv">Stand {WK['stand']} – Preise laut aktueller Karte vor Ort. Alle Preise in Euro inkl. MwSt.
+      <p class="rv">Stand {WK['stand']} – Preise laut aktueller Karte vor Ort. Alle Preise in Euro.
       [PLATZHALTER: Hinweis zu Allergenen/Zusatzstoffen – liegt der Karte nicht bei]</p>
       <div class="btns rv" data-d="1"><a class="btn" href="{PDF}" target="_blank" rel="noopener" type="application/pdf">{DOWN}Karte als PDF</a>{tel_btn("btn btn--ghost")}</div>
     </div>
@@ -1017,16 +1064,12 @@ IMPRESSUM = f"""      <h2>Angaben gemäß § 5 DDG</h2>
 
       <h2>Bildnachweis</h2>
       <p>Fotos: [PLATZHALTER: Urheber/in bzw. Fotograf/in der Originalfotos]</p>
-
-      <p class="note" style="margin-top:2.5rem">Die Rechtsgrundlagen wurden gegenüber dem bisherigen Impressum
-      aktualisiert (§ 5 DDG statt § 5 TMG, § 18 Abs. 2 MStV statt § 55 Abs. 2 RStV).
-      [PLATZHALTER: rechtliche Prüfung von Impressum und Datenschutzerklärung vor Veröffentlichung]</p>
 """
 
 
 def page_impressum():
     body = IMPRESSUM_OVERRIDE or IMPRESSUM
-    return legal_page("impressum.html", "Impressum · DIE DREI Weinbar Kiel",
+    return legal_page("impressum.html", "Impressum – DIE DREI Weinbar Kiel",
                       "Impressum der DIE DREI GmbH & Co. KG, Knooper Weg 189, 24118 Kiel.",
                       "Rechtliches", "Impressum", body)
 
@@ -1043,10 +1086,73 @@ def page_datenschutz():
     # Dokumenttitel entfällt (steht bereits als H1 im Seitenkopf)
     frag = frag.replace('<section class="legal">', "<section>")
     frag = re.sub(r"(?s)^<section>\s*<h2>Datenschutzerklärung</h2>\s*", '<section class="legal-intro">\n  ', frag)
-    return legal_page("datenschutz.html", "Datenschutz · DIE DREI Weinbar Kiel",
+    return legal_page("datenschutz.html", "Datenschutz – DIE DREI Weinbar Kiel",
                       "Datenschutzerklärung der Website der Weinbar DIE DREI in Kiel – statische Seite "
                       "ohne Cookies, ohne Tracking, ohne Drittanbieter-Inhalte.",
                       "Rechtliches", "Datenschutz", frag)
+
+
+# ------------------------------------------------------------------
+# Relaunch: 404, robots.txt, sitemap.xml, .htaccess (Apache)
+# ------------------------------------------------------------------
+def absolutize(doc):
+    """404.html wird unter beliebigen Pfaden ausgeliefert → alle internen Pfade root-relativ."""
+    doc = re.sub(r'(?<=["\s,])(assets/|css/|js/)', r"/\1", doc)
+    doc = re.sub(r'href="(index|bar|weinkarte|besuch|impressum|datenschutz)\.html', r'href="/\1.html', doc)
+    return doc.replace('href="/index.html"', 'href="/"')
+
+
+def page_404():
+    out = head("404.html", "Seite nicht gefunden – DIE DREI Weinbar Kiel",
+               "Diese Seite gibt es nicht (mehr). Zur Startseite, Weinkarte oder zu den Öffnungszeiten "
+               "der Weinbar DIE DREI in Kiel.", light=True, robots="noindex, follow")
+    out = out.replace(f'<link rel="canonical" href="{BASE}404.html">\n', "")
+    out += header("")
+    out += page_head("Fehler 404", "Diese Seite gibt es <em>nicht (mehr).</em>",
+                     "Vielleicht hat sie sich beim Umzug der Website verirrt. Hier geht es weiter:")
+    out += """
+<section class="sec" style="padding-top:clamp(3rem,6vw,5rem)">
+  <div class="wrap">
+    <div class="btns rv">
+      <a class="btn" href="index.html">Zur Startseite</a>
+      <a class="btn btn--ghost" href="weinkarte.html">Weinkarte</a>
+      <a class="btn btn--ghost" href="besuch.html">Öffnungszeiten &amp; Anfahrt</a>
+    </div>
+  </div>
+</section>
+"""
+    out += footer()
+    return absolutize(out)
+
+
+SITEMAP_PAGES = ["index.html", "bar.html", "weinkarte.html", "besuch.html", "impressum.html", "datenschutz.html"]
+
+
+def extra_files():
+    import datetime
+    today = datetime.date.today().isoformat()
+    urls = "".join(
+        f"  <url><loc>{BASE}{'' if p == 'index.html' else p}</loc><lastmod>{today}</lastmod></url>\n"
+        for p in SITEMAP_PAGES)
+    return {
+        "robots.txt": f"User-agent: *\nAllow: /\n\nSitemap: {BASE}sitemap.xml\n",
+        "sitemap.xml": ('<?xml version="1.0" encoding="UTF-8"?>\n'
+                        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n"),
+        ".htaccess": """# DIE DREI – Relaunch (Apache). Bei anderem Hoster sinngemäß übertragen.
+AddDefaultCharset UTF-8
+ErrorDocument 404 /404.html
+
+# Alte WordPress-Adressen → neue Seiten (dauerhaft)
+RedirectMatch 301 ^/impressum/?$ /impressum.html
+RedirectMatch 301 ^/datenschutz/?$ /datenschutz.html
+RedirectMatch 301 ^/wp-content/uploads/2025/05/Karte-Webseite-07\\.05\\.2025\\.pdf$ /assets/weinkarte.pdf
+
+<IfModule mod_mime.c>
+  AddType image/webp .webp
+  AddType font/woff2 .woff2
+</IfModule>
+""",
+    }
 
 
 # ------------------------------------------------------------------
@@ -1059,6 +1165,7 @@ PAGES = {
     "besuch.html": page_besuch,
     "impressum.html": page_impressum,
     "datenschutz.html": page_datenschutz,
+    "404.html": page_404,
 }
 
 if __name__ == "__main__":
@@ -1068,3 +1175,7 @@ if __name__ == "__main__":
         with open(os.path.join(SITE, fname), "w", encoding="utf-8") as f:
             f.write(html_out)
         print(f"wrote {fname:18s} {len(html_out):7d} bytes")
+    for fname, content in extra_files().items():
+        with open(os.path.join(SITE, fname), "w", encoding="utf-8") as f:
+            f.write(content)
+        print(f"wrote {fname:18s} {len(content):7d} bytes")

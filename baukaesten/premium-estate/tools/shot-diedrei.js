@@ -19,7 +19,7 @@ const path = require('path');
 const SITE = path.resolve(process.argv[2]);
 const OUT = path.resolve(process.argv[3]);
 const PAGES = process.argv.slice(4).length ? process.argv.slice(4)
-  : ['index.html', 'bar.html', 'weinkarte.html', 'besuch.html', 'impressum.html', 'datenschutz.html'];
+  : ['index.html', 'bar.html', 'weinkarte.html', 'besuch.html', 'impressum.html', 'datenschutz.html', '404.html'];
 const DEV = process.env.DEV_ASSETS ? path.resolve(process.env.DEV_ASSETS) : null;
 const ONLY = process.env.ONLY || '';
 const SEG = process.env.SEG !== '0';
@@ -33,7 +33,7 @@ const MIME = { html: 'text/html; charset=utf-8', css: 'text/css', js: 'text/java
 const END_CSS = `
 html{scroll-behavior:auto!important}
 *,*::before,*::after{animation-play-state:paused!important}
-.rv,.split .w>span,.line-h{opacity:1!important;transform:none!important;transition:none!important}
+.rv,.split .w>span,.line-h,.rise{opacity:1!important;transform:none!important;transition:none!important}
 .rv-img{clip-path:none!important;transition:none!important}
 .rv-img img{transform:none!important;transition:none!important}
 .hero-media img{opacity:1!important;transform:none!important;transition:none!important}
@@ -43,6 +43,7 @@ html{scroll-behavior:auto!important}
 
 const VIEWPORTS = [
   { name: 'desktop', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 },
+  { name: 'tablet', viewport: { width: 834, height: 1194 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
   { name: 'mobile', viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
 ].filter(v => !ONLY || v.name === ONLY);
 
@@ -142,7 +143,7 @@ const devHits = new Set();
           }
         });
         return {
-          rv: [q('.rv.in,.rv-img.in,.line-h.in,.split.in'), q('.rv,.rv-img,.line-h,.split')],
+          rv: [q('.rv.in,.rv-img.in,.line-h.in,.split.in,.rise.in'), q('.rv,.rv-img,.line-h,.split,.rise')],
           hscroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
           wide: [...document.querySelectorAll('body *')].filter(e => { const r = e.getBoundingClientRect(); return r.right > window.innerWidth + 1 && getComputedStyle(e).position !== 'fixed' && !e.closest('.marquee,.wk-chips,.hero-media,.plx-in,.nav-overlay'); })
             .slice(0, 5).map(e => e.tagName.toLowerCase() + '.' + String(e.className).slice(0, 40) + ' r=' + Math.round(e.getBoundingClientRect().right)),
@@ -154,6 +155,21 @@ const devHits = new Set();
         };
       });
 
+      /* Hochskalierung: benötigte Gerätepixel (object-fit: cover) / echte Pixel der geladenen Datei.
+         naturalWidth ist bei srcset dichte-korrigiert → Datei separat dekodieren. */
+      info.upscale = await page.evaluate(async () => {
+        const out = [];
+        for (const im of document.images) {
+          const r = im.getBoundingClientRect();
+          if (!im.complete || !im.currentSrc || r.width < 3) continue;
+          const t = new Image(); t.src = im.currentSrc;
+          try { await t.decode(); } catch (e) { continue; }
+          const dpr = window.devicePixelRatio;
+          const f = Math.max(r.width * dpr / t.naturalWidth, r.height * dpr / t.naturalHeight);
+          out.push({ f: +f.toFixed(2), src: im.currentSrc.split('/').pop(), hero: !!im.closest('.hero') });
+        }
+        return out.sort((a, b) => b.f - a.f);
+      });
       await page.addStyleTag({ content: END_CSS });
       await page.waitForTimeout(300);
       const base = `${pg.replace('.html', '')}-${vp.name}`;
@@ -169,21 +185,31 @@ const devHits = new Set();
       }
       /* Mobil: Overlay-Menü öffnen, Screenshot, wieder schließen */
       if (vp.name === 'mobile' && pg === PAGES[0]) {
+        await page.evaluate(() => window.scrollTo(0, 0));
         await page.click('.menu-btn'); await page.waitForTimeout(1500);
+        const trap = [];
+        for (let i = 0; i < 8; i++) { await page.keyboard.press('Tab'); trap.push(await page.evaluate(() => (document.activeElement.textContent || document.activeElement.getAttribute('aria-label') || '').trim().slice(0, 14))); }
+        const inert = await page.evaluate(() => ['main', 'footer', '.skip'].map(s => document.querySelector(s).hasAttribute('inert')));
+        console.log('   menu focus cycle:', trap.join(' → '), '| inert main/footer/skip:', inert.join('/'));
         await page.screenshot({ path: path.join(OUT, `menu-mobile-open.png`) });
         const menuState = await page.evaluate(() => ({ expanded: document.querySelector('.menu-btn').getAttribute('aria-expanded'),
           vis: getComputedStyle(document.querySelector('.nav-overlay')).visibility }));
         await page.keyboard.press('Escape'); await page.waitForTimeout(900);
-        const closed = await page.evaluate(() => getComputedStyle(document.querySelector('.nav-overlay')).visibility);
+        const closed = await page.evaluate(() => getComputedStyle(document.querySelector('.nav-overlay')).visibility
+          + ', focus=' + (document.activeElement.className || document.activeElement.tagName)
+          + ', inert=' + document.querySelector('main').hasAttribute('inert'));
         console.log(`   menu: open aria-expanded=${menuState.expanded} visibility=${menuState.vis} → nach Esc ${closed}`);
       }
-      const line = `${vp.name.padEnd(7)} ${pg.padEnd(17)} reveals ${info.rv[0]}/${info.rv[1]}  js-err ${errors.length}  bad ${bad.length}  ext ${ext.length}  hscroll ${info.hscroll}  h ${info.h}  today "${info.today}" (${info.isToday})`;
+      const hero = info.upscale.find(u => u.hero);
+      const worst = info.upscale.filter(u => !u.hero && u.f > 1.3).slice(0, 3);
+      const line = `${vp.name.padEnd(7)} ${pg.padEnd(17)} reveals ${info.rv[0]}/${info.rv[1]}  hero ${hero ? hero.f + '× ' + hero.src : '–'}  js-err ${errors.length}  bad ${bad.length}  ext ${ext.length}  hscroll ${info.hscroll}  h ${info.h}  today "${info.today}" (${info.isToday})`;
       console.log(line);
       if (errors.length) console.log('   errors:', errors);
       if (bad.length) console.log('   bad:', bad);
       if (ext.length) console.log('   external:', ext);
       if (info.wide.length) console.log('   wider than viewport:', info.wide);
       if (info.contrast.length) console.log('   contrast:', info.contrast);
+      if (worst.length) console.log('   upscale > 1,3×:', worst);
       if (vp.name === 'desktop' && pg === PAGES[0]) console.log('   fonts loaded:', info.fonts);
       summary.push({ vp: vp.name, pg, rv: info.rv, errors: errors.length, bad: bad.length, ext: ext.length, hscroll: info.hscroll });
       await page.close();

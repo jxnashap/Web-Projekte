@@ -1,0 +1,13 @@
+# DIE DREI – Relaunch (Apache). Bei anderem Hoster sinngemäß übertragen.
+AddDefaultCharset UTF-8
+ErrorDocument 404 /404.html
+
+# Alte WordPress-Adressen → neue Seiten (dauerhaft)
+RedirectMatch 301 ^/impressum/?$ /impressum.html
+RedirectMatch 301 ^/datenschutz/?$ /datenschutz.html
+RedirectMatch 301 ^/wp-content/uploads/2025/05/Karte-Webseite-07\.05\.2025\.pdf$ /assets/weinkarte.pdf
+
+<IfModule mod_mime.c>
+  AddType image/webp .webp
+  AddType font/woff2 .woff2
+</IfModule>

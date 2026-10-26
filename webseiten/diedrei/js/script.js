@@ -21,34 +21,53 @@
   function arrive() {
     if (document.body.classList.contains('loaded')) return;
     document.body.classList.add('loaded');
-    document.querySelectorAll('.hero .split,.hero .rv,.hero .line-h,.page-head .split,.page-head .rv')
+    document.querySelectorAll('.hero .split,.hero .rv,.hero .rise,.hero .line-h,.page-head .split,.page-head .rv')
       .forEach(function (el) { el.classList.add('in'); if (io) io.unobserve(el); });
   }
 
-  /* ---------- Overlay-Menü ---------- */
+  /* ---------- Overlay-Menü (mobil) als modaler Dialog ----------
+     role="dialog" aria-modal="true" steht im HTML. Beim Öffnen werden main,
+     footer und Skip-Link per inert gesperrt, Tab zirkuliert zwischen
+     Menü-Button und Overlay-Links; beim Schließen Fokus zurück zum Button. */
   var menuBtn = document.querySelector('.menu-btn');
-  if (menuBtn) {
-    var navLinks = document.querySelectorAll('.nav-list a');
+  var overlay = document.getElementById('nav-overlay');
+  if (menuBtn && overlay) {
+    var navLinks = overlay.querySelectorAll('.nav-list a');
+    var outside = document.querySelectorAll('main, footer, .skip');
     var stagger = function (on) {
       navLinks.forEach(function (a, i) {
         a.style.transitionDelay = on ? (0.12 + i * 0.06) + 's' : '0s';
       });
     };
-    var setOpen = function (open) {
+    var trapItems = function () {
+      return [menuBtn].concat(Array.prototype.slice.call(overlay.querySelectorAll('a[href],button')));
+    };
+    var isOpen = function () { return document.body.classList.contains('nav-open'); };
+    var setOpen = function (open, restoreFocus) {
       document.body.classList.toggle('nav-open', open);
       menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
       menuBtn.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+      outside.forEach(function (el) {
+        if (open) { el.setAttribute('inert', ''); } else { el.removeAttribute('inert'); }
+      });
       stagger(open);
+      if (open && navLinks[0]) setTimeout(function () { navLinks[0].focus(); }, 60);
+      if (!open && restoreFocus) menuBtn.focus();
     };
-    menuBtn.addEventListener('click', function () {
-      setOpen(!document.body.classList.contains('nav-open'));
-    });
+    menuBtn.addEventListener('click', function () { setOpen(!isOpen(), true); });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && document.body.classList.contains('nav-open')) { setOpen(false); menuBtn.focus(); }
+      if (!isOpen()) return;
+      if (e.key === 'Escape') { e.preventDefault(); setOpen(false, true); return; }
+      if (e.key === 'Tab') {
+        var items = trapItems(), i = items.indexOf(document.activeElement);
+        if (i === -1) { e.preventDefault(); items[0].focus(); return; }
+        var next = e.shiftKey ? (i - 1 + items.length) % items.length : (i + 1) % items.length;
+        e.preventDefault(); items[next].focus();
+      }
     });
-    navLinks.forEach(function (a) { a.addEventListener('click', function () { setOpen(false); }); });
+    navLinks.forEach(function (a) { a.addEventListener('click', function () { setOpen(false, false); }); });
     window.addEventListener('resize', function () {
-      if (window.innerWidth > 880 && document.body.classList.contains('nav-open')) setOpen(false);
+      if (window.innerWidth > 880 && isOpen()) setOpen(false, false);
     }, { passive: true });
   }
 
@@ -75,7 +94,7 @@
     });
   }
 
-  var RV = '.rv,.rv-img,.line-h,.split';
+  var RV = '.rv,.rv-img,.line-h,.split,.rise';
   var io = null;
   if (prm || !('IntersectionObserver' in window)) {
     document.querySelectorAll(RV).forEach(function (el) { el.classList.add('in'); });
@@ -95,11 +114,9 @@
     document.querySelectorAll(RV).forEach(function (el) { io.observe(el); });
   }
 
-  if (document.readyState === 'complete') requestAnimationFrame(arrive);
-  else {
-    window.addEventListener('load', function () { requestAnimationFrame(arrive); });
-    setTimeout(arrive, 900); // spätestens dann, auch wenn Bilder noch laden
-  }
+  /* Ankunft sofort (Skript ist defer → DOM steht): Hero-Bild ist von Beginn an sichtbar
+     (LCP), nur die leichte Skalierung und die Text-Reveals laufen an. */
+  requestAnimationFrame(arrive);
 
   /* ============================================================
      LERP-ENGINE — ein rAF-Loop; Werte laufen mit Nachlauf nach.
@@ -132,7 +149,9 @@
   }, 1);
 
   /* Parallax — sehr dezent: Faktor = Anteil der Viewport-Höhe (≤ 0.06) */
+  var heroPlx = window.matchMedia('(min-width: 1101px) and (pointer: fine)').matches; // nur dort hat .hero-media Spielraum
   if (!prm) document.querySelectorAll('[data-plx]').forEach(function (el) {
+    if (el.classList.contains('hero-media') && !heroPlx) return;
     var f = Math.min(parseFloat(el.getAttribute('data-plx')) || 0.04, 0.06);
     el.classList.add('plx');
     lerpItem(function () {

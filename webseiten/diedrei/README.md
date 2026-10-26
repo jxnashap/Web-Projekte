@@ -18,7 +18,7 @@ Quelle der Inhalte: diedreibar.de (Texte, Fotos, Logo, Weinkarte-PDF vom
   langsames Laufband „Weißwein · Rotwein · Roséwein · Champagner · Prosecco“,
   dezentes Parallax. Kein Preloader, keine Cursor-Effekte. `prefers-reduced-motion`
   wird beachtet, ohne JavaScript ist alles sichtbar.
-- **Logo:** Original-Wortmarke, als SVG nachgezeichnet (weiß / Beere / schwarz).
+- **Logo:** Original-Wortmarke, als SVG nachgezeichnet (weiß / Beere).
 
 ## Seiten
 
@@ -29,15 +29,26 @@ Quelle der Inhalte: diedreibar.de (Texte, Fotos, Logo, Weinkarte-PDF vom
 | `weinkarte.html` | komplette Karte (17 Kategorien, 115 Einträge) mit Sprungnavigation und PDF |
 | `besuch.html` | Zeiten (heute markiert) · Adresse · Reservierung · Anfahrt als Link |
 | `impressum.html` / `datenschutz.html` | Rechtstexte (Datenschutz als Entwurf) |
+| `404.html` | Fehlerseite im Seitendesign (`noindex`, root-relative Pfade) |
 
 ## Technik
 
 - Generator: `baukaesten/premium-estate/generatoren/build_diedrei.py`
-  (Daten: `generatoren/diedrei-daten/`)
-- QA: `baukaesten/premium-estate/tools/shot-diedrei.js` (Desktop + Mobile,
-  Reveal-Zählung, Kontrast, Menü, Öffnungszeiten-Zustände)
-- Bilder: WebP in zwei Größen (`-s` 1000 px, `-l` Original), `srcset`/`sizes`
-- Gesamtgröße: siehe Auslieferung (Limit 10 MB)
+  (Daten: `generatoren/diedrei-daten/` – Weinkarte, Fakten, Datenschutz-Entwurf,
+  Bild-Index `img-index.json` mit Alt-Texten/Fokus). Erzeugt alle Seiten **und**
+  `404.html`, `robots.txt`, `sitemap.xml`, `.htaccess` – nie von Hand ändern.
+- QA: `baukaesten/premium-estate/tools/shot-diedrei.js` (Desktop 1440, Tablet 834,
+  Mobil 390; Reveal-Zählung, 404/externe Requests, Hochskalierung der Bilder,
+  Kontrast, Menü-Fokusfalle, Öffnungszeiten-Zustände)
+- Bilder: WebP in zwei Größen (`-s` 1000 px, `-l` Original), `srcset`/`sizes`.
+  Heros mit Art-Direction (`<picture>`): auf Telefonen ein Hochformat-Motiv,
+  sonst Querformat; Preload je Quelle mit derselben Media-Query.
+- **Relaunch / Server (Apache):** `.htaccess` leitet die alten WordPress-Adressen
+  per 301 um (`/impressum/` → `/impressum.html`, `/datenschutz/` → `/datenschutz.html`,
+  altes Weinkarten-PDF → `/assets/weinkarte.pdf`) und setzt `ErrorDocument 404 /404.html`.
+  Bei einem anderen Hoster (nginx, Netlify …) dieselben Regeln sinngemäß übertragen.
+  `robots.txt` verweist auf `sitemap.xml` (6 Seiten, https://diedreibar.de/…).
+- Gesamtgröße: rund 4,1 MB (Limit 10 MB), Auslieferung: `auslieferung/diedrei-website.zip`
 
 ## Vor dem Livegang klären
 

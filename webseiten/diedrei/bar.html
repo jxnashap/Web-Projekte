@@ -3,24 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Die Bar · DIE DREI Weinbar Kiel – einladend, gemütlich, unvergesslich</title>
-<meta name="description" content="Gemütliche Räume, stimmungsvolle Musik und liebevolle Einrichtung: die Weinbar DIE DREI am Knooper Weg 189 in Kiel – seit 2024. Dazu Brotzeit und Flammkuchen.">
+<title>Die Bar – DIE DREI Weinbar Kiel</title>
+<meta name="description" content="Gemütliche Räume, stimmungsvolle Musik, liebevolle Einrichtung: die Weinbar DIE DREI am Knooper Weg 189 in Kiel – seit 2024. Dazu Brotzeit und Flammkuchen.">
 <link rel="canonical" href="https://diedreibar.de/bar.html">
 <meta name="theme-color" content="#5B0041">
 <meta name="robots" content="index, follow">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
 <meta property="og:site_name" content="DIE DREI · Weinbar · Kiel">
-<meta property="og:title" content="Die Bar · DIE DREI Weinbar Kiel – einladend, gemütlich, unvergesslich">
-<meta property="og:description" content="Gemütliche Räume, stimmungsvolle Musik und liebevolle Einrichtung: die Weinbar DIE DREI am Knooper Weg 189 in Kiel – seit 2024. Dazu Brotzeit und Flammkuchen.">
+<meta property="og:title" content="Die Bar – DIE DREI Weinbar Kiel">
+<meta property="og:description" content="Gemütliche Räume, stimmungsvolle Musik, liebevolle Einrichtung: die Weinbar DIE DREI am Knooper Weg 189 in Kiel – seit 2024. Dazu Brotzeit und Flammkuchen.">
 <meta property="og:url" content="https://diedreibar.de/bar.html">
 <meta property="og:image" content="https://diedreibar.de/assets/brand/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="DIE DREI · Weinbar · Kiel">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Die Bar · DIE DREI Weinbar Kiel – einladend, gemütlich, unvergesslich">
-<meta name="twitter:description" content="Gemütliche Räume, stimmungsvolle Musik und liebevolle Einrichtung: die Weinbar DIE DREI am Knooper Weg 189 in Kiel – seit 2024. Dazu Brotzeit und Flammkuchen.">
+<meta name="twitter:title" content="Die Bar – DIE DREI Weinbar Kiel">
+<meta name="twitter:description" content="Gemütliche Räume, stimmungsvolle Musik, liebevolle Einrichtung: die Weinbar DIE DREI am Knooper Weg 189 in Kiel – seit 2024. Dazu Brotzeit und Flammkuchen.">
 <meta name="twitter:image" content="https://diedreibar.de/assets/brand/og.jpg">
 <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="assets/brand/favicon.ico" sizes="any">
@@ -28,7 +28,8 @@
 <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
 <link rel="preload" href="assets/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" as="image" href="assets/img/raum-panorama-l.webp" imagesrcset="assets/img/raum-panorama-s.webp 1000w, assets/img/raum-panorama-l.webp 1920w" imagesizes="100vw" fetchpriority="high">
+<link rel="preload" as="image" media="(max-width: 599px)" imagesrcset="assets/img/raum-lampen-s.webp 667w, assets/img/raum-lampen-l.webp 1067w" imagesizes="100vw" fetchpriority="high">
+<link rel="preload" as="image" media="(min-width: 600px)" imagesrcset="assets/img/raum-panorama-s.webp 1000w, assets/img/raum-panorama-l.webp 1920w" imagesizes="100vw" fetchpriority="high">
 <link rel="stylesheet" href="assets/fonts/fonts.css">
 <link rel="stylesheet" href="css/style.css">
 
@@ -50,12 +51,12 @@
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav-overlay" aria-label="Menü öffnen"><span class="mb-ico" aria-hidden="true"><i></i><i></i></span></button>
   </div>
 </header>
-<div class="nav-overlay" id="nav-overlay">
-  <nav class="nav-list" aria-label="Menü">
-    <a href="index.html"><i>01</i>Start</a>
-    <a href="bar.html" aria-current="page"><i>02</i>Die Bar</a>
-    <a href="weinkarte.html"><i>03</i>Weinkarte</a>
-    <a href="besuch.html"><i>04</i>Besuch</a>
+<div class="nav-overlay" id="nav-overlay" role="dialog" aria-modal="true" aria-label="Menü">
+  <nav class="nav-list" aria-label="Seiten">
+    <a href="index.html"><i aria-hidden="true">01</i>Start</a>
+    <a href="bar.html" aria-current="page"><i aria-hidden="true">02</i>Die Bar</a>
+    <a href="weinkarte.html"><i aria-hidden="true">03</i>Weinkarte</a>
+    <a href="besuch.html"><i aria-hidden="true">04</i>Besuch</a>
   </nav>
   <div class="nav-meta">
     <p><span class="today" data-today></span></p>
@@ -65,10 +66,10 @@
 </div>
 <main id="main">
 <section class="hero hero--page">
-  <div class="hero-media" data-plx="0.05"><img src="assets/img/raum-panorama-l.webp" srcset="assets/img/raum-panorama-s.webp 1000w, assets/img/raum-panorama-l.webp 1920w" sizes="100vw" width="1920" height="1280" alt="Gastraum mit orangefarbenen Wänden, vielen Glühbirnen-Pendelleuchten, runden Tischen mit dunklen Stühlen, blauer Sitzbank, Weinschrank und Weinfass; rechts die geöffnete Glastür" loading="eager" fetchpriority="high" decoding="async" style="object-position:50% 55%"></div>
+  <div class="hero-media" data-plx="0.05"><picture><source media="(max-width: 599px)" srcset="assets/img/raum-lampen-s.webp 667w, assets/img/raum-lampen-l.webp 1067w" sizes="100vw" width="1067" height="1600"><img src="assets/img/raum-panorama-l.webp" srcset="assets/img/raum-panorama-s.webp 1000w, assets/img/raum-panorama-l.webp 1920w" sizes="100vw" width="1920" height="1280" alt="Gastraum der Weinbar DIE DREI mit orangefarbenen Wänden, Hängeleuchten und Weinregalen" loading="eager" fetchpriority="high" decoding="async" style="--pos:50% 55%;--mpos:40% 50%"></picture></div>
   <div class="hero-inner wrap">
       <p class="lbl rv" data-d="1">Die Bar</p>
-      <h1 class="d1 split">Einladend, gemütlich <em>und unvergesslich.</em></h1>
+      <h1 class="d1 rise">Einladend, gemütlich <em>und unvergesslich.</em></h1>
       <p class="lead rv" data-d="2">Bei uns steht der Genuss im Vordergrund – ob Du einen langen Tag ausklingen lässt oder einen besonderen Abend suchst.</p>
   </div>
 </section>
@@ -96,19 +97,20 @@
 <section class="sec-tight" style="padding-top:0">
   <div class="wrap">
     <div class="gallery">
-      <figure class="rv-img "><img src="assets/img/tresen-fenster-l.webp" srcset="assets/img/tresen-fenster-s.webp 667w, assets/img/tresen-fenster-l.webp 1067w" sizes="(max-width: 760px) 50vw, 24vw" width="1067" height="1600" alt="Blick über den Tresen mit Windlicht und Blumenstrauß in den hellen Gastraum mit Fensterfront, blauer Sitzbank und Glühbirnen-Pendelleuchten" loading="lazy" decoding="async" style="object-position:center 55%"></figure>
-      <figure class="rv-img " data-d="1"><img src="assets/img/nische-blau-l.webp" srcset="assets/img/nische-blau-s.webp 667w, assets/img/nische-blau-l.webp 1067w" sizes="(max-width: 760px) 50vw, 24vw" width="1067" height="1600" alt="Sitznische mit dunkelblauer Polsterbank, rotem Kissen und kleinem runden Tisch vor orangefarbener Wand, im Vordergrund Zweige mit hängenden Glühbirnen" loading="lazy" decoding="async" style="object-position:60% 60%"></figure>
-      <figure class="rv-img g-wide" data-d="2"><img src="assets/img/raum-sofa-l.webp" srcset="assets/img/raum-sofa-s.webp 1000w, assets/img/raum-sofa-l.webp 1920w" sizes="(max-width: 760px) 100vw, 48vw" width="1920" height="1280" alt="Heller Bereich des Gastraums mit runden Tischen, dunklen Schalenstühlen, blauer Sitzbank am Fenster und Glühbirnen-Pendelleuchten; hinten der Blick in den orangefarbenen Bereich" loading="lazy" decoding="async"></figure>
-      <figure class="rv-img g-wide"><img src="assets/img/teller-tisch-l.webp" srcset="assets/img/teller-tisch-s.webp 1000w, assets/img/teller-tisch-l.webp 1920w" sizes="(max-width: 760px) 100vw, 48vw" width="1920" height="1280" alt="Brotzeitteller mit Käsewürfeln, Weintrauben, Oliven, kleinen Tomaten, Chips und Crackern sowie einem Schälchen Dip, daneben eine kupferfarbene Tischleuchte" loading="lazy" decoding="async" style="object-position:50% 40%"></figure>
-      <figure class="rv-img " data-d="1"><img src="assets/img/gaeste-sekt-l.webp" srcset="assets/img/gaeste-sekt-s.webp 667w, assets/img/gaeste-sekt-l.webp 1067w" sizes="(max-width: 760px) 50vw, 24vw" width="1067" height="1600" alt="Zwei Gäste am Tisch, davor zwei beschlagene Schaumweingläser und ein Brotzeitteller mit Käse, Weintrauben und Chips" loading="lazy" decoding="async"></figure>
-      <figure class="rv-img " data-d="2"><img src="assets/img/zitronen-korken-l.webp" srcset="assets/img/zitronen-korken-s.webp 667w, assets/img/zitronen-korken-l.webp 1067w" sizes="(max-width: 760px) 50vw, 24vw" width="1067" height="1600" alt="Zitrusfrüchte an einem Zweig über einer Schale mit Korken, im Hintergrund unscharf Flaschen vor orangefarbener Wand" loading="lazy" decoding="async" style="object-position:35% 40%"></figure>
+      <figure class="rv-img g-tall"><img src="assets/img/rose-flaschen-l.webp" srcset="assets/img/rose-flaschen-s.webp 1000w, assets/img/rose-flaschen-l.webp 1920w" sizes="(max-width: 760px) 170vw, (max-width: 1320px) 82vw, 1100px" width="1920" height="1280" alt="Drei Flaschen Roséwein in geriffeltem Glas und zwei Bierflaschen auf einem Schrank vor orangefarbener Wand, darüber eine leuchtende Pendelleuchte" loading="lazy" decoding="async" style="object-position:38% 50%"></figure>
+      <figure class="rv-img " data-d="1"><img src="assets/img/nische-blau-l.webp" srcset="assets/img/nische-blau-s.webp 667w, assets/img/nische-blau-l.webp 1067w" sizes="(max-width: 760px) 46vw, (max-width: 1320px) 21vw, 285px" width="1067" height="1600" alt="Sitznische mit dunkelblauer Polsterbank, rotem Kissen und kleinem runden Tisch vor orangefarbener Wand, im Vordergrund Zweige mit hängenden Glühbirnen" loading="lazy" decoding="async" style="object-position:60% 60%"></figure>
+      <figure class="rv-img " data-d="2"><img src="assets/img/bar-detail-l.webp" srcset="assets/img/bar-detail-s.webp 667w, assets/img/bar-detail-l.webp 1067w" sizes="(max-width: 760px) 46vw, (max-width: 1320px) 21vw, 285px" width="1067" height="1600" alt="Weinflaschen in verzinkten Kühleimern vor orangeroter Wand, darüber ein Zitrusbäumchen mit kleinen orangefarbenen Früchten" loading="lazy" decoding="async" style="object-position:center 55%"></figure>
+      <figure class="rv-img " data-d="3"><img src="assets/img/tresen-l.webp" srcset="assets/img/tresen-s.webp 667w, assets/img/tresen-l.webp 1067w" sizes="(max-width: 760px) 46vw, (max-width: 1320px) 21vw, 285px" width="1067" height="1600" alt="Der Tresen vor orangefarbener Wand mit Gläser- und Flaschenregalen, Blumen und Glühbirnen-Pendelleuchten unter einem Metallgitter an der Decke" loading="lazy" decoding="async" style="object-position:center 65%"></figure>
+      <figure class="rv-img " data-d="1"><img src="assets/img/zitronen-korken-l.webp" srcset="assets/img/zitronen-korken-s.webp 667w, assets/img/zitronen-korken-l.webp 1067w" sizes="(max-width: 760px) 46vw, (max-width: 1320px) 21vw, 285px" width="1067" height="1600" alt="Zitrusfrüchte an einem Zweig über einer Schale mit Korken, im Hintergrund unscharf Flaschen vor orangefarbener Wand" loading="lazy" decoding="async" style="object-position:35% 40%"></figure>
+      <figure class="rv-img " data-d="2"><img src="assets/img/spiegel-raum-l.webp" srcset="assets/img/spiegel-raum-s.webp 667w, assets/img/spiegel-raum-l.webp 1067w" sizes="(max-width: 760px) 46vw, (max-width: 1320px) 21vw, 285px" width="1067" height="1600" alt="Heller Gastraum mit dunklen Stühlen; in einem großen schwarzen Rahmen zeigt sich der orangefarbene Barbereich mit Glühbirnen-Leuchten und Flaschenregalen" loading="lazy" decoding="async" style="object-position:center 35%"></figure>
+      <figure class="rv-img " data-d="3"><img src="assets/img/dip-cracker-l.webp" srcset="assets/img/dip-cracker-s.webp 667w, assets/img/dip-cracker-l.webp 1067w" sizes="(max-width: 760px) 46vw, (max-width: 1320px) 21vw, 285px" width="1067" height="1600" alt="Ein Cracker wird in einen cremigen, rosafarbenen Dip getaucht, davor Weintrauben, Käsewürfel und Chips" loading="lazy" decoding="async" style="object-position:center 45%"></figure>
     </div>
   </div>
 </section>
 
 <section class="sec sec-blush">
   <div class="wrap split-row">
-    <figure class="rv-img sr-media tall"><div class="plx-in" data-plx="0.04"><img src="assets/img/raum-weinschrank-l.webp" srcset="assets/img/raum-weinschrank-s.webp 667w, assets/img/raum-weinschrank-l.webp 1067w" sizes="(max-width: 880px) 100vw, 55vw" width="1067" height="1600" alt="Gastraum mit orangefarbenen Wänden, Glühbirnen-Pendelleuchten, zwei verglasten Weinschränken, einem Weinfass und Flaschenregalen; vorn ein runder Tisch mit dunklen Stühlen" loading="lazy" decoding="async" style="object-position:center 60%"></div></figure>
+    <figure class="rv-img sr-media tall"><div class="plx-in" data-plx="0.04"><img src="assets/img/raum-weinschrank-l.webp" srcset="assets/img/raum-weinschrank-s.webp 667w, assets/img/raum-weinschrank-l.webp 1067w" sizes="(max-width: 639px) 100vw, (max-width: 1320px) 46vw, 640px" width="1067" height="1600" alt="Gastraum mit orangefarbenen Wänden, Glühbirnen-Pendelleuchten, zwei verglasten Weinschränken, einem Weinfass und Flaschenregalen; vorn ein runder Tisch mit dunklen Stühlen" loading="lazy" decoding="async" style="object-position:center 60%"></div></figure>
     <div class="sr-body">
       <p class="lbl rv">Unsere Weine</p>
       <h2 class="d2 split">Von Kennern <em>für Genießer.</em></h2>
@@ -122,34 +124,28 @@
 </section>
 
 <section class="sec sec-berry">
-  <div class="wrap intro">
-    <div class="intro-aside">
-      <p class="lbl rv">Feiern bei uns</p>
-      <div class="line-h"></div>
-    </div>
-    <div class="intro-body">
-      <h2 class="d2 split">Du planst eine <em>größere Feier?</em></h2>
-      <p class="lead rv" data-d="1">Dann ruf uns an – wir freuen uns auf Deine telefonische Reservierung
-      und besprechen alles Weitere persönlich.</p>
-      <div class="btns rv" data-d="2"><a class="btn btn--light" href="tel:+4943171978976"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h3.2l1.6 4.2-2.1 1.3a11 11 0 0 0 5.8 5.8l1.3-2.1L19 13.8V17a2 2 0 0 1-2.2 2A15.8 15.8 0 0 1 3 5.2 2 2 0 0 1 5 3z"/></svg>0431 / 71978976</a><a class="btn btn--ghost" href="besuch.html">Besuch planen</a></div>
-    </div>
+  <div class="wrap statement">
+    <p class="lbl rv">Feiern bei uns</p>
+    <h2 class="d2 split" style="margin-top:1.2rem">Du planst eine <em>größere Feier?</em></h2>
+    <p class="lead rv" data-d="1">Dann freuen wir uns auf Deinen Anruf.</p>
+    <div class="btns btns--center rv" data-d="2"><a class="btn btn--light" href="tel:+4943171978976"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h3.2l1.6 4.2-2.1 1.3a11 11 0 0 0 5.8 5.8l1.3-2.1L19 13.8V17a2 2 0 0 1-2.2 2A15.8 15.8 0 0 1 3 5.2 2 2 0 0 1 5 3z"/></svg>0431 / 71978976</a><a class="btn btn--ghost" href="besuch.html">Besuch planen</a></div>
   </div>
 </section>
 
 <section class="sec" id="brotzeit">
   <div class="wrap split-row flip">
-    <figure class="rv-img sr-media square"><div class="plx-in" data-plx="0.04"><img src="assets/img/flammkuchen-l.webp" srcset="assets/img/flammkuchen-s.webp 1000w, assets/img/flammkuchen-l.webp 1920w" sizes="(max-width: 880px) 100vw, 55vw" width="1920" height="1280" alt="Frisch gebackener Flammkuchen mit buntem Gemüse auf einem hellen Holzbrett, dahinter Salz- und Pfeffermühle und eine kupferfarbene Tischleuchte" loading="lazy" decoding="async" style="object-position:50% 70%"></div></figure>
+    <figure class="rv-img sr-media square"><div class="plx-in" data-plx="0.04"><img src="assets/img/flammkuchen-l.webp" srcset="assets/img/flammkuchen-s.webp 1000w, assets/img/flammkuchen-l.webp 1920w" sizes="(max-width: 639px) 100vw, (max-width: 1320px) 46vw, 640px" width="1920" height="1280" alt="Frisch gebackener Flammkuchen mit buntem Gemüse auf einem hellen Holzbrett, dahinter Salz- und Pfeffermühle und eine kupferfarbene Tischleuchte" loading="lazy" decoding="async" style="object-position:50% 70%"></div></figure>
     <div class="sr-body">
       <p class="lbl rv">Brotzeit &amp; Kleinigkeiten</p>
       <h2 class="d2 split">Für den <em>kleinen Hunger.</em></h2>
-      <p class="rv" data-d="1">Zum Wein gibt es Brotzeit mit Käse und Schinken, frischen Flammkuchen und
-      ein paar feine Kleinigkeiten.</p>
+      <p class="rv" data-d="1">Zum Wein gibt es Brotzeit mit Käse und Schinken, Flammkuchen und weitere
+      Kleinigkeiten.</p>
       <div class="rv" data-d="2" style="width:100%"><ul class="menu-list">
-        <li><span class="m-name">Käse allerlei</span><span class="m-price">16,50 €</span><span class="m-sub">mit Brot und Dip, für 2 Personen</span></li>
-        <li><span class="m-name">Käse allerlei mit Rinderschinken</span><span class="m-price">19,50 €</span><span class="m-sub">mit Brot und Dip, für 2 Personen</span></li>
-        <li><span class="m-name">Flammkuchen nach Nordischer Art</span><span class="m-price">10,90 €</span><span class="m-sub">mit Schmand, Lachs, Dill</span></li>
-        <li><span class="m-name">Flammkuchen – der Vegane</span><span class="m-price">12,90 €</span><span class="m-sub">mit verschiedenen Gemüsesorten</span></li>
-        <li><span class="m-name">Brotkorb</span><span class="m-price">6,50 €</span><span class="m-sub">verschiedene Brote mit Dip</span></li>
+        <li><span class="m-name">Käse allerlei</span> <span class="m-price">16,50 €</span> <span class="m-sub">mit Brot und Dip, für 2 Personen</span></li>
+        <li><span class="m-name">Käse allerlei mit Rinderschinken</span> <span class="m-price">19,50 €</span> <span class="m-sub">mit Brot und Dip, für 2 Personen</span></li>
+        <li><span class="m-name">Flammkuchen nach Nordischer Art</span> <span class="m-price">10,90 €</span> <span class="m-sub">mit Schmand, Lachs, Dill</span></li>
+        <li><span class="m-name">Flammkuchen – der Vegane</span> <span class="m-price">12,90 €</span> <span class="m-sub">mit verschiedenen Gemüsesorten</span></li>
+        <li><span class="m-name">Brotkorb</span> <span class="m-price">6,50 €</span> <span class="m-sub">verschiedene Brote mit Dip</span></li>
       </ul></div>
       <p class="note rv" data-d="3">Auszug aus unserer Karte, Stand 07.05.2025. Preise laut aktueller Karte vor Ort.</p>
       <a class="btn-line rv" data-d="3" href="weinkarte.html#brotzeit">Ganze Karte ansehen <svg viewBox="0 0 24 10" aria-hidden="true"><path d="M0 5h22M18 1l4 4-4 4"/></svg></a>
@@ -165,6 +161,15 @@
         <p class="d3">Jeder Schluck erzählt <em>eine Geschichte.</em></p>
       </div>
       <div class="foot-cols">
+        <nav class="foot-col" aria-label="Seiten im Fußbereich">
+          <p class="lbl">Seiten</p>
+          <ul>
+            <li><a href="index.html">Start</a></li>
+            <li><a href="bar.html">Die Bar</a></li>
+            <li><a href="weinkarte.html">Weinkarte</a></li>
+            <li><a href="besuch.html">Besuch</a></li>
+          </ul>
+        </nav>
         <div class="foot-col">
           <p class="lbl">Adresse</p>
           <p>DIE DREI Weinbar Kiel<br>Knooper Weg 189<br>24118 Kiel</p>
