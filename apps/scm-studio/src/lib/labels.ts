@@ -44,7 +44,7 @@ export const videoStatus = (k: string) => VIDEO_STATUS.find((s) => s.key === k) 
 
 export const EVENT_KINDS: Record<string, { label: string; tone: Tone }> = {
   dreh: { label: "Dreh", tone: "info" },
-  gespraech: { label: "Gespräch", tone: "neutral" },
+  gespraech: { label: "Gespräch", tone: "ok" },
   deadline: { label: "Abgabe", tone: "warn" },
   intern: { label: "Intern", tone: "neutral" },
 };

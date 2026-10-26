@@ -15,7 +15,7 @@ import { cn } from "@/lib/cn";
 import { num } from "@/lib/format";
 import { generateAction, saveGenerated, type GenState } from "@/lib/skripte/actions";
 import { BAUPLAN, FORMATS, LENGTHS, TONES, ZIELE, type GenResult, type ScriptDraft } from "@/lib/skripte/schema";
-import { useLeaveGuard } from "./use-leave-guard";
+import { useLeaveGuard } from "@/components/ui/use-leave-guard";
 
 type ClientOpt = { id: number; name: string; color: string };
 type VideoOpt = { id: number; title: string; clientId: number; format: string | null; scriptId: number | null };

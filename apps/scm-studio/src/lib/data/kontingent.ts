@@ -18,7 +18,8 @@ export async function getKontingente(month: string): Promise<Kontingent[]> {
   const clients = await db
     .select()
     .from(schema.clients)
-    .where(inArray(schema.clients.status, ["aktiv", "test"]));
+    // Testkunden haben kein Kontingent (Testvideos sind kostenlos)
+    .where(inArray(schema.clients.status, ["aktiv"]));
   const vids = await db
     .select({ clientId: schema.videos.clientId, status: schema.videos.status })
     .from(schema.videos)

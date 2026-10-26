@@ -34,9 +34,9 @@ export function LinkTabs({ items, className }: { items: TabItem[]; className?: s
 }
 
 /** Umschalter für Ansichten (Board/Liste/Kalender) als Links, im Stil des iOS-Segmented-Control. */
-export function Segmented({ items, className, label = "Ansicht" }: { items: TabItem[]; className?: string; label?: string }) {
+export function Segmented({ items, className, label = "Ansicht", stretch = false }: { items: TabItem[]; className?: string; label?: string; /** gleich breite Segmente über die volle Breite */ stretch?: boolean }) {
   return (
-    <nav className={cn("inline-flex rounded-[9px] bg-fill p-[2px]", className)} aria-label={label}>
+    <nav className={cn("inline-flex rounded-[9px] bg-fill p-[2px]", stretch && "flex w-full [&>a]:flex-1", className)} aria-label={label}>
       {items.map((t) => (
         <Link
           key={t.href}

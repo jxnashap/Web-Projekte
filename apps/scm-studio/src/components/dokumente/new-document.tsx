@@ -1,4 +1,6 @@
 "use client";
+// Formular "Neues Dokument": Kunde, dann je Art die nötigen Angaben. Beim Drehplan ist der nächste Drehtermin
+// samt Kunde vorausgewählt; wechselt der Kunde, springt der Termin auf dessen nächsten Dreh.
 import { useState } from "react";
 import { ActionForm } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
@@ -9,29 +11,49 @@ import { defaultEinwilligung, type DocKind } from "@/lib/dokumente/schema";
 import { EinwilligungFields } from "./forms";
 
 type Opt = { id: number; name: string };
-type Shoot = { id: number; clientId: number | null; day: string; label: string };
+export type Shoot = { id: number; clientId: number | null; day: string; label: string; past: boolean };
+
+const CREATE_LABEL: Record<DocKind, string> = { vertrag: "Vertrag anlegen", einwilligung: "Einwilligung anlegen", drehplan: "Drehplan anlegen", monatsbericht: "Bericht anlegen" };
 
 export function NewDocumentForm({
   kind,
   clients,
   defaultClientId,
+  defaultEventId,
+  defaultDay,
   shoots,
   defaultMonth,
   today,
+  consentIssues,
   action,
 }: {
   kind: DocKind;
   clients: Opt[];
   defaultClientId?: number;
+  defaultEventId?: number;
+  /** Drehtag aus dem Link, falls der Termin nicht in der Liste steht */
+  defaultDay?: string;
   shoots: Shoot[];
   defaultMonth: string;
   today: string;
+  /** Einwilligung: fehlende Angaben der verantwortlichen Stelle je Kunde bzw. für SCM (null = vollständig) */
+  consentIssues?: { byClient: Record<number, string | null>; scm: string | null };
   action: (prev: ActionState, fd: FormData) => Promise<ActionState>;
 }) {
-  const [clientId, setClientId] = useState<string>(defaultClientId ? String(defaultClientId) : "");
+  const nextShootOf = (cid: string) => shoots.find((s) => !s.past && (!cid || s.clientId === Number(cid)));
+  // Startwerte: Termin aus dem Link (Kalender), sonst der nächste kommende Dreh (beim Drehplan samt Kunde)
+  const [initial] = useState(() => {
+    const fromLink = shoots.find((s) => s.id === defaultEventId);
+    const cid = defaultClientId ? String(defaultClientId) : "";
+    const shoot = kind === "drehplan" ? (fromLink ?? (defaultDay ? undefined : nextShootOf(cid))) : undefined;
+    return { clientId: cid || (shoot?.clientId ? String(shoot.clientId) : ""), eventId: shoot ? String(shoot.id) : "", day: shoot?.day ?? defaultDay ?? "" };
+  });
+  const [clientId, setClientId] = useState<string>(initial.clientId);
+  const [eventId, setEventId] = useState<string>(initial.eventId);
+  const [day, setDay] = useState<string>(initial.day);
   const myShoots = shoots.filter((s) => !clientId || s.clientId === Number(clientId));
-  const [eventId, setEventId] = useState<string>("");
-  const [day, setDay] = useState<string>(myShoots.find((s) => s.day >= today)?.day ?? today);
+  const upcoming = myShoots.filter((s) => !s.past);
+  const past = myShoots.filter((s) => s.past).reverse();
 
   return (
     <ActionForm action={action} className="grid gap-6">
@@ -41,8 +63,13 @@ export function NewDocumentForm({
           name="clientId"
           value={clientId}
           onChange={(e) => {
-            setClientId(e.target.value);
-            setEventId("");
+            const cid = e.target.value;
+            setClientId(cid);
+            if (kind === "drehplan") {
+              const next = cid ? nextShootOf(cid) : undefined;
+              setEventId(next ? String(next.id) : "");
+              setDay(next?.day ?? "");
+            }
           }}
           required={kind !== "einwilligung"}
         >
@@ -61,7 +88,15 @@ export function NewDocumentForm({
         </p>
       )}
 
-      {kind === "einwilligung" && <EinwilligungFields data={defaultEinwilligung(today)} />}
+      {kind === "einwilligung" && (
+        <EinwilligungFields
+          data={defaultEinwilligung(today, Boolean(clientId))}
+          hasClient={Boolean(clientId)}
+          issues={consentIssues ? { kunde: clientId ? (consentIssues.byClient[Number(clientId)] ?? null) : null, scm: consentIssues.scm } : undefined}
+          clientEditHref={clientId ? `/kunden/${clientId}/bearbeiten` : undefined}
+          autoFocusName
+        />
+      )}
 
       {kind === "drehplan" && (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -74,16 +109,29 @@ export function NewDocumentForm({
                 const s = shoots.find((x) => String(x.id) === e.target.value);
                 if (s) {
                   setDay(s.day);
-                  if (s.clientId && !clientId) setClientId(String(s.clientId));
+                  if (s.clientId) setClientId(String(s.clientId));
                 }
               }}
             >
-              <option value="">{myShoots.length ? "frei eintragen" : "keine Drehtermine gefunden"}</option>
-              {myShoots.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
-                </option>
-              ))}
+              <option value="">{myShoots.length ? "ohne Termin, Datum eintragen" : "keine Drehtermine im Kalender"}</option>
+              {upcoming.length > 0 && (
+                <optgroup label="Kommende Drehs">
+                  {upcoming.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.label}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {past.length > 0 && (
+                <optgroup label="Vergangene Drehs">
+                  {past.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.label}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </Select>
           </Field>
           <Field label="Drehtag" name="drehtag">
@@ -101,15 +149,16 @@ export function NewDocumentForm({
       <FormActions>
         {kind === "einwilligung" ? (
           <>
-            <Button type="submit" name="intent" value="save" variant="secondary">
+            {/* Handy: untereinander, Hauptaktion oben; die Eingabetaste speichert den Entwurf (erster Knopf) */}
+            <Button type="submit" name="intent" value="save" variant="secondary" className="max-sm:order-2 max-sm:w-full">
               Als Entwurf speichern
             </Button>
-            <SubmitButton name="intent" value="sign" pendingText="Wird vorbereitet …">
+            <SubmitButton name="intent" value="sign" pendingText="Wird vorbereitet …" className="max-sm:order-1 max-sm:w-full">
               Jetzt unterschreiben
             </SubmitButton>
           </>
         ) : (
-          <SubmitButton pendingText="Wird angelegt …">Anlegen</SubmitButton>
+          <SubmitButton pendingText="Wird angelegt …">{CREATE_LABEL[kind]}</SubmitButton>
         )}
       </FormActions>
     </ActionForm>

@@ -5,9 +5,11 @@ import { getDb, schema } from "@/db";
 import type { Client, Doc } from "@/db/schema";
 import { requireUser } from "@/lib/auth";
 import { getKontingente } from "@/lib/data/kontingent";
-import { getSetting, isDemo } from "@/lib/settings";
+import { getCompany, getSetting, isDemo } from "@/lib/settings";
 import { berlinDateTime, monthRange, shiftMonth, todayIso } from "@/lib/time";
 import {
+  consentController,
+  controllerProblem,
   interactionsOf,
   isDocKind,
   LEGAL_TEMPLATE_VERSION,
@@ -86,6 +88,20 @@ export async function getTeam() {
   await requireUser();
   const db = await getDb();
   return db.select().from(schema.teamMembers).orderBy(asc(schema.teamMembers.id));
+}
+
+/**
+ * Für die Einwilligung: Was fehlt der verantwortlichen Stelle (Name, Anschrift, E-Mail)? Je Kunde und für SCM,
+ * damit das Formular vor dem Unterschreiben darauf hinweisen kann.
+ */
+export async function getConsentIssues(): Promise<{ byClient: Record<number, string | null>; scm: string | null }> {
+  await requireUser();
+  const db = await getDb();
+  const [rows, company] = await Promise.all([db.select().from(schema.clients), getCompany()]);
+  return {
+    byClient: Object.fromEntries(rows.map((c) => [c.id, controllerProblem(consentController("kunde", partyOf(c), company), true)])),
+    scm: controllerProblem(consentController("scm", null, company), false),
+  };
 }
 
 export function partyOf(c: Client): PartySnapshot {

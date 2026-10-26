@@ -91,7 +91,6 @@
 }
 
 /* Ziffern gleich breit nur dort, wo Zahlen untereinander stehen (sonst werden Bindestriche zu breit) */
-table,
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }

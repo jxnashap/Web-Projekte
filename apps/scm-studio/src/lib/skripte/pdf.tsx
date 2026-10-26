@@ -36,7 +36,7 @@ export function DrehbuchPdf({
   const mono = { fontFamily: "Courier Prime", fontSize: 9.5, lineHeight: 1.45, color: C.ink };
   return (
     <PdfDocument title={`Drehbuch: ${t(script.title)}`} subject="Drehbuch" company={company}>
-      <PdfPage company={company} kind="Drehbuch" reference={clientName ?? undefined} watermark={script.status === "final" ? undefined : "Entwurf"}>
+      <PdfPage showBank={false} company={company} kind="Drehbuch" reference={clientName ?? undefined} watermark={script.status === "final" ? undefined : "Entwurf"}>
         <Title kicker={`Drehbuch${script.format ? ` · ${t(script.format)}` : ""}`}>{t(script.title)}</Title>
         <Section>
           <KeyValues

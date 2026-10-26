@@ -383,16 +383,20 @@ export async function remind(id: number): Promise<ActionState> {
 // ------------------------------------------------------------------
 // Ausgaben (Belege)
 // ------------------------------------------------------------------
+// Reihenfolge wie im Formular (der erste Fehler bekommt den Fokus)
 const expenseSchema = z.object({
   id: z.coerce.number().int().positive().optional(),
-  date: zDay("Belegdatum"),
-  supplier: zText("Lieferant", 160),
-  description: zText("Zweck", 300),
-  category: z.string({ error: "Kategorie wählen" }).refine((c) => c in EXPENSE_CATEGORIES, "Kategorie wählen"),
   amount: z.string({ error: "Betrag fehlt" }).min(1, "Betrag fehlt"),
   amountMode: z.enum(["brutto", "netto"]).default("brutto"),
   taxRate: z.coerce.number({ error: "Steuersatz wählen" }).refine((r) => (TAX_RATES as readonly number[]).includes(r), "Steuersatz wählen"),
   reverseCharge: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
+  supplier: zText("Lieferant", 160),
+  description: z
+    .string({ error: "Bitte eintragen, wofür die Ausgabe war" })
+    .min(1, "Bitte eintragen, wofür die Ausgabe war")
+    .max(300, "Text ist zu lang (höchstens 300 Zeichen)"),
+  date: zDay("Belegdatum"),
+  category: z.string({ error: "Kategorie wählen" }).refine((c) => c in EXPENSE_CATEGORIES, "Kategorie wählen"),
   paymentMethod: z.string().refine((m) => m in PAYMENT_METHODS, "Zahlungsart wählen").optional(),
   paidOn: zOptDate,
   supplierInvoiceNo: zOpt("Rechnungsnummer", 60),

@@ -42,7 +42,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <Suspense fallback={null}>
           <DemoBanner />
         </Suspense>
-        <main id="inhalt" tabIndex={-1} className="mx-auto w-full max-w-[1360px] px-4 pb-[calc(var(--tabbar-h)+56px)] pt-7 outline-none sm:px-8 lg:pb-14 lg:pt-10">
+        <main id="inhalt" tabIndex={-1} className="mx-auto w-full max-w-[1360px] px-4 pb-[calc(var(--tabbar-h,calc(54px+env(safe-area-inset-bottom)))+56px)] pt-7 outline-none sm:px-8 lg:pb-14 lg:pt-10">
           {children}
         </main>
       </div>

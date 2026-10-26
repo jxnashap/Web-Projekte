@@ -10,6 +10,7 @@ export function Menu({
   align = "right",
   trigger,
   triggerClassName,
+  triggerHasText = false,
 }: {
   children: React.ReactNode;
   label?: string;
@@ -17,6 +18,8 @@ export function Menu({
   trigger?: React.ReactNode;
   /** eigene Klassen für den Auslöser, z. B. buttonClass("secondary") für einen Text-Knopf */
   triggerClassName?: string;
+  /** Auslöser zeigt sichtbaren Text: dann kein zusätzliches aria-label */
+  triggerHasText?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -44,7 +47,7 @@ export function Menu({
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={trigger && triggerClassName ? undefined : label}
+        aria-label={triggerHasText ? undefined : label}
         onClick={() => setOpen((o) => !o)}
         className={triggerClassName ?? "hit grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-fill hover:text-ink"}
       >

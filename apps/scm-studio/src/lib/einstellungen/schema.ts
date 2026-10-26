@@ -47,9 +47,9 @@ export const companySchema = z.object({
 });
 
 export const AI_MODELS = [
-  { id: "gpt-6.1-sol", label: "GPT-6.1 Sol", hint: "Standard. Laut OpenAI fast so stark wie Astra zu einem Fünftel des Preises. 2 / 10 USD je 1 Mio. Tokens, etwa 0,01 bis 0,02 USD pro Skript." },
-  { id: "gpt-6-astra", label: "GPT-6 Astra", hint: "Premium für wichtige Pitches. 10 / 50 USD je 1 Mio. Tokens, etwa 0,06 bis 0,10 USD pro Skript." },
-  { id: "gpt-6-luna", label: "GPT-6 Luna", hint: "Günstig für Kleinkram wie Hashtags und Captions. 0,10 / 0,50 USD je 1 Mio. Tokens." },
+  { id: "gpt-6.1-sol", label: "GPT-6.1 Sol", hint: "Standard. Laut OpenAI fast so stark wie Astra zu einem Fünftel des Preises. 2 / 10 US-Dollar je 1 Mio. Tokens (Textbausteine), etwa 1 bis 2 US-Cent pro Skript." },
+  { id: "gpt-6-astra", label: "GPT-6 Astra", hint: "Premium für wichtige Pitches. 10 / 50 US-Dollar je 1 Mio. Tokens (Textbausteine), etwa 6 bis 10 US-Cent pro Skript." },
+  { id: "gpt-6-luna", label: "GPT-6 Luna", hint: "Günstig für Kleinkram wie Hashtags und Captions. 0,10 / 0,50 US-Dollar je 1 Mio. Tokens (Textbausteine)." },
 ] as const;
 
 export const AI_EFFORTS = {

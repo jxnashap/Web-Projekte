@@ -1,3 +1,4 @@
+import { docStatus } from "@/lib/dokumente/schema";
 import { AlertCircle, ArrowUpRight, CalendarPlus, ChevronDown, Clapperboard, FileSignature, FileText, Pencil, Plus, Receipt, ScrollText } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -134,6 +135,7 @@ function QuickActions({ id }: { id: number }) {
     <Menu
       label="Für diesen Kunden anlegen"
       triggerClassName={buttonClass("secondary")}
+      triggerHasText
       trigger={
         <>
           <Plus className="size-4" /> Für diesen Kunden <ChevronDown className="size-4" />
@@ -526,11 +528,6 @@ async function InvoicesTab({ id }: { id: number }) {
 // ------------------------------------------------------------------
 // Dokumente (nur lesen)
 // ------------------------------------------------------------------
-const DOC_STATUS: Record<string, { label: string; tone: "neutral" | "info" | "ok" }> = {
-  entwurf: { label: "Entwurf", tone: "neutral" },
-  final: { label: "Fertig", tone: "info" },
-  unterschrieben: { label: "Unterschrieben", tone: "ok" },
-};
 
 async function DocumentsTab({ id }: { id: number }) {
   const rows = await getClientDocuments(id);
@@ -551,7 +548,7 @@ async function DocumentsTab({ id }: { id: number }) {
     <Card className="overflow-hidden">
       <ul className="divide-y divide-line">
         {rows.map((d) => {
-          const s = DOC_STATUS[d.status];
+          const s = docStatus(d.kind, d.status, d.revokedAt);
           return (
             <li key={d.id}>
               <ListRow href={`/dokumente/${d.id}`} className="py-3">

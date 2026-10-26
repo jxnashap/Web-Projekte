@@ -79,6 +79,7 @@ export function PdfPage({
   watermark,
   children,
   footerNote,
+  showBank = true,
 }: {
   company: Company | null;
   kind: string;
@@ -86,6 +87,8 @@ export function PdfPage({
   watermark?: string;
   children: React.ReactNode;
   footerNote?: string;
+  /** Bankverbindung in der Fußzeile (nur für Rechnungen, Angebote, Mahnungen sinnvoll) */
+  showBank?: boolean;
 }) {
   return (
     <Page size="A4" style={s.page} wrap>
@@ -97,7 +100,7 @@ export function PdfPage({
           {reference ? <Text style={[s.label, { marginTop: 2 }]}>{reference}</Text> : null}
         </View>
       </View>
-      <Footer company={company} note={footerNote} />
+      <Footer company={company} note={footerNote} showBank={showBank} />
       <PageNumber />
       <View style={{ height: 22 * MM }} fixed />
       {children}
@@ -118,7 +121,7 @@ function Watermark({ text }: { text: string }) {
   );
 }
 
-export function Footer({ company, note }: { company: Company | null; note?: string }) {
+export function Footer({ company, note, showBank = true }: { company: Company | null; note?: string; showBank?: boolean }) {
   const c = company;
   const col = { flex: 1, paddingRight: 8 };
   return (
@@ -138,8 +141,10 @@ export function Footer({ company, note }: { company: Company | null; note?: stri
           <Text style={s.small}>{c?.web ?? ""}</Text>
         </View>
         <View style={col}>
-          {c?.iban ? <Text style={s.small}>IBAN {formatIban(c.iban)}</Text> : <Text style={s.small}>IBAN [PLATZHALTER]</Text>}
-          {c?.bic ? <Text style={s.small}>BIC {c.bic}{c.bankName ? ` · ${c.bankName}` : ""}</Text> : null}
+          {showBank ? (
+            c?.iban ? <Text style={s.small}>IBAN {formatIban(c.iban)}</Text> : <Text style={s.small}>IBAN [PLATZHALTER]</Text>
+          ) : null}
+          {showBank && c?.bic ? <Text style={s.small}>BIC {c.bic}{c.bankName ? ` · ${c.bankName}` : ""}</Text> : null}
           {c?.vatId ? <Text style={s.small}>USt-IdNr. {c.vatId}</Text> : null}
           {c?.taxNumber ? <Text style={s.small}>Steuernummer {c.taxNumber}</Text> : null}
         </View>

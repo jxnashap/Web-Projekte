@@ -1,0 +1,104 @@
+// Lesbare Namen für das Änderungsprotokoll: Bereich, Aktion und Ziel-Link je Eintrag.
+
+export const AUDIT_ENTITY: Record<string, string> = {
+  session: "Anmeldung",
+  lead: "Anfrage",
+  client: "Kunde",
+  document: "Dokument",
+  invoice: "Rechnung",
+  expense: "Ausgabe",
+  export: "Export",
+  settings: "Einstellungen",
+  team: "Team",
+  video: "Video",
+  video_metrics: "Zahlen",
+  metric: "Zahlen",
+  script: "Skript",
+  skript: "Skript",
+  event: "Termin",
+  social_account: "Instagram-Konto",
+};
+
+const ACTION: Record<string, string> = {
+  login: "angemeldet",
+  angelegt: "angelegt",
+  bearbeitet: "bearbeitet",
+  geändert: "geändert",
+  geaendert: "geändert",
+  gelöscht: "gelöscht",
+  geloescht: "gelöscht",
+  status: "Status geändert",
+  final: "festgehalten (zur Unterschrift freigegeben oder abgelegt)",
+  scm_unterschrieben: "von SCM unterschrieben",
+  unterschrieben: "unterschrieben",
+  widerrufen: "Widerruf vermerkt",
+  wieder_geoeffnet: "wieder geöffnet",
+  erfasst: "erfasst",
+  datei_nachgereicht: "Beleg nachgereicht",
+  datev_export: "DATEV-Export erstellt",
+  bezahlt: "als bezahlt markiert",
+  entwurf_angelegt: "Entwurf angelegt",
+  entwurf_gespeichert: "Entwurf gespeichert",
+  entwurf_geloescht: "Entwurf gelöscht",
+  festgeschrieben: "festgeschrieben",
+  in_rechnung_umgewandelt: "in Rechnung umgewandelt",
+  storniert: "storniert",
+  versendet: "versendet",
+  zahlung_zurueckgenommen: "Zahlung zurückgenommen",
+  zahlungserinnerung: "Zahlungserinnerung erstellt",
+  eingang_website: "über die Website eingegangen",
+  stufe: "Stufe geändert",
+  umgewandelt: "zum Kunden gemacht",
+  verloren: "als verloren markiert",
+  avv: "AV-Verträge gespeichert",
+  datev_gespeichert: "DATEV-Angaben gespeichert",
+  demo: "Demo-Hinweise umgestellt",
+  firma: "Firmendaten gespeichert",
+  google_abgleich: "Google Kalender abgeglichen",
+  google_fehler: "Fehler beim Google-Abgleich",
+  google_getrennt: "Google Kalender getrennt",
+  google_verbunden: "Google Kalender verbunden",
+  ical_token_neu: "Kalender-Abo erneuert",
+  ki: "KI-Modell gespeichert",
+  vorlagen_freigegeben: "Vorlagen anwaltlich freigegeben",
+  vorlagen_freigabe_entfernt: "Freigabe der Vorlagen entfernt",
+  dupliziert: "dupliziert",
+  video: "mit Video verknüpft",
+  skript: "mit Skript verknüpft",
+  abgleich: "abgeglichen",
+  getrennt: "getrennt",
+  verbunden: "verbunden",
+  verbindungslink: "Verbindungslink erstellt",
+  verbindungslink_geloescht: "Verbindungslink gelöscht",
+  rolle: "Rolle geändert",
+  aktiviert: "Zugang freigegeben",
+  deaktiviert: "Zugang gesperrt",
+  reaktiviert: "wieder aufgenommen",
+  eingeladen: "eingeladen",
+  csv_import: "per CSV importiert",
+};
+
+export function auditAction(action: string): string {
+  if (ACTION[action]) return ACTION[action];
+  const offer = action.match(/^angebot_(.+)$/);
+  if (offer) return `Angebot ${offer[1].replace(/_/g, " ")}`;
+  return action.replace(/_/g, " ");
+}
+
+const HREF: Record<string, (id: number) => string> = {
+  lead: (id) => `/anfragen/${id}`,
+  client: (id) => `/kunden/${id}`,
+  document: (id) => `/dokumente/${id}`,
+  invoice: (id) => `/finanzen/rechnungen/${id}`,
+  expense: (id) => `/finanzen/ausgaben/${id}`,
+  video: (id) => `/produktion/${id}`,
+  script: (id) => `/skripte/${id}`,
+  skript: (id) => `/skripte/${id}`,
+  event: (id) => `/kalender/${id}`,
+};
+
+/** Link zum Eintrag, außer er wurde mit dieser Aktion gelöscht */
+export function auditHref(entity: string, id: number | null, action: string): string | null {
+  if (!id || /gel(ö|oe)scht/.test(action)) return null;
+  return HREF[entity]?.(id) ?? (entity === "team" ? "/einstellungen?reiter=team" : null);
+}

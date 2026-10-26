@@ -45,6 +45,9 @@ export type ExpenseDefaults = {
 /** Gespeicherte Belegdatei (Detailseite) */
 export type ExpenseFile = { href: string; mime: string; name: string; sizeKb: number; sha256: string; late: boolean };
 
+const sizeText = (bytes: number) =>
+  bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024)).toLocaleString("de-DE")} KB` : `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
+
 const MAX_SIDE = 2400;
 const TARGET_BYTES = 3.5 * 1024 * 1024;
 const ACCEPT = "image/jpeg,image/png,image/webp,image/heic,application/pdf,.xml,application/xml,text/xml";
@@ -162,7 +165,7 @@ function ReceiptPicker({ onFile, onBusy, replace }: { onFile: (f: File | null) =
             </div>
             <div className="text-[13px] text-muted">
               {info
-                ? `${(info.size / 1024 / 1024).toFixed(1).replace(".", ",")} MB${info.shrunk ? ", verkleinert" : ""} · wird beim Speichern hochgeladen`
+                ? `${sizeText(info.size)}${info.shrunk ? ", verkleinert" : ""} · wird beim Speichern hochgeladen`
                 : "Foto, PDF oder E-Rechnung (XML), höchstens 10 MB"}
             </div>
           </div>

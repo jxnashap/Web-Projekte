@@ -163,7 +163,7 @@ function KontingentCard({ kontingente, month, sp }: { kontingente: Kontingent[];
             className="-mx-2 flex min-h-12 items-center gap-2 rounded-xl px-2 py-1.5 transition-colors hover:bg-fill-2"
           >
             <div className="min-w-0 flex-1">
-              <KontingentBar k={k} />
+              <KontingentBar k={k} future={month > monthIso()} />
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
             <span className="sr-only">, nach diesem Kunden filtern</span>

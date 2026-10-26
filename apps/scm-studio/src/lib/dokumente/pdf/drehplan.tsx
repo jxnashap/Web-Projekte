@@ -57,7 +57,7 @@ export function DrehplanPdf({ ctx }: { ctx: RenderCtx }) {
   const zeit = [d.start, d.ende].filter(Boolean).join(" bis ");
   return (
     <PdfDocument title={ctx.doc.title} subject="Drehplan" company={ctx.company}>
-      <PdfPage company={ctx.company} kind="Drehplan" reference={fmtDate(d.drehtag)} watermark={ctx.doc.status === "entwurf" ? "Entwurf" : undefined}>
+      <PdfPage showBank={false} company={ctx.company} kind="Drehplan" reference={fmtDate(d.drehtag)} watermark={ctx.doc.status === "entwurf" ? "Entwurf" : undefined}>
         <DemoNote show={ctx.demo} />
         <Title kicker={`Drehtag · ${weekday(d.drehtag)}, ${fmtDate(d.drehtag)}`} sub={ctx.party?.name ?? ctx.clientName ?? undefined}>
           Drehplan

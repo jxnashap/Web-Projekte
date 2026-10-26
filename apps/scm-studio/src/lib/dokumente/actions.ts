@@ -82,7 +82,8 @@ function fitConsent(data: EinwilligungData, hasClient: boolean): { data: Einwill
 /** Prüft, ob die verantwortliche Stelle vollständig ist (Name, Anschrift, E-Mail für Datenschutzfragen). */
 function consentReady(data: Pick<EinwilligungData, "verantwortlich">, party: PartySnapshot | null, company: Company | null, hasClient: boolean): ActionState | null {
   const problem = controllerProblem(consentController(data.verantwortlich, party, company), hasClient);
-  return problem ? fail(problem, { verantwortlich: [problem] }) : null;
+  // ohne Feldfehler: das Formular zeigt den Hinweis mit Link zum Kunden schon unter "Verantwortlich"
+  return problem ? fail(problem) : null;
 }
 
 // ------------------------------------------------------------------
@@ -186,11 +187,18 @@ export async function saveDocument(id: number, _: ActionState, fd: FormData): Pr
   if (!r.success) return r.state;
   const t = z.object({ title: z.string().min(3, "Titel fehlt").max(160) }).safeParse(formToObject(fd));
   if (!t.success) return fail("Bitte einen Titel eintragen.", { title: ["Titel fehlt"] });
+  const finalize = fd.get("intent") === "final";
   let data = r.data as Record<string, unknown>;
   if (doc.kind === "einwilligung") {
     const fitted = fitConsent(r.data as EinwilligungData, Boolean(doc.clientId));
     if ("error" in fitted) return fitted.error;
     data = fitted.data;
+    // Vor dem Freigeben prüfen, ob die verantwortliche Stelle vollständig ist; sonst nichts ändern
+    if (finalize) {
+      const client = await loadClient(doc.clientId);
+      const notReady = consentReady(fitted.data, client ? partyOf(client) : null, await getCompany(), Boolean(client));
+      if (notReady) return notReady;
+    }
   }
   const db = await getDb();
   try {
@@ -204,7 +212,7 @@ export async function saveDocument(id: number, _: ActionState, fd: FormData): Pr
   await audit(user.id, "document", id, "bearbeitet");
   // "Zur Unterschrift freigeben" bzw. "Abschließen und ablegen" sendet dasselbe Formular: erst speichern, dann
   // festhalten. So geht keine ungespeicherte Änderung verloren.
-  if (fd.get("intent") === "final") {
+  if (finalize) {
     const saved = await loadDoc(id);
     if (!saved) return fail("Dokument nicht gefunden.");
     const r2 = await finalizeLoaded(saved, user);

@@ -112,7 +112,7 @@ export function ProofPage({ ctx, kindLabel }: { ctx: RenderCtx; kindLabel: strin
   const p = ctx.proof;
   if (!p) return null;
   return (
-    <PdfPage company={ctx.company} kind="Prüfprotokoll" reference={`Dokument ${ctx.doc.id}`}>
+    <PdfPage showBank={false} company={ctx.company} kind="Prüfprotokoll" reference={`Dokument ${ctx.doc.id}`}>
       <Title kicker="Nachweis der Unterschrift">Prüfprotokoll</Title>
       <Section title="Dokument">
         <KeyValues

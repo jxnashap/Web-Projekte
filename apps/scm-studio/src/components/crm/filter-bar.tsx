@@ -30,7 +30,7 @@ export function FilterSelect({
           const o = options.find((x) => x.value === e.target.value);
           if (o) start(() => router.push(o.href, { scroll: false }));
         }}
-        className="h-10 w-auto min-w-0 cursor-pointer sm:h-9"
+        className="h-10 w-auto min-w-0 cursor-pointer bg-fill hover:bg-[rgb(120_120_128/0.16)] sm:h-9"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

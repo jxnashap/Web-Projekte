@@ -134,7 +134,7 @@ async function Detail({ params }: { params: Params }) {
 
   // Nächster Schritt je Status: genau eine Hauptaktion (rot), alles andere ruhig
   let next: React.ReactNode = null;
-  if (openInvoice && !inv.sentAt) {
+  if (openInvoice && !inv.sentAt && !overdue) {
     next = (
       <>
         {mailButton(true)}
@@ -164,6 +164,11 @@ async function Detail({ params }: { params: Params }) {
           </ActionButton>
         )}
         {mailButton(false)}
+        {!inv.sentAt && (
+          <ActionButton action={markSent.bind(null, inv.id)} variant="secondary" size="md">
+            <Send className="size-4" /> Als versendet markieren
+          </ActionButton>
+        )}
       </>
     );
   } else if (isInvoice && inv.status === "bezahlt") {

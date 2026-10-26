@@ -1,7 +1,9 @@
-import { ArrowLeft, Download, ExternalLink, FileSignature, PenLine, ShieldCheck } from "lucide-react";
+import { Download, ExternalLink, FileSignature, PenLine, ShieldCheck, TriangleAlert } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { DocMenu } from "@/components/dokumente/doc-menu";
 import { DrehplanForm, EinwilligungForm, MonatsberichtForm, VertragForm } from "@/components/dokumente/forms";
 import { PdfPreview } from "@/components/dokumente/pdf-preview";
 import { ScmSign } from "@/components/dokumente/scm-sign";
@@ -13,15 +15,20 @@ import { ActionButton } from "@/components/ui/confirm-action";
 import { DialogButton } from "@/components/ui/dialog";
 import { Field, FormActions, Input, Textarea } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DetailSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { SubmitButton } from "@/components/ui/submit-button";
+import type { Client, Doc } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
-import { deleteDocument, finalizeDocument, reopenDocument, revokeConsent, saveDocument } from "@/lib/dokumente/actions";
-import { buildDrehplanSnapshot, buildReportSnapshot, getDocument, getTeam, isLegalApproved } from "@/lib/dokumente/data";
+import { deleteDocument, reopenDocument, revokeConsent, saveDocument } from "@/lib/dokumente/actions";
+import { buildDrehplanSnapshot, buildReportSnapshot, getDocument, getTeam, isLegalApproved, partyOf } from "@/lib/dokumente/data";
 import {
-  DOC_STATUS,
+  consentController,
+  controllerProblem,
+  docStatus,
   LEGAL_TEMPLATE_VERSION,
   needsSignature,
+  NUTZUNGSDAUER,
+  ROLLEN,
   SIGNER_SHORT,
   ZWECKE,
   type DrehplanData,
@@ -31,13 +38,18 @@ import {
   type VertragData,
   type ZweckKey,
 } from "@/lib/dokumente/schema";
-import { compact, dateDe, dateTime, num } from "@/lib/format";
+import { compact, dateDe, dateTime, monthLabel, num } from "@/lib/format";
 import { DOC_KINDS } from "@/lib/labels";
+import { getCompany, type Company } from "@/lib/settings";
 import { todayIso } from "@/lib/time";
 
-export const metadata = { title: "Dokument" };
-
 type P = Promise<{ id: string }>;
+
+export async function generateMetadata({ params }: { params: P }): Promise<Metadata> {
+  const id = Number((await params).id);
+  const found = Number.isInteger(id) && id > 0 ? await getDocument(id).catch(() => null) : null;
+  return { title: found ? `${found.doc.title} · Dokumente` : "Dokumente" };
+}
 
 export default function DokumentPage({ params }: { params: P }) {
   return (
@@ -47,16 +59,17 @@ export default function DokumentPage({ params }: { params: P }) {
   );
 }
 
-function DetailSkeleton() {
-  return (
-    <div className="grid gap-6">
-      <Skeleton className="h-24" />
-      <div className="grid gap-6 xl:grid-cols-2">
-        <Skeleton className="h-[600px]" />
-        <Skeleton className="h-[600px]" />
-      </div>
-    </div>
-  );
+/** Was der verantwortlichen Stelle einer Einwilligung fehlt: bei finalen Fassungen aus der Momentaufnahme. */
+function consentIssueOf(doc: Doc, client: Client | null, company: Company | null) {
+  const d = doc.data as unknown as EinwilligungData;
+  const frozen = doc.status !== "entwurf";
+  const party = frozen ? (d.party ?? null) : client ? partyOf(client) : null;
+  const comp = frozen ? ((doc.data as { companySnapshot?: Company }).companySnapshot ?? null) : company;
+  return {
+    kunde: controllerProblem(consentController("kunde", party, comp), Boolean(doc.clientId)),
+    scm: controllerProblem(consentController("scm", party, comp), Boolean(doc.clientId)),
+    current: controllerProblem(consentController(d.verantwortlich, party, comp), Boolean(doc.clientId)),
+  };
 }
 
 async function Detail({ params }: { params: P }) {
@@ -64,26 +77,43 @@ async function Detail({ params }: { params: P }) {
   const found = await getDocument(Number(id));
   if (!found) notFound();
   const { doc, client } = found;
-  const [user, legalApproved] = await Promise.all([getCurrentUser(), isLegalApproved()]);
-  const status = DOC_STATUS[doc.status] ?? DOC_STATUS.entwurf;
+  const [user, legalApproved, company] = await Promise.all([getCurrentUser(), isLegalApproved(), getCompany()]);
+  const status = docStatus(doc.kind, doc.status, doc.revokedAt);
   const pdfHref = `/api/dokumente/${doc.id}/pdf`;
   const data = doc.data as Record<string, unknown>;
   const legal = needsSignature(doc.kind);
   const scmSigned = doc.kind === "vertrag" && Boolean((data as unknown as VertragData).scmSignature);
   const save = saveDocument.bind(null, doc.id);
   const version = `${doc.updatedAt.getTime()}`;
+  const consent = doc.kind === "einwilligung" ? consentIssueOf(doc, client, company) : null;
+  const signBlocked = doc.status === "final" && Boolean(consent?.current);
+  const pdfInHeader = doc.status === "unterschrieben" || (doc.status === "final" && !legal);
+  const remove = {
+    action: deleteDocument.bind(null, doc.id),
+    label: doc.status === "entwurf" ? "Entwurf löschen" : "Dokument löschen",
+    confirm: {
+      title: doc.status === "entwurf" ? "Entwurf löschen?" : "Dokument löschen?",
+      message: doc.status === "entwurf" ? "Der Entwurf wird endgültig entfernt." : "Das Dokument ist noch nicht unterschrieben und wird endgültig entfernt.",
+      confirmLabel: "Löschen",
+      tone: "danger" as const,
+    },
+  };
+  const reopen = {
+    action: reopenDocument.bind(null, doc.id),
+    confirm: scmSigned
+      ? { title: "Wieder bearbeiten?", message: "Die Unterschrift von SCM wird dabei entfernt und muss danach neu geleistet werden.", confirmLabel: "Wieder bearbeiten", tone: "danger" as const }
+      : undefined,
+  };
 
   return (
     <>
-      <Link href="/dokumente" className="mb-4 inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-ink">
-        <ArrowLeft className="size-4" /> Alle Dokumente
-      </Link>
       <PageHeader
         scene={`Szene 09 · ${DOC_KINDS[doc.kind]?.label ?? "Dokument"}`}
+        back={{ href: "/dokumente", label: "Dokumente" }}
         title={<span className="break-words">{doc.title}</span>}
         description={
-          <span className="flex flex-wrap items-center gap-2">
-            {doc.revokedAt ? <Badge tone="accent">Widerrufen</Badge> : <Badge tone={status.tone}>{status.label}</Badge>}
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[15px]">
+            <Badge tone={status.tone}>{status.label}</Badge>
             {client && (
               <Link href={`/kunden/${client.id}`} className="inline-flex items-center gap-1.5 hover:text-ink">
                 <Dot color={client.color} /> {client.name}
@@ -94,63 +124,63 @@ async function Detail({ params }: { params: P }) {
         }
         actions={
           <>
-            {doc.status === "entwurf" && (
-              <>
-                <ActionButton action={deleteDocument.bind(null, doc.id)} confirm="Diesen Entwurf wirklich löschen?" variant="ghost" size="md">
-                  Löschen
-                </ActionButton>
-                <ActionButton
-                  action={finalizeDocument.bind(null, doc.id)}
-                  variant="primary"
-                  size="md"
-                  confirm={legal ? "Fassung festhalten? Danach wird nur noch unterschrieben. Änderungen gehen erst wieder über „Wieder bearbeiten“." : "Final machen und als PDF ablegen?"}
-                >
-                  {legal ? "Final machen" : "Final machen und ablegen"}
-                </ActionButton>
-              </>
-            )}
+            {doc.status === "entwurf" && <DocMenu remove={remove} />}
             {doc.status === "final" && (
               <>
-                <ActionButton action={reopenDocument.bind(null, doc.id)} variant="ghost" size="md" confirm={scmSigned ? "Wieder bearbeiten? Die Unterschrift von SCM wird dabei entfernt." : undefined}>
-                  <PenLine className="size-4" /> Wieder bearbeiten
-                </ActionButton>
-                {doc.kind === "vertrag" && !scmSigned && (
-                  <DialogButton label="SCM unterschreibt" title="Unterschrift für SCM" variant="secondary" dialogSize="lg">
-                    <ScmSign docId={doc.id} name={user?.name ?? "SCM"} />
-                  </DialogButton>
-                )}
-                {legal && (
-                  <LinkButton href={`/dokumente/${doc.id}/unterschreiben`}>
-                    <FileSignature className="size-4" /> Unterschreiben
-                  </LinkButton>
+                {legal ? (
+                  <>
+                    {doc.kind === "vertrag" && !scmSigned && (
+                      <DialogButton label="SCM unterschreibt" title="Unterschrift für SCM" variant="secondary" dialogSize="lg">
+                        <ScmSign docId={doc.id} name={user?.name ?? "SCM"} />
+                      </DialogButton>
+                    )}
+                    {!signBlocked && (
+                      <LinkButton href={`/dokumente/${doc.id}/unterschreiben`}>
+                        <FileSignature className="size-4" /> Unterschreiben
+                      </LinkButton>
+                    )}
+                    <DocMenu pdfHref={`${pdfHref}?download=1`} reopen={reopen} remove={remove} />
+                  </>
+                ) : (
+                  <>
+                    <ActionButton action={reopenDocument.bind(null, doc.id)} variant="secondary" size="md">
+                      <PenLine className="size-4" /> Wieder bearbeiten
+                    </ActionButton>
+                    <a href={`${pdfHref}?download=1`} className={buttonClass("secondary", "md")}>
+                      <Download className="size-4" /> PDF laden
+                    </a>
+                    <DocMenu remove={remove} />
+                  </>
                 )}
               </>
             )}
-            {doc.status === "unterschrieben" && doc.kind === "einwilligung" && !doc.revokedAt && (
-              <DialogButton label="Widerruf vermerken" title="Widerruf vermerken" description="Die Einwilligung gilt ab dem Datum nicht mehr (Art. 7 Abs. 3 DSGVO)." variant="danger">
-                <ActionForm action={revokeConsent.bind(null, doc.id)} className="grid gap-4">
-                  <Field label="Widerrufen am" name="revokedOn">
-                    <Input name="revokedOn" type="date" defaultValue={todayIso()} max={todayIso()} />
-                  </Field>
-                  <Field label="Vermerk" name="note" optional hint="z. B. wie der Widerruf kam und welche Videos betroffen sind">
-                    <Textarea name="note" rows={3} />
-                  </Field>
-                  <FormActions>
-                    <SubmitButton variant="danger">Widerruf speichern</SubmitButton>
-                  </FormActions>
-                </ActionForm>
-              </DialogButton>
-            )}
-            {doc.status !== "entwurf" && (
-              <a href={`${pdfHref}?download=1`} className={buttonClass("secondary", "md")}>
-                <Download className="size-4" /> PDF
-              </a>
+            {doc.status === "unterschrieben" && (
+              <>
+                {doc.kind === "einwilligung" && !doc.revokedAt && (
+                  <DialogButton label="Widerruf vermerken" title="Widerruf vermerken" description="Die Einwilligung gilt ab dem Datum nicht mehr (Art. 7 Abs. 3 DSGVO)." variant="danger">
+                    <ActionForm action={revokeConsent.bind(null, doc.id)} className="grid gap-4">
+                      <Field label="Widerrufen am" name="revokedOn">
+                        <Input name="revokedOn" type="date" defaultValue={todayIso()} max={todayIso()} />
+                      </Field>
+                      <Field label="Vermerk" name="note" optional hint="z. B. wie der Widerruf kam und welche Videos betroffen sind">
+                        <Textarea name="note" rows={3} />
+                      </Field>
+                      <FormActions>
+                        <SubmitButton>Widerruf speichern</SubmitButton>
+                      </FormActions>
+                    </ActionForm>
+                  </DialogButton>
+                )}
+                <a href={`${pdfHref}?download=1`} className={buttonClass("secondary", "md")}>
+                  <Download className="size-4" /> PDF laden
+                </a>
+              </>
             )}
           </>
         }
       />
 
-      {legal && !legalApproved && (
+      {legal && !legalApproved && doc.status !== "unterschrieben" && (
         <p className="mb-6 flex gap-2 rounded-xl bg-warn-soft px-4 py-3 text-[14px] text-warn">
           <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>
@@ -163,6 +193,20 @@ async function Detail({ params }: { params: P }) {
         </p>
       )}
 
+      {signBlocked && consent?.current && (
+        <p role="status" className="mb-6 flex gap-2 rounded-xl bg-warn-soft px-4 py-3 text-[14px] text-warn">
+          <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <span>
+            {consent.current} Danach „Wieder bearbeiten“ wählen und erneut freigeben, damit die Angaben in die Fassung kommen.{" "}
+            {client && (
+              <Link href={`/kunden/${client.id}/bearbeiten`} className="font-semibold underline underline-offset-2">
+                Kunden bearbeiten
+              </Link>
+            )}
+          </span>
+        </p>
+      )}
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="grid content-start gap-6">
           {doc.status === "entwurf" ? (
@@ -170,7 +214,16 @@ async function Detail({ params }: { params: P }) {
               {doc.kind === "vertrag" && (
                 <VertragForm action={save} title={doc.title} data={data as unknown as VertragData} isMerchant={Boolean(client?.isMerchant)} clientName={client?.signatoryName ?? client?.contactName ?? ""} />
               )}
-              {doc.kind === "einwilligung" && <EinwilligungForm action={save} title={doc.title} data={data as unknown as EinwilligungData} />}
+              {doc.kind === "einwilligung" && (
+                <EinwilligungForm
+                  action={save}
+                  title={doc.title}
+                  data={data as unknown as EinwilligungData}
+                  hasClient={Boolean(doc.clientId)}
+                  issues={consent ? { kunde: consent.kunde, scm: consent.scm } : undefined}
+                  clientEditHref={client ? `/kunden/${client.id}/bearbeiten` : undefined}
+                />
+              )}
               {doc.kind === "drehplan" && (
                 <Suspense fallback={<Skeleton className="h-96" />}>
                   <DrehplanEdit action={save} title={doc.title} data={data as unknown as DrehplanData} />
@@ -179,7 +232,7 @@ async function Detail({ params }: { params: P }) {
               {doc.kind === "monatsbericht" && <MonatsberichtForm action={save} title={doc.title} data={data as unknown as MonatsberichtData} />}
             </Card>
           ) : (
-            <Summary docId={doc.id} />
+            <Summary doc={doc} client={client} />
           )}
           {doc.kind === "drehplan" && doc.status === "entwurf" && (
             <Suspense fallback={<Skeleton className="h-40" />}>
@@ -193,21 +246,21 @@ async function Detail({ params }: { params: P }) {
           )}
         </div>
 
-        <Card className="flex flex-col overflow-hidden xl:sticky xl:top-24 xl:self-start">
+        {/* Handy: nur ein PDF-Knopf. Wo die Kopfzeile schon "PDF laden" zeigt, entfällt die Vorschau-Karte. */}
+        <Card className={`flex flex-col overflow-hidden xl:sticky xl:top-24 xl:self-start ${pdfInHeader ? "max-lg:hidden" : ""}`}>
           <CardHeader
             title="PDF-Vorschau"
-            sub={doc.status === "entwurf" ? "Nach dem Speichern aktualisiert" : doc.fileId ? "Abgelegte Fassung" : doc.status === "unterschrieben" ? "Unterschriebene Fassung" : "Fassung zur Unterschrift"}
+            sub={doc.status === "entwurf" ? "Zeigt den gespeicherten Stand" : doc.status === "unterschrieben" ? "Unterschriebene Fassung" : doc.fileId ? "Abgelegte Fassung" : "Fassung zur Unterschrift"}
             action={
-              <a href={pdfHref} target="_blank" rel="noreferrer" className={buttonClass("ghost", "sm")}>
-                Öffnen <ExternalLink className="size-4" />
+              <a href={pdfHref} target="_blank" rel="noreferrer" className={buttonClass("ghost", "sm", "max-lg:hidden")}>
+                In neuem Tab <ExternalLink className="size-4" aria-hidden />
               </a>
             }
           />
           <div className="hidden lg:block">
             <PdfPreview src={pdfHref} version={version} title={`PDF-Vorschau ${doc.title}`} />
           </div>
-          <div className="grid gap-3 p-5 lg:hidden">
-            <p className="text-[14px] text-muted">Auf dem Handy öffnet sich das PDF in einem eigenen Fenster.</p>
+          <div className="grid gap-3 px-5 pb-5 lg:hidden">
             <a href={pdfHref} target="_blank" rel="noreferrer" className={buttonClass("secondary", "md")}>
               PDF ansehen
             </a>
@@ -227,19 +280,27 @@ async function DrehplanScenes({ clientId, data }: { clientId: number | null; dat
   const snap = await buildDrehplanSnapshot(clientId, { drehtag: data.drehtag, teamIds: data.teamIds ?? [] });
   return (
     <Card>
-      <CardHeader title="Szenen an diesem Drehtag" sub={`Videos mit Drehdatum ${dateDe(data.drehtag)}`} action={<LinkButton href="/produktion" variant="ghost" size="sm">Produktion</LinkButton>} />
+      <CardHeader
+        title="Szenen an diesem Drehtag"
+        sub={`Videos mit Drehdatum ${dateDe(data.drehtag)}`}
+        action={
+          <LinkButton href="/produktion" variant="ghost" size="sm">
+            Produktion öffnen
+          </LinkButton>
+        }
+      />
       {snap.videos.length === 0 ? (
-        <p className="p-5 text-[14px] text-muted">
+        <p className="px-5 pb-5 text-[14px] text-muted">
           Noch keine Videos mit diesem Drehdatum. Tragt in der Produktion bei den Videos den Drehtag ein, dann erscheinen sie hier und im Drehplan.
         </p>
       ) : (
-        <ol className="divide-y divide-line">
+        <ol className="divide-y divide-hairline">
           {snap.videos.map((v, i) => (
             <li key={v.id} className="flex items-center gap-4 px-5 py-3">
-              <span className="w-16 shrink-0 text-[13px] font-semibold text-accent">Szene {i + 1}</span>
+              <span className="w-16 shrink-0 font-script text-[13px] font-bold text-ink-2">Szene {String(i + 1).padStart(2, "0")}</span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">{v.title}</span>
-                <span className="block truncate text-[13px] text-muted">{v.script ? `Skript: ${v.script.beats.length} Abschnitte` : "noch ohne Skript"}</span>
+                <span className="block truncate text-[13px] text-muted">{v.script ? `Skript mit ${v.script.beats.length} Abschnitten` : "noch ohne Skript"}</span>
               </span>
             </li>
           ))}
@@ -249,22 +310,34 @@ async function DrehplanScenes({ clientId, data }: { clientId: number | null; dat
   );
 }
 
+const rateFmt = new Intl.NumberFormat("de-DE", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+/** Zahlen wie im PDF: bis 9.999 ausgeschrieben, darüber kompakt */
+const count = (n: number) => (n < 10000 ? num(n) : compact(n));
+
 async function ReportPreview({ clientId, month }: { clientId: number; month: string }) {
   const r = await buildReportSnapshot(clientId, month);
   const rate = r.totals.views ? r.totals.interactions / r.totals.views : 0;
   return (
     <Card>
-      <CardHeader title="Zahlen für den Bericht" sub={r.stand ? `Stand ${dateDe(r.stand)}${r.demo ? " · Demo-Werte" : ""}` : "Noch keine Messwerte"} action={<LinkButton href="/zahlen" variant="ghost" size="sm">Zahlen</LinkButton>} />
-      <dl className="grid grid-cols-2 gap-4 p-5 sm:grid-cols-4">
+      <CardHeader
+        title="Zahlen für den Bericht"
+        sub={r.stand ? `Stand ${dateDe(r.stand)}${r.demo ? " · Demo-Werte" : ""}` : "Noch keine Messwerte"}
+        action={
+          <LinkButton href="/zahlen" variant="ghost" size="sm">
+            Zahlen öffnen
+          </LinkButton>
+        }
+      />
+      <dl className="grid grid-cols-2 gap-4 px-5 pb-5 sm:grid-cols-4">
         {[
           ["Videos online", num(r.posted)],
-          ["Aufrufe", compact(r.totals.views)],
-          ["Interaktionen", compact(r.totals.interactions)],
-          ["Rate", new Intl.NumberFormat("de-DE", { style: "percent", maximumFractionDigits: 1 }).format(rate)],
+          ["Aufrufe", count(r.totals.views)],
+          ["Interaktionen", count(r.totals.interactions)],
+          ["Rate", rateFmt.format(rate)],
         ].map(([k, v]) => (
           <div key={k}>
             <dt className="text-[13px] text-muted">{k}</dt>
-            <dd className="mt-1 text-[22px] font-bold">{v}</dd>
+            <dd className="mt-1 text-[22px] font-bold tabular-nums">{v}</dd>
           </div>
         ))}
       </dl>
@@ -272,41 +345,81 @@ async function ReportPreview({ clientId, month }: { clientId: number; month: str
   );
 }
 
-async function Summary({ docId }: { docId: number }) {
-  const found = await getDocument(docId);
-  if (!found) return null;
-  const { doc } = found;
+/** Kerndaten einer festgehaltenen Fassung, damit man vor dem Übergeben des Geräts prüfen kann, ob alles stimmt. */
+function coreRows(doc: Doc, client: Client | null): [string, React.ReactNode][] {
+  const data = doc.data as Record<string, unknown>;
+  if (doc.kind === "einwilligung") {
+    const d = data as unknown as EinwilligungData;
+    const zwecke = (d.zweckeBeiUnterschrift ?? d.zwecke ?? []) as ZweckKey[];
+    const ctrl = consentController(d.verantwortlich, d.party ?? null, (data.companySnapshot as Company | undefined) ?? null);
+    return [
+      ["Person", `${d.personName}${d.minderjaehrig ? " (minderjährig)" : ""}`],
+      ["Rolle", ROLLEN[d.rolle] ?? d.rolle],
+      ["Drehtag und Ort", [dateDe(d.drehtag), d.ort].filter(Boolean).join(", ")],
+      ["Auftraggeber", d.party?.name ?? client?.name ?? "keiner, eigener Dreh von SCM"],
+      ["Verantwortlich", [ctrl.name, ctrl.address, ctrl.email].filter(Boolean).join(", ") || "fehlt"],
+      [doc.status === "unterschrieben" ? "Eingewilligt in" : "Vorausgewählte Zwecke", zwecke.map((z) => ZWECKE[z]?.label ?? z).join(", ") || "keine"],
+    ];
+  }
+  if (doc.kind === "vertrag") {
+    const d = data as unknown as VertragData;
+    return [
+      ["Auftraggeber", d.party?.name ?? client?.name ?? ""],
+      ["Paket", `${d.paketVideos} Videos pro Monat`],
+      ["Preis", d.preisEuro ? `${d.preisEuro} € netto im Monat` : "fehlt"],
+      ["Beginn und Laufzeit", `ab ${dateDe(d.beginn)}, mindestens ${d.mindestlaufzeitMonate} Monate`],
+      ["Nutzungsrechte", NUTZUNGSDAUER[d.nutzungsdauer] ?? d.nutzungsdauer],
+      ["Unterschreibt", [d.unterzeichnerName || d.party?.signatoryName, d.unterzeichnerFunktion].filter(Boolean).join(", ") || "noch offen"],
+    ];
+  }
+  if (doc.kind === "drehplan") {
+    const d = data as unknown as DrehplanData;
+    return [
+      ["Drehtag", [dateDe(d.drehtag), [d.start, d.ende].filter(Boolean).join(" bis ")].filter(Boolean).join(", ")],
+      ["Ort", d.ort || "fehlt"],
+      ["Szenen", d.snapshot ? `${d.snapshot.videos.length} Videos` : ""],
+      ["Team", d.snapshot?.team.map((t) => t.name).join(", ") || "noch nicht eingeteilt"],
+    ];
+  }
+  const d = data as unknown as MonatsberichtData;
+  return [
+    ["Monat", monthLabel(d.month)],
+    ["Videos online", d.snapshot ? num(d.snapshot.posted) : ""],
+    ["Aufrufe", d.snapshot ? num(d.snapshot.totals.views) : ""],
+  ];
+}
+
+function Summary({ doc, client }: { doc: Doc; client: Client | null }) {
   const data = doc.data as Record<string, unknown>;
   const signatures = (data.signatures as SignatureEntry[] | undefined) ?? [];
   const scm = (data as unknown as VertragData).scmSignature;
-  const zwecke = ((data as unknown as EinwilligungData).zweckeBeiUnterschrift ?? (data as unknown as EinwilligungData).zwecke ?? []) as ZweckKey[];
-  const rows: [string, React.ReactNode][] = [["Status", DOC_STATUS[doc.status]?.label ?? doc.status]];
-  if (doc.kind === "einwilligung") rows.push(["Zwecke", zwecke.map((z) => ZWECKE[z]?.label ?? z).join(", ") || "keine"]);
+  const rows = coreRows(doc, client).filter(([, v]) => v !== "");
   if (scm && doc.status === "final") rows.push(["SCM", `unterschrieben von ${scm.name}, ${dateTime(scm.signedAt)}`]);
   for (const s of signatures) rows.push([SIGNER_SHORT[s.role] ?? "Unterschrift", `unterschrieben von ${s.name}, ${dateTime(s.signedAt)}`]);
   if (doc.signMeta) {
+    if (doc.signMeta.place) rows.push(["Ort der Unterschrift", doc.signMeta.place]);
     rows.push(["Inhalts-Hash", <span key="h" className="break-all font-mono text-[12px]">{doc.signMeta.versionHash}</span>]);
-    if (doc.signMeta.place) rows.push(["Ort", doc.signMeta.place]);
   }
   if (doc.contentHash) rows.push(["Datei-Hash (SHA-256)", <span key="f" className="break-all font-mono text-[12px]">{doc.contentHash}</span>]);
   if (doc.revokedAt) rows.push(["Widerrufen am", `${dateDe(doc.revokedAt)}${doc.revokeNote ? ` · ${doc.revokeNote}` : ""}`]);
+  const legal = needsSignature(doc.kind);
   return (
     <Card>
       <CardHeader
-        title={doc.status === "unterschrieben" ? "Unterschrieben und abgelegt" : doc.fileId ? "Final und abgelegt" : "Bereit zur Unterschrift"}
+        title={doc.status === "unterschrieben" ? "Unterschrieben und abgelegt" : legal ? "Bereit zur Unterschrift" : "Abgeschlossen und abgelegt"}
         sub={
           doc.status === "unterschrieben"
             ? "Die Fassung ist unveränderlich. Nur ein Widerruf kann vermerkt werden."
-            : doc.fileId
-              ? "Die abgelegte PDF-Datei bleibt byte-genau erhalten."
-              : "Inhalt festgehalten. Zum Ändern „Wieder bearbeiten“ wählen."
+            : legal
+              ? "Bitte vor dem Unterschreiben prüfen. Zum Ändern im Menü „Wieder bearbeiten“ wählen."
+              : "Die abgelegte PDF-Datei bleibt byte-genau erhalten."
         }
       />
-      <dl className="divide-y divide-line">
+      <dl className="divide-y divide-hairline">
         {rows.map(([k, v]) => (
-          <div key={k} className="grid gap-1 px-5 py-3 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-4">
+          <div key={k} className="grid gap-0.5 px-5 py-3 sm:grid-cols-[170px_minmax(0,1fr)] sm:gap-4">
             <dt className="text-[13px] text-muted">{k}</dt>
-            <dd className="min-w-0 text-[14px]">{v}</dd>
+            <dd className="min-w-0 text-[15px] text-ink">{v}</dd>
           </div>
         ))}
       </dl>

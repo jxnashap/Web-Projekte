@@ -9,8 +9,15 @@ function Inner({ param, placeholder, className }: { param: string; placeholder: 
   const sp = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const [value, setValue] = useState(sp.get(param) ?? "");
+  const urlValue = sp.get(param) ?? "";
+  const [value, setValue] = useState(urlValue);
+  const [synced, setSynced] = useState(urlValue);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // URL wurde von außen geändert (z. B. Link "Filter zurücksetzen"): Feld übernimmt den neuen Wert
+  if (urlValue !== synced) {
+    setSynced(urlValue);
+    if (urlValue !== value.trim()) setValue(urlValue);
+  }
 
   useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
 

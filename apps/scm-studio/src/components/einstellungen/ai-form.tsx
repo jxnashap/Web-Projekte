@@ -27,7 +27,7 @@ export function AiForm({ action, value, disabled }: { action: (p: ActionState, f
           <Input name="customModel" defaultValue={known ? "" : value.model} placeholder="gpt-6.1-sol" autoComplete="off" disabled={disabled} />
         </Field>
       )}
-      <Field label="Nachdenken (reasoning effort)" name="effort" hint="Nachdenken kostet Ausgabe-Tokens. Für kreative Kurztexte reicht „Niedrig“.">
+      <Field label="Nachdenken" name="effort" hint="Längeres Nachdenken kostet mehr Zeit und Geld. Für kreative Kurztexte reicht „Niedrig“.">
         <Select name="effort" defaultValue={value.effort} disabled={disabled}>
           {Object.entries(AI_EFFORTS).map(([k, v]) => (
             <option key={k} value={k}>

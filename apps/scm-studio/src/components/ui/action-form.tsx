@@ -20,6 +20,7 @@ export function ActionForm({
   resetOnSuccess = false,
   toastOnSuccess = true,
   onSuccess,
+  onError,
   id,
 }: {
   action: (prev: ActionState, fd: FormData) => Promise<ActionState>;
@@ -28,6 +29,7 @@ export function ActionForm({
   resetOnSuccess?: boolean;
   toastOnSuccess?: boolean;
   onSuccess?: (s: ActionState) => void;
+  onError?: (s: ActionState) => void;
   id?: string;
 }) {
   const [state, setState] = useState<ActionState>({});
@@ -77,6 +79,7 @@ export function ActionForm({
               onSuccess?.(result);
               if (result.redirectTo) router.push(result.redirectTo);
             } else {
+              onError?.(result);
               // Im Dialog steht der Fehler im Dialog (FormActions); ein Toast läge hinter dem modalen Dialog.
               if (result.error && !dialog) toast.error(result.error);
               // Erstes fehlerhaftes Feld fokussieren und in den Blick holen
@@ -84,6 +87,7 @@ export function ActionForm({
               if (first) {
                 requestAnimationFrame(() => {
                   const el = form.querySelector<HTMLElement>(`[name="${CSS.escape(first)}"], [name="${CSS.escape(first)}[]"]`);
+                  el?.closest("details")?.setAttribute("open", "");
                   el?.focus({ preventScroll: true });
                   el?.scrollIntoView({ block: "center", behavior: "smooth" });
                 });

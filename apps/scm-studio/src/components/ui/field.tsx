@@ -127,7 +127,7 @@ export function FormActions({ className, children, ...p }: React.HTMLAttributes<
     <div
       className={cn(
         "mt-7",
-        inDialog && "sticky bottom-0 -mx-6 -mb-6 border-t border-hairline bg-surface/97 px-6 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl",
+        inDialog && "sticky -bottom-6 -mx-6 -mb-6 border-t border-hairline bg-surface/97 px-6 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl",
         outer,
       )}
       {...p}

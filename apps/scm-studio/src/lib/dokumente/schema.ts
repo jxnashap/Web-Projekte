@@ -294,9 +294,10 @@ export function controllerProblem(c: ConsentController, hasClient: boolean): str
   if (c.isClient && !hasClient) return "Ohne Auftraggeber ist SCM verantwortlich. Bitte bei „Verantwortlich“ SCM wählen.";
   if (!c.missing.length) return null;
   const list = c.missing.join(" und ");
+  const verb = c.missing.length > 1 ? "fehlen" : "fehlt";
   return c.isClient
-    ? `Beim Kunden fehlt ${list} für Datenschutzfragen. Bitte im Kunden ergänzen oder SCM als verantwortlich wählen.`
-    : `In den Firmendaten von SCM fehlt ${list}. Bitte unter Einstellungen, Firma ergänzen.`;
+    ? `Beim Kunden ${verb} ${list} für Datenschutzfragen. Bitte im Kunden ergänzen oder SCM als verantwortlich wählen.`
+    : `In den Firmendaten von SCM ${verb} ${list}. Bitte unter Einstellungen, Firma ergänzen.`;
 }
 
 /** Welche Unterschriften braucht eine Einwilligung? (Minderjährige: Sorgeberechtigte, ab etwa 14 Jahren zusätzlich das Kind) */

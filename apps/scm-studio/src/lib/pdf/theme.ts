@@ -2,7 +2,7 @@
 // Etiketten in Courier Prime (wie die Website). Maße in Punkt (A4 = 595 × 842 pt, 1 mm ≈ 2,835 pt).
 import path from "node:path";
 import { Font } from "@react-pdf/renderer";
-import { hyphenateSync } from "hyphen/de";
+import hyphenDe from "hyphen/de";
 
 export const C = {
   ink: "#0E0E11",
@@ -41,6 +41,6 @@ export function registerFonts() {
   });
   // Deutsche Silbentrennung (neue Rechtschreibung): lange Wörter brechen an Silbengrenzen mit Trennstrich
   // statt mitten im Wort. Kurze Wörter bleiben ganz.
-  Font.registerHyphenationCallback((word) => (word.length < 8 ? [word] : hyphenateSync(word, { minWordLength: 8 }).split("\u00ad")));
+  Font.registerHyphenationCallback((word) => (word.length < 8 ? [word] : hyphenDe.hyphenateSync(word, { minWordLength: 8 }).split("\u00ad")));
   registered = true;
 }

@@ -1,19 +1,30 @@
 "use client";
 // Formulare der vier Dokumentarten. Zustand nur dort, wo das Formular reagiert (z. B. minderjährig → Sorgeberechtigte).
-import { Info } from "lucide-react";
-import { useState } from "react";
-import { ActionForm, FieldError } from "@/components/ui/action-form";
+// Im Entwurf gibt es eine klebende Leiste mit "Speichern" (Hauptaktion) und "Zur Unterschrift freigeben" bzw.
+// "Abschließen und ablegen": Beide senden dasselbe Formular, damit keine ungespeicherte Änderung verloren geht.
+import { Check, Info } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { useLeaveGuard } from "@/components/ui/use-leave-guard";
+import { ActionForm, FieldError, useFormCtx } from "@/components/ui/action-form";
+import { Button } from "@/components/ui/button";
+import { useConfirm, type ConfirmOptions } from "@/components/ui/confirm";
 import { Checkbox, Field, FormActions, FormGrid, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { ActionState } from "@/lib/action";
+import { cn } from "@/lib/cn";
 import {
+  defaultEinwilligung,
+  finalizeLabel,
   GEBIET,
   LEISTUNGEN,
+  needsSignature,
   NUTZUNGSDAUER,
   PLATTFORMEN,
   ROLLEN,
   ZWECKE,
-  ZWECK_KEYS,
+  zweckKeysFor,
+  type DocKind,
   type DrehplanData,
   type EinwilligungData,
   type MonatsberichtData,
@@ -24,9 +35,9 @@ type Action = (prev: ActionState, fd: FormData) => Promise<ActionState>;
 
 function Group({ title, hint, children }: { title: string; hint?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <fieldset className="grid gap-4 border-t border-line pt-5 first:border-t-0 first:pt-0">
+    <fieldset className="grid gap-4 border-t border-hairline pt-5 first:border-t-0 first:pt-0">
       <legend className="contents">
-        <span className="text-[15px] font-semibold text-ink">{title}</span>
+        <span className="text-[17px] font-semibold tracking-[-0.02em] text-ink">{title}</span>
       </legend>
       {hint && <p className="-mt-2 text-[13px] text-muted">{hint}</p>}
       {children}
@@ -34,36 +45,48 @@ function Group({ title, hint, children }: { title: string; hint?: React.ReactNod
   );
 }
 
-function Hint({ children, tone = "info" }: { children: React.ReactNode; tone?: "info" | "warn" }) {
+export function Hint({ children, tone = "info" }: { children: React.ReactNode; tone?: "info" | "warn" }) {
   return (
-    <p className={`flex gap-2 rounded-xl px-3 py-2.5 text-[13px] ${tone === "warn" ? "bg-warn-soft text-warn" : "bg-info-soft text-info"}`}>
+    <p role={tone === "warn" ? "status" : undefined} className={cn("flex gap-2 rounded-xl px-3 py-2.5 text-[13px]", tone === "warn" ? "bg-warn-soft text-warn" : "bg-info-soft text-info")}>
       <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
       <span>{children}</span>
     </p>
   );
 }
 
+/** Mehrfachauswahl als gefüllte Kapseln (gewählt: dunkel mit Häkchen), ohne Rahmen. */
 function CheckGroup({ name, options, selected, onChange }: { name: string; options: Record<string, string>; selected: string[]; onChange?: (v: string[]) => void }) {
   const [sel, setSel] = useState(selected);
   return (
-    <div className="grid gap-2 sm:grid-cols-2">
-      {Object.entries(options).map(([k, label]) => (
-        <label key={k} className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-line-2 px-3 py-2.5 text-[14px] text-ink-2 hover:border-faint has-[:checked]:border-accent has-[:checked]:text-ink">
-          <input
-            type="checkbox"
-            name={`${name}[]`}
-            value={k}
-            checked={sel.includes(k)}
-            onChange={(e) => {
-              const next = e.target.checked ? [...sel, k] : sel.filter((x) => x !== k);
-              setSel(next);
-              onChange?.(next);
-            }}
-            className="mt-0.5 size-4 shrink-0 accent-[var(--color-accent)]"
-          />
-          {label}
-        </label>
-      ))}
+    <div className="flex flex-wrap gap-2">
+      {Object.entries(options).map(([k, label]) => {
+        const on = sel.includes(k);
+        return (
+          <label
+            key={k}
+            className={cn(
+              "inline-flex min-h-11 cursor-pointer select-none items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[14px] font-medium leading-snug transition-colors sm:min-h-9",
+              "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent",
+              on ? "bg-ink text-white" : "bg-fill text-ink hover:bg-[rgb(120_120_128/0.18)]",
+            )}
+          >
+            <input
+              type="checkbox"
+              name={`${name}[]`}
+              value={k}
+              checked={on}
+              onChange={(e) => {
+                const next = e.target.checked ? [...sel, k] : sel.filter((x) => x !== k);
+                setSel(next);
+                onChange?.(next);
+              }}
+              className="sr-only"
+            />
+            {on && <Check className="size-4 shrink-0" strokeWidth={2.6} aria-hidden />}
+            {label}
+          </label>
+        );
+      })}
     </div>
   );
 }
@@ -72,7 +95,7 @@ function CheckGroup({ name, options, selected, onChange }: { name: string; optio
 function ChoiceField({ label, name, children }: { label: string; name: string; children: React.ReactNode }) {
   return (
     <div className="grid gap-1.5" role="group" aria-label={label}>
-      <span className="text-[13px] font-semibold text-ink-2">{label}</span>
+      <span className="text-[13px] font-medium text-ink-2">{label}</span>
       {children}
       <FieldError name={name} />
     </div>
@@ -84,6 +107,109 @@ function TitleField({ value }: { value: string }) {
     <Field label="Titel" name="title">
       <Input name="title" defaultValue={value} required />
     </Field>
+  );
+}
+
+// ------------------------------------------------------------------
+// Klebende Leiste im Entwurf: Speichern, Festhalten, Hinweis auf ungespeicherte Änderungen
+// ------------------------------------------------------------------
+const FINALIZE_CONFIRM: Record<"legal" | "report", ConfirmOptions> = {
+  legal: {
+    title: "Zur Unterschrift freigeben?",
+    message: "Eure Eingaben werden gespeichert und als Fassung festgehalten. Danach wird nur noch unterschrieben. Ändern geht dann über „Wieder bearbeiten“.",
+    confirmLabel: "Freigeben",
+    cancelLabel: "Weiter bearbeiten",
+    tone: "default",
+  },
+  report: {
+    title: "Abschließen und ablegen?",
+    message: "Eure Eingaben werden gespeichert, das PDF wird mit den aktuellen Zahlen abgelegt. Ändern geht dann über „Wieder bearbeiten“.",
+    confirmLabel: "Abschließen",
+    cancelLabel: "Weiter bearbeiten",
+    tone: "default",
+  },
+};
+
+/**
+ * Beobachtet das umgebende Formular: geändert seit dem letzten erfolgreichen Speichern? Und kam das laufende
+ * Absenden vom Knopf "Freigeben" (für den passenden Ladetext)?
+ */
+function useDraftForm(ref: React.RefObject<HTMLElement | null>) {
+  const { state } = useFormCtx();
+  const stateRef = useRef(state);
+  const [changedAt, setChangedAt] = useState<ActionState | null>(null);
+  const [finalizing, setFinalizing] = useState(false);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+  useEffect(() => {
+    const form = ref.current?.closest("form");
+    if (!form) return;
+    const mark = () => setChangedAt(stateRef.current);
+    const onSubmit = (e: SubmitEvent) => setFinalizing((e.submitter as HTMLButtonElement | null)?.value === "final");
+    form.addEventListener("input", mark);
+    form.addEventListener("change", mark);
+    form.addEventListener("submit", onSubmit);
+    return () => {
+      form.removeEventListener("input", mark);
+      form.removeEventListener("change", mark);
+      form.removeEventListener("submit", onSubmit);
+    };
+  }, [ref]);
+  return { dirty: changedAt !== null && !(state.ok && state !== changedAt), finalizing };
+}
+
+function FinalizeButton({ kind, finalizing }: { kind: DocKind; finalizing: boolean }) {
+  const ask = useConfirm();
+  const { pending } = useFormCtx();
+  const mine = pending && finalizing;
+  return (
+    <Button
+      type="submit"
+      name="intent"
+      value="final"
+      variant="secondary"
+      className="order-1 max-sm:flex-1"
+      disabled={pending}
+      aria-busy={mine}
+      onClick={async (e) => {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        if (await ask(FINALIZE_CONFIRM[needsSignature(kind) ? "legal" : "report"])) btn.form?.requestSubmit(btn);
+      }}
+    >
+      {mine ? (
+        needsSignature(kind) ? "Wird freigegeben …" : "Wird abgelegt …"
+      ) : (
+        <>
+          {/* auf dem Handy kurz, damit beide Knöpfe in eine Zeile passen */}
+          <span className="sm:hidden">{needsSignature(kind) ? "Freigeben" : "Ablegen"}</span>
+          <span className="max-sm:hidden">{finalizeLabel(kind)}</span>
+        </>
+      )}
+    </Button>
+  );
+}
+
+function DraftBar({ kind }: { kind: DocKind }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const { dirty, finalizing } = useDraftForm(ref);
+  useLeaveGuard(dirty, { message: "Was ihr an diesem Dokument geändert habt, ist noch nicht gespeichert." });
+  return (
+    <FormActions className="sticky bottom-[calc(var(--tabbar-h,calc(54px+env(safe-area-inset-bottom)))+12px)] z-20 -mx-2 rounded-[18px] px-3 py-2.5 bg-surface/95 shadow-[var(--shadow-pop)] backdrop-blur-xl sm:-mx-3 lg:bottom-4">
+      <span ref={ref} aria-live="polite" className={cn("basis-full text-[13px] text-muted sm:mr-auto sm:basis-auto", !dirty && "max-sm:hidden")}>
+        {dirty ? (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-warn" aria-hidden /> Nicht gespeichert
+          </span>
+        ) : (
+          <span className="max-sm:hidden">Gespeichert</span>
+        )}
+      </span>
+      {/* Speichern steht im Formular zuerst (Eingabetaste speichert), erscheint aber rechts */}
+      <SubmitButton className="order-2 max-sm:flex-1">Speichern</SubmitButton>
+      <FinalizeButton kind={kind} finalizing={finalizing} />
+    </FormActions>
   );
 }
 
@@ -137,7 +263,7 @@ export function VertragForm({ action, title, data, isMerchant, clientName }: { a
         <ChoiceField label="Plattformen" name="plattformen">
           <CheckGroup name="plattformen" options={PLATTFORMEN} selected={data.plattformen} />
         </ChoiceField>
-        <div className="flex flex-wrap gap-x-6 gap-y-2">
+        <div className="grid gap-x-6 sm:grid-cols-2">
           <Checkbox name="organisch" label="Organische Beiträge" defaultChecked={data.organisch} />
           <Checkbox name="werbung" label="Bezahlte Werbeanzeigen" defaultChecked={data.werbung} />
           <Checkbox name="exklusiv" label="Ausschließlich (exklusiv)" defaultChecked={data.exklusiv} />
@@ -201,23 +327,43 @@ export function VertragForm({ action, title, data, isMerchant, clientName }: { a
         </Field>
       </Group>
 
-      <FormActions className="sticky bottom-20 z-10 -mx-1 rounded-2xl bg-surface/90 p-1 backdrop-blur lg:bottom-4">
-        <SubmitButton>Speichern</SubmitButton>
-      </FormActions>
+      <DraftBar kind="vertrag" />
     </ActionForm>
   );
 }
 
 // ------------------------------------------------------------------
-export function EinwilligungFields({ data }: { data: Partial<EinwilligungData> }) {
+/** Probleme der verantwortlichen Stelle je Auswahl (null = vollständig), vom Server berechnet */
+export type ControllerIssues = { kunde: string | null; scm: string | null };
+
+export function EinwilligungFields({
+  data,
+  hasClient,
+  issues,
+  clientEditHref,
+  autoFocusName = false,
+}: {
+  data: Partial<EinwilligungData>;
+  hasClient: boolean;
+  issues?: ControllerIssues;
+  clientEditHref?: string;
+  autoFocusName?: boolean;
+}) {
   const [minor, setMinor] = useState(Boolean(data.minderjaehrig));
   const [sole, setSole] = useState(Boolean(data.alleinigesSorgerecht));
+  // Wechselt der Auftraggeber (Neu-Formular), gelten für die neue Lage die Standardwerte
+  const [initialHasClient] = useState(hasClient);
+  const [verantwortlich, setVerantwortlich] = useState<"kunde" | "scm" | null>(initialHasClient ? (data.verantwortlich ?? "kunde") : null);
+  const effective = hasClient ? (verantwortlich ?? "kunde") : "scm";
+  const issue = issues?.[effective] ?? null;
+  const zwecke = zweckKeysFor(hasClient);
+  const zweckeSelected = hasClient === initialHasClient ? (data.zwecke ?? ["aufnahme"]) : defaultEinwilligung(data.drehtag ?? "", hasClient).zwecke;
   return (
     <div className="grid gap-6">
       <Group title="Person">
         <FormGrid>
           <Field label="Vor- und Nachname" name="personName">
-            <Input name="personName" defaultValue={data.personName} autoComplete="off" required />
+            <Input name="personName" defaultValue={data.personName} autoComplete="off" autoCapitalize="words" required autoFocus={autoFocusName} />
           </Field>
           <Field label="Rolle im Video" name="rolle">
             <Select name="rolle" defaultValue={data.rolle ?? "gast"}>
@@ -237,7 +383,7 @@ export function EinwilligungFields({ data }: { data: Partial<EinwilligungData> }
         </FormGrid>
         <Checkbox name="minderjaehrig" label="Die Person ist minderjährig" checked={minor} onChange={(e) => setMinor(e.target.checked)} />
         {minor && (
-          <div className="grid gap-4 rounded-2xl bg-sunken/70 p-4">
+          <div className="grid gap-4 rounded-2xl bg-sunken p-4">
             <Hint>Bei Minderjährigen willigen die Sorgeberechtigten ein, bei gemeinsamer Sorge beide. Ab etwa 14 Jahren stimmt die Person zusätzlich selbst zu. Bei Kindern unter 15 ist das Jugendarbeitsschutzgesetz zu prüfen.</Hint>
             <FormGrid>
               <Field label="Erziehungsberechtigte Person" name="erziehungsberechtigt1">
@@ -249,7 +395,7 @@ export function EinwilligungFields({ data }: { data: Partial<EinwilligungData> }
                 </Field>
               )}
             </FormGrid>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <div className="grid gap-x-6 sm:grid-cols-2">
               <Checkbox name="alleinigesSorgerecht" label="Alleiniges Sorgerecht" checked={sole} onChange={(e) => setSole(e.target.checked)} />
               <Checkbox name="ab14" label="Die Person ist 14 oder älter (unterschreibt mit)" defaultChecked={data.ab14} />
             </div>
@@ -268,28 +414,68 @@ export function EinwilligungFields({ data }: { data: Partial<EinwilligungData> }
         <Field label="Vorhaben" name="projekt" optional hint="Was wird gedreht? Kurz und verständlich.">
           <Input name="projekt" defaultValue={data.projekt} placeholder="z. B. Reels für den Mittagstisch" />
         </Field>
-        <Field label="Verantwortlich für die Veröffentlichung" name="verantwortlich" hint="Bei Mitarbeitenden und Gästen des Kunden ist meist der Kunde verantwortlich.">
-          <Select name="verantwortlich" defaultValue={data.verantwortlich ?? "kunde"}>
-            <option value="kunde">Kunde (Auftraggeber)</option>
-            <option value="scm">SCM</option>
-          </Select>
-        </Field>
+        {hasClient ? (
+          <Field label="Verantwortlich für die Veröffentlichung" name="verantwortlich" hint={issue ? undefined : "Bei Mitarbeitenden und Gästen des Kunden ist meist der Kunde verantwortlich."}>
+            <Select name="verantwortlich" value={effective} onChange={(e) => setVerantwortlich(e.target.value as "kunde" | "scm")}>
+              <option value="kunde">Kunde (Auftraggeber)</option>
+              <option value="scm">SCM</option>
+            </Select>
+          </Field>
+        ) : (
+          <div className="grid gap-1.5">
+            <input type="hidden" name="verantwortlich" value="scm" />
+            <span className="text-[13px] font-medium text-ink-2">Verantwortlich für die Veröffentlichung</span>
+            <p className="rounded-[var(--radius-control)] bg-sunken px-3 py-2.5 text-[15px] text-ink">SCM, eigener Dreh ohne Auftraggeber</p>
+            <FieldError name="verantwortlich" />
+          </div>
+        )}
+        {issue && (
+          <Hint tone="warn">
+            {issue}{" "}
+            {effective === "kunde" && clientEditHref ? (
+              <Link href={clientEditHref} className="font-semibold underline underline-offset-2">
+                Kunden bearbeiten
+              </Link>
+            ) : effective === "scm" ? (
+              <Link href="/einstellungen?reiter=firma" className="font-semibold underline underline-offset-2">
+                Firmendaten öffnen
+              </Link>
+            ) : null}
+          </Hint>
+        )}
       </Group>
       <Group title="Vorauswahl der Zwecke" hint="Die Person bestätigt oder ändert die Auswahl beim Unterschreiben selbst.">
-        <CheckGroup name="zwecke" options={Object.fromEntries(ZWECK_KEYS.map((k) => [k, ZWECKE[k].label]))} selected={data.zwecke ?? ["aufnahme", "kanaele"]} />
+        <CheckGroup
+          key={String(hasClient)}
+          name="zwecke"
+          options={Object.fromEntries(zwecke.map((k) => [k, ZWECKE[k].label]))}
+          selected={zweckeSelected.filter((z) => zwecke.includes(z))}
+        />
       </Group>
     </div>
   );
 }
 
-export function EinwilligungForm({ action, title, data }: { action: Action; title: string; data: EinwilligungData }) {
+export function EinwilligungForm({
+  action,
+  title,
+  data,
+  hasClient,
+  issues,
+  clientEditHref,
+}: {
+  action: Action;
+  title: string;
+  data: EinwilligungData;
+  hasClient: boolean;
+  issues?: ControllerIssues;
+  clientEditHref?: string;
+}) {
   return (
     <ActionForm action={action} className="grid gap-6">
       <TitleField value={title} />
-      <EinwilligungFields data={data} />
-      <FormActions>
-        <SubmitButton>Speichern</SubmitButton>
-      </FormActions>
+      <EinwilligungFields data={data} hasClient={hasClient} issues={issues} clientEditHref={clientEditHref} />
+      <DraftBar kind="einwilligung" />
     </ActionForm>
   );
 }
@@ -348,9 +534,7 @@ export function DrehplanForm({ action, title, data, team }: { action: Action; ti
           <Textarea name="notizen" defaultValue={data.notizen} rows={3} />
         </Field>
       </Group>
-      <FormActions>
-        <SubmitButton>Speichern</SubmitButton>
-      </FormActions>
+      <DraftBar kind="drehplan" />
     </ActionForm>
   );
 }
@@ -369,9 +553,7 @@ export function MonatsberichtForm({ action, title, data }: { action: Action; tit
       <Field label="Ausblick" name="ausblick" optional hint="Was plant ihr für den nächsten Monat?">
         <Textarea name="ausblick" defaultValue={data.ausblick} rows={4} />
       </Field>
-      <FormActions>
-        <SubmitButton>Speichern</SubmitButton>
-      </FormActions>
+      <DraftBar kind="monatsbericht" />
     </ActionForm>
   );
 }

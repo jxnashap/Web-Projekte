@@ -1,23 +1,33 @@
-import { ChevronRight, FilePen, FileSignature, Plus } from "lucide-react";
+import { ChevronRight, FileSignature, Plus, SearchX } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { FilterBar, FilterSelect } from "@/components/crm/filter-bar";
+import { KindIcon } from "@/components/dokumente/kind-icon";
 import { Badge, Dot } from "@/components/ui/badge";
-import { buttonClass, LinkButton } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty";
-import { Input, Select } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
-import { SkeletonTable } from "@/components/ui/skeleton";
+import { ListSkeleton } from "@/components/ui/skeleton";
 import { LinkTabs } from "@/components/ui/tabs";
-import { countByKind, getClientOptions, listDocuments, type DocRow } from "@/lib/dokumente/data";
-import { DOC_STATUS, isDocKind, ZWECKE, type EinwilligungData, type ZweckKey } from "@/lib/dokumente/schema";
+import { UrlSearch } from "@/components/ui/url-search";
+import { getClientOptions, listDocuments, type DocRow } from "@/lib/dokumente/data";
+import { DOC_KIND_KEYS, docStatus, isDocKind, STATUS_FILTER, statusFiltersFor, ZWECKE, type DocKind, type EinwilligungData, type ZweckKey } from "@/lib/dokumente/schema";
 import { dateDe, dateShort } from "@/lib/format";
 import { DOC_KINDS } from "@/lib/labels";
+import { cn } from "@/lib/cn";
 
 export const metadata = { title: "Dokumente" };
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
+/** Kurze Reiternamen, damit alle fünf auf dem Handy Platz finden */
+const TAB_LABEL: Record<DocKind, string> = { vertrag: "Verträge", einwilligung: "Einwilligungen", drehplan: "Drehpläne", monatsbericht: "Berichte" };
+
+const CREATE_LABEL: Record<DocKind, string> = { vertrag: "Vertrag anlegen", einwilligung: "Einwilligung anlegen", drehplan: "Drehplan anlegen", monatsbericht: "Bericht anlegen" };
+
+const rowFocus = "transition-colors hover:bg-fill-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent";
 
 export default function DokumentePage({ searchParams }: { searchParams: SP }) {
   return (
@@ -25,19 +35,20 @@ export default function DokumentePage({ searchParams }: { searchParams: SP }) {
       <PageHeader
         scene="Szene 09 · Dokumente"
         title="Dokumente"
-        description="Verträge, Einwilligungen, Drehpläne und Monatsberichte. Edel in Weiß mit Logo, unterschreiben direkt am Handy oder Tablet."
+        description={<span className="max-sm:hidden">Verträge, Einwilligungen, Drehpläne und Monatsberichte. Einwilligungen unterschreibt ihr direkt am Handy.</span>}
         actions={
           <>
             <LinkButton href="/dokumente/neu?art=einwilligung" variant="secondary">
               <FileSignature className="size-4" /> Einwilligung am Set
             </LinkButton>
-            <LinkButton href="/dokumente/neu">
+            {/* auf dem Handy legt das Plus der Tab-Leiste neue Dokumente an */}
+            <LinkButton href="/dokumente/neu" className="max-sm:hidden">
               <Plus className="size-4" /> Neues Dokument
             </LinkButton>
           </>
         }
       />
-      <Suspense fallback={<SkeletonTable />}>
+      <Suspense fallback={<ListSkeleton />}>
         <DocumentList searchParams={searchParams} />
       </Suspense>
     </>
@@ -47,92 +58,92 @@ export default function DokumentePage({ searchParams }: { searchParams: SP }) {
 async function DocumentList({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const art = one(sp.art);
+  const activeArt = isDocKind(art) ? art : undefined;
   const kunde = Number(one(sp.kunde)) || undefined;
-  const status = one(sp.status);
-  const q = one(sp.q);
-  const [docs, counts, clients] = await Promise.all([listDocuments({ art, kunde, status, q }), countByKind(), getClientOptions()]);
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  const href = (a?: string) => {
-    const p = new URLSearchParams();
-    if (a) p.set("art", a);
-    if (kunde) p.set("kunde", String(kunde));
-    if (status) p.set("status", status);
-    if (q) p.set("q", q);
-    const s = p.toString();
+  const rawStatus = one(sp.status);
+  // Status nur, wenn er zur Art passt (Drehpläne werden nie unterschrieben)
+  const status = rawStatus && rawStatus in STATUS_FILTER && (!activeArt || STATUS_FILTER[rawStatus].kinds.includes(activeArt)) ? rawStatus : undefined;
+  const q = one(sp.q)?.trim() || undefined;
+  const [all, clients] = await Promise.all([listDocuments({ kunde, status, q }), getClientOptions()]);
+  const docs = activeArt ? all.filter((d) => d.kind === activeArt) : all;
+  const countOf = (k?: DocKind) => (k ? all.filter((d) => d.kind === k).length : all.length);
+
+  const href = (p: { art?: string; kunde?: number; status?: string; q?: string }) => {
+    const u = new URLSearchParams();
+    if (p.art) u.set("art", p.art);
+    if (p.kunde) u.set("kunde", String(p.kunde));
+    if (p.status) u.set("status", p.status);
+    if (p.q) u.set("q", p.q);
+    const s = u.toString();
     return s ? `/dokumente?${s}` : "/dokumente";
   };
-  const activeArt = art && isDocKind(art) ? art : undefined;
+  const current = { art: activeArt, kunde, status, q };
+  const tabHref = (k?: DocKind) => href({ ...current, art: k, status: status && (!k || STATUS_FILTER[status].kinds.includes(k)) ? status : undefined });
   const filtered = Boolean(kunde || status || q);
 
   return (
     <div className="grid gap-5">
       <LinkTabs
         items={[
-          { href: href(), label: "Alle", count: total, active: !activeArt },
-          ...(["vertrag", "einwilligung", "drehplan", "monatsbericht"] as const).map((k) => ({
-            href: href(k),
-            label: k === "einwilligung" ? "Einwilligungs-Register" : DOC_KINDS[k].plural,
-            count: counts[k] ?? 0,
-            active: activeArt === k,
-          })),
+          { href: tabHref(), label: "Alle", count: countOf(), active: !activeArt },
+          ...DOC_KIND_KEYS.map((k) => ({ href: tabHref(k), label: TAB_LABEL[k], count: countOf(k), active: activeArt === k })),
         ]}
       />
-      <form className="grid gap-2 sm:grid-cols-[1fr_200px_180px_auto]" action="/dokumente" role="search">
-        {activeArt && <input type="hidden" name="art" value={activeArt} />}
-        <label className="sr-only" htmlFor="dok-q">
-          Suchen
-        </label>
-        <Input id="dok-q" name="q" defaultValue={q} placeholder="Titel, Kunde oder Person suchen" />
-        <label className="sr-only" htmlFor="dok-kunde">
-          Kunde
-        </label>
-        <Select id="dok-kunde" name="kunde" defaultValue={kunde ? String(kunde) : ""}>
-          <option value="">Alle Kunden</option>
-          {clients.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </Select>
-        <label className="sr-only" htmlFor="dok-status">
-          Status
-        </label>
-        <Select id="dok-status" name="status" defaultValue={status ?? ""}>
-          <option value="">Jeder Status</option>
-          {Object.entries(DOC_STATUS).map(([k, v]) => (
-            <option key={k} value={k}>
-              {v.label}
-            </option>
-          ))}
-        </Select>
-        <div className="flex gap-2">
-          <button type="submit" className={buttonClass("secondary", "md", "flex-1 sm:flex-none")}>
-            Filtern
-          </button>
-          {filtered && (
-            <Link href={href(activeArt)} className={buttonClass("ghost", "md")} replace>
-              Zurücksetzen
-            </Link>
-          )}
-        </div>
-      </form>
+      <FilterBar
+        search={<UrlSearch placeholder="Dokumente durchsuchen" />}
+        active={(kunde ? 1 : 0) + (status ? 1 : 0)}
+        filters={
+          // Auswahlfelder auf dem grauen Seitengrund mit kräftigerer Füllung (wie das Suchfeld), sonst sind sie kaum zu sehen
+          <div className="contents [&_select]:bg-fill">
+            <FilterSelect
+              label="Kunde"
+              options={[
+                { value: "", label: "Alle Kunden", href: href({ ...current, kunde: undefined }), active: !kunde },
+                ...clients.map((c) => ({ value: String(c.id), label: c.name, href: href({ ...current, kunde: c.id }), active: kunde === c.id })),
+              ]}
+            />
+            <FilterSelect
+              label="Status"
+              options={[
+                { value: "", label: "Jeder Status", href: href({ ...current, status: undefined }), active: !status },
+                ...statusFiltersFor(activeArt).map(([k, v]) => ({ value: k, label: v.label, href: href({ ...current, status: k }), active: status === k })),
+              ]}
+            />
+          </div>
+        }
+      />
 
       {docs.length === 0 ? (
-        <EmptyState
-          title={filtered ? "Nichts gefunden" : activeArt ? `Noch keine ${DOC_KINDS[activeArt].plural}` : "Noch keine Dokumente"}
-          action={
-            <LinkButton href={activeArt ? `/dokumente/neu?art=${activeArt}` : "/dokumente/neu"}>
-              <Plus className="size-4" /> {activeArt ? `${DOC_KINDS[activeArt].label} anlegen` : "Erstes Dokument anlegen"}
-            </LinkButton>
-          }
-        >
-          {filtered ? "Passt die Filter an oder setzt sie zurück." : "Legt einen Vertrag, eine Einwilligung, einen Drehplan oder einen Monatsbericht an."}
-        </EmptyState>
+        filtered ? (
+          <EmptyState
+            icon={<SearchX className="size-5" />}
+            title={q ? `Keine Treffer für „${q}“` : "Keine Treffer"}
+            action={
+              <LinkButton href={href({ art: activeArt })} variant="secondary">
+                Filter zurücksetzen
+              </LinkButton>
+            }
+          >
+            Zu diesen Filtern gibt es kein Dokument.
+          </EmptyState>
+        ) : (
+          <EmptyState
+            icon={<KindIcon kind={activeArt ?? ""} className="size-5" />}
+            title={activeArt ? `Noch keine ${DOC_KINDS[activeArt].plural}` : "Noch keine Dokumente"}
+            action={
+              <LinkButton href={activeArt ? `/dokumente/neu?art=${activeArt}` : "/dokumente/neu"} variant="secondary">
+                <Plus className="size-4" /> {activeArt ? CREATE_LABEL[activeArt] : "Dokument anlegen"}
+              </LinkButton>
+            }
+          >
+            {activeArt ? DOC_KINDS[activeArt].hint : "Legt einen Vertrag, eine Einwilligung, einen Drehplan oder einen Monatsbericht an."}
+          </EmptyState>
+        )
       ) : activeArt === "einwilligung" ? (
         <ConsentRegister docs={docs} />
       ) : (
-        <Card>
-          <ul className="divide-y divide-line">
+        <Card className="overflow-hidden">
+          <ul className="divide-y divide-hairline">
             {docs.map((d) => (
               <DocItem key={d.id} d={d} />
             ))}
@@ -143,24 +154,31 @@ async function DocumentList({ searchParams }: { searchParams: SP }) {
   );
 }
 
-function StatusBadge({ d }: { d: DocRow }) {
-  if (d.revokedAt) return <Badge tone="accent">Widerrufen</Badge>;
-  const s = DOC_STATUS[d.status] ?? DOC_STATUS.entwurf;
-  return <Badge tone={s.tone}>{s.label}</Badge>;
+function StatusBadge({ d, className }: { d: DocRow; className?: string }) {
+  const s = docStatus(d.kind, d.status, d.revokedAt);
+  return (
+    <Badge tone={s.tone} className={className}>
+      {s.label}
+    </Badge>
+  );
 }
 
 function DocItem({ d }: { d: DocRow }) {
+  const kindLabel = DOC_KINDS[d.kind]?.label ?? d.kind;
+  const showKind = !d.title.startsWith(kindLabel);
+  const showClient = d.clientName && !d.title.includes(d.clientName);
   return (
     <li>
-      <Link href={`/dokumente/${d.id}`} className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-sunken/50 focus-visible:bg-sunken/60 focus-visible:outline-none">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sunken text-ink-2" aria-hidden>
-          <FilePen className="size-[18px]" />
+      <Link href={`/dokumente/${d.id}`} className={cn("flex items-center gap-3.5 px-4 py-3 sm:px-5", rowFocus)}>
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-fill-2 text-ink-2">
+          <KindIcon kind={d.kind} className="size-[18px]" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold text-ink">{d.title}</span>
-          <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
-            <span className="font-medium text-ink-2">{DOC_KINDS[d.kind]?.label ?? d.kind}</span>
-            {d.clientName && (
+          <span className="line-clamp-2 text-[15px] font-semibold leading-snug text-ink">{d.title}</span>
+          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
+            <StatusBadge d={d} className="sm:hidden" />
+            {showKind && <span>{kindLabel}</span>}
+            {showClient && (
               <span className="inline-flex items-center gap-1.5">
                 <Dot color={d.clientColor ?? "var(--color-line-2)"} /> {d.clientName}
               </span>
@@ -168,8 +186,8 @@ function DocItem({ d }: { d: DocRow }) {
             <span>geändert {dateShort(d.updatedAt)}</span>
           </span>
         </span>
-        <StatusBadge d={d} />
-        <ChevronRight className="hidden size-4 text-faint sm:block" aria-hidden />
+        <StatusBadge d={d} className="max-sm:hidden" />
+        <ChevronRight className="size-4 shrink-0 text-line-2" aria-hidden />
       </Link>
     </li>
   );
@@ -177,38 +195,41 @@ function DocItem({ d }: { d: DocRow }) {
 
 function ConsentRegister({ docs }: { docs: DocRow[] }) {
   return (
-    <Card>
-      <div className="border-b border-line px-5 py-4">
-        <h2 className="text-[15px] font-semibold">Einwilligungs-Register</h2>
+    <Card className="overflow-hidden">
+      <div className="px-5 pb-3 pt-4">
+        <h2 className="text-[17px] font-semibold tracking-[-0.02em]">Einwilligungs-Register</h2>
         <p className="mt-0.5 text-[13px] text-muted">Wer hat wann wofür eingewilligt, und wurde widerrufen? Bei einem Widerruf die betroffenen Videos prüfen.</p>
       </div>
-      <ul className="divide-y divide-line">
+      <ul className="divide-y divide-hairline border-t border-hairline">
         {docs.map((d) => {
           const data = d.data as unknown as EinwilligungData;
           const zwecke = (data.zweckeBeiUnterschrift ?? data.zwecke ?? []) as ZweckKey[];
+          const signed = d.status === "unterschrieben" && !d.revokedAt;
           return (
             <li key={d.id}>
-              <Link href={`/dokumente/${d.id}`} className="grid gap-2 px-5 py-4 transition-colors hover:bg-sunken/50 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_auto] sm:items-center sm:gap-4">
+              <Link href={`/dokumente/${d.id}`} className={cn("grid gap-2 px-5 py-3.5 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_auto] sm:items-center sm:gap-4", rowFocus)}>
                 <span className="min-w-0">
-                  <span className="block truncate font-semibold">{data.personName || d.signerName || d.title}</span>
+                  <span className="block truncate text-[15px] font-semibold">{data.personName || d.signerName || d.title}</span>
                   <span className="block truncate text-[13px] text-muted">
                     {[d.clientName ?? "eigener Dreh", data.drehtag ? `Dreh ${dateDe(data.drehtag)}` : null, data.minderjaehrig ? "minderjährig" : null].filter(Boolean).join(" · ")}
                   </span>
                 </span>
                 <span className="flex flex-wrap gap-1.5">
                   {zwecke.map((z) => (
-                    <Badge key={z} tone={d.status === "unterschrieben" && !d.revokedAt ? "ok" : "neutral"}>
+                    <Badge key={z} tone={signed ? "ok" : "neutral"}>
                       {ZWECKE[z]?.label ?? z}
                     </Badge>
                   ))}
                 </span>
-                <span className="flex items-center gap-2 text-[13px] text-muted sm:justify-end">
+                <span className="flex items-center gap-2 sm:justify-end">
                   {d.revokedAt ? (
                     <Badge tone="accent">Widerrufen am {dateDe(d.revokedAt)}</Badge>
                   ) : d.status === "unterschrieben" ? (
                     <Badge tone="ok">Unterschrieben {d.signedAt ? dateDe(d.signedAt) : ""}</Badge>
+                  ) : d.status === "final" ? (
+                    <Badge tone="warn">Unterschrift offen</Badge>
                   ) : (
-                    <Badge tone="warn">Noch nicht unterschrieben</Badge>
+                    <Badge tone="neutral">Entwurf</Badge>
                   )}
                 </span>
               </Link>

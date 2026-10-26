@@ -1,12 +1,18 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { SignFlow, type SignStep } from "@/components/dokumente/sign-flow";
 import { getCurrentUser } from "@/lib/auth";
 import { getDocument } from "@/lib/dokumente/data";
-import { consentSigners, ROLLEN, ZWECK_KEYS, ZWECKE, type EinwilligungData, type VertragData } from "@/lib/dokumente/schema";
+import { consentController, consentSigners, controllerProblem, ROLLEN, ZWECKE, zweckKeysFor, type EinwilligungData, type VertragData } from "@/lib/dokumente/schema";
 import { dateDe, eurShort } from "@/lib/format";
+import type { Company } from "@/lib/settings";
 
-export const metadata = { title: "Unterschreiben" };
+export async function generateMetadata({ params }: { params: P }): Promise<Metadata> {
+  const id = Number((await params).id);
+  const found = Number.isInteger(id) && id > 0 ? await getDocument(id).catch(() => null) : null;
+  return { title: found ? `Unterschreiben: ${found.doc.title}` : "Unterschreiben" };
+}
 
 type P = Promise<{ id: string }>;
 
@@ -42,13 +48,16 @@ async function Inner({ params }: { params: P }) {
           Zwischen SCM und <strong className="text-ink">{d.party?.name ?? client?.name}</strong> über {d.paketVideos} Videos pro Monat für {eurShort(Math.round(price * 100))} netto im Monat, ab{" "}
           {dateDe(d.beginn)}, Mindestlaufzeit {d.mindestlaufzeitMonate} Monate.
         </p>
-        <p>Bitte lest den vollständigen Vertrag im PDF, bevor ihr unterschreibt.</p>
+        <p>Bitte lesen Sie den vollständigen Vertrag im PDF, bevor Sie unterschreiben.</p>
         {d.scmSignature && <p className="text-[14px] text-muted">SCM hat bereits unterschrieben ({d.scmSignature.name}).</p>}
       </SignFlow>
     );
   }
 
   const d = doc.data as unknown as EinwilligungData;
+  // Ohne vollständige verantwortliche Stelle (Name, Anschrift, E-Mail) wird nicht unterschrieben; die Detailseite erklärt, was fehlt.
+  const company = ((doc.data as { companySnapshot?: Company }).companySnapshot ?? null);
+  if (controllerProblem(consentController(d.verantwortlich, d.party ?? null, company), Boolean(doc.clientId))) redirect(`/dokumente/${doc.id}`);
   const steps: SignStep[] = consentSigners(d).map((s) => ({ ...s, nameEditable: !s.name }));
   return (
     <SignFlow
@@ -58,7 +67,7 @@ async function Inner({ params }: { params: P }) {
       pdfHref={pdfHref}
       steps={steps}
       defaultPlace={d.ort ?? ""}
-      zwecke={ZWECK_KEYS.map((k) => ({ key: k, label: ZWECKE[k].label, text: ZWECKE[k].text }))}
+      zwecke={zweckKeysFor(Boolean(doc.clientId)).map((k) => ({ key: k, label: ZWECKE[k].label, text: ZWECKE[k].text }))}
       initialZwecke={d.zwecke}
     >
       <h1 className="text-[26px] font-semibold leading-tight text-ink">Einwilligung in Foto- und Videoaufnahmen</h1>

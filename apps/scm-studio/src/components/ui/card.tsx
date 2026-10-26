@@ -65,7 +65,7 @@ export function ListRow({ href, children, className }: { href: string; children:
   return (
     <Link
       href={href}
-      className={cn("flex min-h-12 items-center gap-3 px-5 py-2.5 transition-colors hover:bg-fill-2 focus-visible:bg-fill-2 focus-visible:outline-none", className)}
+      className={cn("flex min-h-12 items-center gap-3 px-5 py-2.5 transition-colors hover:bg-fill-2 focus-visible:bg-fill-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent", className)}
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">{children}</div>
       <ChevronRight className="size-4 shrink-0 text-line-2" />

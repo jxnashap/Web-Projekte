@@ -32,9 +32,10 @@ async function main() {
   const team = await db
     .insert(s.teamMembers)
     .values([
-      { name: "Oskar von Esebeck", email: "oskar@scm-creatives.de", role: "admin", initials: "OE" },
-      { name: "Yannick Ruch", email: "yannick@scm-creatives.de", role: "admin", initials: "YR" },
-      { name: "Andreas Mattolat", email: "andreas@scm-creatives.de", role: "admin", initials: "AM" },
+      // E-Mail-Adressen sind Platzhalter (.example), die echten Team-Adressen trägt ihr beim Livegang ein
+      { name: "Oskar von Esebeck", email: "oskar@scm-creatives.example", role: "admin", initials: "OE" },
+      { name: "Yannick Ruch", email: "yannick@scm-creatives.example", role: "admin", initials: "YR" },
+      { name: "Andreas Mattolat", email: "andreas@scm-creatives.example", role: "admin", initials: "AM" },
     ])
     .returning();
 
@@ -104,7 +105,7 @@ async function main() {
     { name: "Kai Petersen", company: "Fitnessstudio Nordform", branche: "unternehmen", ort: "Kiel", contactWay: "mail",
       source: "website", packageInterest: "unsicher", stage: "kontaktiert", score: "C" },
     { name: "Lena Brandt", company: "Strandkiosk Scharbeutz", branche: "gastronomie", ort: "Scharbeutz", stage: "verloren",
-      source: "website", notes: "Saison vorbei, im März wieder melden." },
+      source: "website", notes: "Saison vorbei, im März wieder melden.", lostReason: "Saison vorbei, kein Budget bis März" },
   ]);
 
   // ---------------- Videos (die 6 echten Reels + Planung) ----------------

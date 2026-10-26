@@ -28,7 +28,7 @@ export function EinwilligungPdf({ ctx }: { ctx: RenderCtx }) {
 
   return (
     <PdfDocument title={ctx.doc.title} subject="Einwilligung in Bild- und Videoaufnahmen" company={c}>
-      <PdfPage company={c} kind="Einwilligung" reference={`Vorlage ${ctx.doc.templateVersion ?? ""}`} watermark={revoked ? "Widerrufen" : watermark}>
+      <PdfPage showBank={false} company={c} kind="Einwilligung" reference={`Vorlage ${ctx.doc.templateVersion ?? ""}`} watermark={revoked ? "Widerrufen" : watermark}>
         <DemoNote show={ctx.demo} />
         <Title kicker={`Drehtag ${fmtDate(d.drehtag)}`} sub="für Fotos und Videos am Set">
           Einwilligung

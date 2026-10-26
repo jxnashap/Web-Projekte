@@ -12,7 +12,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import type { ActionState } from "@/lib/action";
 import { cn } from "@/lib/cn";
 import { BAUPLAN, FORMATS, mergeHookAndCta, tc, toSec } from "@/lib/skripte/schema";
-import { useLeaveGuard } from "./use-leave-guard";
+import { useLeaveGuard } from "@/components/ui/use-leave-guard";
 
 type Beat = { key: number; tc: string; label: string; text: string; shot: string };
 export type ScriptData = {

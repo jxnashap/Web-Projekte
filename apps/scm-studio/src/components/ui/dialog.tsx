@@ -47,7 +47,7 @@ export function Dialog({
       // Startfokus: am Computer das erste Feld, auf Touch-Geräten die Überschrift (keine Tastatur, die hochspringt)
       requestAnimationFrame(() => {
         const fine = window.matchMedia("(pointer: fine)").matches;
-        const field = bodyRef.current?.querySelector<HTMLElement>("input:not([type=hidden]):not([disabled]), select, textarea");
+        const field = bodyRef.current?.querySelector<HTMLElement>("input:not([type=hidden]):not([type=radio]):not([type=checkbox]):not([disabled]), select, textarea");
         if (fine && field) field.focus();
         else d.querySelector<HTMLElement>(`#${CSS.escape(titleId)}`)?.focus();
       });

@@ -58,7 +58,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
           finish(false);
         }}
         className={cn(
-          "as-sheet squircle m-auto w-[calc(100vw-24px)] max-w-[340px] rounded-[20px] border-0 bg-surface p-0 text-ink shadow-[var(--shadow-pop)] backdrop:bg-black/30",
+          "as-sheet squircle m-auto w-[calc(100vw-24px)] max-w-[380px] rounded-[20px] border-0 bg-surface p-0 text-ink shadow-[var(--shadow-pop)] backdrop:bg-black/30",
           "max-sm:mb-[max(12px,env(safe-area-inset-bottom))] max-sm:mt-auto max-sm:max-w-none",
         )}
       >
@@ -76,13 +76,13 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
               <Button
                 type="button"
                 variant={danger ? "danger" : "primary"}
-                className={cn("w-full sm:order-2", danger && "bg-accent text-white hover:bg-[#cc1f15]")}
+                className={cn("h-auto min-h-11 w-full whitespace-normal py-2 sm:order-2 sm:min-h-[38px]", danger && "bg-accent text-white hover:bg-[#cc1f15]")}
                 onClick={() => finish(true)}
                 autoFocus={!danger}
               >
                 {pending.confirmLabel ?? "Bestätigen"}
               </Button>
-              <Button type="button" variant="secondary" className="w-full sm:order-1" onClick={() => finish(false)} autoFocus={danger}>
+              <Button type="button" variant="secondary" className="h-auto min-h-11 w-full whitespace-normal py-2 sm:order-1 sm:min-h-[38px]" onClick={() => finish(false)} autoFocus={danger}>
                 {pending.cancelLabel ?? "Abbrechen"}
               </Button>
             </div>
