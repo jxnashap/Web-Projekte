@@ -96,7 +96,12 @@ const devHits = new Set();
       const info = await page.evaluate(() => {
         const q = s => document.querySelectorAll(s).length;
         /* grobe Kontrastprüfung: Textfarbe gegen ersten deckenden Hintergrund */
-        function rgb(s) { const m = s.match(/[\d.]+/g); return m ? m.map(Number) : [0, 0, 0, 1]; }
+        function rgb(s) {
+          const m = s.match(/[\d.]+/g); if (!m) return [0, 0, 0, 1];
+          const v = m.map(Number);
+          if (/^color\(srgb/.test(s)) return [v[0] * 255, v[1] * 255, v[2] * 255, v.length > 3 ? v[3] : 1];
+          return v;
+        }
         function lum([r, g, b]) { return [r, g, b].map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); })
           .reduce((a, v, i) => a + v * [.2126, .7152, .0722][i], 0); }
         function bgOf(el) {
@@ -106,6 +111,8 @@ const devHits = new Set();
             const a = c.length > 3 ? c[3] : 1;
             if (cs.backgroundImage !== 'none' && /url\(/.test(cs.backgroundImage)) return null;
             if (e.classList && (e.classList.contains('hero') || e.classList.contains('cta-band'))) return 'image';
+            if (e.classList && e.classList.contains('site-header') && !e.classList.contains('scrolled') &&
+                !document.body.classList.contains('page-light')) return 'image';
             if (a > 0) { stack.push([c, a]); if (a >= .99) break; }
           }
           let base = [251, 247, 245];
@@ -160,6 +167,16 @@ const devHits = new Set();
             clip: { x: 0, y, width: W, height: Math.min(segH, info.h - y) } });
         }
       }
+      /* Mobil: Overlay-Menü öffnen, Screenshot, wieder schließen */
+      if (vp.name === 'mobile' && pg === PAGES[0]) {
+        await page.click('.menu-btn'); await page.waitForTimeout(1500);
+        await page.screenshot({ path: path.join(OUT, `menu-mobile-open.png`) });
+        const menuState = await page.evaluate(() => ({ expanded: document.querySelector('.menu-btn').getAttribute('aria-expanded'),
+          vis: getComputedStyle(document.querySelector('.nav-overlay')).visibility }));
+        await page.keyboard.press('Escape'); await page.waitForTimeout(900);
+        const closed = await page.evaluate(() => getComputedStyle(document.querySelector('.nav-overlay')).visibility);
+        console.log(`   menu: open aria-expanded=${menuState.expanded} visibility=${menuState.vis} → nach Esc ${closed}`);
+      }
       const line = `${vp.name.padEnd(7)} ${pg.padEnd(17)} reveals ${info.rv[0]}/${info.rv[1]}  js-err ${errors.length}  bad ${bad.length}  ext ${ext.length}  hscroll ${info.hscroll}  h ${info.h}  today "${info.today}" (${info.isToday})`;
       console.log(line);
       if (errors.length) console.log('   errors:', errors);
@@ -169,6 +186,28 @@ const devHits = new Set();
       if (info.contrast.length) console.log('   contrast:', info.contrast);
       if (vp.name === 'desktop' && pg === PAGES[0]) console.log('   fonts loaded:', info.fonts);
       summary.push({ vp: vp.name, pg, rv: info.rv, errors: errors.length, bad: bad.length, ext: ext.length, hscroll: info.hscroll });
+      await page.close();
+    }
+    await ctx.close();
+  }
+  /* Öffnungszeiten-Status zu festen Zeitpunkten (Europe/Berlin) prüfen */
+  if (PAGES.includes('besuch.html')) {
+    const cases = [
+      ['2026-10-28T16:00:00Z', 'Mi 17:00 Berlin (MEZ, UTC+1) → offen'],
+      ['2026-10-28T10:00:00Z', 'Mi 11:00 → später geöffnet'],
+      ['2026-11-01T22:30:00Z', 'So 23:30 → bereits geschlossen'],
+      ['2026-10-27T12:00:00Z', 'Di → Ruhetag, morgen'],
+      ['2026-10-26T12:00:00Z', 'Mo → Ruhetag, ab Mittwoch'],
+      ['2026-07-04T21:30:00Z', 'Sa 23:30 MESZ (UTC+2) → geschlossen'],
+    ];
+    const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
+    for (const [iso, label] of cases) {
+      const page = await ctx.newPage();
+      await page.clock.setFixedTime(new Date(iso));
+      await page.goto(`${origin}/besuch.html`, { waitUntil: 'domcontentloaded' });
+      const r = await page.evaluate(() => [document.querySelector('[data-today]').textContent,
+        (document.querySelector('.is-today .h-day') || {}).textContent]);
+      console.log(`   hours ${label.padEnd(36)} → "${r[0]}" [${r[1]}]`);
       await page.close();
     }
     await ctx.close();

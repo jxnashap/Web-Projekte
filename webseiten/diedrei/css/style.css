@@ -137,7 +137,7 @@ a.ul:hover{background-size:0 1px;background-position:100% 100%}
 }
 .site-header.scrolled,body.page-light .site-header{
   color:var(--ink);
-  background:color-mix(in srgb,var(--porcelain) 90%,transparent);
+  background:color-mix(in srgb,var(--porcelain) 94%,transparent);
   -webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1);
 }
 .site-header.scrolled{height:4.25rem}
@@ -568,7 +568,7 @@ body.loaded .hero-media img{opacity:1;transform:none}
 
 .wk-nav{
   position:sticky;top:calc(4.25rem - 1px);z-index:500;
-  background:color-mix(in srgb,var(--porcelain) 92%,transparent);
+  background:color-mix(in srgb,var(--porcelain) 96%,transparent);
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
   border-bottom:1px solid var(--line);
 }
@@ -630,10 +630,10 @@ body.loaded .hero-media img{opacity:1;transform:none}
 .wk-compact .wk-row{padding:.8rem 0}
 .wk-compact .wk-meta{display:inline;margin:0 0 0 .6rem}
 .wk-compact .wk-grp{padding-bottom:0}
+.wk-compact:not(.wk-2col) .wk-name{max-width:46em}
 @media(min-width:1000px){
-  .wk-compact .wk-list{columns:2;column-gap:clamp(3rem,6vw,6rem)}
-  .wk-compact .wk-list>li{break-inside:avoid}
-  .wk-compact .wk-cat-head{margin-bottom:0}
+  .wk-2col .wk-list{columns:2;column-gap:clamp(3rem,6vw,6rem)}
+  .wk-2col .wk-list>li{break-inside:avoid}
 }
 .wk-foot{margin-top:clamp(3rem,6vw,5rem)}
 
@@ -647,6 +647,9 @@ body.loaded .hero-media img{opacity:1;transform:none}
   .wk-p .lab{position:static;width:auto;height:auto;overflow:visible;clip:auto;
     display:inline;margin-right:.4rem;font-size:.74rem;letter-spacing:.04em;color:var(--fg-dim)}
   .wk-sub .wk-name{padding-left:.8rem}
+  .wk-compact .wk-row{grid-template-columns:minmax(0,1fr) auto;gap:.15rem 1.1rem}
+  .wk-compact .wk-prices{display:contents}
+  .wk-compact .wk-p{text-align:right;margin-top:0}
 }
 @media(min-width:721px){.wk-prices{display:contents}}
 
@@ -666,7 +669,7 @@ body.loaded .hero-media img{opacity:1;transform:none}
 .legal a{color:var(--berry);background:linear-gradient(currentColor,currentColor) 0 100%/100% 1px no-repeat;word-break:break-word}
 .legal strong{color:var(--fg);font-weight:500}
 .legal address{font-style:normal;color:var(--fg)}
-mark.ph,.ph{background:var(--blush-2);color:var(--berry-deep);padding:.05em .3em;border-radius:3px;font-size:.92em}
+mark.ph,.ph{-webkit-box-decoration-break:clone;box-decoration-break:clone;background:var(--blush-2);color:var(--berry-deep);padding:.05em .3em;border-radius:3px;font-size:.92em}
 
 /* ---------- 14 · Footer ---------- */
 .footer{

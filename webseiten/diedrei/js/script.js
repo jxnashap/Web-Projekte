@@ -144,11 +144,7 @@
     }, 0.1);
   });
 
-  /* ---------- Laufband ---------- */
-  document.querySelectorAll('.mq-track').forEach(function (track) {
-    var clone = track.innerHTML;
-    track.insertAdjacentHTML('beforeend', clone);
-  });
+  /* Laufband: Inhalt ist im HTML bereits doppelt (läuft so auch ohne JS nahtlos) */
 
   /* ============================================================
      ÖFFNUNGSZEITEN — heute markieren + Status-Hinweis
@@ -234,6 +230,9 @@
         a.classList.toggle('is-active', i === idx);
         if (i === idx) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
       });
+      if (idx === -1 && bar.scrollLeft > 0) {
+        try { bar.scrollTo({ left: 0, behavior: prm ? 'auto' : 'smooth' }); } catch (e) { bar.scrollLeft = 0; }
+      }
       if (idx > -1 && bar.scrollWidth > bar.clientWidth) {
         var a = chips[idx];
         var left = a.offsetLeft - bar.clientWidth / 2 + a.clientWidth / 2;

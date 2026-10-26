@@ -433,6 +433,11 @@ def wk_rows(cat):
     prev_name, last_group = None, None
     for e in cat["eintraege"]:
         g = e.get("gruppe")
+        if g == title:          # z. B. Flammkuchen: Gruppe = Kategorie → keine Zwischenzeile, kein Block
+            g = None
+            lead_dots = True
+        else:
+            lead_dots = False
         sub = bool(g)
         cont = bool(g) and (g == last_group or g == prev_name)
         if not cont:
@@ -441,8 +446,8 @@ def wk_rows(cat):
             blocks[-1].append(f'<li class="wk-row wk-grp"><p class="wk-name">{esc(g)}</p></li>')
         last_group = g
         yr = f'<span class="yr">{e["jahrgang"]}</span>' if e.get("jahrgang") else ""
-        name = esc(e["name"])
-        if sub:
+        name = esc(e["name"]).replace(" (NEU)", ' <span class="wk-tag">neu</span>')
+        if sub or lead_dots:
             name = '<span class="dots" aria-hidden="true">…</span> ' + name
         hint = f' <span class="wk-hint">{esc(e["hinweis"])}</span>' if e.get("hinweis") else ""
         meta = [x for x in (e.get("zusatz"), e.get("erzeuger")) if x]
@@ -477,20 +482,22 @@ def wk_rows(cat):
                           f'<div class="wk-prices">{"".join(cells)}</div></li>')
         prev_name = e["name"]
     out = ""
+    total = sum(len(b) for b in blocks)
+    twocol = single and total >= 2 and max(len(b) for b in blocks) <= (total + 1) // 2
     for bl in blocks:
         if len(bl) == 1:
             out += "\n        " + bl[0]
         else:
             out += ('\n        <li class="wk-set"><ul>' + "".join("\n          " + r for r in bl)
                     + "\n        </ul></li>")
-    return ncols, single, out
+    return ncols, single, twocol, out
 
 
 UNIT_SUB = {"Glas": "pro Glas", "Tasse": "pro Tasse", "Flasche": "pro Flasche"}
 
 
 def wk_cat(cat, h="h3"):
-    ncols, single, rows = wk_rows(cat)
+    ncols, single, twocol, rows = wk_rows(cat)
     sp = cat["spalten"]
     heads, sub = "", ""
     if single:
@@ -502,7 +509,7 @@ def wk_cat(cat, h="h3"):
             lab, men = col_label(s_, short=True)
             heads += f'<span class="wk-col">{esc(lab)}<span>{men}</span></span>'
     title = esc(cat["titel"]).replace(" (NEU)", ' <span class="wk-tag">neu</span>')
-    cls = "wk-cat wk-compact" if single else "wk-cat"
+    cls = "wk-cat wk-compact" + (" wk-2col" if twocol else "") if single else "wk-cat"
     cols = f'<span class="wk-cols" aria-hidden="true">{heads}</span>' if heads else ""
     return f"""
     <section class="{cls} rv" id="{cat['id']}" style="--cols:{ncols}" aria-labelledby="t-{cat['id']}">
@@ -596,7 +603,7 @@ def page_index():
 
 <section class="sec-berry">
   <div class="marquee" aria-hidden="true">
-    <div class="mq-track"><span>Weißwein</span><span>Rotwein</span><span>Roséwein</span><span>Champagner</span><span>Prosecco</span></div>
+    <div class="mq-track">{MQ}{MQ}</div>
   </div>
   <p class="sr-only">Weißwein, Rotwein, Roséwein, Champagner, Prosecco</p>
   <div class="sec wrap">
@@ -626,8 +633,7 @@ def page_index():
     <div>
       <p class="lbl rv">Öffnungszeiten</p>
       <h2 class="d2 split" style="margin-top:1.1rem">Mittwoch bis Sonntag <em>ab 17 Uhr.</em></h2>
-      <p class="rv" data-d="1" style="margin-top:1.4rem"><span class="today" data-today></span></p>
-      <div class="rv" data-d="2">{hours_list()}</div>
+      <div class="rv" data-d="1">{hours_list()}</div>
     </div>
     <div class="card-berry rv" data-d="1">
       <p class="lbl">Telefonische Reservierung</p>
@@ -643,6 +649,9 @@ def page_index():
 """
     out += footer()
     return out
+
+
+MQ = "".join(f"<span>{w}</span>" for w in ("Weißwein", "Rotwein", "Roséwein", "Champagner", "Prosecco"))
 
 
 def voices():
@@ -773,8 +782,7 @@ def page_besuch():
     <div>
       <p class="lbl rv">Öffnungszeiten</p>
       <h2 class="d2 split" style="margin-top:1.1rem">Mittwoch bis Sonntag, <em>17 bis 23 Uhr.</em></h2>
-      <p class="rv" data-d="1" style="margin-top:1.4rem"><span class="today" data-today></span></p>
-      <div class="rv" data-d="2">{hours_list()}</div>
+      <div class="rv" data-d="1">{hours_list()}</div>
     </div>
     <div>
       <p class="lbl rv">Auf einen Blick</p>
