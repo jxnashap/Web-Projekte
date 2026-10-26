@@ -29,7 +29,17 @@ export async function connect(): Promise<DB> {
     const { drizzle } = await import("drizzle-orm/postgres-js");
     const postgres = (await import("postgres")).default;
     // Supabase Transaction Pooler (Port 6543): keine Prepared Statements; wenige Verbindungen je Function-Instanz
-    const client = postgres(url, { prepare: false, max: Number(process.env.DB_POOL_MAX ?? 3), idle_timeout: 20, connect_timeout: 10 });
+    let client: ReturnType<typeof postgres>;
+    try {
+      client = postgres(url, { prepare: false, max: Number(process.env.DB_POOL_MAX ?? 3), idle_timeout: 20, connect_timeout: 10 });
+    } catch (err) {
+      // Häufigster Grund: Sonderzeichen im Datenbank-Passwort. Die Adresse selbst nicht ausgeben (enthält das Passwort).
+      throw new Error(
+        "DATABASE_URL lässt sich nicht lesen. Sonderzeichen im Passwort (# % ? /) müssen kodiert sein (z. B. # als %23), " +
+          "einfacher ist ein Passwort nur aus Buchstaben und Ziffern. Eckige Klammern um das Passwort gehören nicht hinein.",
+        { cause: err },
+      );
+    }
     return drizzle(client, { schema });
   }
   // PGLITE_DIR gesetzt heißt: bewusst eine Datei-Datenbank (z. B. beim Erzeugen der Demo-Daten im Vercel-Build)

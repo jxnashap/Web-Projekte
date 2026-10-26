@@ -22,10 +22,11 @@ export type AuthState =
 const toUser = (u: typeof schema.teamMembers.$inferSelect): CurrentUser => ({ id: u.id, name: u.name, initials: u.initials, role: u.role, email: u.email });
 
 export const getAuthState = cache(async (): Promise<AuthState> => {
-  const db = await getDb();
+  // Datenbank erst öffnen, wenn jemand angemeldet ist: die Anmeldeseite läuft so auch ohne Datenbank
   if (authMode() === "preview") {
     const uid = await readSessionUserId();
     if (!uid) return { status: "anonymous" };
+    const db = await getDb();
     const [u] = await db.select().from(schema.teamMembers).where(eq(schema.teamMembers.id, uid));
     return u && u.active ? { status: "ok", user: toUser(u) } : { status: "anonymous" };
   }
@@ -40,6 +41,7 @@ export const getAuthState = cache(async (): Promise<AuthState> => {
     const { data: factors } = await sb.auth.mfa.listFactors();
     return { status: "mfa", enroll: !(factors?.totp?.length), email };
   }
+  const db = await getDb();
   let [member] = await db.select().from(schema.teamMembers).where(eq(schema.teamMembers.authUserId, claims.sub));
   if (!member && email) {
     // erste Anmeldung: Teammitglied über die E-Mail verknüpfen
