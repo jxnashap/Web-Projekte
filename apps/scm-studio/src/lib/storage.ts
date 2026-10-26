@@ -12,7 +12,8 @@ import { integrations } from "./env";
 
 export type Bucket = "belege" | "rechnungen" | "dokumente";
 const SUPABASE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET ?? "studio";
-const localRoot = () => process.env.FILES_DIR ?? path.join(process.cwd(), ".data", "files");
+// turbopackIgnore: der Ablageordner gehört nicht ins Server-Bundle
+const localRoot = () => process.env.FILES_DIR ?? path.join(/*turbopackIgnore: true*/ process.cwd(), ".data", "files");
 
 async function supabaseAdmin() {
   const { createClient } = await import("@supabase/supabase-js");
@@ -33,7 +34,7 @@ export async function putFile(opts: { bucket: Bucket; name: string; mime: string
     const { error } = await sb.storage.from(SUPABASE_BUCKET).upload(key, opts.data, { contentType: opts.mime, upsert: false });
     if (error) throw new Error(`Ablage fehlgeschlagen: ${error.message}`);
   } else {
-    const full = path.join(localRoot(), key);
+    const full = path.join(/*turbopackIgnore: true*/ localRoot(), key);
     await fs.mkdir(path.dirname(full), { recursive: true });
     await fs.writeFile(full, opts.data, { flag: "wx" });
   }
@@ -61,7 +62,7 @@ export async function readFile(id: number): Promise<{ meta: StoredFile; data: Ui
     if (error || !blob) throw new Error(`Datei nicht lesbar: ${error?.message}`);
     data = new Uint8Array(await blob.arrayBuffer());
   } else {
-    data = new Uint8Array(await fs.readFile(path.join(localRoot(), meta.path)));
+    data = new Uint8Array(await fs.readFile(path.join(/*turbopackIgnore: true*/ localRoot(), meta.path)));
   }
   return { meta, data };
 }
