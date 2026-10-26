@@ -9,10 +9,11 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // PGlite lädt WASM-Dateien zur Laufzeit; e-invoice-eu liest Schemas und ICC-Profile aus dem Paket.
   serverExternalPackages: ["@electric-sql/pglite", "@e-invoice-eu/core"],
-  // Schriften für die PDFs liegen als TTF in assets/fonts und müssen in jede Function mit.
+  // Schriften für die PDFs liegen als TTF in assets/fonts und müssen in jede Function mit,
+  // ebenso die Demo-Daten des Testlinks ohne Supabase (.data/demo, nur bei npm run build:vercel).
   outputFileTracingIncludes: {
-    "/*": ["./assets/fonts/**/*"],
-    "/**": ["./assets/fonts/**/*"],
+    "/*": ["./assets/fonts/**/*", "./.data/demo/**/*"],
+    "/**": ["./assets/fonts/**/*", "./.data/demo/**/*"],
   },
   experimental: {
     // Belege (Fotos/PDF) gehen lokal per Server Action hoch. Auf Vercel gilt zusätzlich das Limit

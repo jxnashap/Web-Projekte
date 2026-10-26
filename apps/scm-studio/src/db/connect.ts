@@ -6,6 +6,23 @@ import * as schema from "./schema";
 
 export type DB = PostgresJsDatabase<typeof schema>;
 
+/** Dateiablage des Testlinks auf Vercel (dort ist nur /tmp beschreibbar). */
+export const DEMO_FILES_DIR = "/tmp/scm-files";
+
+/**
+ * Testlink auf Vercel ohne Supabase: die beim Build gepackten Demo-Daten (scripts/demo-snapshot.ts) laufen im
+ * Speicher. Änderungen gelten nur, bis Vercel die Funktion neu startet, und jede Instanz hat ihren eigenen Stand.
+ */
+async function connectDemoSnapshot(): Promise<DB> {
+  const { PGlite } = await import("@electric-sql/pglite");
+  const { drizzle } = await import("drizzle-orm/pglite");
+  const dir = path.join(/*turbopackIgnore: true*/ process.cwd(), ".data", "demo");
+  const files = process.env.FILES_DIR ?? DEMO_FILES_DIR;
+  if (!fs.existsSync(files)) fs.cpSync(path.join(dir, "files"), files, { recursive: true });
+  const client = await PGlite.create({ loadDataDir: new Blob([fs.readFileSync(path.join(dir, "pglite.tar.gz"))]) });
+  return drizzle(client, { schema }) as unknown as DB;
+}
+
 export async function connect(): Promise<DB> {
   const url = process.env.DATABASE_URL;
   if (url) {
@@ -15,6 +32,8 @@ export async function connect(): Promise<DB> {
     const client = postgres(url, { prepare: false, max: Number(process.env.DB_POOL_MAX ?? 3), idle_timeout: 20, connect_timeout: 10 });
     return drizzle(client, { schema });
   }
+  // PGLITE_DIR gesetzt heißt: bewusst eine Datei-Datenbank (z. B. beim Erzeugen der Demo-Daten im Vercel-Build)
+  if (process.env.VERCEL && !process.env.PGLITE_DIR) return connectDemoSnapshot();
   const { PGlite } = await import("@electric-sql/pglite");
   const { drizzle } = await import("drizzle-orm/pglite");
   const { migrate } = await import("drizzle-orm/pglite/migrator");

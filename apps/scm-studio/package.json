@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:vercel": "tsx scripts/demo-snapshot.ts && next build",
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seed.ts",

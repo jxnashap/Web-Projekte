@@ -6,6 +6,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
+import { DEMO_FILES_DIR } from "@/db/connect";
 import type { StoredFile } from "@/db/schema";
 import { randomToken, sha256 } from "./crypto";
 import { integrations } from "./env";
@@ -13,7 +14,8 @@ import { integrations } from "./env";
 export type Bucket = "belege" | "rechnungen" | "dokumente";
 const SUPABASE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET ?? "studio";
 // turbopackIgnore: der Ablageordner gehört nicht ins Server-Bundle
-const localRoot = () => process.env.FILES_DIR ?? path.join(/*turbopackIgnore: true*/ process.cwd(), ".data", "files");
+const localRoot = () =>
+  process.env.FILES_DIR ?? (process.env.VERCEL ? DEMO_FILES_DIR : path.join(/*turbopackIgnore: true*/ process.cwd(), ".data", "files"));
 
 async function supabaseAdmin() {
   const { createClient } = await import("@supabase/supabase-js");

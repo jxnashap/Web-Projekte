@@ -79,7 +79,11 @@ Wer nicht in `team_members` steht oder auf inaktiv gesetzt ist, kommt nicht hine
 6. Deploy. Danach eigene Domain `studio.scm-creatives.de` verbinden und `APP_URL` anpassen.
 7. **Deployment Protection** für Preview-Deployments anlassen.
 
-Ohne `DATABASE_URL` startet die App auf Vercel nicht sinnvoll (die lokale Vorschau-Datenbank ist nur für den eigenen Rechner).
+**Testlink ohne Supabase:** Fehlt `DATABASE_URL`, legt der Build (`npm run build:vercel`, steht in `vercel.json`)
+die Demo-Daten an und die App läuft damit im Speicher. Dafür reichen `SESSION_SECRET`, `TOKEN_ENC_KEY`, `CRON_SECRET`
+und `STUDIO_PREVIEW_PASSWORD` (Passwort für die Anmeldung). Was ihr dort eingebt, ist nicht dauerhaft gespeichert:
+Es verschwindet, sobald Vercel die Funktion neu startet, und mehrere gleichzeitige Instanzen sehen je ihren eigenen Stand.
+Echte Daten erst nach Schritt 1 bis 3 mit `DATABASE_URL`.
 
 ## 5. KI-Skripte (OpenAI)
 
