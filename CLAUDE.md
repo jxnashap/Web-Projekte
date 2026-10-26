@@ -17,6 +17,8 @@ Repo für alle Website-Projekte. Struktur:
   Sitemap mit Video-Einträgen). Statische Dateien in `public/`, daneben `api/`.
   Platzhalter, Vercel-Einrichtung + Livegang: `PLATZHALTER.md`.
   Recherche und Plan: `.preview-cache/scm/recherche/` · PR #10
+  Kunden-Merkblatt „Werbekosten absetzen“ (PDF, Modellrechnung 2026): `merkblatt/`
+  (`build_merkblatt.py` + `steuer2026.py`, Belege in `RECHERCHE.md` und `.preview-cache/scm/steuern/`)
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
