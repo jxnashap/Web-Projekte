@@ -5,7 +5,7 @@ Jeder Wert steht mit seiner Rechtsgrundlage hier. Wenn sich Werte ändern
 (jährlich prüfen!), nur hier anpassen und das Merkblatt neu bauen.
 Vereinfachungen des Beispiels: ledig, keine Kirchensteuer, keine weiteren
 Einkünfte, zu versteuerndes Einkommen = Gewinn minus pauschal angesetzte
-Vorsorgeaufwendungen (siehe VORSORGE).
+Sonderausgaben (Vorsorgeaufwendungen einschließlich Pauschbetrag).
 """
 import math
 
@@ -56,7 +56,7 @@ def soli_est(est_betrag):
         return 0.0
     voll = est_betrag * SOLI_SATZ
     mild = (est_betrag - SOLI_FREIGRENZE_2026) * SOLI_MILDERUNG
-    return round(min(voll, mild), 2)
+    return math.floor(min(voll, mild) * 100) / 100  # Bruchteile eines Cents bleiben außer Ansatz (§ 4 Satz 3 SolZG)
 
 
 def gewst_messbetrag(gewinn, natuerlich=True):
@@ -67,11 +67,11 @@ def gewst_messbetrag(gewinn, natuerlich=True):
     return ertrag * GEWST_MESSZAHL
 
 
-def einzelunternehmen(gewinn, vorsorge, hebesatz):
+def einzelunternehmen(gewinn, sonderausgaben, hebesatz):
     """Steuern eines gewerblichen Einzelunternehmens (nur gewerbliche Einkünfte)."""
     mb = gewst_messbetrag(gewinn, natuerlich=True)
     gewst = mb * hebesatz / 100
-    zve = max(gewinn - vorsorge, 0)
+    zve = max(gewinn - sonderausgaben, 0)
     est_tarif = est(zve)
     # § 35: 4,0 × Messbetrag, höchstens die tatsächliche Gewerbesteuer und die tarifliche ESt
     erm = min(ANRECHNUNG_FAKTOR * mb, gewst, est_tarif)

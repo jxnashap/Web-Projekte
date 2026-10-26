@@ -112,3 +112,13 @@ Jede Anfrage aus dem Quiz landet als E-Mail bei `MAIL_TO`. Betreff zum Beispiel:
 - **C:** möchte sich erst informieren.
 
 In der Mail stehen Knöpfe zum Anrufen, für WhatsApp und zum Antworten, dazu der gewünschte Kontaktweg, die Seite, von der die Anfrage kam, und die Eingangszeit. „Antworten" im Mailprogramm geht direkt an die anfragende Person.
+
+## 8. Kunden-Merkblatt „Werbekosten absetzen“ (`merkblatt/`)
+
+Fertig gebaut (9 Seiten, `auslieferung/SCM-Creatives-Merkblatt-Werbekosten.pdf`). Vor dem Verteilen an Kunden:
+
+- [ ] Von einer Steuerberatung gegenlesen lassen (§§ 2, 5 StBerG, Abmahnrisiko durch die Steuerberaterkammer)
+- [ ] Bestätigen, dass SCM (Blacksnapper Consulting) regelbesteuert ist und 19 % Umsatzsteuer ausweist. Die Modellrechnung nimmt das an.
+- [ ] Klären, ob SCM Werbebudgets weiterberechnet oder Kunden über ihr eigenes Werbekonto zahlen. Das Merkblatt beschreibt beide Wege neutral.
+- [ ] Rechenwert 1.000 € netto pro Monat im Beispiel bei Bedarf in `BEISPIEL` anpassen, dann `python3 build_merkblatt.py`
+- [ ] Jährlich aktualisieren (Steuertarif, Hebesätze, E-Rechnung), Werte stehen in `steuer2026.py`

@@ -17,7 +17,7 @@
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:#888}
-body{font-family:var(--sans);font-size:10.6pt;line-height:1.5;color:var(--ink);
+body{font-family:var(--sans);font-size:10.8pt;line-height:1.48;color:var(--ink);
   -webkit-print-color-adjust:exact;print-color-adjust:exact;font-variant-numeric:tabular-nums}
 
 .page{width:210mm;height:297mm;position:relative;overflow:hidden;background:var(--white);
@@ -31,7 +31,7 @@ body{font-family:var(--sans);font-size:10.6pt;line-height:1.5;color:var(--ink);
   border-bottom:.6pt solid var(--line);padding-bottom:2.6mm}
 .run img{height:6.2mm;display:block}
 .foot{position:absolute;left:18mm;right:18mm;bottom:8.5mm;display:flex;justify-content:space-between;gap:8mm;
-  font-family:var(--mono);font-size:7pt;color:var(--ink-faint);border-top:.6pt solid var(--line);padding-top:2.4mm}
+  font-family:var(--sans);font-size:8pt;color:var(--ink-dim);border-top:.6pt solid var(--line);padding-top:2.4mm}
 .foot b{color:var(--ink-dim);font-weight:700}
 .foot span:last-child{white-space:nowrap}
 
@@ -45,7 +45,7 @@ h2 em,h1 em{font-style:normal;color:var(--red)}
 h3{font-size:13.5pt;margin:0 0 2mm;line-height:1.05}
 p{margin-bottom:2.6mm}
 .lead{font-size:12pt;line-height:1.42;color:var(--ink);margin-bottom:5mm;max-width:162mm}
-.small{font-size:8.6pt;line-height:1.45;color:var(--ink-dim)}
+.small{font-size:9.6pt;line-height:1.45;color:var(--ink-dim)}
 .mono{font-family:var(--mono)}
 strong{font-weight:700}
 .red{color:var(--red)}
@@ -97,10 +97,10 @@ td.num,th.num{text-align:right;white-space:nowrap}
 tr.sum td{font-weight:700;border-top:1pt solid var(--ink);border-bottom:none}
 tr.hl td{background:var(--paper)}
 tr.minus td.num{color:var(--red)}
-.tbl-note{font-size:8.2pt;color:var(--ink-faint);margin-top:2mm}
+.tbl-note{font-size:9.4pt;line-height:1.45;color:var(--ink-dim);margin-top:2mm}
 
 /* Drehbuchpapier: Annahmen und Rechenweg */
-.sheet{background:var(--paper);border-radius:2.5mm;padding:5mm 6mm;font-family:var(--mono);font-size:9.2pt;line-height:1.55;position:relative}
+.sheet{background:var(--paper);border-radius:2.5mm;padding:4mm 5.5mm;font-family:var(--mono);font-size:9.1pt;line-height:1.5;position:relative}
 .sheet .head{font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2mm}
 .sheet ul{list-style:none}
 .sheet li{padding-left:5mm;position:relative}
@@ -113,7 +113,7 @@ tr.minus td.num{color:var(--red)}
 .flow .k{font-family:var(--mono);font-size:7.6pt;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-dim);min-height:9mm}
 .flow>div:last-child .k{color:rgba(245,243,239,.75)}
 .flow .v{font-family:var(--display);font-stretch:80%;font-weight:800;font-size:19pt;line-height:1.1;margin-top:1mm}
-.flow .m{font-size:8pt;color:var(--ink-faint);margin-top:1mm;line-height:1.35}
+.flow .m{font-size:9pt;color:var(--ink-dim);margin-top:1mm;line-height:1.35}
 .flow>div:last-child .m{color:rgba(245,243,239,.7)}
 
 /* Kästen */
@@ -121,7 +121,7 @@ tr.minus td.num{color:var(--red)}
 .box h3{font-size:12pt}
 .box p:last-child,.box ul:last-child{margin-bottom:0}
 .box.dark{background:var(--bg);color:var(--fg);border-left-color:var(--red-dark-bg)}
-.box.dark .small{color:rgba(245,243,239,.75)}
+.box.dark .small{color:rgba(245,243,239,.85)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
 ul.dots{list-style:none;display:grid;gap:1.6mm}
 ul.dots li{padding-left:5mm;position:relative}
@@ -134,7 +134,7 @@ ul.dots li::before{content:"";position:absolute;left:0;top:2.1mm;width:1.8mm;hei
 .check li strong{display:block}
 
 /* Quellen */
-.src{font-size:7.9pt;line-height:1.45;color:var(--ink-dim);columns:2;column-gap:7mm}
+.src{font-size:8.6pt;line-height:1.45;color:var(--ink-dim);columns:2;column-gap:7mm}
 .src li{margin:0 0 1.4mm 3.6mm;break-inside:avoid}
 .ph{background:repeating-linear-gradient(135deg,#fde3e1 0 4px,#fff 4px 8px);color:var(--red);font-weight:700;padding:0 1mm}
 
@@ -146,3 +146,10 @@ ul.dots li::before{content:"";position:absolute;left:0;top:2.1mm;width:1.8mm;hei
 .bar .track i{display:block;height:100%;background:var(--red-btn)}
 .bar:last-child .track i{background:var(--ink)}
 .bar .v{font-family:var(--mono);font-weight:700;text-align:right}
+
+/* Wörterbuch */
+.glossar{display:grid;grid-template-columns:1fr 1fr;gap:3.2mm 7mm}
+.glossar div{border-top:.8pt solid var(--ink);padding-top:2mm;break-inside:avoid}
+.glossar dt{font-family:var(--display);font-stretch:80%;font-weight:800;text-transform:uppercase;font-size:11.5pt;margin-bottom:.8mm}
+.glossar dd{font-size:10pt;line-height:1.42}
+.check.tight{gap:1.7mm;font-size:10.3pt;line-height:1.42}

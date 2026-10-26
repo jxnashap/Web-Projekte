@@ -1,6 +1,6 @@
 # Merkblatt „Werbekosten absetzen“: Recherche, Belege, offene Punkte
 
-Stand: 26.10.2026 · Steuerjahr 2026 · Ergebnis: `SCM-Creatives-Merkblatt-Werbekosten.pdf` (8 Seiten A4),
+Stand: 26.10.2026 · Steuerjahr 2026 · Ergebnis: `SCM-Creatives-Merkblatt-Werbekosten.pdf` (9 Seiten A4),
 Kopie in `auslieferung/`. Neu bauen: `python3 build_merkblatt.py` (rechnet alle Zahlen mit `steuer2026.py`).
 
 ## Wie recherchiert wurde
@@ -12,6 +12,10 @@ Kopie in `auslieferung/`. Neu bauen: `python3 build_merkblatt.py` (rechnet alle 
   (Stand 25.10.2026, mit Fassungshistorie), DIHK-Hebesätze 2026, FG Rheinland-Pfalz 5 K 1815/10 im Volltext, Meta-Hilfeseite zur
   Umsatzsteuer, BMF-FAQ E-Rechnung, Haufe zur Anlage EÜR.
 - **Review des fertigen Merkblatts** durch 4 Prüfer: Fakten, unabhängige Nachrechnung, Steuerberatungs- und Werberecht, Lesbarkeit.
+  Ergebnis: alle Zahlen auf den Euro unabhängig bestätigt (eigener Rechenweg in Decimal). Umgesetzt: keine Buchungsanweisungen mehr
+  (§ 2 Abs. 3 Satz 2 StBerG n. F.), Checkliste als neutraler „Überblick“, Modellrechnung durchgehend als Modell gekennzeichnet
+  (keine „kostet effektiv nur“-Aussage), Hinweis zur Liquidität (Steuerersparnis kommt erst mit Bescheid oder Vorauszahlung),
+  Hebesatz-Vergleich 400 %, Wörterbuch, größere Schrift, Anbieter und Gewährhinweis, kaufmännische Rundung im Generator.
 
 ## Belegte Kernaussagen (im Merkblatt verwendet)
 
