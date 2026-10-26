@@ -17,6 +17,7 @@ export type BoardVideo = {
   isTest: boolean;
   shootDate: string | null;
   postDate: string | null;
+  scheduledAt: string | null;
   platform: string | null;
   url: string | null;
   clientId: number;
@@ -65,6 +66,7 @@ export async function getBoard(f: BoardFilter) {
     isTest: v.isTest,
     shootDate: v.shootDate,
     postDate: v.postDate,
+    scheduledAt: v.scheduledAt ? new Date(v.scheduledAt).toISOString() : null,
     platform: v.platform,
     url: v.url,
     clientId: v.clientId,

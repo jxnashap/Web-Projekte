@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { zBool, zOptDate, zOptText, zText } from "@/lib/action";
 import { parseEuroToCents } from "@/lib/format";
-import { BRANCHEN, CLIENT_STATUS, CONTACT_WAYS, LEAD_SCORE, LEAD_SOURCES, LEAD_STAGES, LEGAL_FORMS } from "@/lib/labels";
+import { CLIENT_STATUS, CONTACT_WAYS, LEAD_SCORE, LEAD_SOURCES, LEAD_STAGES, LEGAL_FORMS } from "@/lib/labels";
 import { LEAD_BRANCHEN, PACKAGE_INTEREST, START_WISH } from "./labels";
 
 const keys = <T extends Record<string, unknown>>(o: T) => Object.keys(o) as [string, ...string[]];
@@ -42,7 +42,7 @@ export const lostSchema = z.object({ lostReason: zText("Grund", 300) });
 
 export const convertSchema = z.object({
   name: zText("Kundenname", 160),
-  branche: z.enum(keys(BRANCHEN), { error: "Branche wählen" }),
+  branche: z.string({ error: "Branche wählen" }).trim().min(1, "Branche wählen").max(60), // gegen getBranchen() geprüft
   status: z.enum(["test", "aktiv"], { error: "Start wählen" }),
   packageVideos: z.coerce.number().int("Ganze Zahl").min(1, "Mindestens 1").max(60, "Höchstens 60").optional(),
 });
@@ -83,7 +83,7 @@ const zHandle = z
 
 export const clientSchema = z.object({
   name: zText("Name", 160),
-  branche: z.enum(keys(BRANCHEN), { error: "Branche wählen" }),
+  branche: z.string({ error: "Branche wählen" }).trim().min(1, "Branche wählen").max(60), // gegen getBranchen() geprüft
   status: z.enum(keys(CLIENT_STATUS), { error: "Status wählen" }).default("aktiv"),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Farbe wählen").default("#1F4E79"),
   contactName: zOptText(160),

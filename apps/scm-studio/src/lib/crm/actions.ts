@@ -7,6 +7,7 @@ import { getDb, schema } from "@/db";
 import { type ActionState, done, fail, parseForm } from "@/lib/action";
 import { audit } from "@/lib/audit";
 import { assertUser } from "@/lib/auth";
+import { isBranche } from "@/lib/branchen";
 import { saveEvent } from "@/lib/kalender/actions";
 import { LEAD_STAGES } from "@/lib/labels";
 import { clientDependencies } from "./data";
@@ -131,6 +132,7 @@ export async function convertLead(id: number, _: ActionState, fd: FormData): Pro
   const user = await assertUser();
   const p = parseForm(convertSchema, fd);
   if (!p.success) return p.state;
+  if (!(await isBranche(p.data.branche))) return fail("Branche wählen", { branche: ["Diese Branche gibt es nicht (mehr)."] });
   const db = await getDb();
   const [lead] = await db.select().from(leads).where(eq(leads.id, id));
   if (!lead) return fail("Anfrage nicht gefunden");
@@ -246,6 +248,7 @@ export async function createClient(_: ActionState, fd: FormData): Promise<Action
   const user = await assertUser();
   const p = parseForm(clientSchema, fd);
   if (!p.success) return p.state;
+  if (!(await isBranche(p.data.branche))) return fail("Branche wählen", { branche: ["Diese Branche gibt es nicht (mehr)."] });
   const db = await getDb();
   const [row] = await db.insert(clients).values(clientValues(p.data)).returning({ id: clients.id });
   await audit(user.id, "client", row.id, "angelegt");
@@ -257,6 +260,7 @@ export async function updateClient(id: number, _: ActionState, fd: FormData): Pr
   const user = await assertUser();
   const p = parseForm(clientSchema, fd);
   if (!p.success) return p.state;
+  if (!(await isBranche(p.data.branche))) return fail("Branche wählen", { branche: ["Diese Branche gibt es nicht (mehr)."] });
   const db = await getDb();
   const [before] = await db.select().from(clients).where(eq(clients.id, id));
   if (!before) return fail("Kunde nicht gefunden");

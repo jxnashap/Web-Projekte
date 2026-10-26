@@ -24,6 +24,7 @@ import { filterLeads, getLeads, type LeadRow } from "@/lib/crm/data";
 import { cn } from "@/lib/cn";
 import { LEAD_SOURCES } from "@/lib/labels";
 import { todayIso } from "@/lib/time";
+import { getBranchen } from "@/lib/branchen";
 
 export const metadata: Metadata = { title: "Anfragen" };
 
@@ -166,7 +167,7 @@ async function Leads({ searchParams }: { searchParams: Promise<SP> }) {
           </EmptyState>
         )
       ) : (
-        <LeadDialogsProvider>
+        <LeadDialogsProvider branchen={await getBranchen()}>
           {view !== "liste" && (
             <div className={cn(view === null && "hidden md:block")}>
               <LeadBoard leads={leads} today={today} />

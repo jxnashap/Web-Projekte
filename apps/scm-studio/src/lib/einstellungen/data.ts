@@ -6,6 +6,8 @@ import { requireUser } from "@/lib/auth";
 import { authMode } from "@/lib/auth-mode";
 import { getCompany, getSetting, isDemo } from "@/lib/settings";
 import { monthRange, monthIso } from "@/lib/time";
+import { customBranchen } from "@/lib/branchen";
+import { BRANCHEN } from "@/lib/labels";
 import { DEFAULT_REFERENZEN, REFERENZEN_KEY } from "@/lib/skripte/engine/referenzen";
 import { AI_DEFAULT, type AiSettings, type PrivacySettings } from "./schema";
 
@@ -38,7 +40,7 @@ export async function getSettingsOverview() {
   const db = await getDb();
   const year = Number(monthIso().slice(0, 4));
   const { from } = monthRange(monthIso());
-  const [company, team, sequences, ai, legal, privacy, demo, aiRuns, referenzen] = await Promise.all([
+  const [company, team, sequences, ai, legal, privacy, demo, aiRuns, referenzen, custom, used] = await Promise.all([
     getCompany(),
     db.select().from(schema.teamMembers).orderBy(asc(schema.teamMembers.id)),
     db.select().from(schema.numberSequences).where(eq(schema.numberSequences.year, year)),
@@ -48,7 +50,10 @@ export async function getSettingsOverview() {
     isDemo(),
     db.select({ n: count() }).from(schema.aiRuns).where(and(gte(schema.aiRuns.at, new Date(`${from}T00:00:00Z`)))),
     getSetting<string>(REFERENZEN_KEY, ""),
+    customBranchen(),
+    db.select({ branche: schema.clients.branche, n: count() }).from(schema.clients).groupBy(schema.clients.branche),
   ]);
+  const usedBy = Object.fromEntries(used.map((u) => [u.branche, u.n]));
   const integrations = getIntegrations();
   return {
     company,
@@ -61,6 +66,10 @@ export async function getSettingsOverview() {
     demo,
     aiRunsMonth: aiRuns[0]?.n ?? 0,
     referenzen: referenzen.trim() || DEFAULT_REFERENZEN,
+    branchen: {
+      fixed: Object.entries(BRANCHEN).map(([key, label]) => ({ key, label, clients: usedBy[key] ?? 0 })),
+      custom: custom.map((name) => ({ key: name, label: name, clients: usedBy[name] ?? 0 })),
+    },
     integrations,
     authMode: authMode(),
   };

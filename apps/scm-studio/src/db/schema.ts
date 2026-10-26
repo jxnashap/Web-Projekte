@@ -125,6 +125,8 @@ export const videos = studio.table(
     shootDate: date("shoot_date"),
     postDate: date("post_date"),
     platform: text("platform").default("instagram"), // instagram | tiktok | beide
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }), // geplanter Posting-Zeitpunkt (Posting-Kalender)
+    postCaption: text("post_caption"), // Caption fürs Posten (Vorlage: Caption des Skripts)
     url: text("url"),
     externalMediaId: text("external_media_id"), // Instagram-Media-ID bzw. TikTok-Video-ID für den Abgleich
     scriptId: integer("script_id"),
@@ -133,7 +135,12 @@ export const videos = studio.table(
     createdAt: created(),
     updatedAt: updated(),
   },
-  (t) => [index("videos_client_idx").on(t.clientId), index("videos_month_idx").on(t.month), index("videos_assignee_idx").on(t.assignee)],
+  (t) => [
+    index("videos_client_idx").on(t.clientId),
+    index("videos_month_idx").on(t.month),
+    index("videos_assignee_idx").on(t.assignee),
+    index("videos_scheduled_idx").on(t.scheduledAt),
+  ],
 ).enableRLS();
 
 /**

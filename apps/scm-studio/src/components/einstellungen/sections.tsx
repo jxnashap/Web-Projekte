@@ -1,5 +1,5 @@
 // Detailbereiche der Einstellungen (Server Components). Änderungen nur für Inhaber.
-import { CheckCircle2, CircleSlash, Clock, FileCheck2, FlaskConical, KeyRound, Lock, ShieldCheck, Sparkles } from "lucide-react";
+import { CheckCircle2, CircleSlash, Clock, FileCheck2, FlaskConical, KeyRound, Lock, ShieldCheck, Sparkles, Tag } from "lucide-react";
 import Link from "next/link";
 import { ActionForm, FieldError } from "@/components/ui/action-form";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,18 @@ import { Checkbox, Field, FormActions, FormGrid, Input, Textarea } from "@/compo
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { TeamMember } from "@/db/schema";
 import { LEGAL_TEMPLATE_VERSION } from "@/lib/dokumente/schema";
-import { checkAuditChain, revokeLegalApproval, saveAi, saveCompany, saveLegalApproval, savePrivacy, saveReferenzen, setDemoMode } from "@/lib/einstellungen/actions";
+import {
+  addBranche,
+  checkAuditChain,
+  removeBranche,
+  revokeLegalApproval,
+  saveAi,
+  saveCompany,
+  saveLegalApproval,
+  savePrivacy,
+  saveReferenzen,
+  setDemoMode,
+} from "@/lib/einstellungen/actions";
 import type { getSettingsOverview } from "@/lib/einstellungen/data";
 import { nextNumber, SEQ_LABEL } from "@/lib/einstellungen/data";
 import { AVV_PROVIDERS } from "@/lib/einstellungen/schema";
@@ -299,6 +310,54 @@ export function AnbindungenPane({ o }: { o: O }) {
           </div>
         </details>
       )}
+    </Pane>
+  );
+}
+
+// ------------------------------------------------------------------
+export function BranchenPane({ o, isAdmin }: { o: O; isAdmin: boolean }) {
+  const kunden = (n: number) => (n === 0 ? "noch kein Kunde" : n === 1 ? "1 Kunde" : `${n} Kunden`);
+  return (
+    <Pane
+      title="Branchen"
+      intro="Die Auswahl bei Kunden und Anfragen. Die Creative Engine und die Trend-Recherche nutzen sie als Rahmen für Ideen. Die vier festen kommen aus dem Website-Quiz."
+    >
+      <AdminNote isAdmin={isAdmin} />
+      <Group title="Fest">
+        {o.branchen.fixed.map((b) => (
+          <Row key={b.key} icon={Tag} tone="gray" label={b.label} value={kunden(b.clients)} />
+        ))}
+      </Group>
+      <Card>
+        <CardHeader title="Eigene Branchen" sub={o.branchen.custom.length ? undefined : "Noch keine. Zum Beispiel Fahrschule, Fitnessstudio oder Friseur."} />
+        <div className="grid gap-4 px-5 pb-5 pt-1">
+          {o.branchen.custom.length > 0 && (
+            <ul className="divide-y divide-hairline rounded-[14px] bg-sunken">
+              {o.branchen.custom.map((b) => (
+                <li key={b.key} className="flex min-h-12 items-center gap-3 px-4 py-2">
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold">{b.label}</span>
+                    <span className="block text-[13px] text-muted">{kunden(b.clients)}</span>
+                  </span>
+                  {isAdmin && b.clients === 0 && (
+                    <ActionButton action={removeBranche.bind(null, b.key)} variant="ghost" confirm={{ title: `„${b.label}“ entfernen?`, confirmLabel: "Entfernen", tone: "danger" }}>
+                      Entfernen
+                    </ActionButton>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {isAdmin && (
+            <ActionForm action={addBranche} resetOnSuccess className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <Field label="Neue Branche" name="name" className="min-w-0 flex-1">
+                <Input name="name" placeholder="z. B. Fahrschule" maxLength={40} autoComplete="off" required />
+              </Field>
+              <SubmitButton variant="secondary">Hinzufügen</SubmitButton>
+            </ActionForm>
+          )}
+        </div>
+      </Card>
     </Pane>
   );
 }

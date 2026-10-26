@@ -35,11 +35,12 @@ Stand: 26.10.2026 · Next.js 16.4.3 · React 19.3.1 · Recherche mit Quellen: `d
 | 03 | **Kunden** | Stammdaten inkl. Rechtsform/Kaufmann, Paket, Kontingent, alles zum Kunden auf einen Blick |
 | 04 | **Ideen & Skripte** | Video-Ideen (eigene und Vorschläge der nächtlichen Trend-Recherche mit Quellen), **Creative Engine** (Briefing → fünf grundverschiedene, bewertete Konzepte → drehfertiges Skript mit Szenen, Kamera, Dialog, Text im Bild, Ton, Schnitt, Drehaufwand und Alternativen; sieben kombinierbare Kategorien mit eigener Dramaturgie; Kreativprofil je Kunde, Kunden-Gedächtnis, vorsichtige Muster aus den Zahlen, Referenz-Skripte), Drehbuch, Drehmodus fürs Set, PDF, Videos vor dem Dreh (Idee → Skript → Dreh geplant → Gedreht) |
 | 05 | **Produktion** | nur Schnitt: Board Gedreht → Im Schnitt → Abnahme → Fertig → Online, Kontingent je Monat; Material je Kunde (Logos, Schriften, Musik, ganze Ordner, ZIP) plus Link zum Rohmaterial |
-| 06 | **Kalender** | Monat/Woche/Liste, iCal-Abo, Google-Spiegelung |
+| 06 | **Posting** | Posting-Kalender wie der Meta-Planer: fertige Videos („Bereit zum Posten“) per Ziehen oder Dialog auf Tag und Uhrzeit legen, Plattform und Caption, Woche/Monat, nach dem Posten abhaken (Link für die Zahlen). Gepostet wird von Hand |
+| 07 | **Kalender** | Monat/Woche/Liste, iCal-Abo, Google-Spiegelung |
 | 07 | **Zahlen** | Aufrufe, Reichweite, Interaktionen je Video/Kunde/Format, CSV-Import, Instagram-Anbindung |
 | 08 | **Finanzen** | Angebote, Rechnungen (E-Rechnung), Storno, Erinnerungen, Belege mit Foto, USt-Vorschau, DATEV-Export |
 | 09 | **Dokumente** | Dienstleistungsvertrag, Einwilligung mit Unterschrift am Set, Drehplan, Monatsbericht |
-| 10 | **Einstellungen** | Firma, Team, Nummernkreise, Anbindungen, KI, Rechtliches, Datenschutz |
+| 10 | **Einstellungen** | Firma, Team, Branchen (feste plus eigene, z. B. Fahrschule), Nummernkreise, Anbindungen, KI, Rechtliches, Datenschutz |
 
 Überall: ⌘K-Befehlsmenü mit deutschen Suchwörtern, „Neu“-Aktionen per `?neu=1`, Handy-Navigation unten für den Einsatz am Set.
 

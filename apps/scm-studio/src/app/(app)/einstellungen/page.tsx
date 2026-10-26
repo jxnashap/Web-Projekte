@@ -1,8 +1,8 @@
-import { Building2, FlaskConical, Hash, LayoutGrid, Plug, Scale, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { Building2, FlaskConical, Hash, LayoutGrid, Plug, Scale, ShieldCheck, Sparkles, Tags, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Group, Row } from "@/components/einstellungen/grouped";
-import { AnbindungenPane, DatenschutzPane, DemoPane, FirmaPane, KiPane, NummernPane, PortalPane, RechtPane, TeamPane } from "@/components/einstellungen/sections";
+import { AnbindungenPane, BranchenPane, DatenschutzPane, DemoPane, FirmaPane, KiPane, NummernPane, PortalPane, RechtPane, TeamPane } from "@/components/einstellungen/sections";
 import { BackLink, PageHeader } from "@/components/ui/page-header";
 import { FormSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
@@ -12,11 +12,12 @@ import { getSettingsOverview, nextNumber } from "@/lib/einstellungen/data";
 import { AI_MODELS } from "@/lib/einstellungen/schema";
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
-const REITER = ["firma", "team", "nummern", "anbindungen", "ki", "recht", "datenschutz", "portal", "demo"] as const;
+const REITER = ["firma", "team", "branchen", "nummern", "anbindungen", "ki", "recht", "datenschutz", "portal", "demo"] as const;
 type Reiter = (typeof REITER)[number];
 const TITLES: Record<Reiter, string> = {
   firma: "Firma",
   team: "Team",
+  branchen: "Branchen",
   nummern: "Nummernkreise",
   anbindungen: "Anbindungen",
   ki: "KI für Skripte",
@@ -72,6 +73,14 @@ async function Settings({ searchParams }: { searchParams: SP }) {
       <Group level={2} title="SCM Creatives">
         <Row href={href("firma")} active={current === "firma"} icon={Building2} tone="red" label="Firma" value={o.company?.legalName ?? "fehlt"} />
         <Row href={href("team")} active={current === "team"} icon={Users} tone="blue" label="Team" value={`${o.team.filter((t) => t.active).length} Personen`} />
+        <Row
+          href={href("branchen")}
+          active={current === "branchen"}
+          icon={Tags}
+          tone="green"
+          label="Branchen"
+          value={`${o.branchen.fixed.length + o.branchen.custom.length}`}
+        />
         <Row href={href("nummern")} active={current === "nummern"} icon={Hash} tone="gray" label="Nummernkreise" value={nextNumber("rechnung", o.year, rechnung?.next ?? 1)} />
       </Group>
       <Group level={2} title="Technik">
@@ -114,6 +123,8 @@ async function Detail({ reiter, o, isAdmin, meId, withLogins }: { reiter: Reiter
   switch (reiter) {
     case "team":
       return <TeamPane o={o} isAdmin={isAdmin} meId={meId} />;
+    case "branchen":
+      return <BranchenPane o={o} isAdmin={isAdmin} />;
     case "nummern":
       return <NummernPane o={o} />;
     case "anbindungen":

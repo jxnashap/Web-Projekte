@@ -14,6 +14,7 @@ import { getDb, schema } from "@/db";
 import type { TrendFinding, TrendSource } from "@/db/schema";
 import { integrations } from "@/lib/env";
 import { getSetting } from "@/lib/settings";
+import { getBranchen } from "@/lib/branchen";
 import { getAiConfig } from "./ai";
 import { DEFAULT_RICHTUNG, type Richtung } from "./richtung";
 import { noDashes } from "./schema";
@@ -32,34 +33,34 @@ export async function getRichtung(): Promise<Richtung> {
   };
 }
 
-const BRANCHE_KEYS = ["gastronomie", "immobilien", "handwerk", "unternehmen", "alle"] as const;
-
 // Structured Outputs: alle Felder Pflicht, Grenzen prüfen wir danach selbst
-const Report = z.object({
-  trends: z
-    .array(
-      z.object({
-        titel: z.string().describe("Name des Trends oder Formats, kurz"),
-        plattform: z.enum(["TikTok", "Instagram", "beide"]),
-        beschreibung: z.string().describe("Was den Trend ausmacht, 1 bis 3 Sätze, nur was in den Quellen steht"),
-        warum_passend: z.string().describe("Warum er zu SCM und einer unserer Branchen passt, 1 Satz"),
-        quellen: z.array(z.object({ titel: z.string(), url: z.string() })).describe("Seiten aus der Websuche, die den Trend belegen"),
-      }),
-    )
-    .describe(`Höchstens ${MAX_TRENDS} aktuelle Trends`),
-  ideen: z
-    .array(
-      z.object({
-        titel: z.string().describe("Die Video-Idee in einem Satz, höchstens 12 Wörter"),
-        hook: z.string().describe("Erster Satz oder Text im Bild"),
-        beschreibung: z.string().describe("Ablauf in Stichworten: Situation, Steigerung, Pointe, Aufruf"),
-        format: z.string().describe("Format, z. B. POV-Sketch, Entweder oder, Einblick, Recruiting"),
-        branche: z.enum(BRANCHE_KEYS),
-        trend_nr: z.number().int().describe("Index des Trends in der Liste trends (ab 0), auf dem die Idee aufbaut"),
-      }),
-    )
-    .describe(`Höchstens ${MAX_IDEAS} Video-Ideen`),
-});
+/** Bericht-Schema; die Branchen kommen aus den Einstellungen (feste plus eigene), dazu "alle". */
+const reportSchema = (branchen: [string, ...string[]]) =>
+  z.object({
+    trends: z
+      .array(
+        z.object({
+          titel: z.string().describe("Name des Trends oder Formats, kurz"),
+          plattform: z.enum(["TikTok", "Instagram", "beide"]),
+          beschreibung: z.string().describe("Was den Trend ausmacht, 1 bis 3 Sätze, nur was in den Quellen steht"),
+          warum_passend: z.string().describe("Warum er zu SCM und einer unserer Branchen passt, 1 Satz"),
+          quellen: z.array(z.object({ titel: z.string(), url: z.string() })).describe("Seiten aus der Websuche, die den Trend belegen"),
+        }),
+      )
+      .describe(`Höchstens ${MAX_TRENDS} aktuelle Trends`),
+    ideen: z
+      .array(
+        z.object({
+          titel: z.string().describe("Die Video-Idee in einem Satz, höchstens 12 Wörter"),
+          hook: z.string().describe("Erster Satz oder Text im Bild"),
+          beschreibung: z.string().describe("Ablauf in Stichworten: Situation, Steigerung, Pointe, Aufruf"),
+          format: z.string().describe("Format, z. B. POV-Sketch, Entweder oder, Einblick, Recruiting"),
+          branche: z.enum(branchen),
+          trend_nr: z.number().int().describe("Index des Trends in der Liste trends (ab 0), auf dem die Idee aufbaut"),
+        }),
+      )
+      .describe(`Höchstens ${MAX_IDEAS} Video-Ideen`),
+  });
 
 function instructions(r: Richtung) {
   return `Du bist Trend-Rechercheur für SCM Creatives. Suche im Web nach Trends, Formaten, Sounds und Hooks, die in den letzten 14 Tagen auf TikTok und Instagram Reels laufen, vor allem in Deutschland.
@@ -183,7 +184,7 @@ export async function runTrendResearch(opts: { trigger: "nacht" | "manuell"; use
         },
       ],
       include: ["web_search_call.action.sources"],
-      text: { format: zodTextFormat(Report, "trend_bericht") },
+      text: { format: zodTextFormat(reportSchema(["alle", ...Object.keys(await getBranchen())]), "trend_bericht") },
       reasoning: { effort: "medium" },
       store: false,
       max_output_tokens: 16000,

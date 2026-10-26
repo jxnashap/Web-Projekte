@@ -64,6 +64,8 @@ const ACTION: Record<string, string> = {
   ical_token_neu: "Kalender-Abo erneuert",
   ki: "KI-Modell gespeichert",
   referenzen: "Referenz-Skripte gespeichert",
+  branche_neu: "Branche angelegt",
+  branche_entfernt: "Branche entfernt",
   vorlagen_freigegeben: "Vorlagen anwaltlich freigegeben",
   vorlagen_freigabe_entfernt: "Freigabe der Vorlagen entfernt",
   dupliziert: "dupliziert",
@@ -86,7 +88,8 @@ const ACTION: Record<string, string> = {
   rohmaterial_link: "Link zum Rohmaterial gespeichert",
   uebernommen: "aus der Recherche übernommen",
   verworfen: "verworfen",
-  eingeplant: "als Video eingeplant",
+  eingeplant: "eingeplant",
+  ausgeplant: "aus dem Posting-Kalender genommen",
   gestartet: "gestartet",
   richtung: "Richtung der Recherche gespeichert",
 };

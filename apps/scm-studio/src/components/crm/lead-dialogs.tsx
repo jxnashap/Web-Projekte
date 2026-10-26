@@ -8,7 +8,6 @@ import { Dialog } from "@/components/ui/dialog";
 import { Field, FormActions, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { convertLead, markLeadLost } from "@/lib/crm/actions";
-import { BRANCHEN } from "@/lib/labels";
 import { ChoiceGroup } from "./choice-group";
 
 export type LeadRef = { id: number; company: string; branche: string | null; packageInterest: string | null; stage: string };
@@ -22,7 +21,7 @@ export function useLeadDialogs(): Api {
   return ctx;
 }
 
-export function LeadDialogsProvider({ children }: { children: React.ReactNode }) {
+export function LeadDialogsProvider({ children, branchen }: { children: React.ReactNode; branchen: Record<string, string> }) {
   const [open, setOpen] = useState<{ kind: "convert" | "lost"; lead: LeadRef } | null>(null);
   const close = useCallback(() => setOpen(null), []);
   const api = useMemo<Api>(() => ({ convert: (lead) => setOpen({ kind: "convert", lead }), lost: (lead) => setOpen({ kind: "lost", lead }) }), []);
@@ -35,7 +34,7 @@ export function LeadDialogsProvider({ children }: { children: React.ReactNode })
         title="Zum Kunden machen"
         description="Legt einen Kunden mit den Kontaktdaten an und setzt die Anfrage auf „Gewonnen“."
       >
-        {open?.kind === "convert" && <ConvertForm key={open.lead.id} lead={open.lead} />}
+        {open?.kind === "convert" && <ConvertForm key={open.lead.id} lead={open.lead} branchen={branchen} />}
       </Dialog>
       <Dialog open={open?.kind === "lost"} onClose={close} title="Als verloren markieren" description="Der Grund hilft später beim Nachfassen.">
         {open?.kind === "lost" && <LostForm key={open.lead.id} lead={open.lead} />}
@@ -44,10 +43,10 @@ export function LeadDialogsProvider({ children }: { children: React.ReactNode })
   );
 }
 
-function ConvertForm({ lead }: { lead: LeadRef }) {
+function ConvertForm({ lead, branchen }: { lead: LeadRef; branchen: Record<string, string> }) {
   const [status, setStatus] = useState(lead.stage === "testvideos" ? "test" : "aktiv");
   const suggested = lead.packageInterest && lead.packageInterest !== "unsicher" ? lead.packageInterest : "";
-  const branche = lead.branche && lead.branche in BRANCHEN ? lead.branche : "";
+  const branche = lead.branche && lead.branche in branchen ? lead.branche : "";
   return (
     <ActionForm action={convertLead.bind(null, lead.id)}>
       <div className="grid gap-4">
@@ -59,7 +58,7 @@ function ConvertForm({ lead }: { lead: LeadRef }) {
             <option value="" disabled>
               Bitte wählen
             </option>
-            {Object.entries(BRANCHEN).map(([k, v]) => (
+            {Object.entries(branchen).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>

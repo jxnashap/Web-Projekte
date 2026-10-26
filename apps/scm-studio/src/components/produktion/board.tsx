@@ -3,14 +3,14 @@
 // Videos vor dem Dreh (Idee, Skript, Dreh geplant) stehen unter Ideen & Skripte.
 // Status ändern per „Weiter“-Knopf, Menü oder (Desktop) Ziehen und Ablegen. Änderungen erscheinen sofort (optimistisch).
 // „Online“ ist eine schmale, aufklappbare Spalte: erledigte Videos verdrängen die Arbeit nicht aus dem Bild.
-import { ArrowRight, Camera, Check, ChevronLeft, ChevronRight, ExternalLink, FolderOpen, GripVertical, ScrollText } from "lucide-react";
+import { ArrowRight, Camera, Check, ChevronLeft, ChevronRight, ExternalLink, FolderOpen, GripVertical, ScrollText, Send } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Badge, Dot } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Menu, menuItemClass } from "@/components/ui/menu";
 import { cn } from "@/lib/cn";
-import { dateShort } from "@/lib/format";
+import { dateShort, time } from "@/lib/format";
 import { CUT_STATUS } from "@/lib/labels";
 import type { BoardVideo } from "@/lib/produktion/data";
 import { useVideoMove } from "./use-video-move";
@@ -189,7 +189,16 @@ function VideoCard({ v, onMove }: { v: BoardVideo; onMove: (id: number, status: 
       </Link>
       {v.format && <div className="mt-1 text-[13px] text-muted">{v.format}</div>}
       <div className="mt-2.5 flex min-h-6 items-center gap-2.5 text-[13px] text-muted">
-        {v.status === "online" && v.postDate ? (
+        {v.status === "fertig" && v.scheduledAt ? (
+          <Link
+            href={`/posting?datum=${new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Berlin" }).format(new Date(v.scheduledAt))}`}
+            className="hit-lg relative inline-flex items-center gap-1 rounded font-medium text-info hover:underline"
+            title="Geplanter Post"
+          >
+            <Send className="size-3.5" aria-hidden />
+            {dateShort(v.scheduledAt)}, {time(v.scheduledAt)}
+          </Link>
+        ) : v.status === "online" && v.postDate ? (
           <span className="inline-flex items-center gap-1" title="Online seit">
             Online {dateShort(v.postDate)}
           </span>

@@ -6,7 +6,7 @@ import { useState } from "react";
 import type { Client } from "@/db/schema";
 import { Field, FormGrid, Input, Select, Textarea } from "@/components/ui/field";
 import { CLIENT_COLORS, colorName } from "@/lib/crm/labels";
-import { BRANCHEN, CLIENT_STATUS, LEGAL_FORMS } from "@/lib/labels";
+import { CLIENT_STATUS, LEGAL_FORMS } from "@/lib/labels";
 
 const euro = (cents: number | null | undefined) =>
   cents == null ? "" : (cents / 100).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -23,7 +23,7 @@ function Section({ title, sub, children }: { title: string; sub?: string; childr
   );
 }
 
-export function ClientFields({ client, defaultColor }: { client?: Client | null; defaultColor?: string }) {
+export function ClientFields({ client, defaultColor, branchen }: { client?: Client | null; defaultColor?: string; branchen: Record<string, string> }) {
   const c = client ?? null;
   const [legalForm, setLegalForm] = useState(c?.legalForm ?? "");
   const [merchant, setMerchant] = useState(c?.isMerchant ?? false);
@@ -43,7 +43,7 @@ export function ClientFields({ client, defaultColor }: { client?: Client | null;
               <option value="" disabled>
                 Bitte wählen
               </option>
-              {Object.entries(BRANCHEN).map(([k, v]) => (
+              {Object.entries(branchen).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}
                 </option>

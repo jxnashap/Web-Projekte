@@ -13,6 +13,7 @@ import { FormSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { deleteClient, setClientStatus, updateClient } from "@/lib/crm/actions";
 import { clientDependencies, getClient } from "@/lib/crm/data";
+import { getBranchen } from "@/lib/branchen";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -44,7 +45,7 @@ async function EditClient({ params }: Props) {
   if (!Number.isInteger(id)) notFound();
   const client = await getClient(id);
   if (!client) notFound();
-  const deps = await clientDependencies(id);
+  const [deps, branchen] = await Promise.all([clientDependencies(id), getBranchen()]);
 
   return (
     <>
@@ -52,7 +53,7 @@ async function EditClient({ params }: Props) {
       <div className="grid max-w-4xl gap-6">
         <Card className="p-5 sm:p-7">
           <ActionForm action={updateClient.bind(null, id)}>
-            <ClientFields client={client} />
+            <ClientFields client={client} branchen={branchen} />
             <FormActions className="border-t border-hairline pt-5">
               <LinkButton href={`/kunden/${id}`} variant="ghost">
                 Abbrechen

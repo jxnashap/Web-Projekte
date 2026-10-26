@@ -27,6 +27,7 @@ import { dateDe, dateShort, time } from "@/lib/format";
 import { getCalendarOptions } from "@/lib/kalender/data";
 import { EVENT_KINDS, LEAD_SCORE, LEAD_SOURCES } from "@/lib/labels";
 import { todayIso } from "@/lib/time";
+import { getBranchen } from "@/lib/branchen";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -51,7 +52,7 @@ async function LeadDetail({ params }: Props) {
   const row = await getLead(id);
   if (!row) notFound();
   const { lead, clientName } = row;
-  const [leadEvents, calendar] = await Promise.all([getLeadEvents(id), getCalendarOptions()]);
+  const [leadEvents, calendar, branchen] = await Promise.all([getLeadEvents(id), getCalendarOptions(), getBranchen()]);
   const today = todayIso();
   const score = lead.score ? LEAD_SCORE[lead.score] : null;
   const answers = Object.entries(lead.answers ?? {});
@@ -64,7 +65,7 @@ async function LeadDetail({ params }: Props) {
   const ageDays = ageInDays(lead.createdAt);
 
   return (
-    <LeadDialogsProvider>
+    <LeadDialogsProvider branchen={branchen}>
       <PageHeader
         back={{ href: "/anfragen", label: "Anfragen" }}
         title={lead.company}

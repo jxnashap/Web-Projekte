@@ -1,6 +1,6 @@
 "use server";
 // Einstellungen ändern: nur Inhaber (role admin). Jede Änderung landet im Änderungsprotokoll.
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { getDb, schema } from "@/db";
 import { done, fail, parseForm, type ActionState } from "@/lib/action";
@@ -9,6 +9,7 @@ import { assertAdmin, type CurrentUser } from "@/lib/auth";
 import { LEGAL_TEMPLATE_VERSION } from "@/lib/dokumente/schema";
 import { getCompany, setSetting, type Company } from "@/lib/settings";
 import { todayIso } from "@/lib/time";
+import { BRANCHEN_KEY, customBranchen, getBranchen } from "@/lib/branchen";
 import { REFERENZEN_KEY } from "@/lib/skripte/engine/referenzen";
 import { aiSchema, companySchema, legalSchema, privacySchema } from "./schema";
 
@@ -52,6 +53,39 @@ export async function saveCompany(_: ActionState, fd: FormData): Promise<ActionS
   await audit(me.id, "settings", null, "firma", { changed });
   refresh();
   return done("Firmendaten gespeichert");
+}
+
+/** Eigene Branche hinzufügen (z. B. Fahrschule). Der Name ist zugleich der Schlüssel. */
+export async function addBranche(_: ActionState, fd: FormData): Promise<ActionState> {
+  const me = await admin();
+  if (!me) return fail(NO_ADMIN);
+  const name = String(fd.get("name") ?? "")
+    .replace(/[–—]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (name.length < 2 || name.length > 40) return fail("Bitte einen Namen mit 2 bis 40 Zeichen eingeben.", { name: ["2 bis 40 Zeichen"] });
+  const all = await getBranchen();
+  const exists = Object.entries(all).find(([k, v]) => k.toLowerCase() === name.toLowerCase() || v.toLowerCase() === name.toLowerCase());
+  if (exists) return fail(`„${exists[1]}“ gibt es schon.`, { name: ["Gibt es schon"] });
+  await setSetting(BRANCHEN_KEY, [...(await customBranchen()), name]);
+  await audit(me.id, "settings", null, "branche_neu", { name });
+  refresh();
+  return done(`Branche „${name}“ angelegt.`);
+}
+
+/** Eigene Branche entfernen, solange kein Kunde sie nutzt. */
+export async function removeBranche(name: string): Promise<ActionState> {
+  const me = await admin();
+  if (!me) return fail(NO_ADMIN);
+  const list = await customBranchen();
+  if (!list.includes(name)) return fail("Feste Branchen lassen sich nicht entfernen.");
+  const db = await getDb();
+  const [used] = await db.select({ n: count() }).from(schema.clients).where(eq(schema.clients.branche, name));
+  if ((used?.n ?? 0) > 0) return fail(`„${name}“ nutzen noch ${used.n === 1 ? "1 Kunde" : `${used.n} Kunden`}. Erst dort die Branche ändern.`);
+  await setSetting(BRANCHEN_KEY, list.filter((b) => b !== name));
+  await audit(me.id, "settings", null, "branche_entfernt", { name });
+  refresh();
+  return done(`Branche „${name}“ entfernt.`);
 }
 
 /** Referenz-Skripte für die Creative Engine (Qualitätsmaßstab). Leer = Startwert aus den echten SCM-Reels. */

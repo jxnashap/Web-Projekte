@@ -12,6 +12,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { createClient } from "@/lib/crm/actions";
 import { suggestClientColor } from "@/lib/crm/data";
 import { CLIENT_COLORS } from "@/lib/crm/labels";
+import { getBranchen } from "@/lib/branchen";
 
 export const metadata: Metadata = { title: "Neuer Kunde · Kunden" };
 
@@ -34,10 +35,10 @@ export default function NeuerKundePage() {
 
 async function NewClientForm() {
   await connection();
-  const color = await suggestClientColor(CLIENT_COLORS);
+  const [color, branchen] = await Promise.all([suggestClientColor(CLIENT_COLORS), getBranchen()]);
   return (
     <ActionForm action={createClient}>
-      <ClientFields defaultColor={color} />
+      <ClientFields defaultColor={color} branchen={branchen} />
       <FormActions className="border-t border-hairline pt-5">
         <LinkButton href="/kunden" variant="ghost">
           Abbrechen
