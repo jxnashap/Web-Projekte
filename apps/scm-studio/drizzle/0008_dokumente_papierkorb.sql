@@ -40,7 +40,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 --> statement-breakpoint
-DROP TRIGGER files_nur_anfuegen ON studio.files;
---> statement-breakpoint
-CREATE TRIGGER files_nur_anfuegen BEFORE UPDATE OR DELETE ON studio.files
+CREATE OR REPLACE TRIGGER files_nur_anfuegen BEFORE UPDATE OR DELETE ON studio.files
   FOR EACH ROW EXECUTE FUNCTION studio.schuetze_datei();
