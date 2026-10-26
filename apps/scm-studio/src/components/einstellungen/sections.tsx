@@ -348,6 +348,21 @@ export function RechtPane({ o, isAdmin }: { o: O; isAdmin: boolean }) {
 }
 
 // ------------------------------------------------------------------
+const ENTITY: Record<string, string> = {
+  session: "Anmeldung",
+  lead: "Anfrage",
+  client: "Kunde",
+  document: "Dokument",
+  invoice: "Beleg",
+  expense: "Ausgabe",
+  settings: "Einstellungen",
+  team: "Team",
+  video: "Video",
+  script: "Skript",
+  event: "Termin",
+  metric: "Zahlen",
+};
+
 type AuditRow = { a: { id: number; at: Date; entity: string; entityId: number | null; action: string }; userName: string | null };
 
 export function DatenschutzPane({ o, isAdmin, audit }: { o: O; isAdmin: boolean; audit: AuditRow[] }) {
@@ -406,7 +421,7 @@ export function DatenschutzPane({ o, isAdmin, audit }: { o: O; isAdmin: boolean;
             <li key={a.id} className="flex items-center gap-3 px-5 py-2.5 text-[13px]">
               <span className="w-12 shrink-0 tabular-nums text-faint">#{a.id}</span>
               <span className="min-w-0 flex-1 truncate">
-                <span className="text-ink">{a.entity}</span>
+                <span className="text-ink">{ENTITY[a.entity] ?? a.entity}</span>
                 {a.entityId ? <span className="text-muted"> {a.entityId}</span> : null}
                 <span className="text-muted"> · {a.action.replace(/_/g, " ")}</span>
               </span>

@@ -91,10 +91,10 @@ export function WeekView({ rows, days, today, now }: { rows: EventRow[]; days: s
                         }}
                         title={`${time(p.row.e.startsAt)} bis ${time(p.row.e.endsAt)} · ${p.row.e.title}`}
                       >
-                        {p.height < 50 ? (
-                          <div className="flex items-baseline gap-1 overflow-hidden whitespace-nowrap">
-                            <span className="text-[11px] tabular-nums text-ink-2">{time(p.row.e.startsAt)}</span>
-                            <span className="truncate font-semibold">{p.row.e.title}</span>
+                        {p.height < 50 || p.cols > 1 ? (
+                          <div className={cn("overflow-hidden", p.cols > 1 && p.height >= 50 ? "" : "flex items-baseline gap-1 whitespace-nowrap")}>
+                            <span className="text-[11px] tabular-nums text-ink-2">{time(p.row.e.startsAt)}</span>{" "}
+                            <span className={cn("font-semibold", p.cols > 1 && p.height >= 50 ? "line-clamp-3 break-words" : "truncate")}>{p.row.e.title}</span>
                           </div>
                         ) : (
                           <>

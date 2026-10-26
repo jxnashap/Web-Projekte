@@ -145,8 +145,7 @@ async function Beleg({ params }: { params: PageProps<"/finanzen/rechnungen/[id]"
                   </LinkButton>
                 }
               />
-              <iframe src={fileHref(inv.fileId)} title={`${label} ${inv.number}`} className="hidden h-[820px] w-full bg-sunken md:block" />
-              <ul className="divide-y divide-line md:hidden">
+              <ul className="divide-y divide-line">
                 {d.items.map((it, i) => (
                   <li key={it.id} className="flex items-start justify-between gap-4 px-5 py-3 text-[14px]">
                     <div className="min-w-0">
@@ -164,6 +163,10 @@ async function Beleg({ params }: { params: PageProps<"/finanzen/rechnungen/[id]"
                   <AmountRow strong label="Gesamt" value={eur(totals.grossCents)} />
                 </li>
               </ul>
+              <details className="hidden border-t border-line md:block">
+                <summary className="cursor-pointer px-5 py-3 text-[14px] text-muted hover:text-ink">PDF-Vorschau anzeigen</summary>
+                <iframe src={fileHref(inv.fileId)} loading="lazy" title={`${label} ${inv.number}`} className="h-[820px] w-full bg-sunken" />
+              </details>
             </Card>
           )}
         </div>

@@ -1,6 +1,6 @@
 // Daten für den Bereich Skripte.
 import "server-only";
-import { and, asc, desc, eq, gte, ilike, isNull, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, ne, or, sql, type SQL } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { integrations } from "@/lib/env";
@@ -114,13 +114,4 @@ export async function getAiUsage() {
     demoCalls: demo?.calls ?? 0,
     byModel: real,
   };
-}
-
-/** Skripte, die noch an keinem Video hängen (für die Verknüpfung). */
-export async function unlinkedScripts(clientId: number) {
-  const db = await getDb();
-  return db
-    .select({ id: schema.scripts.id, title: schema.scripts.title })
-    .from(schema.scripts)
-    .where(and(eq(schema.scripts.clientId, clientId), isNull(schema.scripts.videoId)));
 }

@@ -49,23 +49,39 @@ export function CheckRow({ checked, label, text }: { checked: boolean; label?: s
   );
 }
 
-/** Nummerierter Paragraph (§ 1, § 2 …) mit Absätzen (1), (2) … */
+/** Geschützte Leerzeichen nach §, Abs., Art. usw., damit „§ 640 BGB“ nicht umbricht */
+export const nb = (t: string) => t.replace(/(§§?|Abs\.|Art\.|Nr\.|Satz|S\.) (\d)/g, "$1\u00a0$2").replace(/(\d) (BGB|UrhG|ZPO|DSGVO|UStG|KUG|AO)\b/g, "$1\u00a0$2");
+
+/** Nummerierter Paragraph (§ 1, § 2 …) mit Absätzen (1), (2) …; Überschrift bleibt beim ersten Absatz. */
 export function Paragraph({ n, title, items }: { n: number; title: string; items: (string | { bullets: string[] })[] }) {
+  const numbered = items.filter((x) => typeof x === "string").length > 1;
   let abs = 0;
+  const rendered = items.map((it, i) => {
+    if (typeof it !== "string")
+      return (
+        <View key={i} style={{ paddingLeft: numbered ? 18 : 0 }}>
+          <Bullets items={it.bullets.map(nb)} />
+        </View>
+      );
+    abs += 1;
+    return (
+      <View key={i} style={{ flexDirection: "row" }} wrap={false}>
+        {numbered ? <Text style={[s.p, { width: 18, color: C.muted }]}>({abs})</Text> : null}
+        <P style={{ flex: 1 }}>{nb(it)}</P>
+      </View>
+    );
+  });
   return (
-    <Section title={title} number={`§ ${n}`}>
-      {items.map((it, i) => {
-        if (typeof it !== "string") return <Bullets key={i} items={it.bullets} />;
-        abs += 1;
-        const numbered = items.filter((x) => typeof x === "string").length > 1;
-        return (
-          <View key={i} style={{ flexDirection: "row" }} wrap={false}>
-            {numbered ? <Text style={[s.p, { width: 18, color: C.muted }]}>({abs})</Text> : null}
-            <P style={{ flex: 1 }}>{it}</P>
-          </View>
-        );
-      })}
-    </Section>
+    <View style={{ marginBottom: 5 * MM }}>
+      <View wrap={false}>
+        <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 4 }}>
+          <Text style={[s.label, { width: 34, color: C.accent }]}>{`§\u00a0${n}`}</Text>
+          <Text style={[s.h2, { marginBottom: 0 }]}>{title}</Text>
+        </View>
+        <View style={{ paddingLeft: 34 }}>{rendered[0]}</View>
+      </View>
+      <View style={{ paddingLeft: 34 }}>{rendered.slice(1)}</View>
+    </View>
   );
 }
 

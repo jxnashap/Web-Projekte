@@ -98,22 +98,18 @@ export function LeadCard({ lead: l, today, onStage }: { lead: LeadCardData; toda
 
       {interest && <p className="mt-2 truncate text-[12px] text-muted">{interest}</p>}
 
-      {(l.phone || l.email || onStage) && (
-        <div className="relative z-10 mt-3 flex items-center justify-between gap-2">
-          <ContactIcons phone={l.phone} email={l.email} name={l.name} preferred={l.contactWay} />
-          {onStage && (
-            <label className="ml-auto block w-[140px] shrink-0">
-              <span className="sr-only">Stufe von {l.company} ändern</span>
-              <Select value={l.stage} onChange={(e) => onStage(e.target.value)} className="cursor-pointer">
-                {LEAD_STAGES.map((s) => (
-                  <option key={s.key} value={s.key}>
-                    {s.label}
-                  </option>
-                ))}
-              </Select>
-            </label>
-          )}
-        </div>
+      {(l.phone || l.email) && <ContactIcons phone={l.phone} email={l.email} name={l.name} preferred={l.contactWay} className="relative z-10 mt-3" />}
+      {onStage && (
+        <label className="relative z-10 mt-3 block">
+          <span className="sr-only">Stufe von {l.company} ändern</span>
+          <Select value={l.stage} onChange={(e) => onStage(e.target.value)} className="cursor-pointer">
+            {LEAD_STAGES.map((s) => (
+              <option key={s.key} value={s.key}>
+                {s.label}
+              </option>
+            ))}
+          </Select>
+        </label>
       )}
     </Card>
   );

@@ -158,9 +158,9 @@ async function Overview({ client: c }: { client: Client }) {
   ).filter(([, v]) => v);
 
   return (
-    <div className="grid gap-6 xl:grid-cols-3">
-      <div className="grid content-start gap-6 xl:col-span-2">
-        <Card>
+    <div className="flex flex-col gap-6 xl:grid xl:grid-cols-3 xl:items-start">
+      <div className="contents xl:col-span-2 xl:grid xl:content-start xl:gap-6">
+        <Card className="order-2">
           <CardHeader
             title="Paket und Kontingent"
             sub={monthLabel(o.month)}
@@ -189,7 +189,7 @@ async function Overview({ client: c }: { client: Client }) {
           </div>
         </Card>
 
-        <Card>
+        <Card className="order-4">
           <CardHeader
             title="Letzte Videos"
             sub="Mit Aufrufen laut letzter Messung"
@@ -240,8 +240,8 @@ async function Overview({ client: c }: { client: Client }) {
         </Card>
       </div>
 
-      <div className="grid content-start gap-6">
-        <Card>
+      <div className="contents xl:grid xl:content-start xl:gap-6">
+        <Card className="order-1">
           <CardHeader title="Kontakt" sub={c.contactName ?? undefined} />
           <div className="p-2">
             <ContactList phone={c.phone} email={c.email} instagram={c.instagram} website={c.website} />
@@ -254,7 +254,7 @@ async function Overview({ client: c }: { client: Client }) {
           </div>
         </Card>
 
-        <Card>
+        <Card className="order-3">
           <CardHeader
             title="Nächste Termine"
             action={
@@ -284,7 +284,7 @@ async function Overview({ client: c }: { client: Client }) {
           )}
         </Card>
 
-        <Card>
+        <Card className="order-5">
           <CardHeader
             title="Vertragsdaten"
             action={
@@ -312,7 +312,7 @@ async function Overview({ client: c }: { client: Client }) {
         </Card>
 
         {o.origin && (
-          <p className="text-[13px] text-muted">
+          <p className="order-6 text-[13px] text-muted">
             Kam über die{" "}
             <Link href={`/anfragen/${o.origin.id}`} className="font-semibold text-ink-2 underline-offset-2 hover:underline">
               Anfrage vom {dateDe(o.origin.createdAt)}

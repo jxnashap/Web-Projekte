@@ -67,12 +67,12 @@ export function ViewsByClientChart({ data, series, unit }: { data: Point[]; seri
   const [mode, setMode] = useState<"balken" | "linien">("balken");
   const tick = (v: string) => (unit === "tag" ? fmt(v, "d.") : fmt(v, "d. MMM"));
   const interval = unit === "tag" && data.length > 10 ? Math.ceil(data.length / 6) - 1 : 0;
-  const common = { data, margin: { top: 8, right: 4, bottom: 0, left: 4 } };
+  const common = { data, margin: { top: 8, right: 4, bottom: 0, left: 14 } };
   const axes = (
     <>
       <CartesianGrid vertical={false} stroke={GRID} />
       <XAxis dataKey="key" tickFormatter={tick} tick={tickStyle} tickLine={false} axisLine={false} interval={interval} minTickGap={8} />
-      <YAxis orientation="right" tickFormatter={axisNum} tick={tickStyle} tickLine={false} axisLine={false} width={52} tickCount={4} allowDecimals={false} />
+      <YAxis orientation="right" tickFormatter={axisNum} tick={tickStyle} tickLine={false} axisLine={false} width={62} tickCount={4} allowDecimals={false} />
     </>
   );
   return (
@@ -136,7 +136,7 @@ export function VideoCurveChart({ data }: { data: { day: string; views: number; 
   return (
     <div className="h-64 w-full" role="img" aria-label="Aufrufe insgesamt im Verlauf">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 4 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 14 }}>
           <defs>
             <linearGradient id="viewsWash" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={ACCENT} stopOpacity={0.14} />
@@ -145,7 +145,7 @@ export function VideoCurveChart({ data }: { data: { day: string; views: number; 
           </defs>
           <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis dataKey="day" tickFormatter={(v: string) => fmt(v, "d. MMM")} tick={tickStyle} tickLine={false} axisLine={false} interval={interval} minTickGap={8} />
-          <YAxis orientation="right" tickFormatter={axisNum} tick={tickStyle} tickLine={false} axisLine={false} width={52} tickCount={4} allowDecimals={false} />
+          <YAxis orientation="right" tickFormatter={axisNum} tick={tickStyle} tickLine={false} axisLine={false} width={62} tickCount={4} allowDecimals={false} />
           <Tooltip
             cursor={{ stroke: AXIS, strokeWidth: 1 }}
             content={({ active, payload }) => {

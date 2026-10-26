@@ -87,7 +87,7 @@ async function Detail({ params }: { params: Params }) {
           <CardHeader title="Termin bearbeiten" sub="Änderungen gehen sofort an Google, falls verbunden." />
           <div className="p-5">
             <EventForm
-              key={e.updatedAt.toISOString()}
+              key={e.id}
               action={saveEvent}
               options={options}
               defaults={{

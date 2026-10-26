@@ -11,16 +11,15 @@ const SERIES = [
 type Point = { month: string; einnahmen: number; ausgaben: number };
 
 const eur = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
-const eurCompact = new Intl.NumberFormat("de-DE", { notation: "compact", maximumFractionDigits: 1 });
+const axisFmt = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
 const monthShort = (ym: string) => new Intl.DateTimeFormat("de-DE", { month: "short", timeZone: "UTC" }).format(new Date(`${ym}-15T12:00:00Z`)).replace(".", "");
 const monthLong = (ym: string) => new Intl.DateTimeFormat("de-DE", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${ym}-15T12:00:00Z`));
 
-export function FinanceChart({ data, highlight }: { data: Point[]; highlight: string[] }) {
-  const totals = SERIES.map((s) => ({ ...s, sum: data.filter((d) => highlight.includes(d.month)).reduce((a, d) => a + d[s.key], 0) }));
+export function FinanceChart({ data }: { data: Point[] }) {
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[13px] text-muted" aria-hidden>
-        {totals.map((s) => (
+        {SERIES.map((s) => (
           <span key={s.key} className="inline-flex items-center gap-2">
             <span className="inline-block size-2.5 rounded-full" style={{ background: s.color }} />
             {s.label}
@@ -33,7 +32,7 @@ export function FinanceChart({ data, highlight }: { data: Point[]; highlight: st
           <BarChart data={data} barGap={2} barCategoryGap="28%" margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--color-line)" />
             <XAxis dataKey="month" tickFormatter={monthShort} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--color-muted)" }} interval="preserveStartEnd" />
-            <YAxis width={44} tickFormatter={(v: number) => eurCompact.format(v)} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--color-muted)" }} />
+            <YAxis width={48} tickFormatter={(v: number) => axisFmt.format(v)} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--color-muted)" }} />
             <Tooltip
               cursor={{ fill: "var(--color-sunken)", radius: 6 }}
               content={({ active, payload, label }) =>

@@ -89,7 +89,7 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/finanzen">
         <Card className="xl:col-span-2">
           <CardHeader title="Einnahmen und Ausgaben" sub="Je Monat, netto" />
           <div className="p-5">
-            <FinanceChart data={o.chart} highlight={o.period.months} />
+            <FinanceChart data={o.chart} />
           </div>
         </Card>
 
@@ -161,18 +161,18 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/finanzen">
         <Card>
           <CardHeader title="Zu erledigen" />
           <ul className="divide-y divide-line">
-            <Todo href="/finanzen/rechnungen?status=entwurf" icon={<FileText className="size-4" />} done={o.draftCount === 0} text={o.draftCount ? `${o.draftCount} Entwürfe noch nicht festgeschrieben` : "Keine offenen Entwürfe"} />
+            <Todo href="/finanzen/rechnungen?status=entwurf" icon={<FileText className="size-4" />} done={o.draftCount === 0} text={o.draftCount ? `${o.draftCount} ${o.draftCount === 1 ? "Entwurf" : "Entwürfe"} noch nicht festgeschrieben` : "Keine offenen Entwürfe"} />
             <Todo
               href={`/finanzen/ausgaben?monat=${ym}`}
               icon={<Receipt className="size-4" />}
               done={o.missingReceipts === 0}
-              text={o.missingReceipts ? `${o.missingReceipts} Ausgaben ohne Belegdatei` : "Alle Ausgaben haben einen Beleg"}
+              text={o.missingReceipts ? `${o.missingReceipts} ${o.missingReceipts === 1 ? "Ausgabe" : "Ausgaben"} ohne Belegdatei` : "Alle Ausgaben haben einen Beleg"}
             />
             <Todo
               href="/finanzen/rechnungen?status=ueberfaellig"
               icon={<AlertTriangle className="size-4" />}
               done={overdue.length === 0}
-              text={overdue.length ? `${overdue.length} überfällige Rechnungen nachfassen` : "Nichts überfällig"}
+              text={overdue.length ? `${overdue.length} ${overdue.length === 1 ? "überfällige Rechnung" : "überfällige Rechnungen"} nachfassen` : "Nichts überfällig"}
             />
             <Todo href="/finanzen/export" icon={<ArrowUpRight className="size-4" />} done={false} text="Monatsexport für die Steuerberatung" />
           </ul>

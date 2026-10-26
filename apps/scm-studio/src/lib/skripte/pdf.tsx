@@ -1,7 +1,7 @@
 // Drehbuch als PDF: weißes Papier, Logo, Ablauf als Tabelle mit Timecode (Schreibmaschine wie die Website).
 import "server-only";
 import type { Script } from "@/db/schema";
-import { KeyValues, Note, PdfDocument, PdfPage, PdfTable, Section, Text, Title, View, s } from "@/lib/pdf/components";
+import { KeyValues, PdfDocument, PdfPage, PdfTable, Section, Text, Title, View, s } from "@/lib/pdf/components";
 import { C } from "@/lib/pdf/theme";
 import { dateDe } from "@/lib/format";
 import type { Company } from "@/lib/settings";
@@ -62,17 +62,20 @@ export function DrehbuchPdf({
             rows={script.beats}
           />
         </Section>
-        {script.cta ? (
-          <Section title="Aufruf" wrap={false}>
-            <Text style={mono}>{t(script.cta)}</Text>
-          </Section>
+        {script.cta || script.caption ? (
+          <View style={{ flexDirection: "row", gap: 18 }} wrap={false}>
+            <View style={{ flex: 1 }}>
+              <Section title="Aufruf">
+                <Text style={mono}>{t(script.cta) || "offen"}</Text>
+              </Section>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Section title="Caption">
+                <Text style={[s.p, { color: C.ink }]}>{t(script.caption) || "offen"}</Text>
+              </Section>
+            </View>
+          </View>
         ) : null}
-        {script.caption ? (
-          <Section title="Caption" wrap={false}>
-            <Text style={[s.p, { color: C.ink }]}>{t(script.caption)}</Text>
-          </Section>
-        ) : null}
-        {script.status !== "final" ? <Note>Entwurf. Vor dem Dreh mit dem Kunden abstimmen und als final markieren.</Note> : null}
       </PdfPage>
     </PdfDocument>
   );

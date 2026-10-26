@@ -23,7 +23,7 @@ export function ContactIcons({
   const ring = (way: string) => (preferred === way ? "border-ink text-ink" : "");
   if (!hasPhone(phone) && !email) return null;
   return (
-    <div className={cn("flex items-center gap-1.5", className)}>
+    <span className={cn("flex items-center gap-1.5", className)}>
       {hasPhone(phone) && (
         <a href={telHref(phone)} className={cn(iconBtn, ring("anruf"))} aria-label={`${name} anrufen`} title="Anrufen">
           <Phone className="size-4" />
@@ -39,7 +39,7 @@ export function ContactIcons({
           <Mail className="size-4" />
         </a>
       )}
-    </div>
+    </span>
   );
 }
 

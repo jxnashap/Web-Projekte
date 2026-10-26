@@ -3,15 +3,14 @@
 // Speichern und Festschreiben laufen über dieselbe Server Action (intent).
 import { ArrowDown, ArrowUp, Eye, Lock, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { ActionForm } from "@/components/ui/action-form";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { ActionButton } from "@/components/ui/confirm-action";
 import { Field, FormGrid, Input, Select, Textarea } from "@/components/ui/field";
-import { SubmitButton } from "@/components/ui/submit-button";
 import type { Party } from "@/db/schema";
 import { deleteDraft, saveDraft } from "@/lib/finanzen/actions";
 import { calcTotals, lineNetCents, partyFromClient, TAX_RATES, UNIT_LABELS } from "@/lib/finanzen/core";
+import { FinanceForm, FinanceSubmit } from "./finance-form";
 
 type Item = { key: number; description: string; quantity: string; unit: string; price: string; taxRate: number };
 type ClientOpt = { id: number; name: string; contactName: string | null; street: string | null; zip: string | null; city: string | null; ort: string | null; vatId: string | null; email: string | null; buyerReference: string | null };
@@ -116,7 +115,7 @@ export function InvoiceEditor({
   const setField = (k: keyof Party) => (e: React.ChangeEvent<HTMLInputElement>) => setR((p) => ({ ...p, [k]: e.target.value }));
 
   return (
-    <ActionForm action={saveDraft} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+    <FinanceForm action={saveDraft} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <input type="hidden" name="id" value={invoice.id} />
       <input type="hidden" name="items" value={serialized} />
       <input type="hidden" name="clientId" value={clientId} />
@@ -223,7 +222,7 @@ export function InvoiceEditor({
                       </IconBtn>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 pl-9 sm:grid-cols-[90px_120px_1fr_110px_auto]">
+                  <div className="grid grid-cols-2 gap-3 pl-9 sm:grid-cols-[90px_120px_1fr_100px_150px]">
                     <Field label="Menge">
                       <Input value={it.quantity} onChange={(e) => update(it.key, { quantity: e.target.value })} inputMode="decimal" className="tabular-nums" />
                     </Field>
@@ -329,13 +328,13 @@ export function InvoiceEditor({
           )}
 
           <div className="mt-5 grid gap-2">
-            <SubmitButton name="intent" value="speichern" variant="secondary" pendingText="Speichert …">
+            <FinanceSubmit name="intent" value="speichern" variant="secondary" pendingText="Speichert …">
               Entwurf speichern
-            </SubmitButton>
+            </FinanceSubmit>
             <LinkButton href={`/api/finanzen/rechnungen/${invoice.id}/pdf`} target="_blank" variant="ghost">
               <Eye className="size-4" /> Vorschau (gespeicherter Stand)
             </LinkButton>
-            <SubmitButton
+            <FinanceSubmit
               name="intent"
               value="festschreiben"
               pendingText="Schreibt fest …"
@@ -346,7 +345,7 @@ export function InvoiceEditor({
               }}
             >
               <Lock className="size-4" /> Speichern und festschreiben
-            </SubmitButton>
+            </FinanceSubmit>
             {!isOwner && <p className="text-[12px] text-muted">Festschreiben dürfen nur Inhaber.</p>}
             <p className="text-[12px] text-muted">
               {offer ? "Festgeschriebene Angebote bekommen eine Nummer (AN-…) und ein PDF." : "Rechnungen werden als E-Rechnung (ZUGFeRD, EN 16931) festgeschrieben."}
@@ -361,7 +360,7 @@ export function InvoiceEditor({
           )}
         </Card>
       </aside>
-    </ActionForm>
+    </FinanceForm>
   );
 }
 

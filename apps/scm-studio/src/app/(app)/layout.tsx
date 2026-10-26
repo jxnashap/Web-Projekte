@@ -13,7 +13,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Seitenleiste wie in macOS: Glas, Icons, dezente Auswahl */}
       <aside className="material sticky top-0 hidden h-dvh flex-col gap-7 border-r border-hairline px-3 pb-4 pt-5 lg:flex">
         <Brand className="px-2.5" />
-        <SidebarNav />
+        <Suspense fallback={<div className="h-[420px]" />}>
+          <SidebarNav />
+        </Suspense>
         <div className="mt-auto">
           <Suspense fallback={<Skeleton className="h-14" />}>
             <UserCard />
@@ -37,7 +39,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </Suspense>
         <main className="mx-auto w-full max-w-[1360px] px-4 pb-32 pt-8 sm:px-8 lg:pb-14 lg:pt-10">{children}</main>
       </div>
-      <MobileNav />
+      <Suspense fallback={null}>
+        <MobileNav />
+      </Suspense>
       <Toaster
         position="top-center"
         offset={16}

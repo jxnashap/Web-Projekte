@@ -9,7 +9,7 @@ export function FilterChips({ label, chips, className }: { label: string; chips:
     <div className={cn("flex min-w-0 items-center gap-2", className)} role="group" aria-label={label}>
       <span className="shrink-0 text-[13px] font-medium text-muted">{label}</span>
       <div className="min-w-0 overflow-x-auto">
-        <Segmented className="shrink-0" items={chips.map((c) => ({ href: c.href, label: c.label, active: c.active }))} />
+        <Segmented className="w-max shrink-0" items={chips.map((c) => ({ href: c.href, label: c.label, active: c.active }))} />
       </div>
     </div>
   );

@@ -72,8 +72,8 @@ async function LeadDetail({ params }: Props) {
       />
 
       <TodayNote nextStepAt={lead.nextStepAt} step={lead.nextStep} closed={closed} />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <Card>
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        <Card className="order-3 lg:order-none">
           <CardHeader title="Angaben" sub="Alles, was ihr über den Betrieb wisst" />
           <div className="p-5">
             <ActionForm action={updateLead.bind(null, lead.id)}>
@@ -85,15 +85,15 @@ async function LeadDetail({ params }: Props) {
           </div>
         </Card>
 
-        <div className="grid content-start gap-6">
-          <Card>
+        <div className="contents lg:grid lg:content-start lg:gap-6">
+          <Card className="order-1">
             <CardHeader title="Kontakt" sub={lead.name} />
             <div className="p-2">
               <ContactList phone={lead.phone} email={lead.email} preferred={lead.contactWay} />
             </div>
           </Card>
 
-          <Card>
+          <Card className="order-2">
             <CardHeader title="Wie geht es weiter" />
             <div className="grid gap-2 p-5">
               {lead.clientId ? (
@@ -178,7 +178,7 @@ async function LeadDetail({ params }: Props) {
             )}
           </Card>
 
-          <Card>
+          <Card className="order-4">
             <CardHeader title="Bewertung" />
             <div className="grid gap-3 p-5 text-[14px]">
               {score ? (
@@ -198,7 +198,7 @@ async function LeadDetail({ params }: Props) {
           </Card>
 
           {(answers.length > 0 || lead.message) && (
-            <Card>
+            <Card className="order-5">
               <CardHeader title="Aus dem Website-Quiz" />
               <div className="p-5">
                 {lead.message && <blockquote className="mb-4 border-l-2 border-accent pl-3 text-[14px] italic text-ink-2">{lead.message}</blockquote>}
@@ -216,7 +216,7 @@ async function LeadDetail({ params }: Props) {
             </Card>
           )}
 
-          <Card>
+          <Card className="order-6">
             <CardHeader title="Datenschutz" />
             <div className="grid gap-3 p-5 text-[13px] text-muted">
               <p>Anfragen ohne Auftrag löscht ihr nach spätestens 12 Monaten. Diese Anfrage ist vom {dateDe(lead.createdAt)}.</p>

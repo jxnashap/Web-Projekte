@@ -329,13 +329,17 @@ export async function getAccountsOverview() {
     db.select().from(schema.socialAccounts),
     db.select().from(schema.settings).where(like(schema.settings.key, "connect:%")),
   ]);
+  const colors = seriesColorMap(await allClientIds());
   const now = new Date().toISOString();
   const openLinks = links
     .map((l) => ({ token: l.key.slice("connect:".length), ...(l.value as Omit<ConnectLink, "token">) }))
     .filter((l) => l.expiresAt > now);
   return clients.map((c) => ({
     ...c,
-    accounts: accounts.filter((a) => a.clientId === c.id),
+    color: colors.get(c.id) ?? c.color,
+    accounts: accounts
+      .filter((a) => a.clientId === c.id)
+      .map((a) => ({ ...a, expiresSoon: Boolean(a.tokenExpiresAt && a.tokenExpiresAt.getTime() - Date.now() < 10 * 86_400_000) })),
     links: openLinks.filter((l) => l.clientId === c.id),
   }));
 }

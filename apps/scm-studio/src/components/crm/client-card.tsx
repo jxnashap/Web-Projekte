@@ -24,16 +24,16 @@ export function ClientCard({
   const st = CLIENT_STATUS[c.status];
   return (
     <Card className="relative flex flex-col overflow-hidden">
-      <div className="h-1.5" style={{ background: c.color }} aria-hidden />
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="truncate text-[16px] font-semibold">
-              <Link href={`/kunden/${c.id}`} className="after:absolute after:inset-0 focus-visible:outline-none">
+            <h2 className="flex items-center gap-2 text-[17px] font-semibold">
+              <span className="size-2.5 shrink-0 rounded-full" style={{ background: c.color }} aria-hidden />
+              <Link href={`/kunden/${c.id}`} className="truncate after:absolute after:inset-0 focus-visible:outline-none">
                 {c.name}
               </Link>
             </h2>
-            <p className="truncate text-[13px] text-muted">{[BRANCHEN[c.branche] ?? c.branche, c.ort ?? c.city].filter(Boolean).join(" · ")}</p>
+            <p className="truncate pl-4.5 text-[13px] text-muted">{[BRANCHEN[c.branche] ?? c.branche, c.ort ?? c.city].filter(Boolean).join(" · ")}</p>
           </div>
           {st && <Badge tone={st.tone}>{st.label}</Badge>}
         </div>

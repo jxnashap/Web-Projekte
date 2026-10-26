@@ -43,7 +43,7 @@ export async function AccountsPanel() {
           {clients.map((c) => {
             const ig = c.accounts.find((a) => a.platform === "instagram");
             const st = STATUS[ig?.status ?? "nicht_verbunden"];
-            const soon = ig?.tokenExpiresAt && ig.tokenExpiresAt.getTime() - Date.now() < 10 * 86_400_000;
+            const soon = ig?.expiresSoon;
             return (
               <li key={c.id} className="grid gap-3 px-5 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                 <div className="min-w-0">
@@ -81,15 +81,15 @@ export async function AccountsPanel() {
                 <div className="flex flex-wrap gap-2 md:justify-end">
                   {ig?.status === "aktiv" ? (
                     <>
-                      <ActionButton action={syncAccountNow.bind(null, ig.id)} variant="secondary" title={ready ? undefined : "Instagram ist noch nicht eingerichtet"}>
+                      <ActionButton action={syncAccountNow.bind(null, ig.id)} variant="secondary">
                         <RefreshCw className="size-3.5" /> Jetzt abgleichen
                       </ActionButton>
                       <ActionButton action={disconnectAccount.bind(null, ig.id)} confirm={`Instagram von ${c.name} trennen? Bisherige Zahlen bleiben erhalten.`} variant="ghost">
                         <Unplug className="size-3.5" /> Trennen
                       </ActionButton>
                     </>
-                  ) : c.links.length === 0 ? (
-                    <ActionButton action={createConnectLink.bind(null, c.id)} variant={ready ? "secondary" : "ghost"} title={ready ? undefined : "Erst nach der Einrichtung möglich"}>
+                  ) : !ready ? null : c.links.length === 0 ? (
+                    <ActionButton action={createConnectLink.bind(null, c.id)} variant="secondary">
                       <Link2 className="size-3.5" /> Verbindungslink erzeugen
                     </ActionButton>
                   ) : (

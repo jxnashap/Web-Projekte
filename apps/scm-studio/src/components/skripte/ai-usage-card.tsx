@@ -8,6 +8,7 @@ import { getAiUsage } from "@/lib/skripte/data";
 import { modelLabel, PRICES_CHECKED_ON } from "@/lib/skripte/pricing";
 import { monthIso } from "@/lib/time";
 
+const EFFORT_LABEL: Record<string, string> = { none: "aus", low: "niedrig", medium: "mittel", high: "hoch" };
 const usd = (n: number) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "USD", maximumFractionDigits: n < 1 ? 3 : 2 }).format(n);
 
 export async function AiUsageCard() {
@@ -23,7 +24,7 @@ export async function AiUsageCard() {
       <div className="grid gap-4 p-5 text-[14px]">
         {u.live ? (
           <p className="text-[13px] text-muted">
-            Modell <span className="font-semibold text-ink">{modelLabel(u.config.model)}</span>, Denkaufwand {u.config.effort}.{" "}
+            Modell <span className="font-semibold text-ink">{modelLabel(u.config.model)}</span>, Denkaufwand {EFFORT_LABEL[u.config.effort] ?? u.config.effort}.{" "}
             <Link href="/einstellungen" className="underline underline-offset-2 hover:text-ink">
               Ändern
             </Link>

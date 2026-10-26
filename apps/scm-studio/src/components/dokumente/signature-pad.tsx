@@ -3,7 +3,7 @@
 // keine Zeit- oder Druckwerte, damit keine biometrischen Daten entstehen.
 import { Eraser } from "lucide-react";
 import { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
-import type SignaturePadType from "signature_pad";
+import SignaturePadLib from "signature_pad";
 import { cn } from "@/lib/cn";
 
 export type SignaturePadHandle = { strokes: () => number[][][]; clear: () => void; isEmpty: () => boolean };
@@ -20,7 +20,7 @@ export function SignaturePad({
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const padRef = useRef<SignaturePadType | null>(null);
+  const padRef = useRef<SignaturePadLib | null>(null);
   const [empty, setEmpty] = useState(true);
   const changeRef = useRef(onChange);
   useEffect(() => {
@@ -41,29 +41,25 @@ export function SignaturePad({
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    let off = () => {};
-    import("signature_pad").then(({ default: SP }) => {
-      if (cancelled || !canvasRef.current) return;
-      const pad = new SP(canvasRef.current, { penColor: "#0E0E11", minWidth: 0.9, maxWidth: 2.6, backgroundColor: "rgba(0,0,0,0)" });
-      padRef.current = pad;
-      const onEnd = () => {
-        const e = pad.isEmpty();
-        setEmpty(e);
-        changeRef.current?.(e);
-      };
-      pad.addEventListener("endStroke", onEnd);
-      resize();
-      window.addEventListener("resize", resize);
-      off = () => {
-        pad.removeEventListener("endStroke", onEnd);
-        window.removeEventListener("resize", resize);
-        pad.off();
-      };
-    });
+    if (!canvasRef.current) return;
+    const pad = new SignaturePadLib(canvasRef.current, { penColor: "#0E0E11", minWidth: 0.9, maxWidth: 2.6, backgroundColor: "rgba(0,0,0,0)" });
+    padRef.current = pad;
+    const onEnd = () => {
+      const e = pad.isEmpty();
+      setEmpty(e);
+      changeRef.current?.(e);
+    };
+    pad.addEventListener("endStroke", onEnd);
+    resize();
+    // Größe erst nach dem Layout sicher bekannt (z. B. in Dialogen)
+    const raf = requestAnimationFrame(resize);
+    window.addEventListener("resize", resize);
     return () => {
-      cancelled = true;
-      off();
+      cancelAnimationFrame(raf);
+      pad.removeEventListener("endStroke", onEnd);
+      window.removeEventListener("resize", resize);
+      pad.off();
+      padRef.current = null;
     };
   }, [resize]);
 

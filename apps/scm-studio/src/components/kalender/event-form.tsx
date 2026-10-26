@@ -115,8 +115,8 @@ export function EventForm({
         </label>
       </div>
 
-      <FormGrid>
-        <Field label={multiDay ? "Von (Datum)" : "Datum"} name="startDate">
+      <div className={cn("grid gap-4", multiDay ? "sm:grid-cols-2" : allDay ? "sm:grid-cols-2" : "grid-cols-2 sm:grid-cols-3")}>
+        <Field label={multiDay ? "Von (Datum)" : "Datum"} name="startDate" className={!multiDay && !allDay ? "col-span-2 sm:col-span-1" : undefined}>
           <Input
             type="date"
             name="startDate"
@@ -135,17 +135,17 @@ export function EventForm({
         ) : (
           <input type="hidden" name="endDate" value={startDate} />
         )}
-      </FormGrid>
-      {!allDay && (
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Beginn" name="startTime">
-            <Input type="time" name="startTime" step={300} defaultValue={defaults.startTime ?? "10:00"} required />
-          </Field>
-          <Field label="Ende" name="endTime">
-            <Input type="time" name="endTime" step={300} defaultValue={defaults.endTime ?? "12:00"} required />
-          </Field>
-        </div>
-      )}
+        {!allDay && (
+          <>
+            <Field label="Beginn" name="startTime">
+              <Input type="time" name="startTime" step={300} defaultValue={defaults.startTime ?? "10:00"} required />
+            </Field>
+            <Field label="Ende" name="endTime">
+              <Input type="time" name="endTime" step={300} defaultValue={defaults.endTime ?? "12:00"} required />
+            </Field>
+          </>
+        )}
+      </div>
 
       <Field label="Ort" name="location" optional>
         <Input name="location" defaultValue={defaults.location ?? ""} placeholder="z. B. Kiel, Baustelle oder Telefon" maxLength={300} />

@@ -74,6 +74,8 @@ function userPrompt(input: GenInput, ctx: GenContext, previous: string | null) {
 
 /** Verständliche Meldung für typische API-Fehler. */
 function explain(e: unknown, model: string): string {
+  if (e instanceof OpenAI.APIConnectionTimeoutError) return "Die KI hat zu lange gebraucht. Bitte noch einmal versuchen.";
+  if (e instanceof OpenAI.APIConnectionError) return "OpenAI ist von hier aus nicht erreichbar. Bitte Internetverbindung oder Firewall prüfen.";
   if (e instanceof OpenAI.APIError) {
     const code = String(e.code ?? "");
     if (e.status === 401) return "Der OpenAI-Schlüssel wird nicht akzeptiert. Bitte OPENAI_API_KEY prüfen.";
