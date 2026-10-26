@@ -70,7 +70,7 @@ export function Dialog({
     onClose();
   }, [confirm, onClose]);
 
-  const swipe = useSwipeDown(ref, requestClose);
+  const swipe = useSwipeDown(requestClose);
 
   // Nach erfolgreichem Speichern ohne Rückfrage schließen
   const closeNow = useCallback(() => {

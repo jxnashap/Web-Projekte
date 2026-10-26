@@ -6,7 +6,7 @@ import { useSwipeDown } from "@/components/ui/use-swipe-down";
 
 export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
-  const swipe = useSwipeDown(ref, onClose);
+  const swipe = useSwipeDown(onClose);
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
