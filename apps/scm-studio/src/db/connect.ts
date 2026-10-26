@@ -30,10 +30,14 @@ export async function connect(): Promise<DB> {
   if (url) {
     const { drizzle } = await import("drizzle-orm/postgres-js");
     const postgres = (await import("postgres")).default;
-    // Supabase Transaction Pooler (Port 6543): keine Prepared Statements; wenige Verbindungen je Function-Instanz
+    // Supabase Transaction Pooler (Port 6543): keine Prepared Statements; wenige Verbindungen je Function-Instanz.
+    // max_pipeline 1: Der Pooler verträgt keine mehrfach hintereinander geschickten Abfragen auf einer Verbindung,
+    // Seiten mit vielen parallelen Abfragen blieben sonst hängen. Dafür ein paar Verbindungen mehr.
+    // (max_pipeline fehlt in den Typen von postgres.js, existiert aber; Standard 100.)
+    const options = { prepare: false, max: Number(process.env.DB_POOL_MAX ?? 5), max_pipeline: 1, idle_timeout: 20, connect_timeout: 10 };
     let client: ReturnType<typeof postgres>;
     try {
-      client = postgres(url, { prepare: false, max: Number(process.env.DB_POOL_MAX ?? 3), idle_timeout: 20, connect_timeout: 10 });
+      client = postgres(url, options as Parameters<typeof postgres>[1]);
     } catch (err) {
       // Häufigster Grund: Sonderzeichen im Datenbank-Passwort. Die Adresse selbst nicht ausgeben (enthält das Passwort).
       throw new Error(
