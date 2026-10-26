@@ -10,6 +10,7 @@ import { createContext, Suspense, useCallback, useContext, useEffect, useId, use
 import { cn } from "@/lib/cn";
 import { Button } from "./button";
 import { useConfirm } from "./confirm";
+import { useSwipeDown } from "./use-swipe-down";
 
 type DialogApi = { close: () => void };
 const DialogCtx = createContext<DialogApi | null>(null);
@@ -69,6 +70,8 @@ export function Dialog({
     onClose();
   }, [confirm, onClose]);
 
+  const swipe = useSwipeDown(ref, requestClose);
+
   // Nach erfolgreichem Speichern ohne Rückfrage schließen
   const closeNow = useCallback(() => {
     dirty.current = false;
@@ -97,8 +100,10 @@ export function Dialog({
       {open && (
         <DialogCtx.Provider value={{ close: closeNow }}>
           <div className="flex max-h-[inherit] flex-col" onInput={() => (dirty.current = true)}>
-            <div className="mx-auto mt-2 h-[5px] w-9 shrink-0 rounded-full bg-line-2 sm:hidden" aria-hidden />
-            <div className="flex items-start justify-between gap-4 px-6 pb-2 pt-3 sm:pt-5">
+            <div {...swipe} className="touch-none pt-2 sm:hidden">
+              <div className="mx-auto h-[5px] w-9 shrink-0 rounded-full bg-line-2" aria-hidden />
+            </div>
+            <div {...swipe} className="flex items-start justify-between gap-4 px-6 pb-2 pt-3 max-sm:touch-none sm:pt-5">
               <div className="min-w-0">
                 <h2 id={titleId} tabIndex={-1} className="text-[20px] font-bold tracking-[-0.025em] outline-none">
                   {title}
