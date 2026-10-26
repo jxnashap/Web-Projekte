@@ -16,7 +16,9 @@ const NEW_ACTIONS = [
   { label: "Neue Rechnung", href: "/finanzen/rechnungen/neu", keywords: ["abrechnung"] },
   { label: "Neues Angebot", href: "/finanzen/rechnungen/neu?art=angebot", keywords: ["kostenvoranschlag"] },
   { label: "Beleg erfassen", href: "/finanzen/ausgaben?neu=1", keywords: ["quittung", "ausgabe", "kassenbon"] },
-  { label: "Neues Dokument", href: "/dokumente/neu", keywords: ["vertrag", "einwilligung", "drehplan"] },
+  { label: "Einwilligung am Set", href: "/dokumente/neu?art=einwilligung", keywords: ["unterschrift", "kug", "dsgvo", "person"] },
+  { label: "Neuer Vertrag", href: "/dokumente/neu?art=vertrag", keywords: ["dienstleistungsvertrag", "paket"] },
+  { label: "Neues Dokument", href: "/dokumente/neu", keywords: ["drehplan", "monatsbericht", "bericht"] },
 ];
 
 export function CommandMenu({ clients }: { clients: CommandClient[] }) {

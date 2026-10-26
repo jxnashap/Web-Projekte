@@ -23,6 +23,14 @@ Repo für alle Website-Projekte. Struktur:
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
 
+## `apps/` – eigene Programme
+- `apps/scm-studio/` – **SCM Studio**, internes Management-Programm für SCM Creatives (Next.js 16.4,
+  React 19.3, Drizzle mit PGlite lokal → Supabase live, Supabase Auth mit TOTP-Pflicht, ZUGFeRD-Rechnungen,
+  DATEV-Export, KI-Skripte über OpenAI, Google Kalender, Instagram-Zahlen, weiße PDF-Dokumente mit Logo).
+  Plan/UX: `PLAN.md`, Recherche mit Quellen: `docs/recherche/`, Einrichtung: `EINRICHTUNG.md`.
+  **Supabase und Vercel nur in eigenen, neuen Projekten, nie über MyImmo.** Lokal: `npm run seed`,
+  `npm run dev -- -p 3100`, Vorschau-Passwort `scm-studio`; QA mit `npm run qa`.
+
 ## `baukaesten/` – wiederverwendbare Website-Kits
 - `baukaesten/quiet-luxury/` – die Standard-Bauweise (Fontenay-Header, Cinematic-
   Heros, Signature-Animationen). README dort erklärt „Neues Projekt in 5 Schritten".

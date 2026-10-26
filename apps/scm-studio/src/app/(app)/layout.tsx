@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Toaster } from "sonner";
 import { CommandMenuServer } from "@/components/shell/command-menu-server";
 import { DemoBanner } from "@/components/shell/demo-banner";
-import { MobileNav, SidebarNav } from "@/components/shell/sidebar";
+import { MobileNav, QuickAddButton, SidebarNav } from "@/components/shell/sidebar";
 import { UserCard } from "@/components/shell/user-card";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -37,6 +37,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Suspense fallback={<Skeleton className="h-10 w-full max-w-md rounded-full" />}>
             <CommandMenuServer />
           </Suspense>
+          <div className="ml-auto">
+            <QuickAddButton />
+          </div>
         </header>
         <Suspense fallback={null}>
           <DemoBanner />

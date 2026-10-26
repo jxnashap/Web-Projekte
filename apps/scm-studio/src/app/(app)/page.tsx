@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarDays, Phone } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, CalendarDays, Phone } from "lucide-react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -64,8 +64,62 @@ async function Dashboard() {
   const d = await getDashboard(now);
   const stageLabel = (k: string) => LEAD_STAGES.find((s) => s.key === k)?.label ?? k;
 
+  // "Was brennt": höchstens vier Zeilen, nach Dringlichkeit, jeweils mit dem nächsten konkreten Fall
+  const n = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+  const alerts = [
+    d.overdue.length > 0 && {
+      key: "rechnungen",
+      title: n(d.overdue.length, "Rechnung überfällig", "Rechnungen überfällig"),
+      sub: `${d.overdue[0].number ?? "Rechnung"} seit ${dateShort(d.overdue[0].dueDate)} fällig`,
+      href: d.overdue.length === 1 ? `/finanzen/rechnungen/${d.overdue[0].id}` : "/finanzen/rechnungen?status=offen",
+    },
+    d.leadsOverdue.length > 0 && {
+      key: "anfragen",
+      title: n(d.leadsOverdue.length, "Rückmeldung überfällig", "Rückmeldungen überfällig"),
+      sub: `${d.leadsOverdue[0].company}: ${d.leadsOverdue[0].nextStep ?? "melden"} (${dateShort(d.leadsOverdue[0].nextStepAt)})`,
+      href: d.leadsOverdue.length === 1 ? `/anfragen/${d.leadsOverdue[0].id}` : "/anfragen",
+    },
+    d.needScript.length > 0 && {
+      key: "skripte",
+      title: n(d.needScript.length, "Dreh ohne Skript", "Drehs ohne Skript"),
+      sub: `Als Nächstes: „${d.needScript[0].title}“, ${d.needScript[0].clientName}, ${dateShort(d.needScript[0].shootDate)}`,
+      href: `/skripte/neu?video=${d.needScript[0].id}`,
+    },
+    d.unplanned.length > 0 && {
+      key: "kontingent",
+      title: n(d.unplanned.length, "Kunde mit offenem Kontingent", "Kunden mit offenem Kontingent"),
+      sub: (() => {
+        const [top] = [...d.unplanned].sort((a, b) => b.soll - b.geplant - (a.soll - a.geplant));
+        const more = d.unplanned.length - 1;
+        return `${top.name}: ${top.soll - top.geplant} von ${top.soll} Videos noch nicht geplant${more > 0 ? `, dazu ${more} ${more === 1 ? "weiterer Kunde" : "weitere Kunden"}` : ""}`;
+      })(),
+      href: "/produktion",
+    },
+  ].filter((a): a is { key: string; title: string; sub: string; href: string } => Boolean(a));
+
   return (
     <div className="grid gap-6">
+      {alerts.length > 0 && (
+        <Card className="overflow-hidden">
+          <div className="flex items-center gap-2 border-b border-line px-5 py-3">
+            <span className="size-1.5 rounded-full bg-accent" />
+            <h2 className="text-[15px] font-semibold">Was brennt</h2>
+          </div>
+          <ul className="grid divide-y divide-line sm:grid-cols-2 sm:divide-y-0 xl:grid-cols-4">
+            {alerts.map((a) => (
+              <li key={a.key} className="sm:border-r sm:border-line sm:last:border-r-0">
+                <Link href={a.href} className="flex h-full items-start gap-3 px-5 py-3.5 hover:bg-sunken/60">
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0 text-accent" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[14px] font-semibold">{a.title}</span>
+                    <span className="mt-0.5 block text-[13px] text-muted">{a.sub}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="Drehs in 7 Tagen" value={d.shootsThisWeek} sub={d.agenda.length ? `${d.agenda.length} Termine insgesamt` : "Keine Termine"} />
         <Stat label="In Produktion" value={d.inProduction} sub="Videos von Idee bis Schnitt" />
@@ -75,7 +129,7 @@ async function Dashboard() {
           sub={d.overdue.length ? `${d.overdue.length} überfällig` : `${d.openInvoices.length} offen, nichts überfällig`}
           tone={d.overdue.length ? "accent" : undefined}
         />
-        <Stat label="Anfragen" value={d.leads.length} sub={d.hotLeads.length ? `${d.hotLeads.length} brauchen heute Aufmerksamkeit` : "Alles im grünen Bereich"} tone={d.hotLeads.length ? "warn" : undefined} />
+        <Stat label="Anfragen" value={d.leads.length} sub={d.hotLeads.length ? `${d.hotLeads.length} ${d.hotLeads.length === 1 ? "braucht" : "brauchen"} heute Aufmerksamkeit` : "Alles im grünen Bereich"} tone={d.hotLeads.length ? "warn" : undefined} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3">

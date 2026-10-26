@@ -22,7 +22,9 @@ export function formToObject(fd: FormData): Record<string, unknown> {
     const value = typeof v === "string" ? (v.trim() === "" ? undefined : v.trim()) : v;
     if (k.endsWith("[]")) {
       const key = k.slice(0, -2);
-      (out[key] as unknown[] | undefined)?.push(value) ?? (out[key] = [value]);
+      const list = out[key] as unknown[] | undefined;
+      if (list) list.push(value);
+      else out[key] = [value];
     } else out[k] = value;
   }
   return out;

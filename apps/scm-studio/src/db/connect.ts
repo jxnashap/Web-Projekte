@@ -11,7 +11,8 @@ export async function connect(): Promise<DB> {
   if (url) {
     const { drizzle } = await import("drizzle-orm/postgres-js");
     const postgres = (await import("postgres")).default;
-    const client = postgres(url, { prepare: false, max: 5 });
+    // Supabase Transaction Pooler (Port 6543): keine Prepared Statements; wenige Verbindungen je Function-Instanz
+    const client = postgres(url, { prepare: false, max: Number(process.env.DB_POOL_MAX ?? 3), idle_timeout: 20, connect_timeout: 10 });
     return drizzle(client, { schema });
   }
   const { PGlite } = await import("@electric-sql/pglite");

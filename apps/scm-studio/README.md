@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SCM Studio
 
-## Getting Started
+Das interne Programm von SCM Creatives: Anfragen, Kunden, Produktion, KI-Skripte, Kalender, Video-Zahlen,
+Finanzen (E-Rechnung, Belege, DATEV-Export) und Dokumente (Vertrag, Einwilligung, Drehplan, Monatsbericht).
 
-First, run the development server:
+- Plan, Architektur, UX: [`PLAN.md`](PLAN.md)
+- Recherche mit Quellen: [`docs/recherche/`](docs/recherche)
+- Supabase + Vercel einrichten (eigene Projekte, nicht MyImmo): [`EINRICHTUNG.md`](EINRICHTUNG.md)
+
+## Lokal starten (Vorschau mit Demo-Daten)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+npm run seed          # legt die lokale Datenbank in .data/ an und füllt Demo-Daten
+npm run dev -- -p 3100
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Anmelden unter http://localhost:3100 mit dem Vorschau-Passwort `scm-studio` (änderbar über `STUDIO_PREVIEW_PASSWORD`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Befehle
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Befehl | Zweck |
+|---|---|
+| `npm run dev` | Entwicklungsserver (Turbopack) |
+| `npm run build` / `npm start` | Produktions-Build |
+| `npm run typecheck` / `npm run lint` | Prüfungen |
+| `npm run seed` | Demo-Daten (nur lokal!) |
+| `npm run db:generate` | Migration aus `src/db/schema.ts` erzeugen |
+| `npm run db:migrate` | Migrationen auf Supabase anwenden (`MIGRATION_DATABASE_URL`) |
+| `npm run bootstrap -- "Name|mail|admin"` | echte Grunddaten ohne Demo |
+| `npm run qa -- http://localhost:3100 <ordner> /route …` | Screenshots Desktop + Handy, Fehler- und Überlaufprüfung |
 
-## Learn More
+## Technik
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 16.4 (App Router, Cache Components, Server Actions, `proxy.ts`), React 19.3, Tailwind 4, Drizzle ORM
+(PGlite lokal, Supabase Postgres live), Supabase Auth mit TOTP, @react-pdf/renderer + @e-invoice-eu/core (ZUGFeRD),
+OpenAI Responses API, Google Calendar API, Instagram API with Instagram Login.

@@ -27,7 +27,6 @@ export const NAV: NavItem[] = [
   { href: "/einstellungen", label: "Einstellungen", icon: Settings, keywords: ["firma", "team", "integration"] },
 ];
 
-export const MOBILE_NAV = ["/", "/produktion", "/kalender", "/kunden"];
 
 export function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);

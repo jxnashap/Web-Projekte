@@ -1,6 +1,6 @@
 import "server-only";
 import { addDays, subDays } from "date-fns";
-import { and, asc, desc, eq, gte, inArray, lte, notInArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, lte, notInArray, sql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { berlinDateTime, monthIso, monthRange, todayIso } from "@/lib/time";
@@ -74,6 +74,21 @@ export async function getDashboard(now: Date) {
 
   const kontingente = await getKontingente(month);
 
+  // Drehs in den nächsten 7 Tagen, für die noch kein Skript verknüpft ist
+  const needScript = await db
+    .select({ id: schema.videos.id, title: schema.videos.title, shootDate: schema.videos.shootDate, clientName: schema.clients.name })
+    .from(schema.videos)
+    .innerJoin(schema.clients, eq(schema.videos.clientId, schema.clients.id))
+    .where(
+      and(
+        gte(schema.videos.shootDate, today),
+        lte(schema.videos.shootDate, todayIso(addDays(now, 7))),
+        isNull(schema.videos.scriptId),
+        inArray(schema.videos.status, ["idee", "skript", "dreh"]),
+      ),
+    )
+    .orderBy(asc(schema.videos.shootDate));
+
   return {
     month,
     agenda,
@@ -88,5 +103,8 @@ export async function getDashboard(now: Date) {
     shootsThisWeek: agenda.filter((a) => a.e.kind === "dreh").length,
     top,
     kontingente,
+    needScript,
+    leadsOverdue: leads.filter((l) => l.nextStepAt && l.nextStepAt < today),
+    unplanned: kontingente.filter((k) => k.geplant < k.soll),
   };
 }
