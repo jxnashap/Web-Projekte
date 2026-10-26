@@ -4,12 +4,12 @@
 // Die Rückmeldung läuft direkt in der Fortsetzung des Absendens, nicht in einem Effekt: so geht sie auch dann
 // nicht verloren, wenn das Formular nach refresh() verschwindet (z. B. nach "bezahlt" oder "festschreiben").
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useRef, useState, useTransition } from "react";
+import { createContext, useCallback, useContext, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { ActionState } from "@/lib/action";
 import { useDialog } from "./dialog";
 
-type Ctx = { state: ActionState; pending: boolean };
+type Ctx = { state: ActionState; pending: boolean; registerActions?: () => () => void };
 const FormCtx = createContext<Ctx>({ state: {}, pending: false });
 export const useFormCtx = () => useContext(FormCtx);
 
@@ -32,12 +32,18 @@ export function ActionForm({
 }) {
   const [state, setState] = useState<ActionState>({});
   const [pending, start] = useTransition();
+  // Zeigt FormActions den Fehler schon an? Sonst zeigt ihn das Formular selbst (wichtig im Dialog).
+  const [actionsCount, setActionsCount] = useState(0);
+  const registerActions = useCallback(() => {
+    setActionsCount((n) => n + 1);
+    return () => setActionsCount((n) => n - 1);
+  }, []);
   const ref = useRef<HTMLFormElement>(null);
   const dialog = useDialog();
   const router = useRouter();
 
   return (
-    <FormCtx.Provider value={{ state, pending }}>
+    <FormCtx.Provider value={{ state, pending, registerActions }}>
       <form
         id={id}
         ref={ref}
@@ -64,18 +70,34 @@ export function ActionForm({
             }
             setState(result);
             if (result.ok) {
+              toast.dismiss();
               if (toastOnSuccess && result.message) toast.success(result.message);
               if (resetOnSuccess) form.reset();
               dialog?.close();
               onSuccess?.(result);
               if (result.redirectTo) router.push(result.redirectTo);
-            } else if (result.error) {
-              toast.error(result.error);
+            } else {
+              // Im Dialog steht der Fehler im Dialog (FormActions); ein Toast läge hinter dem modalen Dialog.
+              if (result.error && !dialog) toast.error(result.error);
+              // Erstes fehlerhaftes Feld fokussieren und in den Blick holen
+              const first = Object.keys(result.fieldErrors ?? {}).find((k) => result.fieldErrors?.[k]?.length);
+              if (first) {
+                requestAnimationFrame(() => {
+                  const el = form.querySelector<HTMLElement>(`[name="${CSS.escape(first)}"], [name="${CSS.escape(first)}[]"]`);
+                  el?.focus({ preventScroll: true });
+                  el?.scrollIntoView({ block: "center", behavior: "smooth" });
+                });
+              }
             }
           });
         }}
       >
         {children}
+        {dialog && actionsCount === 0 && state.ok === false && state.error && (
+          <p role="alert" className="mt-4 rounded-[10px] bg-accent-soft px-3 py-2 text-[14px] font-medium text-accent-ink">
+            {state.error}
+          </p>
+        )}
       </form>
     </FormCtx.Provider>
   );

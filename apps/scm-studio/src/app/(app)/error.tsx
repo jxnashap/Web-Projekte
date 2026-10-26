@@ -10,10 +10,9 @@ export default function AppError({ error, reset }: { error: Error & { digest?: s
   }, [error]);
   return (
     <div className="mx-auto max-w-lg py-16 text-center">
-      <div className="scene-label">Schnitt</div>
-      <h1 className="display mt-2 text-[40px]">Das hat nicht geklappt</h1>
-      <p className="mt-3 text-muted">
-        Beim Laden ist ein Fehler passiert. Versucht es noch einmal. Wenn es bleibt, schickt uns den Code
+      <h1 className="display text-[32px]">Das hat nicht geklappt</h1>
+      <p className="mt-3 text-[16px] text-muted">
+        Beim Laden ist ein Fehler passiert. Versucht es noch einmal. Wenn es bleibt, notiert den Code und gebt ihn an die Technik weiter
         {error.digest ? <code className="ml-1 font-mono text-ink">{error.digest}</code> : null}.
       </p>
       <div className="mt-6 flex justify-center gap-2">

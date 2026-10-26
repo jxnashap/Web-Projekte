@@ -4,7 +4,8 @@ export function KontingentBar({ k, compact = false }: { k: Kontingent; compact?:
   const pctDone = Math.min(100, (k.fertig / k.soll) * 100);
   const pctPlanned = Math.min(100, (k.geplant / k.soll) * 100);
   const rest = k.soll - k.fertig;
-  const tone = rest <= 0 ? "text-ok" : k.geplant < k.soll ? "text-accent-ink" : "text-ink-2";
+  // fertig = grün, noch nicht verplant = orange; Rot bleibt Alarmen vorbehalten
+  const tone = rest <= 0 ? "text-ok" : k.geplant < k.soll ? "text-warn" : "text-ink-2";
   return (
     <div className="grid gap-1.5">
       <div className="flex items-baseline justify-between gap-3 text-[13px]">

@@ -20,22 +20,27 @@ export async function getDashboard(now: Date) {
     .where(and(gte(schema.events.startsAt, berlinDateTime(today)), lte(schema.events.startsAt, berlinDateTime(todayIso(addDays(now, 7))))))
     .orderBy(asc(schema.events.startsAt));
 
-  const leads = await db
+  const leadsRaw = await db
     .select()
     .from(schema.leads)
     .where(notInArray(schema.leads.stage, ["gewonnen", "verloren"]))
-    .orderBy(asc(schema.leads.nextStepAt), asc(schema.leads.score));
+    .orderBy(asc(schema.leads.nextStepAt));
+  // Bewertung A zuerst, dann B, C, ohne; innerhalb nach nächstem Schritt
+  const rank = (s: string | null) => ({ A: 0, B: 1, C: 2 })[s ?? ""] ?? 3;
+  const leads = [...leadsRaw].sort((a, b) => rank(a.score) - rank(b.score) || (a.nextStepAt ?? "9999").localeCompare(b.nextStepAt ?? "9999"));
 
   const inProduction = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(schema.videos)
     .where(inArray(schema.videos.status, ["idee", "skript", "dreh", "schnitt"]));
 
-  const open = await db
-    .select()
+  const openRows = await db
+    .select({ inv: schema.invoices, clientName: schema.clients.name })
     .from(schema.invoices)
+    .leftJoin(schema.clients, eq(schema.invoices.clientId, schema.clients.id))
     .where(and(eq(schema.invoices.kind, "rechnung"), eq(schema.invoices.status, "offen")))
     .orderBy(asc(schema.invoices.dueDate));
+  const open = openRows.map((r) => ({ ...r.inv, clientName: r.clientName ?? r.inv.recipient?.name ?? "" }));
 
   const paidThisMonth = await db
     .select({ net: sql<number>`coalesce(sum(${schema.invoices.netCents}),0)::int`, tax: sql<number>`coalesce(sum(${schema.invoices.taxCents}),0)::int` })

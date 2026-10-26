@@ -1,6 +1,9 @@
 // Gemeinsame Form für Server Actions: Formular → zod → Ergebnis mit Feldfehlern (deutsch).
 import { z } from "zod";
 
+// Standardmeldungen von zod auf Deutsch (Netz für alle Schemas ohne eigene Meldung)
+z.config(z.locales.de());
+
 export type ActionState = {
   ok?: boolean;
   message?: string;

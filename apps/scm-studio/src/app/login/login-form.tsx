@@ -12,8 +12,8 @@ export function LoginForm({ team, next }: { team: { id: number; name: string }[]
   return (
     <form action={action} className="grid gap-4">
       <input type="hidden" name="next" value={next} />
-      <Field label="Wer bist du?">
-        <Select name="user" required defaultValue={team[0]?.id}>
+      <Field label="Wer meldet sich an?">
+        <Select name="user" required defaultValue={state.user ?? team[0]?.id} key={state.user ?? "start"}>
           {team.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}
@@ -21,8 +21,8 @@ export function LoginForm({ team, next }: { team: { id: number; name: string }[]
           ))}
         </Select>
       </Field>
-      <Field label="Passwort" hint="Vorschau-Zugang. Mit Supabase meldet ihr euch später mit E-Mail und Zwei-Faktor-Code an.">
-        <Input name="password" type="password" autoComplete="current-password" required />
+      <Field label="Passwort" hint="Vorschau-Zugang. Später meldet ihr euch mit E-Mail und Zwei-Faktor-Code an." error={state.error ? " " : undefined}>
+        <Input name="password" type="password" autoComplete="current-password" required autoFocus={Boolean(state.error)} />
       </Field>
       <FormMessage error={state.error} />
       <SubmitButton pendingText="Anmelden …" className="mt-1 h-11 w-full text-[15px]">
@@ -40,7 +40,7 @@ export function EmailLoginForm({ next, notice }: { next: string; notice?: string
       <input type="hidden" name="next" value={next} />
       {notice && <FormMessage error={notice} />}
       <Field label="E-Mail">
-        <Input name="email" type="email" autoComplete="username" required defaultValue={undefined} />
+        <Input name="email" type="email" autoComplete="username" required defaultValue={state.email} key={state.email ?? "leer"} />
       </Field>
       <Field label="Passwort">
         <Input name="password" type="password" autoComplete="current-password" required />

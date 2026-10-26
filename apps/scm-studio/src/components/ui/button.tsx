@@ -9,10 +9,11 @@ const base =
 const variants: Record<Variant, string> = {
   primary: "bg-accent text-white shadow-[0_1px_2px_rgb(225_37_27/0.3)] hover:bg-[#cc1f15]",
   secondary: "bg-fill text-ink hover:bg-[rgb(120_120_128/0.18)]",
-  ghost: "text-accent-ink hover:bg-fill-2",
+  ghost: "text-ink-2 hover:bg-fill-2 hover:text-ink",
   danger: "bg-accent-soft text-accent-ink hover:bg-[#ffdedb]",
 };
-const sizes: Record<Size, string> = { sm: "h-8 px-3.5 text-[13px]", md: "h-[38px] px-4 text-[14px]" };
+// Auf dem Handy mindestens 44 px hoch (md) bzw. mit vergrößerter Trefferfläche (sm, Klasse hit)
+const sizes: Record<Size, string> = { sm: "hit h-8 px-3.5 text-[13px]", md: "h-11 px-4 text-[15px] sm:h-[38px] sm:text-[14px]" };
 
 export function buttonClass(variant: Variant = "primary", size: Size = "md", className?: string) {
   return cn(base, variants[variant], sizes[size], className);

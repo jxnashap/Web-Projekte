@@ -11,7 +11,7 @@ import { safeEqual } from "@/lib/crypto";
 import { appUrl } from "@/lib/env";
 import { createSession, destroySession } from "@/lib/session";
 
-export type LoginState = { error?: string; info?: string; qr?: string; secret?: string; factorId?: string };
+export type LoginState = { error?: string; info?: string; qr?: string; secret?: string; factorId?: string; user?: number; email?: string };
 
 const safeNext = (v: FormDataEntryValue | null) => {
   const n = String(v ?? "/");
@@ -39,7 +39,7 @@ export async function login(_: LoginState, formData: FormData): Promise<LoginSta
   const expected = process.env.STUDIO_PREVIEW_PASSWORD ?? (process.env.NODE_ENV === "production" ? "" : "scm-studio");
   const userId = Number(formData.get("user"));
   const password = String(formData.get("password") ?? "");
-  if (!expected || !userId || !safeEqual(password, expected)) return { error: "Anmeldung fehlgeschlagen. Passwort prüfen." };
+  if (!expected || !userId || !safeEqual(password, expected)) return { error: "Das Passwort stimmt nicht.", user: userId || undefined };
   const db = await getDb();
   const [u] = await db.select().from(schema.teamMembers).where(eq(schema.teamMembers.id, userId));
   if (!u || !u.active) return { error: "Unbekanntes Teammitglied." };
@@ -57,10 +57,10 @@ export async function loginWithPassword(_: LoginState, formData: FormData): Prom
     email: String(formData.get("email") ?? "").trim().toLowerCase(),
     password: String(formData.get("password") ?? ""),
   });
-  if (!parsed.success) return { error: "Bitte E-Mail und Passwort eingeben." };
+  if (!parsed.success) return { error: "Bitte E-Mail und Passwort eingeben.", email: String(formData.get("email") ?? "") };
   const client = await sb();
   const { error } = await client.auth.signInWithPassword(parsed.data);
-  if (error) return { error: "E-Mail oder Passwort stimmt nicht." };
+  if (error) return { error: "E-Mail oder Passwort stimmt nicht.", email: parsed.data.email };
   redirect(`/login/zwei-faktor?weiter=${encodeURIComponent(safeNext(formData.get("next")))}`);
 }
 

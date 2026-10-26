@@ -14,7 +14,7 @@
   --color-ink: #1d1d1f;
   --color-ink-2: #424245;
   --color-muted: #6e6e73;
-  --color-faint: #86868b;
+  --color-faint: #707075; /* 4,9:1 auf Weiß: für Nebentexte noch lesbar (WCAG AA) */
   --color-line: #e8e8ed;
   --color-line-2: #d2d2d7;
   --color-accent: #e1251b;
@@ -41,6 +41,11 @@
   --shadow-thumb: 0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04);
 
   --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root {
+  /* Höhe der Tab-Leiste auf dem Handy (für Abstände und klebende Leisten) */
+  --tabbar-h: calc(54px + env(safe-area-inset-bottom));
 }
 
 @layer base {
@@ -71,10 +76,13 @@
   ::selection {
     background: rgb(225 37 27 / 0.18);
   }
+  /* Fokusring: kräftig genug für Tastaturbedienung (≥ 3:1), auf roten Flächen mit weißem Innenring */
   :focus-visible {
-    outline: 3px solid rgb(225 37 27 / 0.35);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
-    border-radius: 6px;
+  }
+  .bg-accent:focus-visible {
+    box-shadow: 0 0 0 2px #fff;
   }
   input::placeholder,
   textarea::placeholder {
@@ -92,6 +100,24 @@ table,
 @supports (corner-shape: squircle) {
   .squircle {
     corner-shape: squircle;
+  }
+}
+
+/* Größere Trefferfläche für kleine Bedienelemente (Apple: mindestens 44 × 44 pt), ohne die Optik zu ändern */
+@utility hit {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+  }
+}
+@utility hit-lg {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
   }
 }
 
@@ -144,11 +170,7 @@ table,
   cursor: pointer;
 }
 .cmdk-item[data-selected="true"] {
-  background: var(--color-accent);
-  color: #fff;
-}
-.cmdk-item[data-selected="true"] svg {
-  color: #fff;
+  background: var(--color-fill);
 }
 
 /* Sanftes Einblenden für Dialoge und Blätter */
@@ -164,6 +186,16 @@ dialog::backdrop {
     transform: translateY(12px) scale(0.985);
   }
 }
+@media (max-width: 639px) {
+  dialog[open].as-sheet {
+    animation: sheet-up 0.38s var(--ease-apple);
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -171,11 +203,8 @@ dialog::backdrop {
 }
 @media (prefers-reduced-motion: reduce) {
   dialog[open],
+  dialog[open].as-sheet,
   dialog::backdrop {
     animation: none;
   }
-}
-.cmdk-item[data-selected="true"] > span {
-  background: rgb(255 255 255 / 0.22);
-  background-image: none;
 }

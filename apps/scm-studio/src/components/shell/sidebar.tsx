@@ -37,10 +37,10 @@ export function SidebarNav() {
 export function QuickList({ onPick }: { onPick?: () => void }) {
   return (
     <ul className="grid gap-1">
-      {QUICK_ACTIONS.map(({ href, label, hint, icon: Icon }) => (
+      {QUICK_ACTIONS.map(({ href, label, hint, icon: Icon, color }) => (
         <li key={href}>
           <Link href={href} onClick={onPick} className="flex items-center gap-3.5 rounded-[14px] px-2 py-2 transition-colors hover:bg-fill-2">
-            <span className="squircle grid size-10 shrink-0 place-items-center rounded-[11px] bg-accent text-white shadow-[0_1px_2px_rgb(225_37_27/0.3)]">
+            <span className="squircle grid size-10 shrink-0 place-items-center rounded-[11px] text-white shadow-[0_1px_2px_rgb(0_0_0/0.15)]" style={{ background: color }}>
               <Icon className="size-[19px]" strokeWidth={2} />
             </span>
             <span className="min-w-0">
@@ -62,9 +62,11 @@ export function QuickAddButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="hidden h-9 shrink-0 items-center gap-1.5 rounded-full bg-accent pl-3 pr-4 text-[14px] font-semibold text-white shadow-[0_1px_2px_rgb(225_37_27/0.3)] transition-colors hover:bg-[#cc1f15] active:scale-[0.97] lg:inline-flex"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        className="hidden h-9 shrink-0 items-center gap-1.5 rounded-full bg-fill pl-3 pr-4 text-[14px] font-semibold text-ink transition-colors hover:bg-[rgb(120_120_128/0.18)] active:scale-[0.97] lg:inline-flex"
       >
-        <Plus className="size-4" strokeWidth={2.6} /> Neu
+        <Plus className="size-4 text-accent" strokeWidth={2.6} /> Neu
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title="Schnell erfassen">
         <QuickList onPick={() => setOpen(false)} />
@@ -87,7 +89,7 @@ export function MobileNav() {
         key={href}
         href={href}
         aria-current={active ? "page" : undefined}
-        className={cn("flex h-[54px] flex-col items-center justify-center gap-[3px] text-[10px] font-medium", active ? "text-accent" : "text-[#8e8e93]")}
+        className={cn("flex h-[54px] flex-col items-center justify-center gap-[3px] text-[10px] font-medium", active ? "text-accent" : "text-muted")}
       >
         <Icon className="size-6" strokeWidth={active ? 2.1 : 1.7} />
         {it.label}
@@ -108,6 +110,8 @@ export function MobileNav() {
             type="button"
             onClick={() => setSheet("neu")}
             aria-label="Schnell erfassen"
+            aria-haspopup="dialog"
+            aria-expanded={sheet === "neu"}
             className="grid size-11 place-items-center rounded-full bg-accent text-white shadow-[0_4px_14px_-2px_rgb(225_37_27/0.55)] transition-transform active:scale-90"
           >
             <Plus className="size-6" strokeWidth={2.4} />
@@ -117,7 +121,9 @@ export function MobileNav() {
         <button
           type="button"
           onClick={() => setSheet("mehr")}
-          className={cn("flex h-[54px] flex-col items-center justify-center gap-[3px] text-[10px] font-medium", moreActive ? "text-accent" : "text-[#8e8e93]")}
+          aria-haspopup="dialog"
+          aria-expanded={sheet === "mehr"}
+          className={cn("flex h-[54px] flex-col items-center justify-center gap-[3px] text-[10px] font-medium", moreActive ? "text-accent" : "text-muted")}
         >
           <Menu className="size-6" strokeWidth={moreActive ? 2.1 : 1.7} />
           Mehr
