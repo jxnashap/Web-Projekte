@@ -19,12 +19,9 @@ export async function GET(request: Request, ctx: RouteContext<"/api/dokumente/[i
     if (file) {
       const res = pdfResponse(file.data, name, download);
       res.headers.set("X-SHA256", file.meta.sha256);
-      res.headers.set("X-Frame-Options", "SAMEORIGIN");
       return res;
     }
   }
   const data = await renderDocument(await buildRenderCtx(doc, client));
-  const res = pdfResponse(data, name, download);
-  res.headers.set("X-Frame-Options", "SAMEORIGIN");
-  return res;
+  return pdfResponse(data, name, download);
 }

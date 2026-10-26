@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { DrehplanForm, EinwilligungForm, MonatsberichtForm, VertragForm } from "@/components/dokumente/forms";
+import { PdfPreview } from "@/components/dokumente/pdf-preview";
 import { ScmSign } from "@/components/dokumente/scm-sign";
 import { ActionForm } from "@/components/ui/action-form";
 import { Badge, Dot } from "@/components/ui/badge";
@@ -202,7 +203,9 @@ async function Detail({ params }: { params: P }) {
               </a>
             }
           />
-          <iframe key={version} src={`${pdfHref}#view=FitH`} title={`PDF-Vorschau ${doc.title}`} className="hidden h-[78vh] w-full bg-sunken lg:block" />
+          <div className="hidden lg:block">
+            <PdfPreview src={pdfHref} version={version} title={`PDF-Vorschau ${doc.title}`} />
+          </div>
           <div className="grid gap-3 p-5 lg:hidden">
             <p className="text-[14px] text-muted">Auf dem Handy öffnet sich das PDF in einem eigenen Fenster.</p>
             <a href={pdfHref} target="_blank" rel="noreferrer" className={buttonClass("secondary", "md")}>

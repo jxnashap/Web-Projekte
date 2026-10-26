@@ -3,7 +3,7 @@
 // Gäste oder Mitarbeitende, die SCM nicht kennt; für eine rechtliche Erklärung ist die förmliche Anrede passender.
 import { Text, View } from "@react-pdf/renderer";
 import { KeyValues, Note, P, PdfDocument, PdfPage, s, Section, Title } from "@/lib/pdf/components";
-import { C, MM } from "@/lib/pdf/theme";
+import { MM } from "@/lib/pdf/theme";
 import { consentSigners, ROLLEN, ZWECK_KEYS, ZWECKE, type EinwilligungData } from "../schema";
 import { CheckRow, DemoNote, DRAFT_LEGAL, fmtDate, ProofPage, SignatureRow, sigFor } from "./common";
 import type { RenderCtx } from "./types";

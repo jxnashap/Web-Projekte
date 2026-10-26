@@ -55,7 +55,8 @@ export const nb = (t: string) => t.replace(/(§§?|Abs\.|Art\.|Nr\.|Satz|S\.) (\
 /** Nummerierter Paragraph (§ 1, § 2 …) mit Absätzen (1), (2) …; Überschrift bleibt beim ersten Absatz. */
 export function Paragraph({ n, title, items }: { n: number; title: string; items: (string | { bullets: string[] })[] }) {
   const numbered = items.filter((x) => typeof x === "string").length > 1;
-  let abs = 0;
+  // laufende Absatznummer je Position (Aufzählungen zählen nicht mit)
+  const absNo = items.map((_, i) => items.slice(0, i + 1).filter((x) => typeof x === "string").length);
   const rendered = items.map((it, i) => {
     if (typeof it !== "string")
       return (
@@ -63,10 +64,9 @@ export function Paragraph({ n, title, items }: { n: number; title: string; items
           <Bullets items={it.bullets.map(nb)} />
         </View>
       );
-    abs += 1;
     return (
       <View key={i} style={{ flexDirection: "row" }} wrap={false}>
-        {numbered ? <Text style={[s.p, { width: 18, color: C.muted }]}>({abs})</Text> : null}
+        {numbered ? <Text style={[s.p, { width: 18, color: C.muted }]}>({absNo[i]})</Text> : null}
         <P style={{ flex: 1 }}>{nb(it)}</P>
       </View>
     );
