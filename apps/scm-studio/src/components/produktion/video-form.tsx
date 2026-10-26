@@ -1,5 +1,6 @@
 // Formular für ein Video (Anlegen und Bearbeiten).
-// Anlegen (compact): erst grob mit Titel, Kunde und Monat, alles Weitere hinter „Mehr Details“. Neue Videos starten als Idee.
+// Anlegen (compact): erst grob mit Titel, Kunde und Monat, alles Weitere hinter „Mehr Details“.
+// Startstatus kommt aus defaults.status (Produktion: gedreht, Ideen & Skripte: idee).
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import type { Video } from "@/db/schema";
@@ -29,7 +30,7 @@ export function VideoForm({
   action: (prev: ActionState, fd: FormData) => Promise<ActionState>;
   options: Opts;
   video?: Video | null;
-  defaults?: { clientId?: number; month?: string };
+  defaults?: { clientId?: number; month?: string; status?: string; title?: string; format?: string };
   submitLabel: string;
   submitVariant?: "primary" | "secondary";
   compact?: boolean;
@@ -41,7 +42,7 @@ export function VideoForm({
   const details = (
     <>
       <Field label="Format" name="format" optional>
-        <Input name="format" list="video-formate" defaultValue={video?.format ?? ""} placeholder="z. B. Kunden-Sketch" />
+        <Input name="format" list="video-formate" defaultValue={video?.format ?? defaults?.format ?? ""} placeholder="z. B. Kunden-Sketch" />
         <datalist id="video-formate">
           {FORMATS.map((f) => (
             <option key={f} value={f} />
@@ -78,9 +79,10 @@ export function VideoForm({
 
   return (
     <ActionForm action={action} resetOnSuccess={!video}>
+      {!video && defaults?.status && <input type="hidden" name="status" value={defaults.status} />}
       <FormGrid>
         <Field label="Titel oder Idee" name="title" className="sm:col-span-2">
-          <Input name="title" defaultValue={video?.title ?? ""} placeholder="z. B. Der Kunde, der alles besser weiß" required />
+          <Input name="title" defaultValue={video?.title ?? defaults?.title ?? ""} placeholder="z. B. Der Kunde, der alles besser weiß" required />
         </Field>
         <Field
           label="Kunde"

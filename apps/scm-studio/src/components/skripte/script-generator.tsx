@@ -36,7 +36,7 @@ export function ScriptGenerator({
 }: {
   clients: ClientOpt[];
   videos: VideoOpt[];
-  initial: { clientId?: number; videoId?: number; format?: string };
+  initial: { clientId?: number; videoId?: number; format?: string; briefing?: string; idea?: { id: number; title: string } };
   live: boolean;
   modelName: string;
 }) {
@@ -246,7 +246,12 @@ export function ScriptGenerator({
             error={fe.briefing?.[0]}
             hint="Situation, Idee oder Angebot in eigenen Worten. Bitte keine Namen oder anderen Personendaten eingeben."
           >
-            <Textarea name="briefing" maxLength={1500} placeholder="z. B. Kunden fragen ständig, ob es nicht auch günstiger geht" />
+            <Textarea
+              name="briefing"
+              maxLength={1500}
+              defaultValue={initial.briefing}
+              placeholder="z. B. Kunden fragen ständig, ob es nicht auch günstiger geht"
+            />
           </Field>
 
           <div className="grid gap-3">
@@ -429,11 +434,13 @@ export function ScriptGenerator({
                 <input type="hidden" name="title" value={title} />
                 <input type="hidden" name="clientId" value={clientId} />
                 <input type="hidden" name="videoId" value={videoId} />
+                <input type="hidden" name="ideaId" value={initial.idea?.id ?? ""} />
                 <input type="hidden" name="format" value={used.format} />
                 <input type="hidden" name="briefing" value={used.briefing} />
                 <input type="hidden" name="source" value={result?.demo ? "demo" : "ki"} />
                 <input type="hidden" name="model" value={result?.model ?? ""} />
                 <p className="text-[13px] text-muted">
+                  {initial.idea ? <>Gehört zur Idee „{initial.idea.title}“. </> : null}
                   {selectedVideo ? <>Wird mit „{selectedVideo.title}“ verknüpft. </> : null}
                   Danach könnt ihr alles im Editor anpassen.
                 </p>

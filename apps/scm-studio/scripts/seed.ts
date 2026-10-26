@@ -24,7 +24,8 @@ async function main() {
 
   await db.execute(sql`TRUNCATE studio.audit_log, studio.settings, studio.documents, studio.expenses, studio.number_sequences,
     studio.invoice_items, studio.invoices, studio.video_metrics, studio.social_accounts, studio.events, studio.scripts,
-    studio.videos, studio.leads, studio.clients, studio.team_members, studio.files, studio.ai_runs RESTART IDENTITY CASCADE`);
+    studio.videos, studio.leads, studio.clients, studio.team_members, studio.files, studio.ai_runs, studio.ideas, studio.trend_runs,
+    studio.materials RESTART IDENTITY CASCADE`);
   // lokale Dateiablage leeren (nur Vorschau)
   fs.rmSync(process.env.FILES_DIR ?? path.join(process.cwd(), ".data", "files"), { recursive: true, force: true });
 
@@ -141,6 +142,8 @@ async function main() {
     plan(jhkp.id, "Mittagspause in 15 Sekunden", "Speed-Format", "idee"),
     plan(steak.id, "Studenten-Mittwoch", "Angebot", "skript", 8),
     plan(kletter.id, "Halloween im Kletterwald", "Event", "fertig"),
+    plan(steak.id, "Wer teilt, verliert", "Tisch-Sketch", "gedreht", -2),
+    plan(kletter.id, "Saisonfinale im Kletterwald", "Event", "abnahme", -9),
     { ...plan(drei.id, "Testvideo 1: Der erste Schluck", "Sketch", "dreh", 4), isTest: true },
     { ...plan(drei.id, "Testvideo 2: Weinempfehlung in 10 Sekunden", "Tipp", "skript"), isTest: true },
     { ...plan(drei.id, "Testvideo 3: Feierabend in Kiel", "Stimmung", "idee"), isTest: true },

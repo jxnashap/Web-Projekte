@@ -32,7 +32,7 @@ export async function getDashboard(now: Date) {
   const inProduction = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(schema.videos)
-    .where(inArray(schema.videos.status, ["idee", "skript", "dreh", "schnitt"]));
+    .where(inArray(schema.videos.status, ["gedreht", "schnitt", "abnahme"]));
 
   const openRows = await db
     .select({ inv: schema.invoices, clientName: schema.clients.name })

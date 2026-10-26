@@ -33,8 +33,8 @@ Stand: 26.10.2026 · Next.js 16.4.3 · React 19.3.1 · Recherche mit Quellen: `d
 | 01 | **Heute** | Drehs der Woche, Anfragen mit Handlungsbedarf, Kontingent-Ampeln, offenes Geld, beste Videos |
 | 02 | **Anfragen** | Pipeline (Board/Liste), A/B/C-Bewertung aus dem Website-Quiz, Webhook, Umwandeln in Kunde |
 | 03 | **Kunden** | Stammdaten inkl. Rechtsform/Kaufmann, Paket, Kontingent, alles zum Kunden auf einen Blick |
-| 04 | **Produktion** | jede Karte ein Video: Idee → Skript → Dreh → Schnitt → Fertig → Online, Kontingent je Monat |
-| 05 | **Skripte** | KI-Generator nach SCM-Bauplan (Hook, Wiedererkennen, Steigerung, Pointe, Aufruf), Drehbuch-Ansicht, PDF |
+| 04 | **Ideen & Skripte** | Video-Ideen (eigene und Vorschläge der nächtlichen Trend-Recherche mit Quellen), Skripte je Idee mit KI-Generator nach SCM-Bauplan (Hook, Wiedererkennen, Steigerung, Pointe, Aufruf), Drehbuch-Ansicht, PDF, Videos vor dem Dreh (Idee → Skript → Dreh geplant → Gedreht) |
+| 05 | **Produktion** | nur Schnitt: Board Gedreht → Im Schnitt → Abnahme → Fertig → Online, Kontingent je Monat; Material je Kunde (Logos, Schriften, Musik, ganze Ordner, ZIP) plus Link zum Rohmaterial |
 | 06 | **Kalender** | Monat/Woche/Liste, iCal-Abo, Google-Spiegelung |
 | 07 | **Zahlen** | Aufrufe, Reichweite, Interaktionen je Video/Kunde/Format, CSV-Import, Instagram-Anbindung |
 | 08 | **Finanzen** | Angebote, Rechnungen (E-Rechnung), Storno, Erinnerungen, Belege mit Foto, USt-Vorschau, DATEV-Export |

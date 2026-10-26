@@ -106,7 +106,8 @@ Unter Deployment Protection „Standard Protection“, damit die Hauptadresse oh
 (Project Settings → General → Transfer Project).
 
 **Supabase (Stand 26.10.2026):** Organisation „SCM Studio“, Projekt `scm-studio` in Frankfurt (eu-central-1),
-Projekt-Ref `urpyssyupahnhjrjawsl`. Migrationen 0000 bis 0003 und `supabase/setup.sql` sind eingespielt,
+Projekt-Ref `urpyssyupahnhjrjawsl`. Migrationen 0000 bis 0004 und `supabase/setup.sql` sind eingespielt
+(Bucket `studio` mit 50 MB je Datei, das Maximum von Supabase Free),
 Firmendaten angelegt, Demo-Modus aus. Team angelegt (Oskar, Yannick, Jonas, alle Inhaber). Offen: Zugänge einrichten (Schritt 3).
 
 ## 5. KI-Skripte (OpenAI)
@@ -116,6 +117,11 @@ Firmendaten angelegt, Demo-Modus aus. Team angelegt (Oskar, Yannick, Jonas, alle
 3. In der App unter Einstellungen → KI das Modell wählen. Die Modellnamen aus der Recherche
    (z. B. `gpt-6.1-sol`) vor dem Livegang mit der Modellliste im OpenAI-Dashboard abgleichen.
 4. Keine Namen oder Personendaten in Briefings schreiben (steht auch in der App).
+5. **Trend-Recherche:** läuft mit demselben Schlüssel jede Nacht (Vercel Cron `/api/cron/trends`, 01:41 UTC) über die
+   Websuche von OpenAI und legt Vorschläge unter Ideen & Skripte ab. Richtung und Suchbegriffe ändern Inhaber unter
+   Ideen & Skripte → Richtung und Verlauf. Optional eigenes Modell über `OPENAI_MODEL_TRENDS`. Kosten je Lauf: einige
+   Websuchen (laut Preisübersichten 10 US-Dollar je 1.000, auf der Preisseite von OpenAI prüfen) plus Tokens.
+   Hintergrund und Grenzen: `docs/recherche/trend-recherche.md`.
 
 ## 6. Google Kalender
 

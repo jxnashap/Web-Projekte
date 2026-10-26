@@ -12,19 +12,19 @@ import { randomToken, sha256 } from "./crypto";
 import { integrations } from "./env";
 
 export type Bucket = "belege" | "rechnungen" | "dokumente";
-const SUPABASE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET ?? "studio";
+export const SUPABASE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET ?? "studio";
 // turbopackIgnore: der Ablageordner gehört nicht ins Server-Bundle
-const localRoot = () =>
+export const localRoot = () =>
   process.env.FILES_DIR ?? (process.env.VERCEL ? DEMO_FILES_DIR : path.join(/*turbopackIgnore: true*/ process.cwd(), ".data", "files"));
 
-async function supabaseAdmin() {
+export async function supabaseAdmin() {
   const { createClient } = await import("@supabase/supabase-js");
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!, {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!.trim(), {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
 
-const safeName = (name: string) =>
+export const safeName = (name: string) =>
   name.normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^\w.\-]+/g, "_").slice(-80) || "datei";
 
 export async function putFile(opts: { bucket: Bucket; name: string; mime: string; data: Uint8Array; userId?: number | null }): Promise<StoredFile> {

@@ -15,6 +15,10 @@ export const PRICES_USD_PER_MTOK: Record<string, { input: number; cached: number
 
 export const PRICES_CHECKED_ON = "26.10.2026";
 
+// Websuche (Trend-Recherche): je Suchaufruf, zusätzlich zu den Tokens. Stand 26.10.2026 laut mehreren
+// Preisübersichten 10 US-Dollar je 1.000 Aufrufe; auf developers.openai.com/api/docs/pricing prüfen.
+export const WEB_SEARCH_USD_PER_CALL = 0.01;
+
 export const DEFAULT_AI = { model: "gpt-6.1-sol", effort: "low" as const };
 export const EFFORTS = ["none", "low", "medium", "high"] as const;
 export type Effort = (typeof EFFORTS)[number];

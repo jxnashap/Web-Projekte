@@ -5,8 +5,9 @@ import { ScriptEditor } from "@/components/skripte/script-editor";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { FormSkeleton } from "@/components/ui/skeleton";
-import { createScript } from "@/lib/skripte/actions";
+import { createScript, createScriptForIdea } from "@/lib/skripte/actions";
 import { getScriptOptions } from "@/lib/skripte/data";
+import { getIdea } from "@/lib/skripte/ideen";
 import { scriptFormId } from "@/lib/skripte/schema";
 
 export const metadata: Metadata = { title: "Leeres Skript · Skripte" };
@@ -28,7 +29,7 @@ export default function LeeresSkriptPage({ searchParams }: { searchParams: SP })
     <>
       <PageHeader
         scene="Szene 05 · Skripte"
-        back={{ href: "/skripte", label: "Skripte" }}
+        back={{ href: "/skripte", label: "Ideen & Skripte" }}
         title="Leeres Skript"
         description="Selbst schreiben nach dem SCM-Bauplan. Angelegt wird es erst, wenn ihr speichert."
       />
@@ -44,15 +45,28 @@ export default function LeeresSkriptPage({ searchParams }: { searchParams: SP })
 async function Editor({ searchParams }: { searchParams: SP }) {
   await connection();
   const raw = await searchParams;
-  const { clients } = await getScriptOptions();
-  const clientId = Number(one(raw.kunde)) || null;
+  const ideaId = Number(one(raw.idee)) || null;
+  const [{ clients }, ideaRow] = await Promise.all([getScriptOptions(), ideaId ? getIdea(ideaId) : null]);
+  const idea = ideaRow?.i ?? null;
+  const clientId = Number(one(raw.kunde)) || idea?.clientId || null;
+  // Aus einer Idee: Titel, Format und Hook übernehmen
+  const beats = idea?.hook ? BLANK.map((b) => (b.label === "Hook" ? { ...b, text: idea.hook! } : b)) : BLANK;
   return (
     <Card className="p-5 sm:p-6">
+      {idea && <p className="mb-4 text-[15px] text-muted">Gehört zur Idee „{idea.title}“.</p>}
       <ScriptEditor
-        action={createScript}
+        action={idea ? createScriptForIdea.bind(null, idea.id) : createScript}
         formId={scriptFormId("neu")}
         isNew
-        script={{ title: "Neues Skript", format: null, hook: null, beats: BLANK, caption: null, cta: null, clientId: clients.some((c) => c.id === clientId) ? clientId : null }}
+        script={{
+          title: idea?.title ?? "Neues Skript",
+          format: idea?.format ?? null,
+          hook: null,
+          beats,
+          caption: null,
+          cta: null,
+          clientId: clients.some((c) => c.id === clientId) ? clientId : null,
+        }}
         clients={clients}
       />
     </Card>

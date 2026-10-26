@@ -1,4 +1,4 @@
-import { ExternalLink, FileDown, ScrollText, Sparkles } from "lucide-react";
+import { ExternalLink, FileDown, FolderOpen, ScrollText, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -15,6 +15,7 @@ import { DetailSkeleton } from "@/components/ui/skeleton";
 import { compact, dateDe, dateShort, monthLabel, num, pct } from "@/lib/format";
 import { deleteVideo, updateVideo } from "@/lib/produktion/actions";
 import { getVideo, getVideoFormOptions, getVideoTitle } from "@/lib/produktion/data";
+import { isPreShoot } from "@/lib/labels";
 import { scriptStatusLabel } from "@/lib/skripte/schema";
 
 type Params = Promise<{ id: string }>;
@@ -47,7 +48,11 @@ async function VideoDetail({ params }: { params: Params }) {
     <>
       <PageHeader
         scene="Szene 04 · Produktion"
-        back={{ href: `/produktion?monat=${video.month}`, label: "Produktion" }}
+        back={
+          isPreShoot(video.status)
+            ? { href: `/skripte?ansicht=eingeplant&monat=${video.month}`, label: "Vor dem Dreh" }
+            : { href: `/produktion?monat=${video.month}`, label: "Produktion" }
+        }
         eyebrow={<span className="capitalize">{monthLabel(video.month)}</span>}
         title={video.title}
         description={
@@ -61,6 +66,9 @@ async function VideoDetail({ params }: { params: Params }) {
         }
         actions={
           <>
+            <LinkButton href={`/produktion/material/${client.id}`} variant="secondary">
+              <FolderOpen className="size-4" /> Material
+            </LinkButton>
             {video.url && (
               <LinkButton href={video.url} target="_blank" rel="noreferrer" variant="secondary">
                 <ExternalLink className="size-4" /> Beitrag öffnen

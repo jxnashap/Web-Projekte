@@ -47,7 +47,7 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
   const view = sp.ansicht === "drehbuch" ? "drehbuch" : "bearbeiten";
   const [row, opts] = await Promise.all([getScript(id), getScriptOptions()]);
   if (!row) notFound();
-  const { s, client, video, author } = row;
+  const { s, client, video, author, ideaTitle } = row;
   const videoChoices = opts.videos.filter((v) => !s.clientId || v.clientId === s.clientId);
   if (video && !videoChoices.some((v) => v.id === video.id)) videoChoices.unshift({ ...video, scriptId: video.scriptId });
 
@@ -55,7 +55,8 @@ async function SkriptDetail({ params, searchParams }: { params: Params; searchPa
     <>
       <PageHeader
         scene="Szene 05 · Skripte"
-        back={{ href: "/skripte", label: "Skripte" }}
+        back={s.ideaId ? { href: `/skripte/ideen/${s.ideaId}`, label: "Idee" } : { href: "/skripte?ansicht=skripte", label: "Skripte" }}
+        eyebrow={s.ideaId && ideaTitle ? `Zur Idee „${ideaTitle}“` : undefined}
         title={s.title}
         description={
           <span className="inline-flex flex-wrap items-center gap-2">

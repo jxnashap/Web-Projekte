@@ -17,6 +17,9 @@ export const AUDIT_ENTITY: Record<string, string> = {
   skript: "Skript",
   event: "Termin",
   social_account: "Instagram-Konto",
+  material: "Material",
+  idee: "Video-Idee",
+  recherche: "Trend-Recherche",
 };
 
 const ACTION: Record<string, string> = {
@@ -77,6 +80,14 @@ const ACTION: Record<string, string> = {
   eingeladen: "eingeladen",
   zugangslink: "Zugangslink erzeugt",
   csv_import: "per CSV importiert",
+  hochgeladen: "Material hochgeladen",
+  ordner_geloescht: "Ordner gelöscht",
+  rohmaterial_link: "Link zum Rohmaterial gespeichert",
+  uebernommen: "aus der Recherche übernommen",
+  verworfen: "verworfen",
+  eingeplant: "als Video eingeplant",
+  gestartet: "gestartet",
+  richtung: "Richtung der Recherche gespeichert",
 };
 
 export function auditAction(action: string): string {
@@ -96,6 +107,8 @@ const HREF: Record<string, (id: number) => string> = {
   script: (id) => `/skripte/${id}`,
   skript: (id) => `/skripte/${id}`,
   event: (id) => `/kalender/${id}`,
+  material: (id) => `/produktion/material/${id}`,
+  idee: (id) => `/skripte/ideen/${id}`,
 };
 
 /** Link zum Eintrag, außer er wurde mit dieser Aktion gelöscht */

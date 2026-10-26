@@ -66,6 +66,7 @@ export const clients = studio.table(
     website: text("website"),
     instagram: text("instagram"),
     tiktok: text("tiktok"),
+    materialUrl: text("material_url"), // Ordner für Rohmaterial (Google Drive, Dropbox), große Dateien liegen dort
     packageVideos: integer("package_videos"), // 4 | 8 | 12
     packagePriceCents: integer("package_price_cents"), // netto pro Monat
     startDate: date("start_date"),
@@ -116,7 +117,8 @@ export const videos = studio.table(
     clientId: integer("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     format: text("format"),
-    status: text("status").notNull().default("idee"), // idee | skript | dreh | schnitt | fertig | online
+    // idee | skript | dreh (vor dem Dreh, unter Ideen & Skripte) · gedreht | schnitt | abnahme | fertig | online (Schnitt-Board)
+    status: text("status").notNull().default("idee"),
     month: text("month").notNull(), // YYYY-MM, für das Paketkontingent
     isTest: boolean("is_test").notNull().default(false),
     shootDate: date("shoot_date"),
@@ -149,14 +151,89 @@ export const scripts = studio.table("scripts", {
   source: text("source").notNull().default("manuell"), // manuell | ki | demo
   model: text("model"),
   briefing: text("briefing"),
+  ideaId: integer("idea_id").references(() => ideas.id, { onDelete: "set null" }),
   createdBy: integer("created_by").references(() => teamMembers.id, { onDelete: "set null" }),
   createdAt: created(),
   updatedAt: updated(),
 }, (t) => [
   index("scripts_client_idx").on(t.clientId),
   index("scripts_video_idx").on(t.videoId),
+  index("scripts_idea_idx").on(t.ideaId),
   index("scripts_created_by_idx").on(t.createdBy),
 ]).enableRLS();
+
+// ------------------------------------------------------------------
+// Video-Ideen und nächtliche Trend-Recherche
+// ------------------------------------------------------------------
+export type TrendSource = { title: string; url: string };
+export type TrendFinding = { title: string; platform: string; summary: string; fit: string; sources: TrendSource[] };
+
+export const trendRuns = studio.table(
+  "trend_runs",
+  {
+    id: serial("id").primaryKey(),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    trigger: text("trigger").notNull().default("nacht"), // nacht | manuell
+    triggeredBy: integer("triggered_by").references(() => teamMembers.id, { onDelete: "set null" }),
+    ok: boolean("ok").notNull().default(false),
+    error: text("error"),
+    model: text("model"),
+    searchCalls: integer("search_calls").notNull().default(0),
+    trends: jsonb("trends").$type<TrendFinding[]>().notNull().default(sql`'[]'::jsonb`),
+    ideaCount: integer("idea_count").notNull().default(0),
+  },
+  (t) => [index("trend_runs_started_idx").on(t.startedAt), index("trend_runs_triggered_by_idx").on(t.triggeredBy)],
+).enableRLS();
+
+export const ideas = studio.table(
+  "ideas",
+  {
+    id: serial("id").primaryKey(),
+    clientId: integer("client_id").references(() => clients.id, { onDelete: "set null" }),
+    title: text("title").notNull(),
+    description: text("description"),
+    hook: text("hook"),
+    format: text("format"),
+    branche: text("branche"), // passende Branche, wenn kein Kunde feststeht
+    status: text("status").notNull().default("offen"), // vorschlag (aus der Recherche, noch nicht gesichtet) | offen | verworfen
+    source: text("source").notNull().default("eigene"), // eigene | recherche
+    trend: text("trend"), // Name des Trends, auf dem die Idee aufbaut
+    sources: jsonb("sources").$type<TrendSource[]>().notNull().default(sql`'[]'::jsonb`),
+    runId: integer("run_id").references(() => trendRuns.id, { onDelete: "set null" }),
+    videoId: integer("video_id").references(() => videos.id, { onDelete: "set null" }), // eingeplant als Video
+    createdBy: integer("created_by").references(() => teamMembers.id, { onDelete: "set null" }),
+    createdAt: created(),
+    updatedAt: updated(),
+  },
+  (t) => [
+    index("ideas_client_idx").on(t.clientId),
+    index("ideas_status_idx").on(t.status),
+    index("ideas_run_idx").on(t.runId),
+    index("ideas_video_idx").on(t.videoId),
+    index("ideas_created_by_idx").on(t.createdBy),
+  ],
+).enableRLS();
+
+// ------------------------------------------------------------------
+// Schnitt-Material je Kunde (Logos, Schriften, Musik). Eigene Tabelle statt files:
+// files ist GoBD-geschützt (nur anfügen), Material darf aber ersetzt und gelöscht werden.
+// ------------------------------------------------------------------
+export const materials = studio.table(
+  "materials",
+  {
+    id: serial("id").primaryKey(),
+    clientId: integer("client_id").notNull().references(() => clients.id, { onDelete: "cascade" }),
+    folder: text("folder").notNull().default(""), // Unterordner wie hochgeladen, z. B. "Logos/Varianten"
+    name: text("name").notNull(),
+    path: text("path").notNull().unique(), // Schlüssel in der Ablage
+    mime: text("mime").notNull(),
+    size: integer("size").notNull(),
+    createdBy: integer("created_by").references(() => teamMembers.id, { onDelete: "set null" }),
+    createdAt: created(),
+  },
+  (t) => [index("materials_client_idx").on(t.clientId, t.folder), index("materials_created_by_idx").on(t.createdBy)],
+).enableRLS();
 
 export const events = studio.table(
   "events",
@@ -374,12 +451,13 @@ export const aiRuns = studio.table("ai_runs", {
   id: serial("id").primaryKey(),
   at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
   userId: integer("user_id"),
-  purpose: text("purpose").notNull(), // skript | hooks | caption
+  purpose: text("purpose").notNull(), // skript | hooks | caption | trends
   model: text("model").notNull(),
   inputTokens: integer("input_tokens").notNull().default(0),
   cachedTokens: integer("cached_tokens").notNull().default(0),
   outputTokens: integer("output_tokens").notNull().default(0),
   reasoningTokens: integer("reasoning_tokens").notNull().default(0),
+  searchCalls: integer("search_calls").notNull().default(0), // Websuchen (werden je Aufruf abgerechnet)
   ok: boolean("ok").notNull().default(true),
   error: text("error"),
   scriptId: integer("script_id"),
@@ -423,3 +501,6 @@ export type TeamMember = typeof teamMembers.$inferSelect;
 export type SocialAccount = typeof socialAccounts.$inferSelect;
 export type StoredFile = typeof files.$inferSelect;
 export type AiRun = typeof aiRuns.$inferSelect;
+export type Idea = typeof ideas.$inferSelect;
+export type TrendRun = typeof trendRuns.$inferSelect;
+export type Material = typeof materials.$inferSelect;

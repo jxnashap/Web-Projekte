@@ -126,7 +126,7 @@ async function Dashboard() {
       {/* Kennzahlen wie Widgets: antippbar */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <Stat href="/kalender" label="Drehs in 7 Tagen" value={d.shootsThisWeek} sub={d.agenda.length ? `${d.agenda.length} Termine insgesamt` : "Keine Termine"} />
-        <Stat href="/produktion" label="In Produktion" value={d.inProduction} sub="Videos von Idee bis Schnitt" />
+        <Stat href="/produktion" label="Im Schnitt" value={d.inProduction} sub="Gedreht bis Abnahme" />
         <Stat
           href="/finanzen/rechnungen?status=offen"
           label="Offene Rechnungen"

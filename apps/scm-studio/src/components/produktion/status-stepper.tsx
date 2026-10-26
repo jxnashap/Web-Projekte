@@ -1,18 +1,24 @@
 "use client";
 // Status eines Videos als Schrittfolge. Antippen setzt den Status (optimistisch, mit „Rückgängig“).
+// Zwei Abschnitte: vor dem Dreh (Idee bis Gedreht) und Schnitt (Gedreht bis Online), je nachdem, wo das Video steht.
 import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { VIDEO_STATUS } from "@/lib/labels";
+import { CUT_STATUS, isPreShoot, VIDEO_STATUS } from "@/lib/labels";
 import { useVideoMove } from "./use-video-move";
 
 export function StatusStepper({ video }: { video: { id: number; title: string; status: string; url: string | null } }) {
   const { videos, move, pending, dialog } = useVideoMove([video]);
   const current = videos[0]?.status ?? video.status;
-  const idx = VIDEO_STATUS.findIndex((s) => s.key === current);
+  const steps = isPreShoot(current) ? VIDEO_STATUS.filter((s) => isPreShoot(s.key) || s.key === "gedreht") : CUT_STATUS;
+  const idx = steps.findIndex((s) => s.key === current);
   return (
     <>
-      <ol className="grid grid-cols-3 gap-1 rounded-[12px] bg-fill p-[3px] sm:grid-cols-6" aria-busy={pending} aria-label="Status">
-        {VIDEO_STATUS.map((s, i) => {
+      <ol
+        className={cn("grid gap-1 rounded-[12px] bg-fill p-[3px]", steps.length === 4 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3 sm:grid-cols-5")}
+        aria-busy={pending}
+        aria-label="Status"
+      >
+        {steps.map((s, i) => {
           const done = i < idx;
           const active = i === idx;
           return (

@@ -34,11 +34,20 @@ export const LEAD_SCORE: Record<string, { label: string; tone: Tone; hint: strin
 export const VIDEO_STATUS = [
   { key: "idee", label: "Idee", tone: "neutral" },
   { key: "skript", label: "Skript", tone: "info" },
-  { key: "dreh", label: "Dreh", tone: "warn" },
-  { key: "schnitt", label: "Schnitt", tone: "warn" },
+  { key: "dreh", label: "Dreh geplant", tone: "info" },
+  { key: "gedreht", label: "Gedreht", tone: "warn" },
+  { key: "schnitt", label: "Im Schnitt", tone: "warn" },
+  { key: "abnahme", label: "Abnahme", tone: "accent" },
   { key: "fertig", label: "Fertig", tone: "ok" },
   { key: "online", label: "Online", tone: "dark" },
 ] as const satisfies readonly { key: string; label: string; tone: Tone }[];
+
+/** Vor dem Dreh: diese Videos stehen unter Ideen & Skripte. */
+export const PRE_SHOOT_KEYS = ["idee", "skript", "dreh"] as const;
+/** Ab dem Dreh: die Spalten des Schnitt-Boards in Produktion. */
+export const CUT_STATUS = VIDEO_STATUS.filter((s) => !(PRE_SHOOT_KEYS as readonly string[]).includes(s.key));
+export const CUT_KEYS = CUT_STATUS.map((s) => s.key);
+export const isPreShoot = (status: string) => (PRE_SHOOT_KEYS as readonly string[]).includes(status);
 
 export const videoStatus = (k: string) => VIDEO_STATUS.find((s) => s.key === k) ?? VIDEO_STATUS[0];
 

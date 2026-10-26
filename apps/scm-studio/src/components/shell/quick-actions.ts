@@ -1,9 +1,9 @@
-import { CalendarPlus, Camera, Clapperboard, FileSignature, Inbox, ReceiptEuro, ScrollText, type LucideIcon } from "lucide-react";
+import { CalendarPlus, Camera, FileSignature, Inbox, Lightbulb, ReceiptEuro, ScrollText, type LucideIcon } from "lucide-react";
 
 /** Schnellerfassung (Plus-Knopf, "Neu"-Menü, ⌘K): die häufigsten Handgriffe, auch am Set. */
 // Farben wie bei iOS-Symbolen: je Art eine eigene, ruhige Farbe (nicht alles in Signalrot)
 export const QUICK_ACTIONS: { label: string; hint: string; href: string; icon: LucideIcon; color: string; keywords: string[] }[] = [
-  { label: "Video-Idee", hint: "Direkt in die Produktion", href: "/produktion?neu=1", icon: Clapperboard, color: "#e1251b", keywords: ["reel", "clip", "video"] },
+  { label: "Video-Idee", hint: "Festhalten unter Ideen & Skripte", href: "/skripte?neu=idee", icon: Lightbulb, color: "#e1251b", keywords: ["reel", "clip", "video", "idee"] },
   { label: "Anfrage", hint: "Anruf oder Nachricht festhalten", href: "/anfragen?neu=1", icon: Inbox, color: "#0a84ff", keywords: ["lead", "interessent"] },
   { label: "Termin", hint: "Dreh, Gespräch, Abgabe", href: "/kalender?neu=1", icon: CalendarPlus, color: "#ff9500", keywords: ["dreh", "gespräch", "kalender"] },
   { label: "Beleg fotografieren", hint: "Quittung oder Rechnung", href: "/finanzen/ausgaben?neu=1", icon: Camera, color: "#34c759", keywords: ["quittung", "ausgabe", "kassenbon"] },

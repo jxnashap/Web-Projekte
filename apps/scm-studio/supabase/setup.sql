@@ -13,10 +13,11 @@ alter default privileges in schema studio revoke all on sequences from anon, aut
 alter default privileges in schema studio revoke all on functions from anon, authenticated;
 
 -- 2) Privater Speicher für Belege, Rechnungen und Dokumente (Zugriff nur serverseitig mit dem Secret Key).
---    Keine Storage-Policies für anon/authenticated anlegen.
+--    Keine Storage-Policies für anon/authenticated anlegen. 50 MB je Datei (Grenze von Supabase Free) für das Material;
+--    Belege prüft die App selbst auf 10 MB. Uploads gehen nur über signierte Links, die der Server ausstellt.
 insert into storage.buckets (id, name, public, file_size_limit)
-values ('studio', 'studio', false, 10485760)
-on conflict (id) do update set public = false;
+values ('studio', 'studio', false, 52428800)
+on conflict (id) do update set public = false, file_size_limit = 52428800;
 
 -- 3) Kontrolle: RLS ist auf allen Tabellen aktiv (Ergebnis sollte leer sein)
 select tablename from pg_tables where schemaname = 'studio' and rowsecurity = false;

@@ -55,6 +55,19 @@ export function Dialog({
     if (!open && d.open) d.close();
   }, [open, titleId]);
 
+  // Next behält verlassene Seiten verborgen im DOM (Activity). Ein offener modaler Dialog bliebe dann in der obersten
+  // Ebene und sperrte die neue Seite (z. B. nach Speichern mit Weiterleitung). Beim Verbergen still schließen.
+  const silent = useRef(false);
+  useEffect(() => {
+    const d = ref.current;
+    return () => {
+      if (d?.open) {
+        silent.current = true;
+        d.close();
+      }
+    };
+  }, []);
+
   /** Schließen mit Rückfrage, falls etwas eingegeben wurde. */
   const requestClose = useCallback(async () => {
     if (dirty.current) {
@@ -87,7 +100,13 @@ export function Dialog({
         e.preventDefault();
         void requestClose();
       }}
-      onClose={() => open && onClose()}
+      onClose={() => {
+        if (silent.current) {
+          silent.current = false;
+          return;
+        }
+        if (open) onClose();
+      }}
       className={cn(
         "as-sheet squircle m-auto max-h-[92dvh] w-[calc(100vw-24px)] overflow-visible rounded-[22px] border-0 bg-surface p-0 text-ink shadow-[var(--shadow-pop)] backdrop:bg-black/25 backdrop:backdrop-blur-[3px]",
         // Handy: Blatt von unten

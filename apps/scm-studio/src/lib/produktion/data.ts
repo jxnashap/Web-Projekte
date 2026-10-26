@@ -1,9 +1,10 @@
-// Daten für den Bereich Produktion (Videos je Monat, Board, Detail).
+// Daten für den Bereich Produktion (Schnitt-Board je Monat, Detail). Videos vor dem Dreh zeigt Ideen & Skripte.
 import "server-only";
-import { and, asc, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { getKontingente } from "@/lib/data/kontingent";
+import { CUT_KEYS, PRE_SHOOT_KEYS } from "@/lib/labels";
 
 export type BoardFilter = { month: string; clientId?: number; onlyTest?: boolean };
 
@@ -28,9 +29,10 @@ export type BoardVideo = {
 export async function getBoard(f: BoardFilter) {
   await requireUser();
   const db = await getDb();
-  const where = [eq(schema.videos.month, f.month)];
-  if (f.clientId) where.push(eq(schema.videos.clientId, f.clientId));
-  if (f.onlyTest) where.push(eq(schema.videos.isTest, true));
+  const scope = [eq(schema.videos.month, f.month)];
+  if (f.clientId) scope.push(eq(schema.videos.clientId, f.clientId));
+  if (f.onlyTest) scope.push(eq(schema.videos.isTest, true));
+  const where = [...scope, inArray(schema.videos.status, CUT_KEYS)];
 
   const rows = await db
     .select({
@@ -73,7 +75,12 @@ export async function getBoard(f: BoardFilter) {
   }));
 
   const kontingente = (await getKontingente(f.month)).filter((k) => !f.clientId || k.clientId === f.clientId);
-  return { videos, kontingente };
+  // Videos desselben Monats, die noch vor dem Dreh stehen (Hinweis auf Ideen & Skripte)
+  const [pre] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(schema.videos)
+    .where(and(...scope, inArray(schema.videos.status, [...PRE_SHOOT_KEYS])));
+  return { videos, kontingente, preShoot: pre?.n ?? 0 };
 }
 
 /** Auswahllisten für Formulare: Kunden (ohne beendete), Team, Skripte. */

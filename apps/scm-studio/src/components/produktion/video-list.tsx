@@ -1,5 +1,5 @@
 "use client";
-// Listenansicht der Produktion: nach Ablauf gruppiert (Idee bis Online), innerhalb nach Drehtermin.
+// Listenansicht der Produktion: nach Schnitt-Status gruppiert (Gedreht bis Online), innerhalb nach Drehtermin.
 // Status je Zeile über das Kit-Select; bei Online steht das Online-Datum statt des Drehtermins.
 import { ScrollText } from "lucide-react";
 import Link from "next/link";
@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/field";
 import { Table, Td, Th } from "@/components/ui/table";
 import { dateShort } from "@/lib/format";
-import { PLATFORMS, VIDEO_STATUS } from "@/lib/labels";
+import { CUT_STATUS, PLATFORMS } from "@/lib/labels";
 import type { BoardVideo } from "@/lib/produktion/data";
 import { TONE_DOT, videosLabel } from "./board";
 import { useVideoMove } from "./use-video-move";
@@ -18,7 +18,7 @@ const byShoot = (a: BoardVideo, b: BoardVideo) => (a.shootDate ?? "9999").locale
 function StatusSelect({ v, onMove, className }: { v: BoardVideo; onMove: (id: number, status: string) => void; className?: string }) {
   return (
     <Select aria-label={`Status von „${v.title}“`} value={v.status} onChange={(e) => onMove(v.id, e.target.value)} className={className}>
-      {VIDEO_STATUS.map((s) => (
+      {CUT_STATUS.map((s) => (
         <option key={s.key} value={s.key}>
           {s.label}
         </option>
@@ -34,7 +34,7 @@ function when(v: BoardVideo) {
 
 export function VideoList({ videos: initial }: { videos: BoardVideo[] }) {
   const { videos, move, dialog } = useVideoMove(initial);
-  const groups = VIDEO_STATUS.map((st) => ({ st, items: videos.filter((v) => v.status === st.key).sort(byShoot) })).filter((g) => g.items.length > 0);
+  const groups = CUT_STATUS.map((st) => ({ st, items: videos.filter((v) => v.status === st.key).sort(byShoot) })).filter((g) => g.items.length > 0);
 
   return (
     <>

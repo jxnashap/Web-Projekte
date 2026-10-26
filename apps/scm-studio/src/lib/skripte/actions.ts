@@ -1,6 +1,6 @@
 "use server";
 // Server Actions für Skripte: speichern, Status, duplizieren, löschen, KI-Generator.
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { z } from "zod";
 import { getDb, schema } from "@/db";
@@ -121,8 +121,27 @@ export async function setScriptStatus(id: number, status: "entwurf" | "final"): 
   return done(status === "final" ? "Skript ist als fertig markiert." : "Skript ist wieder ein Entwurf.");
 }
 
+/** Idee als „offen“ führen, sobald ein Skript dazu entsteht (ein Vorschlag aus der Recherche ist damit übernommen). */
+async function adoptIdea(ideaId: number | null | undefined) {
+  if (!ideaId) return;
+  const db = await getDb();
+  await db
+    .update(schema.ideas)
+    .set({ status: "offen", updatedAt: new Date() })
+    .where(and(eq(schema.ideas.id, ideaId), ne(schema.ideas.status, "offen")));
+}
+
 /** Leeres Skript aus dem Editor anlegen (erst beim Speichern, ein Fehlklick legt nichts an). */
 export async function createScript(_: ActionState, fd: FormData): Promise<ActionState> {
+  return insertBlank(null, fd);
+}
+
+/** Wie createScript, aber gleich zu einer Video-Idee gehörig. */
+export async function createScriptForIdea(ideaId: number, _: ActionState, fd: FormData): Promise<ActionState> {
+  return insertBlank(ideaId, fd);
+}
+
+async function insertBlank(ideaId: number | null, fd: FormData): Promise<ActionState> {
   const user = await assertUser();
   const parsed = parseForm(scriptSchema, fd);
   if (!parsed.success) return parsed.state;
@@ -141,10 +160,21 @@ export async function createScript(_: ActionState, fd: FormData): Promise<Action
       clientId: d.clientId ?? null,
       status: d.intent === "final" ? "final" : "entwurf",
       source: "manuell",
+      ideaId,
       createdBy: user.id,
     })
     .returning();
-  await audit(user.id, "skript", s.id, "angelegt", { source: "manuell" });
+  await adoptIdea(ideaId);
+  // Ist die Idee schon als Video eingeplant und hat das Video noch kein Skript: gleich verknüpfen
+  if (ideaId) {
+    const [idea] = await db.select({ videoId: schema.ideas.videoId }).from(schema.ideas).where(eq(schema.ideas.id, ideaId));
+    const [v] = idea?.videoId ? await db.select().from(schema.videos).where(eq(schema.videos.id, idea.videoId)) : [];
+    if (v && !v.scriptId) {
+      await db.update(schema.scripts).set({ videoId: v.id, clientId: s.clientId ?? v.clientId }).where(eq(schema.scripts.id, s.id));
+      await db.update(schema.videos).set({ scriptId: s.id, status: v.status === "idee" ? "skript" : v.status, updatedAt: new Date() }).where(eq(schema.videos.id, v.id));
+    }
+  }
+  await audit(user.id, "skript", s.id, "angelegt", { source: "manuell", ideeId: ideaId });
   return done("Skript angelegt.", { redirectTo: `/skripte/${s.id}`, id: s.id });
 }
 
@@ -213,6 +243,7 @@ const saveGenSchema = z.object({
   title: zText("Titel", 200),
   clientId: z.coerce.number().int().positive().optional(),
   videoId: z.coerce.number().int().positive().optional(),
+  ideaId: z.coerce.number().int().positive().optional(),
   format: zOptText(80),
   briefing: zOptText(1500),
   source: z.enum(["ki", "demo"]),
@@ -261,9 +292,11 @@ export async function saveGenerated(_: ActionState, fd: FormData): Promise<Actio
       source: d.source,
       model: d.source === "ki" ? (d.model ?? null) : null,
       briefing: d.briefing ?? null,
+      ideaId: d.ideaId ?? null,
       createdBy: user.id,
     })
     .returning();
+  await adoptIdea(d.ideaId);
   if (d.videoId) {
     await db.update(schema.scripts).set({ videoId: null }).where(eq(schema.scripts.videoId, d.videoId));
     await db.update(schema.scripts).set({ videoId: d.videoId }).where(eq(schema.scripts.id, s.id));
@@ -273,7 +306,7 @@ export async function saveGenerated(_: ActionState, fd: FormData): Promise<Actio
       .set({ scriptId: s.id, status: v?.status === "idee" ? "skript" : v?.status, updatedAt: new Date() })
       .where(eq(schema.videos.id, d.videoId));
   }
-  await audit(user.id, "skript", s.id, "angelegt", { source: d.source, videoId: d.videoId ?? null });
+  await audit(user.id, "skript", s.id, "angelegt", { source: d.source, videoId: d.videoId ?? null, ideeId: d.ideaId ?? null });
   return done("Skript gespeichert.", { redirectTo: `/skripte/${s.id}`, id: s.id });
 }
 

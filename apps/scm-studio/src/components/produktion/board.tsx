@@ -1,8 +1,9 @@
 "use client";
-// Produktions-Board: eine Spalte je Status, jede Karte ist ein Video.
+// Schnitt-Board: eine Spalte je Status ab dem Dreh (Gedreht bis Online), jede Karte ist ein Video.
+// Videos vor dem Dreh (Idee, Skript, Dreh geplant) stehen unter Ideen & Skripte.
 // Status ändern per „Weiter“-Knopf, Menü oder (Desktop) Ziehen und Ablegen. Änderungen erscheinen sofort (optimistisch).
 // „Online“ ist eine schmale, aufklappbare Spalte: erledigte Videos verdrängen die Arbeit nicht aus dem Bild.
-import { ArrowRight, Camera, Check, ChevronLeft, ChevronRight, ExternalLink, GripVertical, ScrollText } from "lucide-react";
+import { ArrowRight, Camera, Check, ChevronLeft, ChevronRight, ExternalLink, FolderOpen, GripVertical, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Badge, Dot } from "@/components/ui/badge";
@@ -10,7 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Menu, menuItemClass } from "@/components/ui/menu";
 import { cn } from "@/lib/cn";
 import { dateShort } from "@/lib/format";
-import { VIDEO_STATUS } from "@/lib/labels";
+import { CUT_STATUS } from "@/lib/labels";
 import type { BoardVideo } from "@/lib/produktion/data";
 import { useVideoMove } from "./use-video-move";
 
@@ -80,10 +81,10 @@ export function Board({ videos: initial }: { videos: BoardVideo[] }) {
           fade && "[mask-image:linear-gradient(to_right,black_calc(100%-56px),transparent)]",
         )}
         role="region"
-        aria-label="Produktions-Board, seitlich scrollbar"
+        aria-label="Schnitt-Board, seitlich scrollbar"
         tabIndex={0}
       >
-          {VIDEO_STATUS.map((st) => {
+          {CUT_STATUS.map((st) => {
             const items = videos.filter((v) => v.status === st.key);
             const collapsed = st.key === "online" && !onlineOpen;
             const dropProps = {
@@ -162,8 +163,8 @@ export function Board({ videos: initial }: { videos: BoardVideo[] }) {
 }
 
 function VideoCard({ v, onMove }: { v: BoardVideo; onMove: (id: number, status: string) => void }) {
-  const idx = VIDEO_STATUS.findIndex((s) => s.key === v.status);
-  const next = VIDEO_STATUS[idx + 1];
+  const idx = CUT_STATUS.findIndex((s) => s.key === v.status);
+  const next = CUT_STATUS[idx + 1];
   return (
     <Card
       draggable
@@ -207,6 +208,14 @@ function VideoCard({ v, onMove }: { v: BoardVideo; onMove: (id: number, status: 
             <span className="sr-only">Skript vorhanden</span>
           </span>
         )}
+        <Link
+          href={`/produktion/material/${v.clientId}`}
+          className="hit-lg relative inline-flex items-center gap-1 rounded hover:text-ink"
+          title={`Material von ${v.clientName}`}
+        >
+          <FolderOpen className="size-3.5" aria-hidden />
+          <span className="sr-only">Material von {v.clientName}</span>
+        </Link>
         {v.url && (
           <a href={v.url} target="_blank" rel="noreferrer" className="hit-lg relative inline-flex items-center gap-1 rounded hover:text-ink" title="Beitrag öffnen">
             <ExternalLink className="size-3.5" aria-hidden />
@@ -248,7 +257,7 @@ function VideoCard({ v, onMove }: { v: BoardVideo; onMove: (id: number, status: 
         )}
         <Menu label={`Status von „${v.title}“ ändern`}>
           <p className="px-3 pb-1 pt-1.5 text-[13px] font-semibold text-muted">Status ändern</p>
-          {VIDEO_STATUS.map((s) => (
+          {CUT_STATUS.map((s) => (
             <button key={s.key} type="button" role="menuitem" className={menuItemClass} onClick={() => onMove(v.id, s.key)} aria-current={s.key === v.status ? "true" : undefined}>
               <span className="w-4">{s.key === v.status && <Check className="size-4 text-ink" aria-hidden />}</span>
               {s.label}

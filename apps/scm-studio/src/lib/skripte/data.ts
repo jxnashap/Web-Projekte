@@ -6,7 +6,7 @@ import { requireUser } from "@/lib/auth";
 import { integrations } from "@/lib/env";
 import { berlinDateTime, monthIso, monthRange } from "@/lib/time";
 import { getAiConfig } from "./ai";
-import { estimateUsd } from "./pricing";
+import { estimateUsd, WEB_SEARCH_USD_PER_CALL } from "./pricing";
 
 export type ScriptFilter = { q?: string; clientId?: number; status?: string; source?: string };
 
@@ -40,11 +40,12 @@ export async function getScript(id: number) {
   await requireUser();
   const db = await getDb();
   const [row] = await db
-    .select({ s: schema.scripts, client: schema.clients, video: schema.videos, author: schema.teamMembers.name })
+    .select({ s: schema.scripts, client: schema.clients, video: schema.videos, author: schema.teamMembers.name, ideaTitle: schema.ideas.title })
     .from(schema.scripts)
     .leftJoin(schema.clients, eq(schema.scripts.clientId, schema.clients.id))
     .leftJoin(schema.videos, eq(schema.scripts.videoId, schema.videos.id))
     .leftJoin(schema.teamMembers, eq(schema.scripts.createdBy, schema.teamMembers.id))
+    .leftJoin(schema.ideas, eq(schema.scripts.ideaId, schema.ideas.id))
     .where(eq(schema.scripts.id, id));
   return row ?? null;
 }
@@ -88,6 +89,7 @@ export async function getAiUsage() {
       cached: sql<number>`coalesce(sum(${schema.aiRuns.cachedTokens}),0)::int`,
       output: sql<number>`coalesce(sum(${schema.aiRuns.outputTokens}),0)::int`,
       reasoning: sql<number>`coalesce(sum(${schema.aiRuns.reasoningTokens}),0)::int`,
+      searches: sql<number>`coalesce(sum(${schema.aiRuns.searchCalls}),0)::int`,
     })
     .from(schema.aiRuns)
     .where(gte(schema.aiRuns.at, berlinDateTime(from)))
@@ -100,6 +102,7 @@ export async function getAiUsage() {
     const c = estimateUsd(r.model, r);
     if (c === null) unknownPrice = true;
     else usd += c;
+    usd += r.searches * WEB_SEARCH_USD_PER_CALL;
   }
   const cfg = await getAiConfig();
   return {

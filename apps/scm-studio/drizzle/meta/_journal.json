@@ -29,6 +29,13 @@
       "when": 1793012926359,
       "tag": "0003_funktionen_suchpfad",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793039610941,
+      "tag": "0004_schnitt_ideen_recherche",
+      "breakpoints": true
     }
   ]
 }

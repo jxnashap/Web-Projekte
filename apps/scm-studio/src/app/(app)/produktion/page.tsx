@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Clapperboard, Plus, SearchX } from "lucide-react";
+import { ChevronDown, ChevronRight, Clapperboard, Plus, ScrollText, SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -16,6 +16,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { PeriodStepper } from "@/components/ui/period-stepper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Segmented } from "@/components/ui/tabs";
+import { ProduktionTabs } from "@/components/produktion/tabs";
 import type { Kontingent } from "@/lib/data/kontingent";
 import { monthLabel } from "@/lib/format";
 import { createVideo } from "@/lib/produktion/actions";
@@ -32,8 +33,9 @@ export default function ProduktionPage({ searchParams }: { searchParams: SP }) {
       <PageHeader
         scene="Szene 04 · Produktion"
         title="Produktion"
-        description="Jede Karte ist ein Video. Von der Idee bis online, je Monat und Paket."
+        description="Der Schnitt: jede Karte ist ein gedrehtes Video, bis es online ist. Das Material der Kunden liegt unter Material."
       />
+      <ProduktionTabs active="schnitt" />
       <Suspense fallback={<ProduktionSkeleton />}>
         <Produktion searchParams={searchParams} />
       </Suspense>
@@ -66,7 +68,7 @@ async function Produktion({ searchParams }: { searchParams: SP }) {
   const sp = { monat: monthParam, kunde: one(raw.kunde), test: one(raw.test), ansicht: one(raw.ansicht) };
   const filterCount = [clientId, onlyTest].filter(Boolean).length;
 
-  const [{ videos, kontingente }, options] = await Promise.all([getBoard({ month, clientId, onlyTest }), getVideoFormOptions()]);
+  const [{ videos, kontingente, preShoot }, options] = await Promise.all([getBoard({ month, clientId, onlyTest }), getVideoFormOptions()]);
   const clientOptions = options.clients.map((c) => ({ value: String(c.id), label: c.name }));
   const newHref = hrefWith(sp, { neu: "1" });
 
@@ -104,13 +106,24 @@ async function Produktion({ searchParams }: { searchParams: SP }) {
         <div className="flex items-center gap-2 sm:ml-auto">
           {viewSwitch}
           <LinkButton href={newHref} scroll={false} className="max-sm:hidden">
-            <Plus className="size-4" /> Neue Video-Idee
+            <Plus className="size-4" /> Video anlegen
           </LinkButton>
         </div>
       </div>
 
       {/* Kontingent: am Computer offen, auf dem Handy zugeklappt (die Videos zuerst) */}
       {kontingente.length > 0 && !onlyTest && <KontingentCard kontingente={kontingente} month={month} sp={sp} />}
+
+      {preShoot > 0 && (
+        <Link
+          href={`/skripte?ansicht=eingeplant&monat=${month}`}
+          className="flex min-h-11 items-center gap-2 self-start rounded-full bg-fill-2 px-4 text-[14px] text-ink-2 transition-colors hover:bg-fill hover:text-ink"
+        >
+          <ScrollText className="size-4 shrink-0" aria-hidden />
+          {preShoot === 1 ? "1 Video" : `${preShoot} Videos`} im {monthLabel(month)} {preShoot === 1 ? "steht" : "stehen"} noch vor dem Dreh
+          <ChevronRight className="size-4 shrink-0 text-muted" aria-hidden />
+        </Link>
+      )}
 
       {videos.length === 0 ? (
         filterCount > 0 ? (
@@ -128,14 +141,14 @@ async function Produktion({ searchParams }: { searchParams: SP }) {
         ) : (
           <EmptyState
             icon={<Clapperboard className="size-5" />}
-            title={`Noch keine Videos für ${monthLabel(month)}`}
+            title={`Im ${monthLabel(month)} ist noch nichts gedreht`}
             action={
               <LinkButton href={newHref} scroll={false} variant="secondary">
-                <Plus className="size-4" /> Video-Idee anlegen
+                <Plus className="size-4" /> Video anlegen
               </LinkButton>
             }
           >
-            Legt Ideen an und schiebt sie über Skript, Dreh und Schnitt bis online.
+            Nach dem Dreh setzt ihr ein Video unter Ideen & Skripte auf „Gedreht“, dann erscheint es hier im Schnitt.
           </EmptyState>
         )
       ) : view === "liste" ? (
@@ -144,8 +157,8 @@ async function Produktion({ searchParams }: { searchParams: SP }) {
         <Board key={`${month}-${clientId}-${onlyTest}`} videos={videos} />
       )}
 
-      <ParamDialog title="Neue Video-Idee" description="Erst grob anlegen, Details kommen später.">
-        <VideoForm action={createVideo} options={options} defaults={{ clientId, month }} submitLabel="Video anlegen" compact />
+      <ParamDialog title="Video anlegen" description="Für Videos, die schon gedreht sind. Ideen und Skripte legt ihr unter Ideen & Skripte an.">
+        <VideoForm action={createVideo} options={options} defaults={{ clientId, month, status: "gedreht" }} submitLabel="Video anlegen" compact />
       </ParamDialog>
     </div>
   );
