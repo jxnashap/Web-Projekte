@@ -21,6 +21,15 @@ export const DOC_STATUS: Record<string, { label: string; tone: "neutral" | "info
 // Gemeinsame Bausteine
 // ------------------------------------------------------------------
 export type Strokes = number[][][];
+/** Kurzbezeichnung je Unterschriftsrolle (für Übersichten und Prüfprotokoll) */
+export const SIGNER_SHORT: Record<string, string> = {
+  scm: "SCM",
+  kunde: "Auftraggeber",
+  person: "Gefilmte Person",
+  sorge1: "Erziehungsberechtigte Person",
+  sorge2: "Zweite erziehungsberechtigte Person",
+  kind: "Minderjährige Person",
+};
 export type SignatureEntry = { role: string; label: string; name: string; strokes: Strokes; signedAt: string; byUserId?: number | null };
 
 /** Momentaufnahme des Kunden beim Finalisieren (spätere Änderungen am Kunden ändern das Dokument nicht). */

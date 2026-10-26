@@ -3,6 +3,7 @@
 import { Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState, useTransition } from "react";
+import { Input } from "@/components/ui/field";
 
 function Inner({ placeholder, label }: { placeholder: string; label: string }) {
   const sp = useSearchParams();
@@ -27,7 +28,7 @@ function Inner({ placeholder, label }: { placeholder: string; label: string }) {
   return (
     <div className="relative w-full sm:max-w-xs">
       <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
-      <input
+      <Input
         type="search"
         value={value}
         aria-label={label}
@@ -39,7 +40,7 @@ function Inner({ placeholder, label }: { placeholder: string; label: string }) {
           const v = e.target.value;
           timer.current = setTimeout(() => push(v), 250);
         }}
-        className="h-10 w-full rounded-full border border-line-2 bg-surface pl-9 pr-9 text-[14px] placeholder:text-faint hover:border-faint focus:border-ink focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+        className="pl-9 pr-9 [&::-webkit-search-cancel-button]:hidden"
       />
       {value && (
         <button
@@ -60,7 +61,7 @@ function Inner({ placeholder, label }: { placeholder: string; label: string }) {
 
 export function SearchBox({ placeholder = "Suchen …", label = "Suchen" }: { placeholder?: string; label?: string }) {
   return (
-    <Suspense fallback={<div className="h-10 w-full rounded-full border border-line-2 bg-surface sm:max-w-xs" />}>
+    <Suspense fallback={<Input disabled aria-hidden className="sm:max-w-xs" />}>
       <Inner placeholder={placeholder} label={label} />
     </Suspense>
   );

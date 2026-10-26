@@ -59,7 +59,7 @@ export function ContactList({
   website?: string | null;
   preferred?: string | null;
 }) {
-  const pref = (way: string) => (preferred === way ? <span className="ml-auto text-[11px] font-semibold uppercase tracking-wide text-muted">bevorzugt</span> : null);
+  const pref = (way: string) => (preferred === way ? <span className="ml-auto text-[12px] text-muted">bevorzugt</span> : null);
   const empty = !hasPhone(phone) && !email && !instagram && !website;
   return (
     <div className="grid gap-0.5">

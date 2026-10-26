@@ -16,13 +16,13 @@ const videoSchema = z.object({
   clientId: z.coerce.number({ error: "Kunde wählen" }).int().positive("Kunde wählen"),
   title: zText("Titel", 200),
   format: zOptText(80),
-  status: z.enum(STATUS_KEYS).default("idee"),
+  status: z.enum(STATUS_KEYS).optional(), // fehlt im Bearbeiten-Formular (Status läuft dort über die Schrittleiste)
   month: z.string().regex(/^\d{4}-\d{2}$/, "Monat wählen").optional(),
   isTest: zBool,
   shootDate: zOptDate,
   postDate: zOptDate,
   platform: z.enum(["instagram", "tiktok", "beide"]).optional(),
-  url: z.url({ error: "Link muss mit https:// beginnen" }).max(500).optional(),
+  url: z.url({ protocol: /^https?$/, error: "Link muss mit https:// beginnen" }).max(500).optional(),
   assignee: z.coerce.number().int().positive().optional(),
   notes: zOptText(4000),
 });
@@ -31,7 +31,7 @@ const toRow = (d: z.infer<typeof videoSchema>) => ({
   clientId: d.clientId,
   title: d.title,
   format: d.format ?? null,
-  status: d.status,
+  ...(d.status ? { status: d.status } : {}),
   month: d.month ?? monthIso(),
   isTest: d.isTest,
   shootDate: d.shootDate ?? null,
@@ -47,7 +47,7 @@ export async function createVideo(_: ActionState, fd: FormData): Promise<ActionS
   const parsed = parseForm(videoSchema, fd);
   if (!parsed.success) return parsed.state;
   const db = await getDb();
-  const [v] = await db.insert(schema.videos).values(toRow(parsed.data)).returning();
+  const [v] = await db.insert(schema.videos).values({ ...toRow(parsed.data), status: parsed.data.status ?? "idee" }).returning();
   await audit(user.id, "video", v.id, "angelegt", { title: v.title, clientId: v.clientId });
   refresh();
   return done(`„${v.title}“ ist angelegt.`, { id: v.id });

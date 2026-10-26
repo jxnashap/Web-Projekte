@@ -61,7 +61,7 @@ export function buildUbl({ invoice, items, recipient, company, cancels }: EInvoi
             "cbc:StreetName": company.street,
             "cbc:CityName": company.city,
             "cbc:PostalZone": company.zip,
-            "cac:Country": { "cbc:IdentificationCode": company.country || "DE" },
+            "cac:Country": { "cbc:IdentificationCode": (company.country || "DE") as "DE" },
           },
           "cac:PartyTaxScheme": sellerTax.slice(0, 2) as [],
           "cac:PartyLegalEntity": { "cbc:RegistrationName": company.legalName },
@@ -79,7 +79,7 @@ export function buildUbl({ invoice, items, recipient, company, cancels }: EInvoi
             ...(recipient.street ? { "cbc:StreetName": recipient.street } : {}),
             ...(recipient.city ? { "cbc:CityName": recipient.city } : {}),
             ...(recipient.zip ? { "cbc:PostalZone": recipient.zip } : {}),
-            "cac:Country": { "cbc:IdentificationCode": recipient.country || "DE" },
+            "cac:Country": { "cbc:IdentificationCode": (recipient.country || "DE") as "DE" },
           },
           ...(recipient.vatId
             ? { "cac:PartyTaxScheme": { "cbc:CompanyID": recipient.vatId.replace(/\s+/g, ""), "cac:TaxScheme": { "cbc:ID": "VAT" } } }

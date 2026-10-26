@@ -48,7 +48,7 @@ function CheckGroup({ name, options, selected, onChange }: { name: string; optio
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {Object.entries(options).map(([k, label]) => (
-        <label key={k} className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-line-2 px-3 py-2.5 text-[14px] text-ink-2 hover:border-faint has-[:checked]:border-ink has-[:checked]:text-ink">
+        <label key={k} className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-line-2 px-3 py-2.5 text-[14px] text-ink-2 hover:border-faint has-[:checked]:border-accent has-[:checked]:text-ink">
           <input
             type="checkbox"
             name={`${name}[]`}
@@ -334,7 +334,7 @@ export function DrehplanForm({ action, title, data, team }: { action: Action; ti
       </Group>
       <Group title="Ablauf" hint="Die Szenen kommen automatisch aus der Produktion: alle Videos des Kunden mit diesem Drehdatum samt Skript.">
         <Field label="Zeitplan" name="zeitplan" optional hint="Eine Zeile pro Punkt, z. B. 09:00 Aufbau">
-          <Textarea name="zeitplan" defaultValue={data.zeitplan} rows={5} className="font-mono text-[13px]" />
+          <Textarea name="zeitplan" defaultValue={data.zeitplan} rows={5} />
         </Field>
         <FormGrid>
           <Field label="Requisiten und Material" name="requisiten" optional hint="Eine Zeile pro Punkt">

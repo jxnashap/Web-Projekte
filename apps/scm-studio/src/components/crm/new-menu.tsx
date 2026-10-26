@@ -27,7 +27,7 @@ export function NewMenu({ items, label = "Neu" }: { items: NewMenuItem[]; label?
         <Plus className="size-4" /> {label} <ChevronDown className="size-4" />
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 z-40 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-surface p-1 shadow-[var(--shadow-pop)]">
+        <div role="menu" className="absolute right-0 z-40 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-surface p-1 shadow-lg">
           {items.map((i) => (
             <Link
               key={i.href}

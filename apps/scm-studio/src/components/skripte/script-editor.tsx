@@ -101,7 +101,7 @@ export function ScriptEditor({
             </Select>
           </Field>
           <Field label="Hook" name="hook" className="sm:col-span-2" hint="Der erste Satz oder Text im Bild. Entscheidet in zwei Sekunden, ob jemand bleibt.">
-            <Textarea name="hook" defaultValue={script.hook ?? ""} className="min-h-16 font-mono" />
+            <Textarea name="hook" defaultValue={script.hook ?? ""} className="min-h-16" />
           </Field>
         </FormGrid>
 
@@ -117,26 +117,26 @@ export function ScriptEditor({
           </datalist>
           <ol className="grid gap-3">
             {beats.map((b, i) => (
-              <li key={b.key} className="rounded-xl border border-line bg-canvas p-3 sm:p-4">
+              <li key={b.key} className="rounded-xl bg-sunken/60 p-3 sm:p-4">
                 <div className="flex flex-wrap items-end gap-2">
                   <label className="grid w-20 gap-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">Zeit</span>
+                    <span className="text-[12px] font-medium text-muted">Zeit</span>
                     <Input
                       value={b.tc}
                       onChange={(e) => update(b.key, { tc: e.target.value })}
                       pattern="\d{2}:\d{2}"
                       placeholder="00:00"
-                      className="h-9 font-mono text-[13px]"
+                      className="tabular-nums"
                       aria-label={`Timecode Beat ${i + 1}`}
                     />
                   </label>
                   <label className="grid min-w-0 flex-1 gap-1 sm:max-w-56">
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">Abschnitt</span>
+                    <span className="text-[12px] font-medium text-muted">Abschnitt</span>
                     <Input
                       value={b.label}
                       onChange={(e) => update(b.key, { label: e.target.value })}
                       list="bauplan-abschnitte"
-                      className="h-9 text-[13px] font-semibold"
+                      className="font-semibold"
                       aria-label={`Abschnitt Beat ${i + 1}`}
                     />
                   </label>
@@ -158,7 +158,7 @@ export function ScriptEditor({
                     value={b.text}
                     onChange={(e) => update(b.key, { text: e.target.value })}
                     placeholder="Was gesagt wird oder im Bild steht"
-                    className="min-h-16 bg-surface font-mono text-[14px]"
+                    className="min-h-16"
                   />
                 </label>
                 <label className="mt-2 grid gap-1">
@@ -167,7 +167,7 @@ export function ScriptEditor({
                     value={b.shot}
                     onChange={(e) => update(b.key, { shot: e.target.value })}
                     placeholder="Einstellung, z. B. Halbnah, Gegenschuss"
-                    className="h-9 bg-surface text-[13px]"
+                   
                   />
                 </label>
               </li>
@@ -191,7 +191,7 @@ export function ScriptEditor({
         </FormGrid>
       </div>
 
-      <div className="sticky bottom-20 z-10 -mx-1 flex items-center justify-end gap-3 rounded-full border border-line bg-surface/95 px-3 py-2 shadow-[var(--shadow-pop)] backdrop-blur lg:bottom-4">
+      <div className="sticky bottom-20 z-10 -mx-1 flex items-center justify-end gap-3 rounded-2xl border border-line bg-surface/95 px-3 py-2 backdrop-blur lg:bottom-4">
         <span className="mr-auto pl-2 text-[12px] font-semibold text-muted" aria-live="polite">
           {dirty ? "Ungespeicherte Änderungen" : "Alles gespeichert"}
         </span>

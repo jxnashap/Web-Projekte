@@ -104,7 +104,7 @@ async function Dashboard() {
             <span className="size-1.5 rounded-full bg-accent" />
             <h2 className="text-[15px] font-semibold">Was brennt</h2>
           </div>
-          <ul className="grid divide-y divide-line sm:grid-cols-2 sm:divide-y-0 xl:grid-cols-4">
+          <ul className="grid divide-y divide-line sm:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] sm:divide-y-0">
             {alerts.map((a) => (
               <li key={a.key} className="sm:border-r sm:border-line sm:last:border-r-0">
                 <Link href={a.href} className="flex h-full items-start gap-3 px-5 py-3.5 hover:bg-sunken/60">

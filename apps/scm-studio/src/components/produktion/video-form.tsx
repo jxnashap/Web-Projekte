@@ -67,15 +67,17 @@ export function VideoForm({
             ))}
           </datalist>
         </Field>
-        <Field label="Status" name="status">
-          <Select name="status" defaultValue={video?.status ?? "idee"}>
-            {VIDEO_STATUS.map((s) => (
-              <option key={s.key} value={s.key}>
-                {s.label}
-              </option>
-            ))}
-          </Select>
-        </Field>
+        {!video && (
+          <Field label="Status" name="status">
+            <Select name="status" defaultValue="idee">
+              {VIDEO_STATUS.map((s) => (
+                <option key={s.key} value={s.key}>
+                  {s.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
         <Field label="Drehtermin" name="shootDate" optional>
           <Input type="date" name="shootDate" defaultValue={video?.shootDate ?? ""} />
         </Field>

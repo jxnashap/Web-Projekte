@@ -2,7 +2,7 @@
 import { Text, View } from "@react-pdf/renderer";
 import { KeyValues, P, PdfPage, s, Section, SignatureBox, Title } from "@/lib/pdf/components";
 import { C, MM } from "@/lib/pdf/theme";
-import type { SignatureEntry } from "../schema";
+import { SIGNER_SHORT, type SignatureEntry } from "../schema";
 import type { RenderCtx } from "./types";
 
 export const DRAFT_LEGAL = "Entwurf · anwaltlich zu prüfen";
@@ -111,7 +111,7 @@ export function ProofPage({ ctx, kindLabel }: { ctx: RenderCtx; kindLabel: strin
         />
       </Section>
       <Section title="Unterschriften">
-        <KeyValues labelWidth={130} rows={p.signatures.map((x) => [x.label.replace(/^Unterschrift /, ""), `${x.name || "ohne Namen"} · ${fmtDateTime(x.signedAt)}`] as [string, string])} />
+        <KeyValues labelWidth={130} rows={p.signatures.map((x) => [SIGNER_SHORT[x.role] ?? x.label, `${x.name || "ohne Namen"} · ${fmtDateTime(x.signedAt)}`] as [string, string])} />
       </Section>
       <Section title="Umstände der Unterzeichnung">
         <KeyValues

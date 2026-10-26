@@ -17,10 +17,10 @@ export type ShootHint = { clientId: number; clientName: string; count: number };
 export function MonthView({ rows, days, anchor, today, hints }: { rows: EventRow[]; days: string[]; anchor: string; today: string; hints: Record<string, ShootHint[]> }) {
   const month = monthOfIso(anchor);
   return (
-    <div className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-[var(--shadow-card)]">
+    <div className="overflow-hidden rounded-card border border-line bg-surface shadow-card">
       <div className="grid grid-cols-7 border-b border-line bg-sunken/60">
         {WEEKDAYS.map((d, i) => (
-          <div key={d} className={cn("px-2 py-2 text-center font-mono text-[11px] uppercase tracking-wider text-muted sm:text-left sm:px-3", i >= 5 && "text-faint")}>
+          <div key={d} className={cn("px-2 py-2 text-center text-[12px] font-medium text-muted sm:text-left sm:px-3", i >= 5 && "text-faint")}>
             {d}
           </div>
         ))}

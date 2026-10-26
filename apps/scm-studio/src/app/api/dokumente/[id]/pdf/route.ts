@@ -5,8 +5,6 @@ import { buildRenderCtx, pdfFileName, renderDocument } from "@/lib/dokumente/ren
 import { pdfResponse } from "@/lib/pdf/render";
 import { readFile } from "@/lib/storage";
 
-export const runtime = "nodejs";
-
 export async function GET(request: Request, ctx: RouteContext<"/api/dokumente/[id]/pdf">) {
   const user = await getCurrentUser();
   if (!user) return new Response("Nicht angemeldet", { status: 401 });

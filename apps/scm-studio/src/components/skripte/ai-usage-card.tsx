@@ -35,15 +35,15 @@ export async function AiUsageCard() {
         )}
         <dl className="grid grid-cols-3 gap-3">
           <div>
-            <dt className="scene-label">Aufrufe</dt>
+            <dt className="text-[12px] text-muted">Aufrufe</dt>
             <dd className="mt-1 text-[20px] font-bold">{num(u.calls)}</dd>
           </div>
           <div>
-            <dt className="scene-label">Tokens</dt>
+            <dt className="text-[12px] text-muted">Tokens</dt>
             <dd className="mt-1 text-[20px] font-bold">{num(u.tokens)}</dd>
           </div>
           <div>
-            <dt className="scene-label">Kosten</dt>
+            <dt className="text-[12px] text-muted">Kosten</dt>
             <dd className="mt-1 text-[20px] font-bold">{usd(u.usd)}</dd>
           </div>
         </dl>

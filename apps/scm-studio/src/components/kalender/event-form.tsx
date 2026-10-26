@@ -49,13 +49,13 @@ export function EventForm({
       {defaults.id && <input type="hidden" name="id" value={defaults.id} />}
       <fieldset className="grid gap-2">
         <legend className="mb-1.5 text-[13px] font-semibold text-ink-2">Art</legend>
-        <div className="flex flex-wrap gap-2" role="radiogroup">
+        <div className="grid grid-cols-2 gap-0.5 rounded-control bg-fill p-0.5 sm:inline-grid sm:grid-cols-4" role="radiogroup">
           {Object.entries(EVENT_KINDS).map(([k, v]) => (
             <label
               key={k}
               className={cn(
-                "flex h-9 cursor-pointer items-center gap-2 rounded-full border px-3.5 text-[13px] font-semibold transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink/30",
-                kind === k ? "border-ink bg-ink text-white" : "border-line-2 bg-surface text-ink-2 hover:border-ink",
+                "flex h-8 cursor-pointer items-center justify-center rounded-[8px] px-3.5 text-[13px] font-semibold transition-all has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/30",
+                kind === k ? "bg-surface text-ink shadow-thumb" : "text-ink-2 hover:text-ink",
               )}
             >
               <input type="radio" name="kind" value={k} checked={kind === k} onChange={() => setKind(k)} className="sr-only" />
@@ -160,9 +160,9 @@ export function EventForm({
             {options.team.map((t) => (
               <label
                 key={t.id}
-                className="flex h-9 cursor-pointer items-center gap-2 rounded-full border border-line-2 bg-surface px-3 text-[13px] text-ink-2 has-[:checked]:border-ink has-[:checked]:bg-sunken has-[:checked]:text-ink has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink/30"
+                className="flex h-9 cursor-pointer items-center gap-2 rounded-full bg-fill-2 px-3 text-[13px] text-ink-2 transition-colors has-[:checked]:bg-accent-soft has-[:checked]:text-accent-ink has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/30"
               >
-                <input type="checkbox" name="teamIds[]" value={t.id} defaultChecked={defaults.teamIds?.includes(t.id)} className="size-4 accent-[var(--color-ink)]" />
+                <input type="checkbox" name="teamIds[]" value={t.id} defaultChecked={defaults.teamIds?.includes(t.id)} className="size-4 accent-[var(--color-accent)]" />
                 {t.name}
               </label>
             ))}

@@ -95,8 +95,9 @@ export async function markLeadLost(id: number, _: ActionState, fd: FormData): Pr
     .set({ stage: "verloren", lostReason: p.data.lostReason, nextStep: null, nextStepAt: null, updatedAt: new Date() })
     .where(eq(leads.id, id));
   await audit(user.id, "lead", id, "verloren", { grund: p.data.lostReason });
-  refresh();
-  return done("Als verloren markiert");
+  // Neu laden per Navigation statt refresh(): der Dialog mit diesem Formular verschwindet danach,
+  // die Rückmeldung (Toast) soll trotzdem noch erscheinen.
+  return done("Als verloren markiert", { redirectTo: `/anfragen/${id}` });
 }
 
 export async function reopenLead(id: number): Promise<ActionState> {
@@ -141,7 +142,7 @@ export async function convertLead(id: number, _: ActionState, fd: FormData): Pro
   });
   await audit(user.id, "client", clientId, "angelegt", { ausAnfrage: id });
   await audit(user.id, "lead", id, "umgewandelt", { kunde: clientId });
-  refresh();
+  // kein refresh(): sonst verschwindet der Dialog vor der Weiterleitung zum neuen Kunden
   return done(`${p.data.name} ist jetzt Kunde`, { redirectTo: `/kunden/${clientId}`, id: clientId });
 }
 

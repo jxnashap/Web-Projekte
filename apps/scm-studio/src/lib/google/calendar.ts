@@ -25,10 +25,12 @@ export type GoogleSettings = {
   lastError?: { at: string; message: string } | null;
 };
 
-export const googleRedirectUri = () => `${appUrl()}/api/google/callback`;
+/** Weiterleitungsadresse für Google. Ohne APP_URL (lokale Vorschau) gilt die Adresse der Anfrage. */
+export const googleRedirectUri = (origin?: string) =>
+  `${process.env.APP_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || !origin ? appUrl() : origin}/api/google/callback`;
 
-export function oauthClient() {
-  return new auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, googleRedirectUri());
+export function oauthClient(origin?: string) {
+  return new auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, googleRedirectUri(origin));
 }
 
 export const getGoogleSettings = () => getSetting<GoogleSettings | null>("google", null);
@@ -38,8 +40,8 @@ export type GoogleStatus =
   | { state: "nicht_verbunden"; redirectUri: string }
   | { state: "verbunden"; settings: GoogleSettings; redirectUri: string };
 
-export async function getGoogleStatus(): Promise<GoogleStatus> {
-  const redirectUri = googleRedirectUri();
+export async function getGoogleStatus(origin?: string): Promise<GoogleStatus> {
+  const redirectUri = googleRedirectUri(origin);
   if (!integrations.google()) return { state: "nicht_eingerichtet", redirectUri };
   const s = await getGoogleSettings();
   if (!s?.refreshTokenEnc) return { state: "nicht_verbunden", redirectUri };
@@ -186,8 +188,8 @@ export async function syncUpcoming(limit = 250): Promise<{ ok: number; failed: n
 }
 
 /** OAuth-Rückkehr: Code tauschen, Kalender "SCM Drehs" anlegen (oder wiederverwenden), speichern. */
-export async function completeGoogleConnect(code: string, user: { id: number; name: string }) {
-  const client = oauthClient();
+export async function completeGoogleConnect(code: string, user: { id: number; name: string }, origin?: string) {
+  const client = oauthClient(origin);
   const { tokens } = await client.getToken(code);
   const previous = await getGoogleSettings();
   const refresh = tokens.refresh_token ?? (previous?.refreshTokenEnc ? decrypt(previous.refreshTokenEnc) : null);

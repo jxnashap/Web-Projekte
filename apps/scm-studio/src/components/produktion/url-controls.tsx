@@ -1,8 +1,9 @@
 "use client";
-// Filter, die ihren Zustand in der URL halten (teilbar, Zurück-Knopf funktioniert).
-import { Search } from "lucide-react";
+// Filter, die ihren Zustand in der URL halten (teilbar, Zurück-Knopf funktioniert). Nutzen die Kit-Felder.
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState, useTransition } from "react";
+import { Checkbox, Input, Select } from "@/components/ui/field";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/cn";
 
 function useSetParam() {
@@ -20,37 +21,28 @@ function useSetParam() {
   return { sp, set, pending };
 }
 
-const selectCls =
-  "h-9 rounded-full border border-line-2 bg-surface pl-3 pr-8 text-[13px] font-semibold text-ink-2 hover:border-faint focus:border-ink focus:outline-none appearance-none bg-[length:10px] bg-[right_12px_center] bg-no-repeat";
-const chevron = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%236b6b72' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E\")";
-
 type Opt = { value: string; label: string };
 
 function UrlSelectInner({ param, label, options, allLabel }: { param: string; label: string; options: Opt[]; allLabel: string }) {
   const { sp, set, pending } = useSetParam();
   return (
-    <label className="inline-flex items-center">
+    <label className={cn("w-full sm:w-44", pending && "opacity-60")}>
       <span className="sr-only">{label}</span>
-      <select
-        className={cn(selectCls, pending && "opacity-60")}
-        style={{ backgroundImage: chevron }}
-        value={sp.get(param) ?? ""}
-        onChange={(e) => set(param, e.target.value || null)}
-      >
+      <Select value={sp.get(param) ?? ""} onChange={(e) => set(param, e.target.value || null)}>
         <option value="">{allLabel}</option>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }
 
 export function UrlSelect(p: { param: string; label: string; options: Opt[]; allLabel: string }) {
   return (
-    <Suspense fallback={<span className={cn(selectCls, "inline-flex w-36 items-center")}>{p.allLabel}</span>}>
+    <Suspense fallback={<Skeleton className="h-10 w-full sm:w-44" />}>
       <UrlSelectInner {...p} />
     </Suspense>
   );
@@ -60,20 +52,9 @@ function UrlToggleInner({ param, label }: { param: string; label: string }) {
   const { sp, set, pending } = useSetParam();
   const on = sp.get(param) === "1";
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      onClick={() => set(param, on ? null : "1")}
-      className={cn(
-        "inline-flex h-9 items-center gap-2 rounded-full border px-3 text-[13px] font-semibold transition-colors",
-        on ? "border-warn/40 bg-warn-soft text-warn" : "border-line-2 bg-surface text-ink-2 hover:border-faint",
-        pending && "opacity-60",
-      )}
-    >
-      <span className={cn("size-2 rounded-full", on ? "bg-warn" : "bg-line-2")} />
-      {label}
-    </button>
+    <span className={cn("inline-flex h-10 items-center", pending && "opacity-60")}>
+      <Checkbox label={label} checked={on} onChange={() => set(param, on ? null : "1")} />
+    </span>
   );
 }
 
@@ -99,23 +80,16 @@ function UrlSearchInner({ param, placeholder }: { param: string; placeholder: st
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
   return (
-    <label className="relative flex h-9 min-w-0 flex-1 items-center sm:max-w-xs">
+    <label className="w-full sm:min-w-56 sm:flex-1">
       <span className="sr-only">{placeholder}</span>
-      <Search className="pointer-events-none absolute left-3 size-4 text-muted" />
-      <input
-        type="search"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder={placeholder}
-        className="h-9 w-full rounded-full border border-line-2 bg-surface pl-9 pr-3 text-[13px] placeholder:text-faint hover:border-faint focus:border-ink focus:outline-none"
-      />
+      <Input type="search" value={value} onChange={(e) => setValue(e.target.value)} placeholder={placeholder} />
     </label>
   );
 }
 
 export function UrlSearch(p: { param: string; placeholder: string }) {
   return (
-    <Suspense fallback={<span className="h-9 w-full rounded-full border border-line-2 bg-surface sm:max-w-xs" />}>
+    <Suspense fallback={<Skeleton className="h-10 w-full sm:min-w-56 sm:flex-1" />}>
       <UrlSearchInner {...p} />
     </Suspense>
   );

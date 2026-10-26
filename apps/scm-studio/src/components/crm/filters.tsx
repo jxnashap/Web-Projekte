@@ -1,28 +1,16 @@
-// Filter als Links (Zustand in der URL) und eine Suche, die die URL beim Tippen aktualisiert.
-import Link from "next/link";
+// Filter als Links (Zustand in der URL), dargestellt mit dem Segmented-Control aus dem UI-Kit.
+import { Segmented } from "@/components/ui/tabs";
 import { cn } from "@/lib/cn";
 
-export type Chip = { label: string; href: string; active: boolean; count?: number };
+export type Chip = { label: string; href: string; active: boolean };
 
 export function FilterChips({ label, chips, className }: { label: string; chips: Chip[]; className?: string }) {
   return (
-    <div className={cn("flex items-center gap-1.5 overflow-x-auto", className)} role="group" aria-label={label}>
-      <span className="mr-1 shrink-0 text-[12px] font-semibold uppercase tracking-wide text-muted">{label}</span>
-      {chips.map((c) => (
-        <Link
-          key={c.href}
-          href={c.href}
-          scroll={false}
-          aria-current={c.active ? "true" : undefined}
-          className={cn(
-            "flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[13px] font-semibold transition-colors",
-            c.active ? "border-ink bg-ink text-white" : "border-line-2 bg-surface text-ink-2 hover:border-ink",
-          )}
-        >
-          {c.label}
-          {c.count !== undefined && <span className={cn("font-mono text-[11px]", c.active ? "text-white/70" : "text-muted")}>{c.count}</span>}
-        </Link>
-      ))}
+    <div className={cn("flex min-w-0 items-center gap-2", className)} role="group" aria-label={label}>
+      <span className="shrink-0 text-[13px] font-medium text-muted">{label}</span>
+      <div className="min-w-0 overflow-x-auto">
+        <Segmented className="shrink-0" items={chips.map((c) => ({ href: c.href, label: c.label, active: c.active }))} />
+      </div>
     </div>
   );
 }

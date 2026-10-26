@@ -52,7 +52,7 @@ export function AgendaView({
       {groups.map(({ day, list, hints: dayHints }) => (
         <li key={day} className="grid gap-2 md:grid-cols-[148px_minmax(0,1fr)] md:gap-5">
           <div className={cn("flex items-baseline gap-2 md:block md:pt-3", day === today && "text-accent-ink")}>
-            <div className="font-mono text-[11px] uppercase tracking-wider text-muted">{day === today ? "Heute" : fmt(day, "EEEE")}</div>
+            <div className="text-[12px] font-medium text-muted">{day === today ? "Heute" : fmt(day, "EEEE")}</div>
             <div className="text-[17px] font-bold md:mt-0.5">{fmt(day, "d. MMMM")}</div>
           </div>
           <ul className="grid gap-2">
@@ -65,15 +65,15 @@ export function AgendaView({
                 <li key={r.e.id}>
                   <Link
                     href={`/kalender/${r.e.id}`}
-                    className="flex items-stretch gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-3 shadow-[var(--shadow-card)] transition-colors hover:border-line-2 sm:gap-4 sm:p-4"
+                    className="flex items-stretch gap-3 rounded-card border border-line bg-surface p-3 shadow-card transition-colors hover:border-line-2 sm:gap-4 sm:p-4"
                   >
                     <div className="w-14 shrink-0 pt-0.5 sm:w-16">
                       {r.e.allDay || cont ? (
-                        <div className="font-mono text-[11px] uppercase text-muted">{r.e.allDay ? "ganztägig" : "weiter"}</div>
+                        <div className="text-[12px] font-medium text-muted">{r.e.allDay ? "ganztägig" : "weiter"}</div>
                       ) : (
                         <>
                           <div className="text-[15px] font-bold">{time(r.e.startsAt)}</div>
-                          <div className="font-mono text-[11px] text-muted">bis {todayIso(r.e.endsAt) === day ? time(r.e.endsAt) : fmt(r.e.endsAt, "d.M.")}</div>
+                          <div className="text-[12px] tabular-nums text-muted">bis {todayIso(r.e.endsAt) === day ? time(r.e.endsAt) : fmt(r.e.endsAt, "d.M.")}</div>
                         </>
                       )}
                     </div>
@@ -101,7 +101,7 @@ export function AgendaView({
                     {members.length > 0 && (
                       <div className="hidden shrink-0 items-center -space-x-1.5 sm:flex" aria-label={`Team: ${members.map((m) => m.name).join(", ")}`}>
                         {members.map((m) => (
-                          <span key={m.id} title={m.name} className="grid size-7 place-items-center rounded-full border-2 border-surface bg-ink text-[10px] font-bold text-white">
+                          <span key={m.id} title={m.name} className="grid size-7 place-items-center rounded-full border-2 border-surface bg-fill text-[10px] font-semibold text-ink-2">
                             {m.initials}
                           </span>
                         ))}
@@ -116,7 +116,7 @@ export function AgendaView({
                 <Link
                   href={calHref({ ansicht: "liste", datum: day, neu: true, extra: { kunde: h.clientId, art: "dreh", von: "10:00" } })}
                   scroll={false}
-                  className="flex items-center gap-3 rounded-[var(--radius-card)] border border-dashed border-accent/50 p-3 text-[13px] text-accent-ink hover:bg-accent-soft sm:p-4"
+                  className="flex items-center gap-3 rounded-card border border-dashed border-accent/50 p-3 text-[13px] text-accent-ink hover:bg-accent-soft sm:p-4"
                 >
                   <Clapperboard className="size-4 shrink-0" />
                   <span className="min-w-0 flex-1">

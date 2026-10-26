@@ -90,3 +90,7 @@ export const hasPhone = (tel?: string | null): tel is string => Boolean(tel && t
 export const igHref = (handle: string) => `https://www.instagram.com/${handle.replace(/^@/, "")}/`;
 export const tiktokHref = (handle: string) => `https://www.tiktok.com/@${handle.replace(/^@/, "")}`;
 export const webHref = (url: string) => (/^https?:\/\//.test(url) ? url : `https://${url}`);
+
+/** Aufrufe lesbar: bis 9.999 genau, darüber kompakt (12.400 → 12,4 Tsd.) */
+export const views = (n: number) =>
+  n < 10000 ? new Intl.NumberFormat("de-DE").format(n) : new Intl.NumberFormat("de-DE", { notation: "compact", maximumFractionDigits: 1 }).format(n);

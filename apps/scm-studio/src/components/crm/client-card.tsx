@@ -2,25 +2,28 @@
 import { CalendarDays } from "lucide-react";
 import Link from "next/link";
 import type { Client } from "@/db/schema";
-import { KontingentBar } from "@/components/kontingent-bar";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import type { Kontingent } from "@/lib/data/kontingent";
 import { dateShort, eurShort, time } from "@/lib/format";
 import { BRANCHEN, CLIENT_STATUS, EVENT_KINDS } from "@/lib/labels";
 import { ContactIcons } from "./contact-links";
+import { KontingentMini } from "./kontingent-mini";
 
 export function ClientCard({
   client: c,
   kontingent,
   nextEvent,
+  month,
 }: {
   client: Client;
+  month: string;
   kontingent: Kontingent | null;
   nextEvent: { startsAt: Date; title: string; kind: string } | null;
 }) {
   const st = CLIENT_STATUS[c.status];
   return (
-    <article className="relative flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-pop)]">
+    <Card className="relative flex flex-col overflow-hidden">
       <div className="h-1.5" style={{ background: c.color }} aria-hidden />
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex items-start justify-between gap-3">
@@ -46,7 +49,7 @@ export function ClientCard({
           )}
         </div>
 
-        {kontingent && <KontingentBar k={kontingent} compact />}
+        {kontingent && <KontingentMini k={kontingent} month={month} />}
 
         <div className="mt-auto flex items-end justify-between gap-3 border-t border-line pt-4">
           <div className="min-w-0 text-[13px]">
@@ -65,6 +68,6 @@ export function ClientCard({
           <ContactIcons phone={c.phone} email={c.email} name={c.contactName ?? c.name} className="relative z-10" />
         </div>
       </div>
-    </article>
+    </Card>
   );
 }

@@ -167,7 +167,7 @@ async function LeadDetail({ params }: Props) {
                 {leadEvents.map((e) => (
                   <li key={e.id} className="flex items-center gap-3 px-5 py-3">
                     <div className="w-14 shrink-0">
-                      <div className="font-mono text-[11px] uppercase text-muted">{dateShort(e.startsAt)}</div>
+                      <div className="text-[12px] text-muted">{dateShort(e.startsAt)}</div>
                       <div className="text-[14px] font-bold">{time(e.startsAt)}</div>
                     </div>
                     <div className="min-w-0 flex-1 truncate text-[14px] font-semibold">{e.title}</div>
@@ -206,7 +206,7 @@ async function LeadDetail({ params }: Props) {
                   <dl className="grid gap-2 text-[14px]">
                     {answers.map(([k, v]) => (
                       <div key={k} className="grid grid-cols-[120px_minmax(0,1fr)] gap-3">
-                        <dt className="text-muted">{k}</dt>
+                        <dt className="text-muted">{k.charAt(0).toUpperCase() + k.slice(1)}</dt>
                         <dd className="break-words font-medium">{v}</dd>
                       </div>
                     ))}

@@ -40,8 +40,7 @@ async function Clients({ searchParams }: { searchParams: Promise<SP> }) {
   await connection();
   const sp = await searchParams;
   const filter: ClientFilterKey = sp.status && sp.status in CLIENT_FILTERS ? (sp.status as ClientFilterKey) : "aktuell";
-  const { clients, counts, month } = await getClients(filter, sp.q);
-  const countFor = (k: ClientFilterKey) => CLIENT_FILTERS[k].statuses.reduce((s, st) => s + (counts[st] ?? 0), 0);
+  const { clients, month } = await getClients(filter, sp.q);
   const active = clients.filter((c) => c.client.status === "aktiv");
   const mrr = active.reduce((s, c) => s + (c.client.packagePriceCents ?? 0), 0);
   const soll = clients.reduce((s, c) => s + (c.kontingent?.soll ?? 0), 0);
@@ -73,7 +72,6 @@ async function Clients({ searchParams }: { searchParams: Promise<SP> }) {
             label: CLIENT_FILTERS[k].label,
             href: hrefWith("/kunden", { status: k === "aktuell" ? undefined : k, q: sp.q }),
             active: filter === k,
-            count: countFor(k),
           }))}
         />
         <SearchBox placeholder="Name, Ort, Instagram" label="Kunden durchsuchen" />
@@ -93,7 +91,7 @@ async function Clients({ searchParams }: { searchParams: Promise<SP> }) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {clients.map(({ client, kontingent, nextEvent }) => (
-            <ClientCard key={client.id} client={client} kontingent={kontingent} nextEvent={nextEvent} />
+            <ClientCard key={client.id} client={client} kontingent={kontingent} nextEvent={nextEvent} month={month} />
           ))}
         </div>
       )}

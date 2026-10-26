@@ -201,7 +201,8 @@ async function CalendarBody({ searchParams }: { searchParams: SP }) {
 
 async function Sync() {
   await connection();
-  const [ical, origin, google] = await Promise.all([getIcalSettings(), publicOrigin(), getGoogleStatus()]);
+  const origin = await publicOrigin();
+  const [ical, google] = await Promise.all([getIcalSettings(), getGoogleStatus(origin)]);
   return <SyncPanel ical={ical} origin={origin} google={google} />;
 }
 

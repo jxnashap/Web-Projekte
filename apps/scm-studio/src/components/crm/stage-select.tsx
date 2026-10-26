@@ -2,6 +2,7 @@
 // Stufe einer Anfrage direkt ändern (Liste, Detailseite).
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { Select } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
 import { setLeadStage } from "@/lib/crm/actions";
 import { LEAD_STAGES } from "@/lib/labels";
@@ -12,7 +13,7 @@ export function StageSelect({ id, stage, label, size = "sm", className }: { id: 
   return (
     <label className={className}>
       <span className="sr-only">{label}</span>
-      <select
+      <Select
         value={value}
         disabled={pending}
         aria-busy={pending}
@@ -29,17 +30,14 @@ export function StageSelect({ id, stage, label, size = "sm", className }: { id: 
             }
           });
         }}
-        className={cn(
-          "cursor-pointer rounded-full border border-line-2 bg-surface pl-3 pr-2 font-semibold text-ink-2 hover:border-ink focus:border-ink focus:outline-none disabled:opacity-60",
-          size === "sm" ? "h-9 text-[12.5px]" : "h-10 text-[14px]",
-        )}
+        className={cn("cursor-pointer disabled:opacity-60", size === "md" && "min-w-40")}
       >
         {LEAD_STAGES.map((s) => (
           <option key={s.key} value={s.key}>
             {s.label}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }

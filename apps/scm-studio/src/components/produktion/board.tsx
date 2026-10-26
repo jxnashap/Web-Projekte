@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Badge, Dot } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Menu, menuItemClass } from "@/components/ui/menu";
 import { cn } from "@/lib/cn";
 import { dateShort } from "@/lib/format";
@@ -42,8 +43,8 @@ export function Board({ videos: initial }: { videos: BoardVideo[] }) {
   const [over, setOver] = useState<string | null>(null);
 
   return (
-    <div className="-mx-4 overflow-x-auto px-4 pb-3 sm:-mx-8 sm:px-8" role="region" aria-label="Produktions-Board, seitlich scrollbar">
-      <div className="flex gap-3">
+    <div className="relative -mx-4 overflow-x-auto px-4 pb-3 sm:-mx-8 sm:px-8" role="region" aria-label="Produktions-Board, seitlich scrollbar">
+      <div className="flex items-start gap-3">
         {VIDEO_STATUS.map((st) => {
           const items = videos.filter((v) => v.status === st.key);
           return (
@@ -70,7 +71,7 @@ export function Board({ videos: initial }: { videos: BoardVideo[] }) {
               <header className="flex items-center gap-2 px-2 pb-2 pt-1.5">
                 <span className="size-2 rounded-full" style={{ background: TONE_DOT[st.tone] }} />
                 <h2 className="text-[13px] font-semibold text-ink">{st.label}</h2>
-                <span className="ml-auto rounded-full bg-surface px-2 font-mono text-[11px] text-ink-2">{items.length}</span>
+                <span className="ml-auto text-[13px] tabular-nums text-muted">{items.length}</span>
               </header>
               <div className="grid min-h-24 content-start gap-2">
                 {items.map((v) => (
@@ -94,13 +95,13 @@ function VideoCard({ v, onMove }: { v: BoardVideo; onMove: (id: number, status: 
   const idx = VIDEO_STATUS.findIndex((s) => s.key === v.status);
   const next = VIDEO_STATUS[idx + 1];
   return (
-    <article
+    <Card
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData("text/plain", String(v.id));
         e.dataTransfer.effectAllowed = "move";
       }}
-      className="group rounded-xl border border-line bg-surface p-3 shadow-[var(--shadow-card)] transition-colors hover:border-line-2"
+      className="group p-3 transition-colors hover:border-line-2"
     >
       <div className="flex items-center gap-2 text-[12px] text-muted">
         <Dot color={v.clientColor} />
@@ -111,7 +112,7 @@ function VideoCard({ v, onMove }: { v: BoardVideo; onMove: (id: number, status: 
       <Link href={`/produktion/${v.id}`} className="mt-1.5 line-clamp-3 block text-[14px] font-semibold leading-snug text-ink hover:underline">
         {v.title}
       </Link>
-      {v.format && <div className="mt-1 font-mono text-[11px] uppercase tracking-wide text-muted">{v.format}</div>}
+      {v.format && <div className="mt-1 text-[12px] text-muted">{v.format}</div>}
       <div className="mt-2.5 flex items-center gap-2.5 text-[12px] text-muted">
         {v.shootDate && (
           <span className="inline-flex items-center gap-1" title="Drehtermin">
@@ -134,7 +135,7 @@ function VideoCard({ v, onMove }: { v: BoardVideo; onMove: (id: number, status: 
         <span className="ml-auto">
           {v.assignee ? (
             <span
-              className="grid size-6 place-items-center rounded-full bg-ink text-[10px] font-bold text-white"
+              className="grid size-6 place-items-center rounded-full bg-sunken text-[10px] font-semibold text-ink-2"
               title={`Zuständig: ${v.assignee.name}`}
               aria-label={`Zuständig: ${v.assignee.name}`}
             >
@@ -161,7 +162,7 @@ function VideoCard({ v, onMove }: { v: BoardVideo; onMove: (id: number, status: 
           <span className="flex-1 px-2 text-[12px] font-semibold text-ok">Online</span>
         )}
         <Menu label={`Status von „${v.title}“ ändern`}>
-          <p className="px-3 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-faint">Status</p>
+          <p className="px-3 pb-1 pt-1.5 text-[12px] font-semibold text-muted">Status ändern</p>
           {VIDEO_STATUS.map((s) => (
             <button key={s.key} type="button" role="menuitem" className={menuItemClass} onClick={() => s.key !== v.status && onMove(v.id, s.key)}>
               <span className="w-4">{s.key === v.status && <Check className="size-4 text-ok" aria-hidden />}</span>
@@ -170,6 +171,6 @@ function VideoCard({ v, onMove }: { v: BoardVideo; onMove: (id: number, status: 
           ))}
         </Menu>
       </div>
-    </article>
+    </Card>
   );
 }

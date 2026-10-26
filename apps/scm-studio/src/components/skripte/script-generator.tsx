@@ -1,7 +1,7 @@
 "use client";
 // KI-Skriptgenerator: links das Briefing, rechts der Entwurf mit Hook-Auswahl, Verfeinern und Speichern.
 import { Info, Minus, Smile, Sparkles, Waves, Wand2 } from "lucide-react";
-import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useActionState, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ActionForm } from "@/components/ui/action-form";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +18,9 @@ import { BAUPLAN, FORMATS, LENGTHS, TONES, ZIELE, type ScriptDraft } from "@/lib
 type ClientOpt = { id: number; name: string; color: string };
 type VideoOpt = { id: number; title: string; clientId: number; format: string | null; scriptId: number | null };
 
+// Auswahl-Chips: ausgewählt = roter Akzent (kein schwarz gefüllter Zustand)
 const chip =
-  "relative inline-flex h-9 cursor-pointer select-none items-center rounded-full border border-line-2 bg-surface px-3.5 text-[13px] font-semibold text-ink-2 transition-colors hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:ring-2 has-focus-visible:ring-ink/30";
+  "relative inline-flex h-9 cursor-pointer select-none items-center rounded-full border border-line bg-surface px-3.5 text-[13px] font-medium text-ink-2 transition-colors hover:border-line-2 has-checked:border-accent has-checked:bg-accent-soft has-checked:text-accent-ink has-focus-visible:ring-2 has-focus-visible:ring-accent/30";
 
 export function ScriptGenerator({
   clients,
@@ -34,7 +35,6 @@ export function ScriptGenerator({
   live: boolean;
   modelName: string;
 }) {
-  const [state, formAction, pending] = useActionState<GenState, FormData>(generateAction, {});
   const [clientId, setClientId] = useState<string>(initial.clientId ? String(initial.clientId) : "");
   const [videoId, setVideoId] = useState<string>(initial.videoId ? String(initial.videoId) : "");
   const [draft, setDraft] = useState<ScriptDraft | null>(null);
@@ -44,22 +44,26 @@ export function ScriptGenerator({
   const [lastAction, setLastAction] = useState<string | null>(null);
   const [used, setUsed] = useState<{ format: string; briefing: string }>({ format: "", briefing: "" });
   const formRef = useRef<HTMLFormElement>(null);
-  const seen = useRef<number | undefined>(undefined);
+  const resultRef = useRef<HTMLDivElement>(null);
 
-  // neues Ergebnis übernehmen
-  useEffect(() => {
-    if (!state.at || state.at === seen.current) return;
-    seen.current = state.at;
-    if (state.ok && state.result) {
-      setDraft(state.result.draft);
-      setTitle(state.result.draft.title);
-      setHookChoice(state.result.draft.hook);
+  // Ergebnis direkt in der Aktion übernehmen (kein Effekt nötig)
+  const [state, formAction, pending] = useActionState<GenState, FormData>(async (prev, fd) => {
+    const r = await generateAction(prev, fd);
+    if (r.ok && r.result) {
+      setDraft(r.result.draft);
+      setTitle(r.result.draft.title);
+      setHookChoice(r.result.draft.hook);
       setRefineText("");
-      if (state.result.notice) toast.info(state.result.notice);
-    } else if (state.error) {
-      toast.error(state.error);
+      if (r.result.notice) toast.info(r.result.notice);
+      // auf dem Handy steht das Ergebnis unter dem Formular: einmal hinscrollen (nicht beim Verfeinern)
+      if (!fd.get("refine") && window.matchMedia("(max-width: 1023px)").matches) {
+        requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      }
+    } else if (r.error) {
+      toast.error(r.error);
     }
-  }, [state]);
+    return r;
+  }, {});
 
   const clientVideos = useMemo(() => videos.filter((v) => !clientId || String(v.clientId) === clientId), [videos, clientId]);
   const selectedVideo = videos.find((v) => String(v.id) === videoId);
@@ -201,7 +205,7 @@ export function ScriptGenerator({
       </Card>
 
       {/* Entwurf */}
-      <div className="min-w-0" aria-live="polite">
+      <div ref={resultRef} className="min-w-0 scroll-mt-20" aria-live="polite">
         {pending && !draft ? (
           <WritingSkeleton live={live} />
         ) : !draft ? (
@@ -209,9 +213,7 @@ export function ScriptGenerator({
         ) : (
           <Card className={cn("overflow-hidden transition-opacity", pending && "opacity-60")}>
             <div className="flex flex-wrap items-center gap-2 border-b border-line px-5 py-3">
-              <span className="scene-label flex items-center gap-2">
-                <span className="size-1.5 rounded-full bg-accent" /> Entwurf
-              </span>
+              <span className="text-[13px] font-semibold text-ink">Entwurf</span>
               {meta?.demo ? <Badge tone="warn">Demo</Badge> : <Badge tone="info">{modelName}</Badge>}
               {meta?.usage && (
                 <span className="text-[12px] text-muted">
@@ -232,7 +234,7 @@ export function ScriptGenerator({
                 {[draft.hook, ...draft.hookVariants].map((h, i) => (
                   <label
                     key={`${i}-${h}`}
-                    className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-3 transition-colors hover:border-line-2 has-checked:border-ink has-checked:bg-canvas"
+                    className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-3 transition-colors hover:border-line-2 has-checked:border-accent has-checked:bg-accent-soft/50"
                   >
                     <input
                       type="radio"
@@ -240,24 +242,24 @@ export function ScriptGenerator({
                       value={h}
                       checked={hookChoice === h}
                       onChange={() => setHookChoice(h)}
-                      className="mt-1 size-4 accent-[var(--color-ink)]"
+                      className="mt-1 size-4 accent-[var(--color-accent)]"
                     />
-                    <span className="font-mono text-[14px] leading-relaxed text-ink">{h}</span>
-                    {i === 0 && <span className="ml-auto shrink-0 text-[11px] font-semibold uppercase tracking-wide text-faint">Vorschlag</span>}
+                    <span className="text-[14px] leading-relaxed text-ink">{h}</span>
+                    {i === 0 && <span className="ml-auto shrink-0 text-[12px] text-muted">Vorschlag</span>}
                   </label>
                 ))}
               </fieldset>
 
-              <section aria-label="Ablauf" className="rounded-xl border border-line bg-canvas p-4 sm:p-5">
-                <div className="scene-label mb-3">Drehbuch</div>
+              <section aria-label="Ablauf" className="rounded-xl border border-line bg-surface p-4 sm:p-5">
+                <div className="mb-3 text-[12px] font-medium text-muted">Drehbuch</div>
                 <ol className="grid gap-4">
                   {draft.beats.map((b, i) => (
-                    <li key={i} className="grid grid-cols-[52px_minmax(0,1fr)] gap-3 font-mono text-[14px] leading-relaxed">
+                    <li key={i} className="grid grid-cols-[52px_minmax(0,1fr)] gap-3 font-script text-[14px] leading-relaxed">
                       <span className="pt-0.5 text-[12px] font-bold text-accent-ink">{b.tc}</span>
                       <div>
-                        <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted">{b.label}</div>
+                        <div className="text-[12px] font-bold text-muted">{b.label}</div>
                         <p className="text-ink">{i === 0 && b.label === "Hook" ? hookChoice || b.text : b.text}</p>
-                        {b.shot && <p className="mt-0.5 text-[12px] uppercase text-muted">({b.shot})</p>}
+                        {b.shot && <p className="mt-0.5 text-[13px] text-muted">({b.shot})</p>}
                       </div>
                     </li>
                   ))}
@@ -266,12 +268,12 @@ export function ScriptGenerator({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <div className="scene-label mb-1.5">Caption</div>
+                  <div className="mb-1.5 text-[12px] font-medium text-muted">Caption</div>
                   <p className="text-[14px] text-ink-2">{draft.caption}</p>
                   <p className="mt-2 text-[13px] text-info">{draft.hashtags.join(" ")}</p>
                 </div>
                 <div>
-                  <div className="scene-label mb-1.5">Aufruf</div>
+                  <div className="mb-1.5 text-[12px] font-medium text-muted">Aufruf</div>
                   <p className="text-[14px] text-ink-2">{draft.cta}</p>
                 </div>
               </div>
@@ -346,11 +348,11 @@ export function ScriptGenerator({
 
 function EmptyDraft() {
   return (
-    <div className="grid h-full min-h-80 place-items-center rounded-[var(--radius-card)] border border-dashed border-line-2 bg-surface/60 p-8 text-center">
+    <div className="grid min-h-96 place-items-center rounded-2xl border border-dashed border-line-2 bg-surface/60 p-8 text-center">
       <div className="max-w-sm">
         <p className="font-semibold text-ink">Hier erscheint euer Entwurf</p>
         <p className="mt-1 text-[14px] text-muted">Jedes Skript folgt dem SCM-Bauplan:</p>
-        <ol className="mt-4 grid gap-1.5 text-left font-mono text-[13px] text-ink-2">
+        <ol className="mt-4 grid gap-1.5 text-left text-[14px] text-ink-2">
           {BAUPLAN.map((b, i) => (
             <li key={b} className="flex gap-3">
               <span className="text-accent-ink">{String(i + 1).padStart(2, "0")}</span>

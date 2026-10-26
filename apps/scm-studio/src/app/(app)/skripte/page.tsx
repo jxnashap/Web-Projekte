@@ -9,6 +9,7 @@ import { NewBlankButton } from "@/components/skripte/new-blank-button";
 import { SourceBadge } from "@/components/skripte/source-badge";
 import { Badge, Dot } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -103,13 +104,10 @@ async function ScriptList({ searchParams }: { searchParams: SP }) {
           </EmptyState>
         )
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           {rows.map(({ s, clientName, clientColor, videoTitle, videoStatus: vs }) => (
-            <li key={s.id}>
-              <Link
-                href={`/skripte/${s.id}`}
-                className="flex h-full flex-col rounded-[var(--radius-card)] border border-line bg-surface p-5 shadow-[var(--shadow-card)] transition-colors hover:border-line-2"
-              >
+            <Card key={s.id} className="h-full transition-colors hover:border-line-2">
+              <Link href={`/skripte/${s.id}`} className="flex h-full flex-col p-5">
                 <div className="flex items-center gap-2 text-[12px] text-muted">
                   {clientName ? (
                     <>
@@ -123,9 +121,9 @@ async function ScriptList({ searchParams }: { searchParams: SP }) {
                   <Badge tone={s.status === "final" ? "ok" : "neutral"}>{s.status === "final" ? "Final" : "Entwurf"}</Badge>
                 </div>
                 <h2 className="mt-2 text-[16px] font-semibold leading-snug text-ink">{s.title}</h2>
-                {s.hook && <p className="mt-2 line-clamp-2 font-mono text-[13px] leading-relaxed text-ink-2">„{s.hook}“</p>}
+                {s.hook && <p className="mt-2 line-clamp-2 text-[14px] leading-relaxed text-ink-2">„{s.hook}“</p>}
                 <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-4 text-[12px] text-muted">
-                  {s.format && <span className="font-mono uppercase">{s.format}</span>}
+                  {s.format && <span>{s.format}</span>}
                   <span>{s.beats.length} Beats</span>
                   {videoTitle ? (
                     <span className="inline-flex min-w-0 items-center gap-1">
@@ -138,9 +136,9 @@ async function ScriptList({ searchParams }: { searchParams: SP }) {
                   <span className="ml-auto">{dateShort(s.updatedAt)}</span>
                 </div>
               </Link>
-            </li>
+            </Card>
           ))}
-        </ul>
+        </div>
       )}
       <p className="flex items-center gap-2 text-[12px] text-muted">
         <FilePlus2 className="size-3.5" aria-hidden /> Tipp: Aus einem Video heraus geschrieben, wird das Skript direkt verknüpft.

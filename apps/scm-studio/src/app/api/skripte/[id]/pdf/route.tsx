@@ -6,7 +6,6 @@ import { pdfResponse, renderPdf } from "@/lib/pdf/render";
 import { getCompany } from "@/lib/settings";
 import { DrehbuchPdf } from "@/lib/skripte/pdf";
 
-export const runtime = "nodejs";
 
 export async function GET(request: Request, ctx: RouteContext<"/api/skripte/[id]/pdf">) {
   const user = await getCurrentUser();

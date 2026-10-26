@@ -7,7 +7,6 @@ import { buildIcs } from "@/lib/kalender/ical";
 import { getSetting } from "@/lib/settings";
 import { todayIso } from "@/lib/time";
 
-export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -42,7 +41,7 @@ export async function GET(request: Request) {
       updatedAt: e.updatedAt,
       createdAt: e.createdAt,
     })),
-    { name: "SCM Studio", host: url.host || "scm-studio", dayOf: (d) => todayIso(d) },
+    { name: "SCM Studio", host: "scm-studio", dayOf: (d) => todayIso(d) },
   );
 
   return new Response(body, {

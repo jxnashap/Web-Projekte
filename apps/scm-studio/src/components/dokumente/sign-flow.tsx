@@ -84,7 +84,7 @@ export function SignFlow({
         <Image src="/logo-dark.svg" alt="SCM Creatives" width={64} height={22} />
         <div className="min-w-0 flex-1">
           <div className="truncate text-[14px] font-semibold">{title}</div>
-          <div className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted">
+          <div className="text-[12px] text-muted">
             {index < 0 ? "Lesen" : index < total ? `Unterschrift ${index + 1} von ${total}` : "Abschließen"}
           </div>
         </div>
@@ -114,7 +114,7 @@ export function SignFlow({
                     key={z.key}
                     className={cn(
                       "flex cursor-pointer gap-3 rounded-2xl border p-4 transition-colors",
-                      chosen.includes(z.key) ? "border-ink bg-sunken/60" : "border-line-2 hover:border-faint",
+                      chosen.includes(z.key) ? "border-accent bg-accent-soft/40" : "border-line-2 hover:border-faint",
                     )}
                   >
                     <input type="checkbox" className="mt-1 size-5 shrink-0 accent-[var(--color-accent)]" checked={chosen.includes(z.key)} onChange={() => toggle(z.key)} />

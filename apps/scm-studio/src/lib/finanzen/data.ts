@@ -7,7 +7,7 @@ import { requireUser } from "@/lib/auth";
 import { getCompany, getSetting, isDemo } from "@/lib/settings";
 import { getFileMeta, verifyFile } from "@/lib/storage";
 import { monthIso, shiftMonth, todayIso } from "@/lib/time";
-import { calcTotals, DATEV_DEFAULTS, periodRange, type DatevSettings, type DocKind, type JournalExpense, type JournalInvoice, type PeriodKind } from "./core";
+import { calcTotals, DATEV_DEFAULTS, roundHalfUp, periodRange, type DatevSettings, type DocKind, type JournalExpense, type JournalInvoice, type PeriodKind } from "./core";
 import { finalizeBlockers, loadInvoice } from "./workflow";
 
 export async function getFinanceContext() {
@@ -137,7 +137,7 @@ function vatFor(invoices: Pick<Invoice, "netCents" | "taxCents" | "id">[], items
   const inputTax = small ? 0 : expenses.filter((e) => !e.reverseCharge).reduce((s, e) => s + e.taxCents, 0);
   const rc = expenses.filter((e) => e.reverseCharge);
   const rcNet = rc.reduce((s, e) => s + e.netCents, 0);
-  const rcTax = rc.reduce((s, e) => s + Math.round((e.netCents * e.taxRate) / 100), 0);
+  const rcTax = rc.reduce((s, e) => s + roundHalfUp((e.netCents * e.taxRate) / 100), 0);
   const rcDeductible = small ? 0 : rcTax;
   return { output, outputTax, inputTax, rcNet, rcTax, rcDeductible, payable: outputTax + rcTax - inputTax - rcDeductible };
 }

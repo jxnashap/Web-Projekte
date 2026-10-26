@@ -2,6 +2,8 @@
 import { ArrowRight, CalendarClock } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Select } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
 import { packageShort, START_WISH } from "@/lib/crm/labels";
 import { dateShort } from "@/lib/format";
@@ -61,25 +63,23 @@ export function NextStep({ step, at, today, className }: { step: string | null; 
 
 export function LeadCard({ lead: l, today, onStage }: { lead: LeadCardData; today: string; onStage?: (stage: string) => void }) {
   const score = l.score ? LEAD_SCORE[l.score] : null;
-  const interest = [packageShort(l.packageInterest), l.startWish ? START_WISH[l.startWish] : null]
-    .filter(Boolean)
-    .join(" · ");
+  const interest = [packageShort(l.packageInterest), l.startWish ? START_WISH[l.startWish] : null].filter(Boolean).join(" · ");
   return (
-    <article className="group relative rounded-xl border border-line bg-surface p-3 shadow-[var(--shadow-card)] transition-shadow hover:shadow-[var(--shadow-pop)]">
+    <Card className="relative p-3.5">
       <div className="flex items-start gap-2">
         {score && (
-          <Badge tone={score.tone} className="mt-0.5 h-5 px-2 text-[11px]">
+          <Badge tone={score.tone} className="mt-0.5">
             <span className="sr-only">Bewertung </span>
             {score.label}
           </Badge>
         )}
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-[14px] font-semibold leading-snug">
-            <Link href={`/anfragen/${l.id}`} className="after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none" draggable={false}>
+          <h3 className="truncate text-[15px] font-semibold leading-snug">
+            <Link href={`/anfragen/${l.id}`} className="after:absolute after:inset-0 focus-visible:outline-none" draggable={false}>
               {l.company}
             </Link>
           </h3>
-          <p className="truncate text-[12.5px] text-muted">{[l.name !== l.company ? l.name : null, l.ort].filter(Boolean).join(" · ") || " "}</p>
+          <p className="truncate text-[13px] text-muted">{[l.name !== l.company ? l.name : null, l.ort].filter(Boolean).join(" · ") || " "}</p>
         </div>
       </div>
 
@@ -96,30 +96,25 @@ export function LeadCard({ lead: l, today, onStage }: { lead: LeadCardData; toda
         </>
       )}
 
-      {(interest || l.phone || l.email || onStage) && (
+      {interest && <p className="mt-2 truncate text-[12px] text-muted">{interest}</p>}
+
+      {(l.phone || l.email || onStage) && (
         <div className="relative z-10 mt-3 flex items-center justify-between gap-2">
           <ContactIcons phone={l.phone} email={l.email} name={l.name} preferred={l.contactWay} />
-          {onStage ? (
-            <label className="ml-auto">
+          {onStage && (
+            <label className="ml-auto block w-[140px] shrink-0">
               <span className="sr-only">Stufe von {l.company} ändern</span>
-              <select
-                value={l.stage}
-                onChange={(e) => onStage(e.target.value)}
-                className="h-9 max-w-[132px] cursor-pointer rounded-full border border-line-2 bg-surface pl-3 pr-2 text-[12.5px] font-semibold text-ink-2 hover:border-ink focus:border-ink focus:outline-none"
-              >
+              <Select value={l.stage} onChange={(e) => onStage(e.target.value)} className="cursor-pointer">
                 {LEAD_STAGES.map((s) => (
                   <option key={s.key} value={s.key}>
                     {s.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
-          ) : (
-            interest && <span className="truncate text-[12px] text-muted">{interest}</span>
           )}
         </div>
       )}
-      {onStage && interest && <p className="mt-2 truncate text-[12px] text-muted">{interest}</p>}
-    </article>
+    </Card>
   );
 }

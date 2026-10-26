@@ -22,7 +22,7 @@ export function LeadFields({ lead, showStage = false, today }: { lead?: Lead | n
   return (
     <div className="grid gap-6">
       <fieldset className="grid gap-4">
-        <legend className="scene-label mb-3">Wer</legend>
+        <legend className="mb-3 text-[13px] font-semibold text-muted">Wer</legend>
         <FormGrid>
           <Field label="Betrieb" name="company">
             <Input name="company" defaultValue={l?.company ?? ""} required autoComplete="organization" placeholder="z. B. Café Hafenblick" autoFocus={showStage} />
@@ -42,7 +42,7 @@ export function LeadFields({ lead, showStage = false, today }: { lead?: Lead | n
       </fieldset>
 
       <fieldset className="grid gap-4">
-        <legend className="scene-label mb-3">Kontakt</legend>
+        <legend className="mb-3 text-[13px] font-semibold text-muted">Kontakt</legend>
         <FormGrid>
           <Field label="Telefon oder WhatsApp" name="phone" optional>
             <Input name="phone" type="tel" inputMode="tel" defaultValue={l?.phone ?? ""} autoComplete="tel" placeholder="0431 …" />
@@ -64,7 +64,7 @@ export function LeadFields({ lead, showStage = false, today }: { lead?: Lead | n
       </fieldset>
 
       <fieldset className="grid gap-4">
-        <legend className="scene-label mb-3">Interesse</legend>
+        <legend className="mb-3 text-[13px] font-semibold text-muted">Interesse</legend>
         <FormGrid className="lg:grid-cols-3">
           <Field label="Paket" name="packageInterest" optional>
             <Select name="packageInterest" defaultValue={l?.packageInterest ?? ""}>
@@ -90,7 +90,7 @@ export function LeadFields({ lead, showStage = false, today }: { lead?: Lead | n
       </fieldset>
 
       <fieldset className="grid gap-4">
-        <legend className="scene-label mb-3">Wie geht es weiter</legend>
+        <legend className="mb-3 text-[13px] font-semibold text-muted">Wie geht es weiter</legend>
         <FormGrid className={showStage ? "lg:grid-cols-3" : undefined}>
           {showStage && (
             <Field label="Stufe" name="stage">

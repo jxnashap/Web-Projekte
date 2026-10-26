@@ -19,7 +19,7 @@ export function WeekView({ rows, days, today, now }: { rows: EventRow[]; days: s
   const hasAllDay = allDayByDay.some((l) => l.length);
 
   return (
-    <div className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-[var(--shadow-card)]">
+    <div className="overflow-hidden rounded-card border border-line bg-surface shadow-card">
       <div className="overflow-x-auto">
         <div className="min-w-[760px]">
           {/* Kopf */}
@@ -31,7 +31,7 @@ export function WeekView({ rows, days, today, now }: { rows: EventRow[]; days: s
                 href={calHref({ ansicht: "liste", datum: d })}
                 className={cn("flex items-baseline gap-1.5 border-l border-line px-2 py-2 hover:bg-sunken", d === today && "text-accent-ink")}
               >
-                <span className="font-mono text-[11px] uppercase tracking-wider text-muted">{fmt(d, "EEEEEE")}</span>
+                <span className="text-[12px] font-medium text-muted">{fmt(d, "EEEEEE")}</span>
                 <span className={cn("text-[15px] font-bold", d === today && "rounded-full bg-accent px-1.5 text-white")}>{Number(d.slice(8))}.</span>
               </Link>
             ))}
@@ -39,7 +39,7 @@ export function WeekView({ rows, days, today, now }: { rows: EventRow[]; days: s
           {/* Ganztägig */}
           {hasAllDay && (
             <div className="grid grid-cols-[56px_repeat(7,minmax(0,1fr))] border-b border-line">
-              <div className="px-2 py-1.5 text-right font-mono text-[10px] uppercase text-faint">ganz&shy;tägig</div>
+              <div className="px-2 py-1.5 text-right text-[11px] text-faint">ganz&shy;tägig</div>
               {allDayByDay.map((list, i) => (
                 <div key={days[i]} className="grid content-start gap-1 border-l border-line p-1">
                   {list.map((r) => (
@@ -53,7 +53,7 @@ export function WeekView({ rows, days, today, now }: { rows: EventRow[]; days: s
           <div className="grid grid-cols-[56px_repeat(7,minmax(0,1fr))]">
             <div className="relative" style={{ height }}>
               {hours.map((h, i) => (
-                <div key={h} className="absolute right-2 -translate-y-1/2 font-mono text-[11px] text-faint" style={{ top: i * HOUR_PX }}>
+                <div key={h} className="absolute right-2 -translate-y-1/2 text-[11px] tabular-nums text-faint" style={{ top: i * HOUR_PX }}>
                   {i === 0 ? "" : `${String(h).padStart(2, "0")}:00`}
                 </div>
               ))}
@@ -81,7 +81,7 @@ export function WeekView({ rows, days, today, now }: { rows: EventRow[]; days: s
                       <Link
                         key={p.row.e.id}
                         href={`/kalender/${p.row.e.id}`}
-                        className={cn("absolute z-10 overflow-hidden rounded-md border-l-[3px] px-1.5 py-1 text-[12px] leading-tight text-ink shadow-[0_1px_2px_rgb(17_17_18/0.08)] ring-1 ring-surface hover:z-20 hover:shadow-[var(--shadow-pop)]", st.bg)}
+                        className={cn("absolute z-10 overflow-hidden rounded-md border-l-[3px] px-1.5 py-1 text-[12px] leading-tight text-ink shadow-[0_1px_2px_rgb(17_17_18/0.08)] ring-1 ring-surface hover:z-20 hover:shadow-pop", st.bg)}
                         style={{
                           top: (p.top / 60) * HOUR_PX + 1,
                           height: Math.max((p.height / 60) * HOUR_PX - 2, 20),
@@ -91,13 +91,21 @@ export function WeekView({ rows, days, today, now }: { rows: EventRow[]; days: s
                         }}
                         title={`${time(p.row.e.startsAt)} bis ${time(p.row.e.endsAt)} · ${p.row.e.title}`}
                       >
-                        <div className="font-mono text-[10.5px] text-ink-2">
-                          {p.clippedTop ? "↑ " : ""}
-                          {time(p.row.e.startsAt)}
-                          {p.height >= 50 ? ` bis ${time(p.row.e.endsAt)}` : ""}
-                        </div>
-                        <div className="font-semibold">{p.row.e.title}</div>
-                        {p.height >= 70 && p.row.e.location && <div className="truncate text-[11px] text-muted">{p.row.e.location}</div>}
+                        {p.height < 50 ? (
+                          <div className="flex items-baseline gap-1 overflow-hidden whitespace-nowrap">
+                            <span className="text-[11px] tabular-nums text-ink-2">{time(p.row.e.startsAt)}</span>
+                            <span className="truncate font-semibold">{p.row.e.title}</span>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="text-[11px] tabular-nums text-ink-2">
+                              {p.clippedTop ? "↑ " : ""}
+                              {time(p.row.e.startsAt)} bis {time(p.row.e.endsAt)}
+                            </div>
+                            <div className="font-semibold">{p.row.e.title}</div>
+                            {p.height >= 70 && p.row.e.location && <div className="truncate text-[11px] text-muted">{p.row.e.location}</div>}
+                          </>
+                        )}
                       </Link>
                     );
                   })}

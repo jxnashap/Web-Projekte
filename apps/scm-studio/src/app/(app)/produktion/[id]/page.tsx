@@ -96,7 +96,7 @@ async function VideoDetail({ params }: { params: Promise<{ id: string }> }) {
               {script ? (
                 <div className="rounded-xl border border-line bg-canvas p-4">
                   <div className="font-semibold">{script.title}</div>
-                  {script.hook && <p className="mt-2 font-mono text-[13px] leading-relaxed text-ink-2">„{script.hook}“</p>}
+                  {script.hook && <p className="mt-2 text-[14px] leading-relaxed text-ink-2">„{script.hook}“</p>}
                   <div className="mt-3 flex flex-wrap gap-2">
                     <LinkButton href={`/skripte/${script.id}?ansicht=drehbuch`} variant="secondary" size="sm">
                       <ScrollText className="size-4" /> Drehbuch
@@ -174,7 +174,7 @@ async function VideoDetail({ params }: { params: Promise<{ id: string }> }) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="scene-label">{label}</dt>
+      <dt className="text-[12px] text-muted">{label}</dt>
       <dd className="mt-1 text-[18px] font-bold">{value}</dd>
     </div>
   );

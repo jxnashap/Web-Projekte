@@ -20,7 +20,7 @@ export function EventChip({ row, showTime = true, continued = false }: { row: Ev
       title={`${EVENT_KINDS[e.kind]?.label ?? e.kind}: ${e.title}${row.clientName ? ` · ${row.clientName}` : ""}`}
     >
       <span className="h-3.5 w-[3px] shrink-0 rounded-full" style={{ background: clientColor ?? st.dot }} aria-hidden />
-      {showTime && !e.allDay && !continued && <span className="shrink-0 font-mono text-[11px] text-ink-2">{time(e.startsAt)}</span>}
+      {showTime && !e.allDay && !continued && <span className="shrink-0 text-[11px] tabular-nums text-ink-2">{time(e.startsAt)}</span>}
       <span className="truncate font-medium">{continued ? `↳ ${e.title}` : e.title}</span>
     </Link>
   );

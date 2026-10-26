@@ -1,6 +1,7 @@
 // Listenansicht der Anfragen: Tabelle ab Tablet, Karten auf dem Handy.
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Table, Td, Th } from "@/components/ui/table";
 import { packageShort } from "@/lib/crm/labels";
 import { dateDe } from "@/lib/format";
@@ -17,7 +18,7 @@ export function LeadList({ leads, today }: { leads: (LeadCardData & { createdAt:
           <LeadCard key={l.id} lead={l} today={today} />
         ))}
       </div>
-      <div className="hidden overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-[var(--shadow-card)] md:block">
+      <Card className="hidden overflow-hidden md:block">
         <Table>
           <thead>
             <tr>
@@ -61,7 +62,7 @@ export function LeadList({ leads, today }: { leads: (LeadCardData & { createdAt:
             ))}
           </tbody>
         </Table>
-      </div>
+      </Card>
     </>
   );
 }

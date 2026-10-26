@@ -59,14 +59,14 @@ export function LeadBoard({ leads, today }: { leads: LeadCardData[]; today: stri
               if (id) move(id, stage.key);
             }}
             className={cn(
-              "flex w-[84vw] max-w-[300px] shrink-0 snap-start flex-col rounded-[var(--radius-card)] border bg-sunken/60 sm:w-[264px]",
-              over === stage.key ? "border-ink bg-sunken" : "border-transparent",
+              "flex w-[84vw] max-w-[300px] shrink-0 snap-start flex-col rounded-2xl bg-sunken transition-shadow sm:w-[264px]",
+              over === stage.key && "ring-2 ring-accent/40",
               closed && "opacity-90",
             )}
           >
             <header className="flex items-center justify-between gap-2 px-3 pb-2 pt-3">
-              <h2 className="text-[13px] font-semibold uppercase tracking-wide text-ink-2">{stage.label}</h2>
-              <span className="rounded-full bg-surface px-2 py-0.5 font-mono text-[12px] text-ink-2 shadow-[var(--shadow-card)]">{col.length}</span>
+              <h2 className="text-[14px] font-semibold text-ink">{stage.label}</h2>
+              <span className="text-[13px] tabular-nums text-muted">{col.length}</span>
             </header>
             <div className="grid min-h-24 content-start gap-2 px-2 pb-2">
               {col.map((l) => (
@@ -88,7 +88,7 @@ export function LeadBoard({ leads, today }: { leads: LeadCardData[]; today: stri
                 </div>
               ))}
               {col.length === 0 && (
-                <p className="rounded-lg border border-dashed border-line-2 px-3 py-5 text-center text-[13px] text-faint">
+                <p className="rounded-xl border border-dashed border-line-2 px-3 py-5 text-center text-[13px] text-muted">
                   {dragging !== null ? "Hier ablegen" : "Keine Anfragen"}
                 </p>
               )}

@@ -12,7 +12,7 @@ export function StatusStepper({ id, status }: { id: number; status: string }) {
   const [pending, start] = useTransition();
   const idx = VIDEO_STATUS.findIndex((s) => s.key === current);
   return (
-    <ol className="grid grid-cols-3 gap-2 sm:grid-cols-6" aria-busy={pending}>
+    <ol className="grid grid-cols-3 gap-1 rounded-xl bg-sunken p-1 sm:grid-cols-6" aria-busy={pending}>
       {VIDEO_STATUS.map((s, i) => {
         const done = i < idx;
         const active = i === idx;
@@ -31,10 +31,10 @@ export function StatusStepper({ id, status }: { id: number; status: string }) {
                 })
               }
               className={cn(
-                "flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border text-[13px] font-semibold transition-colors",
-                active && "border-ink bg-ink text-white",
-                done && "border-ok/30 bg-ok-soft text-ok hover:border-ok",
-                !active && !done && "border-line-2 bg-surface text-ink-2 hover:border-ink",
+                "flex h-10 w-full items-center justify-center gap-1.5 rounded-lg text-[13px] font-medium transition-colors",
+                active && "bg-surface font-semibold text-accent-ink ring-1 ring-line",
+                done && "text-ok hover:bg-surface/60",
+                !active && !done && "text-ink-2 hover:bg-surface/60",
               )}
             >
               {done && <Check className="size-3.5" aria-hidden />}

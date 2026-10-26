@@ -6,7 +6,6 @@ import { randomToken } from "@/lib/crypto";
 import { integrations } from "@/lib/env";
 import { GOOGLE_SCOPES, oauthClient } from "@/lib/google/calendar";
 
-export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const user = await getCurrentUser();
@@ -20,7 +19,7 @@ export async function GET(request: Request) {
     path: "/api/google",
     maxAge: 600,
   });
-  const url = oauthClient().generateAuthUrl({
+  const url = oauthClient(new URL(request.url).origin).generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
     include_granted_scopes: true,

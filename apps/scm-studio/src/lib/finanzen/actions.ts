@@ -1,6 +1,6 @@
 "use server";
 // Server Actions Finanzen. Jede Action prüft die Anmeldung, validiert mit zod und protokolliert.
-import { and, eq, gte, inArray, isNull, lte } from "drizzle-orm";
+import { and, eq, gte, isNull, lte } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { z } from "zod";
 import { getDb, schema } from "@/db";
@@ -14,9 +14,14 @@ import { getCompany, setSetting } from "@/lib/settings";
 import { MAX_UPLOAD_BYTES, putFile, RECEIPT_TYPES } from "@/lib/storage";
 import { monthIso, monthRange, todayIso } from "@/lib/time";
 import { addDaysIso, calcTotals, DATEV_DEFAULTS, fromNet, KIND_LABEL, partyFromClient, splitGross, TAX_RATES, UNIT_LABELS, type DocKind } from "./core";
-import { getDatevSettings } from "./data";
 import { buildExportZip } from "./export";
 import { cancelInvoice, createReminder, FinanceError, finalizeInvoice, loadInvoice, offerToInvoice } from "./workflow";
+
+/** Festschreiben, Storno und Export nur durch Inhaber (role admin). */
+async function assertOwner() {
+  const user = await assertUser();
+  return user.role === "admin" ? { user, denied: null } : { user, denied: fail("Das dürfen nur Inhaber (Festschreiben, Storno, Export).") };
+}
 
 const msg = (e: unknown) => (e instanceof FinanceError ? e.message : e instanceof Error && /GoBD/.test(e.message) ? e.message.replace(/^.*GoBD: /, "GoBD: ") : "Das hat nicht geklappt. Bitte erneut versuchen.");
 
@@ -179,6 +184,7 @@ export async function saveDraft(_: ActionState, fd: FormData): Promise<ActionSta
   await audit(user.id, "invoice", d.id, "entwurf_gespeichert", { positions: items.length, grossCents: totals.grossCents });
 
   if (d.intent === "festschreiben") {
+    if (user.role !== "admin") return fail("Gespeichert. Festschreiben dürfen nur Inhaber.");
     // Zahlungsziel: Tage ab Rechnungsdatum (Datum wird beim Festschreiben auf heute gesetzt, falls leer)
     if (kind === "rechnung" && !issueDate && d.dueDays !== undefined) {
       const today = todayIso();
@@ -271,7 +277,8 @@ export async function undoPaid(id: number): Promise<ActionState> {
 const cancelSchema = z.object({ id: z.coerce.number().int().positive(), reason: z.string().trim().min(3, "Bitte kurz den Grund nennen").max(300) });
 
 export async function cancel(_: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await assertUser();
+  const { user, denied } = await assertOwner();
+  if (denied) return denied;
   const p = parseForm(cancelSchema, fd);
   if (!p.success) return p.state;
   try {
@@ -358,7 +365,6 @@ export async function saveExpense(_: ActionState, fd: FormData): Promise<ActionS
   if (amountCents <= 0) return fail("Betrag muss größer als 0 sein", { amount: ["Betrag muss größer als 0 sein"] });
   if (d.date > todayIso()) return fail("Das Belegdatum liegt in der Zukunft.", { date: ["Datum liegt in der Zukunft"] });
 
-  const company = await getCompany();
   // § 13b: Rechnung ohne Umsatzsteuer, der Betrag ist netto; die Steuer schuldet ihr selbst (Vorschau rechnet sie aus)
   const amounts = d.reverseCharge
     ? { netCents: amountCents, taxCents: 0, grossCents: amountCents }
@@ -393,7 +399,6 @@ export async function saveExpense(_: ActionState, fd: FormData): Promise<ActionS
     notes: d.notes ?? null,
     ...(fileId ? { fileId, receiptName } : {}),
   };
-  void company;
   try {
     if (d.id) {
       const [cur] = await db.select().from(schema.expenses).where(eq(schema.expenses.id, d.id));
@@ -452,7 +457,8 @@ const datevSchema = z.object({
 });
 
 export async function saveDatevSettings(_: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await assertUser();
+  const { user, denied } = await assertOwner();
+  if (denied) return denied;
   const p = parseForm(datevSchema, fd);
   if (!p.success) return p.state;
   const d = p.data as Record<string, string | number | undefined>;
@@ -490,7 +496,8 @@ const exportSchema = z.object({
 
 /** Erstellt das Export-Paket, legt es ab und schreibt die Belege des Zeitraums fest. */
 export async function completeExport(_: ActionState, fd: FormData): Promise<ActionState> {
-  const user = await assertUser();
+  const { user, denied } = await assertOwner();
+  if (denied) return denied;
   const p = parseForm(exportSchema, fd);
   if (!p.success) return p.state;
   const { from, to, label } = p.data;
@@ -517,8 +524,3 @@ export async function completeExport(_: ActionState, fd: FormData): Promise<Acti
   refresh();
   return done(`Export abgeschlossen: ${marked.length} Belege festgeschrieben`);
 }
-
-/** Für Tests/Entwicklung nicht nötig, aber praktisch: verhindert unbenutzte Importe in Typen. */
-export type { DocKind };
-void inArray;
-void getDatevSettings;

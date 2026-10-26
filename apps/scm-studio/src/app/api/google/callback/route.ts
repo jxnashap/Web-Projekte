@@ -7,7 +7,6 @@ import { safeEqual } from "@/lib/crypto";
 import { completeGoogleConnect, syncUpcoming } from "@/lib/google/calendar";
 import { getSetting, setSetting } from "@/lib/settings";
 
-export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -25,7 +24,7 @@ export async function GET(request: Request) {
   if (!code) return back("fehler");
 
   try {
-    await completeGoogleConnect(code, user);
+    await completeGoogleConnect(code, user, url.origin);
     await audit(user.id, "settings", null, "google_verbunden");
     after(() => syncUpcoming());
     return back("verbunden");

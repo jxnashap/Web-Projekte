@@ -4,9 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { ContactList } from "@/components/crm/contact-links";
+import { ContactIcons, ContactList } from "@/components/crm/contact-links";
+import { KontingentMini } from "@/components/crm/kontingent-mini";
 import { NewMenu } from "@/components/crm/new-menu";
-import { KontingentBar } from "@/components/kontingent-bar";
 import { ActionForm } from "@/components/ui/action-form";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
@@ -29,7 +29,8 @@ import {
   getClientOverview,
   getClientVideos,
 } from "@/lib/crm/data";
-import { compact, dateDe, dateShort, dateTime, eur, eurShort, monthLabel, num, time } from "@/lib/format";
+import { dateDe, dateShort, dateTime, eur, eurShort, monthLabel, num, time } from "@/lib/format";
+import { views } from "@/lib/crm/labels";
 import { BRANCHEN, CLIENT_STATUS, DOC_KINDS, EVENT_KINDS, INVOICE_STATUS, LEGAL_FORMS, PLATFORMS, videoStatus } from "@/lib/labels";
 
 export const metadata: Metadata = { title: "Kunde" };
@@ -80,9 +81,10 @@ async function ClientDetail({ params, searchParams }: Props) {
           </span>
         }
         description={
-          <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-2">
             {st && <Badge tone={st.tone}>{st.label}</Badge>}
             <span>{[BRANCHEN[client.branche] ?? client.branche, client.ort ?? client.city].filter(Boolean).join(" · ")}</span>
+            <ContactIcons phone={client.phone} email={client.email} name={client.contactName ?? client.name} className="w-full xl:hidden" />
           </span>
         }
         actions={
@@ -143,6 +145,17 @@ async function Overview({ client: c }: { client: Client }) {
     !c.signatoryName && "Unterzeichner",
   ].filter(Boolean) as string[];
   const address = [c.street, [c.zip, c.city].filter(Boolean).join(" ")].filter(Boolean);
+  const contract = (
+    [
+      ["Rechtsform", c.legalForm ? (LEGAL_FORMS[c.legalForm]?.label ?? c.legalForm) : null],
+      ["Kaufmann", c.legalForm ? (c.isMerchant ? "Ja" : "Nein") : null],
+      ["Register", c.registerNumber],
+      ["Unterzeichner", c.signatoryName ? [c.signatoryName, c.signatoryRole].filter(Boolean).join(", ") : null],
+      ["USt-IdNr.", c.vatId],
+      ["Steuernummer", c.taxNumber],
+      ["Käuferreferenz", c.buyerReference],
+    ] as [string, string | null][]
+  ).filter(([, v]) => v);
 
   return (
     <div className="grid gap-6 xl:grid-cols-3">
@@ -157,17 +170,17 @@ async function Overview({ client: c }: { client: Client }) {
               </LinkButton>
             }
           />
-          <div className="grid gap-5 p-5 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-5 p-5 sm:grid-cols-3">
             <Info label="Paket" value={c.packageVideos ? `${c.packageVideos} Videos im Monat` : c.status === "test" ? "Testvideos" : "Kein Paket"} />
             <Info label="Preis netto" value={c.packagePriceCents != null ? `${eur(c.packagePriceCents)} im Monat` : "Nicht hinterlegt"} muted={c.packagePriceCents == null} />
             <Info label="Kunde seit" value={c.startDate ? dateDe(c.startDate) : "Nicht hinterlegt"} muted={!c.startDate} />
             {o.kontingent && (
-              <div className="sm:col-span-3">
-                <KontingentBar k={o.kontingent} />
+              <div className="col-span-2 sm:col-span-3">
+                <KontingentMini k={o.kontingent} month={o.month} />
               </div>
             )}
             {o.openCount > 0 && (
-              <p className="text-[14px] sm:col-span-3">
+              <p className="col-span-2 text-[14px] sm:col-span-3">
                 <Link href={`/kunden/${c.id}?reiter=rechnungen`} className="font-semibold text-warn hover:underline">
                   {o.openCount === 1 ? "1 offene Rechnung" : `${o.openCount} offene Rechnungen`} über {eurShort(o.openSum)}
                 </Link>
@@ -213,7 +226,7 @@ async function Overview({ client: c }: { client: Client }) {
                     </div>
                     {metric ? (
                       <div className="text-right">
-                        <div className="font-bold">{compact(metric.views)}</div>
+                        <div className="font-bold">{views(metric.views)}</div>
                         <div className="text-[12px] text-muted">Aufrufe</div>
                       </div>
                     ) : (
@@ -234,7 +247,7 @@ async function Overview({ client: c }: { client: Client }) {
             <ContactList phone={c.phone} email={c.email} instagram={c.instagram} website={c.website} />
             {c.tiktok && (
               <a href={`https://www.tiktok.com/@${c.tiktok}`} target="_blank" rel="noopener noreferrer" className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-[14px] text-ink-2 hover:bg-sunken hover:text-ink">
-                <span className="w-4 text-center font-mono text-[12px] text-muted">TT</span> {c.tiktok}
+                <span className="w-4 text-center text-[12px] font-semibold text-muted" aria-hidden>TT</span> TikTok: {c.tiktok}
               </a>
             )}
             {address.length > 0 && <p className="px-3 pb-2 pt-1 text-[14px] text-muted">{address.join(", ")}</p>}
@@ -257,7 +270,7 @@ async function Overview({ client: c }: { client: Client }) {
               {o.upcoming.map((e) => (
                 <li key={e.id} className="flex items-center gap-3 px-5 py-3">
                   <div className="w-14 shrink-0">
-                    <div className="font-mono text-[11px] uppercase text-muted">{dateShort(e.startsAt)}</div>
+                    <div className="text-[12px] text-muted">{dateShort(e.startsAt)}</div>
                     <div className="text-[14px] font-bold">{time(e.startsAt)}</div>
                   </div>
                   <div className="min-w-0 flex-1">
@@ -286,15 +299,15 @@ async function Overview({ client: c }: { client: Client }) {
                 <AlertCircle className="mt-0.5 size-4 shrink-0" /> Für Vertrag und E-Rechnung fehlen: {missing.join(", ")}.
               </p>
             )}
-            <dl className="grid gap-2">
-              <Row label="Rechtsform" value={c.legalForm ? (LEGAL_FORMS[c.legalForm]?.label ?? c.legalForm) : null} />
-              <Row label="Kaufmann" value={c.legalForm ? (c.isMerchant ? "Ja" : "Nein") : null} />
-              <Row label="Register" value={c.registerNumber} />
-              <Row label="Unterzeichner" value={c.signatoryName ? [c.signatoryName, c.signatoryRole].filter(Boolean).join(", ") : null} />
-              <Row label="USt-IdNr." value={c.vatId} />
-              <Row label="Steuernummer" value={c.taxNumber} />
-              <Row label="Käuferreferenz" value={c.buyerReference} />
-            </dl>
+            {contract.length > 0 ? (
+              <dl className="grid gap-2">
+                {contract.map(([label, value]) => (
+                  <Row key={label} label={label} value={value} />
+                ))}
+              </dl>
+            ) : (
+              <p className="text-muted">Noch keine Vertragsdaten hinterlegt.</p>
+            )}
           </div>
         </Card>
 
@@ -315,17 +328,17 @@ async function Overview({ client: c }: { client: Client }) {
 function Info({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
   return (
     <div>
-      <div className="scene-label">{label}</div>
+      <div className="text-[13px] text-muted">{label}</div>
       <div className={muted ? "mt-1 text-[15px] text-muted" : "mt-1 text-[15px] font-semibold"}>{value}</div>
     </div>
   );
 }
 
-function Row({ label, value }: { label: string; value: string | null | undefined }) {
+function Row({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="grid grid-cols-[112px_minmax(0,1fr)] gap-3">
       <dt className="text-muted">{label}</dt>
-      <dd className={value ? "break-words font-medium" : "text-faint"}>{value || "nicht hinterlegt"}</dd>
+      <dd className="break-words font-medium">{value}</dd>
     </div>
   );
 }
@@ -515,7 +528,7 @@ async function NotesTab({ client: c }: { client: Client }) {
         <div className="p-5">
           <ActionForm action={updateClientNotes.bind(null, c.id)}>
             <Field label="Notizen" name="notes">
-              <Textarea name="notes" defaultValue={c.notes ?? ""} rows={12} className="font-mono text-[13.5px]" />
+              <Textarea name="notes" defaultValue={c.notes ?? ""} rows={12} />
             </Field>
             <FormActions>
               <SubmitButton>Notizen speichern</SubmitButton>
@@ -539,7 +552,7 @@ async function NotesTab({ client: c }: { client: Client }) {
                   {detail?.felder && <div className="text-muted">{detail.felder.join(", ")}</div>}
                   {detail?.status && <div className="text-muted">neu: {CLIENT_STATUS[detail.status]?.label ?? detail.status}</div>}
                   {detail?.ausAnfrage && <div className="text-muted">aus einer Anfrage</div>}
-                  <div className="font-mono text-[11px] text-faint">{dateTime(entry.at)}</div>
+                  <div className="text-[12px] text-faint">{dateTime(entry.at)}</div>
                 </li>
               );
             })}

@@ -88,7 +88,7 @@ export function SignaturePad({
           data-testid="signature-canvas"
         />
         <div className="pointer-events-none absolute inset-x-6 bottom-12 border-b border-dashed border-line-2" />
-        <span className="pointer-events-none absolute bottom-4 left-6 font-mono text-[11px] uppercase tracking-[0.12em] text-faint">{label}</span>
+        <span className="pointer-events-none absolute bottom-4 left-6 text-[12px] text-faint">{label}</span>
         {empty && (
           <span className="pointer-events-none absolute inset-0 grid place-items-center text-[15px] text-faint">Hier unterschreiben</span>
         )}
