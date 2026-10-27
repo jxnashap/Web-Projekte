@@ -1,0 +1,299 @@
+#menu {
+	background: #2b343d;
+}
+
+#header {
+	background: #fff;
+}
+
+
+#header img {
+			-moz-transition: opacity 0.2s ease;
+			-webkit-transition: opacity 0.2s ease;
+			-ms-transition: opacity 0.2s ease;
+			transition: opacity 0.2s ease;
+			height: inherit;
+			left: 1em;
+			line-height: inherit;
+			position: absolute;
+			top: 0;
+}
+
+
+#header h1 {
+	left: 7em;
+}
+
+
+#header h1 a {
+	color: #000;
+			}
+
+#header nav > ul > li > a {
+						color: #000;
+					}
+
+#header nav > ul > li > a.menuToggle:after {
+								background-image: url("images/bbars.svg");
+							}
+
+#header.alt img {
+				pointer-events: none;
+				opacity: 0;
+			}
+
+		#header.alt nav > ul > li > a {
+			color: #fff;
+		}
+
+		#header.alt nav > ul > li > a.menuToggle:after {
+								background-image: url("images/bars.svg");
+							}
+
+.wrapper.style1 {
+	background-color: #121367;
+	color: #fff;
+}
+
+.wrapper.style1 header.major p {
+	color: #fff;
+}
+
+.wrapper.style6 {
+	background-image: url("../../images/bisbald.jpg");
+	background-attachment: fixed;
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	height: 30em;
+	text-shadow: 0 0 5px blue;
+}
+
+.blueshadow {
+	text-shadow: 0 0 5px blue;
+}
+
+/*body.landing #page-wrapper {
+		background-image: -moz-linear-gradient(top, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("../../images/banner.jpg");
+		background-image: -webkit-linear-gradient(top, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("../../images/banner.jpg");
+		background-image: -ms-linear-gradient(top, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("../../images/banner.jpg");
+		background-image: linear-gradient(top, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("../../images/banner.jpg");
+	}
+*/
+.features li::before {
+	color: #f83524;
+}
+
+.wrapper.style1 header.major h2 {
+	border-color: #fff;
+}
+
+
+
+/* Google Maps Opt-In */
+.ce-google-maps {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%; /* 1x1 */
+}
+
+.ce-google-maps > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+}
+.ce-google-maps .gmap-opt-in-wrap {
+    background-size: cover;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    background-image: url("../../images/GoogleMaps_1x1.jpg");
+}
+
+@media screen and (min-width:481px) {
+    .ce-google-maps {
+        padding-bottom: 66.6666%; /* 3x2*/
+    }
+    .ce-google-maps .gmap-opt-in-wrap {
+        background-image: url("../../images/GoogleMaps_3x2.jpg");
+    }
+}
+
+@media screen and (min-width:769px) {
+    .ce-google-maps {
+        padding-bottom: 56.25%; /* 16x9*/
+    }
+    .ce-google-maps .gmap-opt-in-wrap {
+        background-image: url("../../images/GoogleMaps_16x9.jpg");
+    }
+}
+
+@media screen and (min-width:1280px) {
+    .ce-google-maps {
+        padding-bottom: 42.8571%; /* 21x9*/
+    }
+    .ce-google-maps .gmap-opt-in-wrap {
+        background-image: url("../../images/GoogleMaps_21x9.jpg");
+    }
+}
+
+.ce-google-maps .gmap-opt-in-button-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255,255,255,0.3);
+}
+
+.ce-google-maps .gmap-opt-in-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%,-50%);
+    transform: translate(-50%,-50%);
+    cursor: pointer;
+    width: 80%;
+    max-width: 20em;
+    color: rgb(20%,20%,20%);
+    background-color: rgba(255,255,255,0.9);
+    padding: 0.5em;
+    border-radius: 0.5em;
+}
+
+.ce-google-maps .gmap-opt-in-button div:first-child {
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.ce-google-maps .gmap-opt-in-button div:last-child {
+    font-size: 80%;
+    line-height: 1.3;
+}
+
+
+
+
+
+
+/* open-sans-regular - latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/open-sans-v16-latin-regular.eot'); /* IE9 Compat Modes */
+  src: local('Open Sans Regular'), local('OpenSans-Regular'),
+       url('../fonts/open-sans-v16-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/open-sans-v16-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/open-sans-v16-latin-regular.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/open-sans-v16-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/open-sans-v16-latin-regular.svg#OpenSans') format('svg'); /* Legacy iOS */
+}
+
+/* open-sans-italic - latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 400;
+  src: url('../fonts/open-sans-v16-latin-italic.eot'); /* IE9 Compat Modes */
+  src: local('Open Sans Italic'), local('OpenSans-Italic'),
+       url('../fonts/open-sans-v16-latin-italic.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/open-sans-v16-latin-italic.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/open-sans-v16-latin-italic.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/open-sans-v16-latin-italic.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/open-sans-v16-latin-italic.svg#OpenSans') format('svg'); /* Legacy iOS */
+}
+
+/* open-sans-600 - latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: url('../fonts/open-sans-v16-latin-600.eot'); /* IE9 Compat Modes */
+  src: local('Open Sans SemiBold'), local('OpenSans-SemiBold'),
+       url('../fonts/open-sans-v16-latin-600.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/open-sans-v16-latin-600.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/open-sans-v16-latin-600.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/open-sans-v16-latin-600.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/open-sans-v16-latin-600.svg#OpenSans') format('svg'); /* Legacy iOS */
+}
+
+/* open-sans-600italic - latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 600;
+  src: url('../fonts/open-sans-v16-latin-600italic.eot'); /* IE9 Compat Modes */
+  src: local('Open Sans SemiBold Italic'), local('OpenSans-SemiBoldItalic'),
+       url('../fonts/open-sans-v16-latin-600italic.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/open-sans-v16-latin-600italic.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/open-sans-v16-latin-600italic.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/open-sans-v16-latin-600italic.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/open-sans-v16-latin-600italic.svg#OpenSans') format('svg'); /* Legacy iOS */
+}
+
+/* open-sans-800 - latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 800;
+  src: url('../fonts/open-sans-v16-latin-800.eot'); /* IE9 Compat Modes */
+  src: local('Open Sans ExtraBold'), local('OpenSans-ExtraBold'),
+       url('../fonts/open-sans-v16-latin-800.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/open-sans-v16-latin-800.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/open-sans-v16-latin-800.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/open-sans-v16-latin-800.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/open-sans-v16-latin-800.svg#OpenSans') format('svg'); /* Legacy iOS */
+}
+
+/* open-sans-800italic - latin */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 800;
+  src: url('../fonts/open-sans-v16-latin-800italic.eot'); /* IE9 Compat Modes */
+  src: local('Open Sans ExtraBold Italic'), local('OpenSans-ExtraBoldItalic'),
+       url('../fonts/open-sans-v16-latin-800italic.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../fonts/open-sans-v16-latin-800italic.woff2') format('woff2'), /* Super Modern Browsers */
+       url('../fonts/open-sans-v16-latin-800italic.woff') format('woff'), /* Modern Browsers */
+       url('../fonts/open-sans-v16-latin-800italic.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('../fonts/open-sans-v16-latin-800italic.svg#OpenSans') format('svg'); /* Legacy iOS */
+}
+
+
+/* The alert message box */
+.alert {
+  padding: 20px;
+  /* background-color: #f44336;*/ /* Red */
+  background-color: #ff700c; /* Orange */
+  color: white;
+  margin-top: 100px;
+  margin-bottom: 15px;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 100px;
+  z-index: 9999;
+  font-size: 30px;
+}
+
+/* The close button */
+.closebtn {
+  margin-left: 15px;
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* When moving the mouse over the close button */
+.closebtn:hover {
+  color: black;
+}
