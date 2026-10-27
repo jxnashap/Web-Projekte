@@ -11,6 +11,18 @@ Repo für alle Website-Projekte. Struktur:
 - `webseiten/myimmoapp/` – MyImmo-SaaS für private Vermieter (Premium-Estate v2,
   Fraunces/Outfit, Gold/Charcoal, Higgsfield-Video-Hero + Scroll-Scrub,
   echte App-Screenshots) · PR #8
+- `webseiten/ssv-segelverein/` – Schwartauer Segler-Verein e.V., Lübeck (Stander-Marine/
+  Rot, Playfair/Inter lokal, Original-Fotos). **Mit Redaktionszugang** `/verwaltung/`:
+  Hinweis-Banner, Aktuelles, Termine, Zeiten & Preise, Fotos, Startbild, Vorstand,
+  Zahlen – gepflegt ohne neues Deployment (`js/cms.js`, `supabase/website.sql`).
+  Generator `baukaesten/quiet-luxury/generatoren/build_ssv.py`. Noch Demo-Modus.
+
+## `apps/` – Web-Apps
+- `apps/ssv-getraenke/` – Getränkekasse für den SSV: iPad-Kiosk (Name → PIN → Kacheln →
+  Stück/Kasten), Kassenwart-Bereich (Mitglieder, CSV-Import, PIN-Zettel, Preise,
+  Abrechnung, A4-Rechnungen mit GiroCode, SEPA-/CSV-Export). Demo-Modus (localStorage);
+  Datenbankschema `supabase/schema.sql` lokal getestet, **nichts deployt** – auf
+  Wunsch des Nutzers keine Verknüpfung mit bestehenden Supabase-/Vercel-Projekten.
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
