@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>SSV – Neue Website & Getränkekasse</title>
+<style>
+@font-face { font-family: "Playfair Display"; font-weight: 400 900; src: url("PlayfairDisplay.woff2") format("woff2"); }
+@font-face { font-family: "Playfair Display"; font-style: italic; font-weight: 400 900; src: url("PlayfairDisplay-Italic.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 100 900; src: url("Inter.woff2") format("woff2"); }
+@page { size: A4 landscape; margin: 0; }
+:root { --navy: #0E1B45; --rot: #B8232B; --rot2: #E4473B; --sand: #F4F1EA; --sand2: #E9E4D8; --ink: #1C2440; --muted: #5E6478; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Inter", sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.5; }
+.seite { width: 297mm; height: 210mm; padding: 14mm 16mm 12mm; position: relative; overflow: hidden; page-break-after: always; background: var(--sand); }
+.seite:last-child { page-break-after: auto; }
+h1, h2 { font-family: "Playfair Display", serif; font-weight: 400; color: var(--navy); margin: 0; line-height: 1.1; }
+h2 { font-size: 25pt; margin-bottom: 2mm; }
+h2 em, h1 em { color: var(--rot); }
+.lbl { font-size: 7.5pt; letter-spacing: .26em; text-transform: uppercase; color: var(--rot); margin-bottom: 3mm; display: block; }
+.unter { color: var(--muted); margin: 0 0 6mm; max-width: 200mm; font-size: 11pt; }
+img.shot { display: block; width: 100%; border-radius: 2mm; box-shadow: 0 2mm 8mm rgba(14,27,69,.18); }
+.fuss { position: absolute; left: 16mm; right: 16mm; bottom: 6mm; display: flex; justify-content: space-between; font-size: 7pt; color: #8E93A3; letter-spacing: .08em; }
+.st { width: 18mm; height: 15mm; }
+/* Titel */
+.titel { background: var(--navy); color: #fff; padding: 0; }
+.titel .bild { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(14,27,69,.92) 0%, rgba(14,27,69,.65) 50%, rgba(14,27,69,.2) 100%), url("hafen-morgen.jpg") center/cover; }
+.titel .inhalt { position: absolute; left: 22mm; bottom: 26mm; right: 22mm; }
+.titel h1 { color: #fff; font-size: 40pt; margin: 6mm 0 4mm; }
+.titel h1 em { color: var(--rot2); }
+.titel p { font-size: 13pt; color: rgba(255,255,255,.88); margin: 0; max-width: 180mm; }
+.titel .stand { margin-top: 8mm; font-size: 8pt; letter-spacing: .2em; text-transform: uppercase; color: #E6D8BC; }
+.titel .st { width: 26mm; height: 21mm; }
+/* Raster */
+.drei { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8mm; margin-top: 6mm; }
+.karte { background: #fff; border-radius: 3mm; padding: 7mm; border-top: 1mm solid var(--rot); }
+.karte .nr { font-family: "Playfair Display", serif; font-size: 26pt; color: var(--rot); line-height: 1; }
+.karte h3 { font-family: "Playfair Display", serif; font-weight: 400; font-size: 17pt; color: var(--navy); margin: 3mm 0 2mm; }
+.karte p { margin: 0 0 2mm; color: var(--muted); }
+.karte ul { margin: 2mm 0 0; padding-left: 4.5mm; color: var(--ink); }
+.karte li { margin: 1mm 0; }
+.zwei { display: grid; grid-template-columns: 1.55fr 1fr; gap: 8mm; align-items: start; }
+.zwei-gleich { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; align-items: start; }
+.cap { font-size: 8.5pt; color: var(--muted); margin-top: 2mm; }
+.handy { width: 62mm; margin: 0 auto; border: 2.2mm solid #111; border-radius: 7mm; overflow: hidden; box-shadow: 0 3mm 10mm rgba(0,0,0,.25); }
+.handy img { width: 100%; display: block; }
+.schritte { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm 8mm; }
+.schritte .schritt { display: grid; grid-template-columns: 96mm 1fr; gap: 4mm; align-items: center; }
+.schritte .schritt p { font-size: 10pt; }
+.red { display: grid; grid-template-columns: 1.75fr 1fr; gap: 7mm; align-items: start; }
+.red .rechts { display: grid; gap: 5mm; }
+.schritt .n { display: inline-grid; place-items: center; width: 7mm; height: 7mm; border-radius: 50%; background: var(--navy); color: #fff; font-size: 9pt; font-weight: 600; margin-right: 2mm; }
+.schritt b { color: var(--navy); }
+.schritt p { margin: 2mm 0 0; font-size: 9pt; color: var(--muted); }
+.punkte { margin: 0; padding: 0; list-style: none; }
+.punkte li { padding: 2.2mm 0; border-top: 1px solid rgba(28,36,64,.12); }
+.punkte li:first-child { border-top: 0; }
+.punkte b { color: var(--navy); }
+.adressen td { padding: 1.4mm 4mm 1.4mm 0; vertical-align: top; }
+.adressen td:first-child { font-weight: 600; color: var(--navy); white-space: nowrap; }
+.box { background: #fff; border-radius: 3mm; padding: 6mm 7mm; }
+.box h3 { font-family: "Playfair Display", serif; font-weight: 400; font-size: 15pt; color: var(--navy); margin: 0 0 2mm; }
+.klein { font-size: 8.5pt; color: var(--muted); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><clipPath id="c"><path d="M14 8H118L94 33L118 58H14Z"/></clipPath>
+<symbol id="stander" viewBox="0 0 124 100"><rect x="6" y="2" width="5" height="96" rx="2.5" fill="currentColor" opacity=".7"/><path d="M14 8H118L94 33L118 58H14Z" fill="#132a6b"/><g clip-path="url(#c)"><path d="M14 8L104 58M14 58L104 8" stroke="#fff" stroke-width="15"/><path d="M14 8L104 58M14 58L104 8" stroke="#d3252c" stroke-width="9"/></g><path d="M14 8H118L94 33L118 58H14Z" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/></symbol></defs></svg>
+
+<!-- 1 Titel -->
+<section class="seite titel">
+  <div class="bild"></div>
+  <div class="inhalt">
+    <svg class="st" style="color:#fff"><use href="#stander"/></svg>
+    <h1>Neue Website &amp;<br><em>Getränkekasse</em></h1>
+    <p>Ein Vorschlag für den Schwartauer Segler-Verein e.V.: eine moderne Vereinsseite, die wir selbst pflegen können – und ein iPad am Getränkekasten statt Strichliste.</p>
+    <div class="stand">Vorschau · Stand Oktober 2026</div>
+  </div>
+</section>
+
+<!-- 2 Überblick -->
+<section class="seite">
+  <span class="lbl">Worum es geht</span>
+  <h2>Drei Bausteine, <em>ein Ziel:</em> weniger Aufwand.</h2>
+  <p class="unter">Alles ist als funktionierende Vorschau gebaut und durchgetestet. Die Inhalte stammen von unserer bisherigen Seite.</p>
+  <div class="drei">
+    <div class="karte"><div class="nr">1</div><h3>Website</h3><p>Moderne Vereinsseite in unseren Standerfarben – auf dem Handy genauso gut lesbar wie am Rechner.</p>
+      <ul><li>Verein, Vorstand, Mitglied werden</li><li>Jugend &amp; Schnuppertraining</li><li>Hafen, Gastliegeplätze, Anfahrt</li><li>Termine und Fotogalerie</li></ul></div>
+    <div class="karte"><div class="nr">2</div><h3>Redaktion</h3><p>Ein ausgewähltes Mitglied pflegt die Seite selbst – ohne Technikkenntnisse und ohne dass jemand etwas neu hochladen muss.</p>
+      <ul><li>Neuigkeiten mit Foto</li><li>Termine eintragen</li><li>Öffnungs- und Trainingszeiten, Preise</li><li>Fotos direkt vom Handy</li><li>Kurzer Hinweis auf der Startseite</li></ul></div>
+    <div class="karte"><div class="nr">3</div><h3>Getränkekasse</h3><p>Ein iPad am Getränkekasten: Namen antippen, PIN eingeben, Getränk wählen – fertig.</p>
+      <ul><li>Einzeln oder ganzer Kasten</li><li>Fehlbuchung selbst rückgängig machen</li><li>Abrechnung per Knopfdruck</li><li>Rechnung mit Lastschrift-Ankündigung</li></ul></div>
+  </div>
+  <div class="fuss"><span>Schwartauer Segler-Verein e.V. · Vorschlag Website &amp; Getränkekasse</span><span>2</span></div>
+</section>
+
+<!-- 3 Website -->
+<section class="seite">
+  <span class="lbl">Baustein 1 · Website</span>
+  <h2>So sieht die neue <em>Startseite</em> aus.</h2>
+  <p class="unter">Großes Foto vom eigenen Steg, klare Wege zu „Mitglied werden“ und „Gastliegeplatz“. Keine Cookies, kein Tracking, keine Google-Dienste.</p>
+  <div class="zwei">
+    <div><img class="shot" src="w-hero.jpg"><div class="cap">Am Rechner</div></div>
+    <div><div class="handy"><img src="w-handy.jpg"></div><div class="cap" style="text-align:center">Auf dem Handy</div></div>
+  </div>
+  <div class="fuss"><span>Schwartauer Segler-Verein e.V. · Vorschlag Website &amp; Getränkekasse</span><span>3</span></div>
+</section>
+
+<!-- 4 Website Inhalte -->
+<section class="seite">
+  <span class="lbl">Baustein 1 · Website</span>
+  <h2>Neuigkeiten und <em>Vorstand</em> auf einen Blick.</h2>
+  <p class="unter">Die Meldungen auf der Startseite und die Vorstandsliste pflegt die Redaktion selbst – zum Beispiel nach der Jahreshauptversammlung.</p>
+  <div class="zwei-gleich">
+    <div><img class="shot" src="w-aktuelles.jpg"><div class="cap">„Aktuelles“ auf der Startseite (eine Meldung ist als Beispiel markiert)</div></div>
+    <div><img class="shot" src="w-vorstand.jpg"><div class="cap">Vorstand &amp; Ämter mit den Fotos von der bisherigen Seite</div></div>
+  </div>
+  <div class="fuss"><span>Schwartauer Segler-Verein e.V. · Vorschlag Website &amp; Getränkekasse</span><span>4</span></div>
+</section>
+
+<!-- 5 Redaktion -->
+<section class="seite">
+  <span class="lbl">Baustein 2 · Redaktion</span>
+  <h2>Selbst pflegen – <em>ohne Technik.</em></h2>
+  <p class="unter">Einloggen, Termin eintragen, speichern – und die Änderung steht sofort auf der Website. Funktioniert am Rechner und am Handy.</p>
+  <div class="red">
+    <div><img class="shot" src="r-hinweis.jpg"><div class="cap">Hinweis-Banner mit Live-Vorschau der Website rechts</div></div>
+    <div class="rechts">
+      <div><img class="shot" src="r-start.jpg"><div class="cap">Übersicht: Was möchtest du heute ändern?</div></div>
+      <div><img class="shot" src="r-termin.jpg"><div class="cap">Neuer Termin – alte Termine lassen sich als Vorlage fürs nächste Jahr kopieren</div></div>
+    </div>
+  </div>
+  <div class="fuss"><span>Schwartauer Segler-Verein e.V. · Vorschlag Website &amp; Getränkekasse</span><span>5</span></div>
+</section>
+
+<!-- 6 Kasse -->
+<section class="seite">
+  <span class="lbl">Baustein 3 · Getränkekasse</span>
+  <h2>Vier Schritte am <em>iPad.</em></h2>
+  <p class="unter" style="margin-bottom:5mm">Jedes Mitglied hat eine eigene vierstellige PIN. Nach einer Minute ohne Eingabe meldet sich die Kasse von selbst ab. (Mitglieder in der Vorschau sind erfunden, Preise Beispielwerte.)</p>
+  <div class="schritte">
+    <div class="schritt"><img class="shot" src="k1.jpg"><p><span class="n">1</span><b>Namen antippen</b> – mit A–Z-Leiste oder Suche</p></div>
+    <div class="schritt"><img class="shot" src="k2.jpg"><p><span class="n">2</span><b>PIN eingeben</b> – nach 5 Fehlversuchen kurz gesperrt</p></div>
+    <div class="schritt"><img class="shot" src="k3.jpg"><p><span class="n">3</span><b>Getränk und Menge</b> – einzeln oder ganzer Kasten</p></div>
+    <div class="schritt"><img class="shot" src="k5.jpg"><p><span class="n">4</span><b>Fertig</b> – „Prost, Jan!“ mit Monatssumme</p></div>
+  </div>
+  <div class="fuss"><span>Schwartauer Segler-Verein e.V. · Vorschlag Website &amp; Getränkekasse</span><span>6</span></div>
+</section>
+
+<!-- 7 Kassenwart -->
+<section class="seite">
+  <span class="lbl">Baustein 3 · Kassenwart</span>
+  <h2>Abrechnung per <em>Knopfdruck.</em></h2>
+  <div class="zwei" style="grid-template-columns: 1.5fr 1fr">
+    <div>
+      <p class="unter" style="margin-bottom:5mm">Zeitraum wählen (z. B. letzter Monat oder ganze Saison), Vorschau prüfen, Rechnungen erstellen. Jede Buchung wird genau einmal abgerechnet, die Rechnungsnummern laufen fortlaufend. Dazu gibt es eine Lastschrift-Liste und einen Export für die Buchhaltung.</p>
+      <img class="shot" src="a-abrechnung.jpg">
+    </div>
+    <div><img class="shot" src="a-rechnung.jpg" style="width:86%;margin:0 auto"><div class="cap" style="text-align:center">Die Rechnung – persönlich formuliert, mit Lastschrift-Ankündigung</div></div>
+  </div>
+  <div class="fuss"><span>Schwartauer Segler-Verein e.V. · Vorschlag Website &amp; Getränkekasse</span><span>7</span></div>
+</section>
+
+<!-- 8 Weiter -->
+<section class="seite">
+  <span class="lbl">Wie es weitergeht</span>
+  <h2>Was wir als Verein <em>entscheiden</em> müssten.</h2>
+  <div class="zwei-gleich" style="margin-top:6mm">
+    <div class="box">
+      <h3>So läuft es im Betrieb</h3>
+      <table class="adressen">
+        <tr><td>Website</td><td>www.ssv-net.de – für alle</td></tr>
+        <tr><td>Redaktion</td><td>www.ssv-net.de/verwaltung – nur mit Login</td></tr>
+        <tr><td>Getränkekasse</td><td>iPad am Getränkekasten, einmalig freigeschaltet</td></tr>
+        <tr><td>Kassenwart</td><td>Abrechnung von zu Hause, mit Login</td></tr>
+      </table>
+      <p class="klein" style="margin-top:3mm">Damit alle dieselben Daten sehen, kommt eine zentrale Vereinsdatenbank dazu – entweder in einem eigenen Vereinskonto mit Server in Frankfurt oder selbst betrieben bei einem deutschen Anbieter. PINs werden nur verschlüsselt gespeichert; Preise rechnet nur der Server.</p>
+    </div>
+    <div class="box">
+      <h3>Offene Fragen</h3>
+      <ul class="punkte">
+        <li><b>Hosting:</b> Wer verwaltet ssv-net.de, und gibt es Zugang zum Hochladen? (Umstellung auf HTTPS nötig)</li>
+        <li><b>easyVerein:</b> Ist die Schnittstelle (API) in unserem Tarif enthalten? Dann lassen sich Mitglieder und Rechnungen direkt übernehmen.</li>
+        <li><b>Datenbank:</b> Vereinskonto in Frankfurt oder selbst betrieben?</li>
+        <li><b>Personen:</b> Wer pflegt die Website, wer bekommt den Kassenwart-Zugang?</li>
+        <li><b>Für die Kasse:</b> echte Getränkepreise, Gläubiger-ID, Abrechnungsrhythmus</li>
+        <li><b>Für die Website:</b> Impressum, Datenschutz, Freigabe der Vorstandsfotos, Termine 2027</li>
+      </ul>
+    </div>
+  </div>
+  <div class="fuss"><span>Schwartauer Segler-Verein e.V. · Vorschlag Website &amp; Getränkekasse</span><span>8</span></div>
+</section>
+</body>
+</html>
