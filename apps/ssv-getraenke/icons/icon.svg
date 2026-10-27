@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs><clipPath id="c"><path d="M128 150H420L352 224L420 298H128Z"/></clipPath></defs>
+  <rect width="512" height="512" rx="112" fill="#0e1b45"/>
+  <rect x="104" y="128" width="14" height="270" rx="7" fill="#fff" opacity=".7"/>
+  <path d="M128 150H420L352 224L420 298H128Z" fill="#1c3987"/>
+  <g clip-path="url(#c)"><path d="M128 150L390 298M128 298L390 150" stroke="#fff" stroke-width="40"/><path d="M128 150L390 298M128 298L390 150" stroke="#d3252c" stroke-width="24"/></g>
+  <text x="256" y="452" text-anchor="middle" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="10" fill="#fff">KASSE</text>
+</svg>

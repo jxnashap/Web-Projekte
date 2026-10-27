@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>SSV Getränkekasse · Drucken</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="rechnung-seite">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <clipPath id="stander-clip"><path d="M14 8H118L94 33L118 58H14Z"/></clipPath>
+    <symbol id="stander" viewBox="0 0 124 100">
+      <rect x="6" y="2" width="5" height="96" rx="2.5" fill="currentColor" opacity=".55"/>
+      <path d="M14 8H118L94 33L118 58H14Z" fill="#132a6b"/>
+      <g clip-path="url(#stander-clip)">
+        <path d="M14 8L104 58M14 58L104 8" stroke="#fff" stroke-width="15"/>
+        <path d="M14 8L104 58M14 58L104 8" stroke="#d3252c" stroke-width="9"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+<div class="r-leiste">
+  <strong id="titel">Drucken</strong>
+  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+    <label id="anhang-wahl" style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="anhang" checked> Einzelbuchungen beilegen</label>
+    <button class="k-btn k-btn-primary" onclick="window.print()" style="padding:10px 18px">Drucken / als PDF sichern</button>
+  </div>
+</div>
+<div id="blaetter"></div>
+<script src="js/config.js"></script>
+<script src="js/store.js"></script>
+<script src="js/qrcode.js"></script>
+<script src="js/qrcode_UTF8.js"></script>
+<script src="js/drucken.js"></script>
+</body>
+</html>

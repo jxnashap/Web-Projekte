@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SSV Kasse">
+<meta name="theme-color" content="#0e1b45">
+<title>SSV Getränkekasse</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="kiosk">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <clipPath id="stander-clip"><path d="M14 8H118L94 33L118 58H14Z"/></clipPath>
+    <symbol id="stander" viewBox="0 0 124 100">
+      <rect x="6" y="2" width="5" height="96" rx="2.5" fill="currentColor" opacity=".55"/>
+      <path d="M14 8H118L94 33L118 58H14Z" fill="#132a6b"/>
+      <g clip-path="url(#stander-clip)">
+        <path d="M14 8L104 58M14 58L104 8" stroke="#fff" stroke-width="15"/>
+        <path d="M14 8L104 58M14 58L104 8" stroke="#d3252c" stroke-width="9"/>
+      </g>
+      <path d="M14 8H118L94 33L118 58H14Z" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="k-top">
+  <div class="k-brand">
+    <svg class="k-stander"><use href="#stander"/></svg>
+    <div><strong>Schwartauer Segler-Verein</strong><span>Getränkekasse</span></div>
+  </div>
+  <div class="k-top-r">
+    <span class="k-badge" id="modus-badge" hidden>Demo</span>
+    <span class="k-uhr" id="uhr">--:--</span>
+    <a class="k-verwaltung" href="kassenwart.html" aria-label="Verwaltung für den Kassenwart">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </a>
+  </div>
+</header>
+
+<!-- 0 · Kasse nicht eingerichtet -->
+<section class="k-screen" id="s-setup" hidden>
+  <div class="k-center-card">
+    <svg class="k-stander big"><use href="#stander"/></svg>
+    <h1>Diese Kasse ist noch nicht eingerichtet</h1>
+    <p>Der Kassenwart meldet sich auf diesem Gerät unter <strong>Verwaltung → Einstellungen → Dieses Gerät als Kasse einrichten</strong> an. Danach erscheint hier die Mitgliederliste.</p>
+    <a class="k-btn k-btn-primary" href="kassenwart.html">Zur Verwaltung</a>
+  </div>
+</section>
+
+<!-- 1 · Wer bucht? -->
+<section class="k-screen" id="s-wer" hidden>
+  <div class="k-wer-kopf">
+    <div>
+      <h1>Wer bucht?</h1>
+      <p class="k-sub">Namen suchen und antippen</p>
+    </div>
+    <label class="k-suche">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="suche" type="search" placeholder="Name eingeben …" autocomplete="off" autocorrect="off" spellcheck="false">
+    </label>
+  </div>
+  <nav class="k-abc" id="abc" aria-label="Nach Anfangsbuchstaben filtern"></nav>
+  <div class="k-namen" id="namen" role="list"></div>
+  <p class="k-leer" id="namen-leer" hidden>Kein Mitglied gefunden.</p>
+</section>
+
+<!-- 2 · PIN -->
+<section class="k-screen" id="s-pin" hidden>
+  <div class="k-pin">
+    <div class="k-avatar" id="pin-avatar">AA</div>
+    <h1 id="pin-name">Name</h1>
+    <p class="k-sub" id="pin-hinweis">Bitte deine 4-stellige PIN eingeben</p>
+    <div class="k-dots" id="pin-dots"><i></i><i></i><i></i><i></i></div>
+    <div class="k-keypad" id="keypad">
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <button data-k="zurueck" class="k-key-text">Zurück</button><button data-k="0">0</button>
+      <button data-k="loeschen" class="k-key-text" aria-label="Letzte Ziffer löschen">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 5H9l-6 7 6 7h12z"/><path d="m17 9-6 6M11 9l6 6"/></svg>
+      </button>
+    </div>
+    <p class="k-demo-hinweis" id="demo-pin" hidden>Demo: Alle Beispiel-Mitglieder haben die PIN 1234</p>
+  </div>
+</section>
+
+<!-- 3 · Getränke wählen -->
+<section class="k-screen" id="s-auswahl" hidden>
+  <div class="k-auswahl-kopf">
+    <div>
+      <h1>Moin, <span id="hallo-name">…</span>!</h1>
+      <p class="k-sub">Diesen Monat: <strong id="monat-summe">0,00 €</strong> · noch nicht abgerechnet: <strong id="offen-summe">0,00 €</strong></p>
+    </div>
+    <div class="k-kopf-btns">
+      <button class="k-btn k-btn-ghost" id="btn-verlauf">Meine Buchungen</button>
+      <button class="k-btn k-btn-ghost" id="btn-abmelden">Abmelden</button>
+    </div>
+  </div>
+  <div class="k-auswahl">
+    <div class="k-kacheln" id="kacheln"></div>
+    <aside class="k-bon" aria-label="Bon">
+      <h2>Dein Bon</h2>
+      <ul id="bon-liste"></ul>
+      <p class="k-bon-leer" id="bon-leer">Tippe links ein Getränk an.</p>
+      <div class="k-bon-summe"><span>Summe</span><strong id="bon-summe">0,00 €</strong></div>
+      <button class="k-btn k-btn-primary k-btn-xl" id="btn-buchen" disabled>Buchen</button>
+    </aside>
+  </div>
+</section>
+
+<!-- 4 · Fertig -->
+<section class="k-screen" id="s-fertig" hidden>
+  <div class="k-center-card k-fertig">
+    <svg class="k-haken" viewBox="0 0 80 80"><circle cx="40" cy="40" r="36"/><path d="M24 41l11 11 22-24"/></svg>
+    <h1 id="fertig-titel">Prost!</h1>
+    <ul class="k-fertig-liste" id="fertig-liste"></ul>
+    <p class="k-sub" id="fertig-summen"></p>
+    <div class="k-fertig-btns">
+      <button class="k-btn k-btn-ghost" id="btn-weiter">Noch etwas buchen</button>
+      <button class="k-btn k-btn-primary" id="btn-fertig">Fertig <span id="fertig-countdown"></span></button>
+    </div>
+  </div>
+</section>
+
+<!-- Menge wählen -->
+<div class="k-sheet" id="sheet-menge" hidden>
+  <div class="k-sheet-card" role="dialog" aria-modal="true" aria-labelledby="menge-titel">
+    <div class="k-sheet-kopf"><span class="k-sheet-emoji" id="menge-emoji"></span><div><h2 id="menge-titel">Getränk</h2><p class="k-sub" id="menge-preis"></p></div></div>
+    <p class="k-lbl">Wie viele?</p>
+    <div class="k-mengen" id="mengen-stk"></div>
+    <div id="mengen-kasten-wrap">
+      <p class="k-lbl">Oder gleich den ganzen Kasten</p>
+      <div class="k-mengen k-mengen-kasten" id="mengen-kasten"></div>
+    </div>
+    <button class="k-btn k-btn-ghost k-btn-block" data-schliessen>Abbrechen</button>
+  </div>
+</div>
+
+<!-- Verlauf -->
+<div class="k-sheet" id="sheet-verlauf" hidden>
+  <div class="k-sheet-card k-sheet-wide" role="dialog" aria-modal="true" aria-labelledby="verlauf-titel">
+    <h2 id="verlauf-titel">Meine letzten Buchungen</h2>
+    <p class="k-sub" id="verlauf-hinweis"></p>
+    <ul class="k-verlauf" id="verlauf-liste"></ul>
+    <button class="k-btn k-btn-ghost k-btn-block" data-schliessen>Schließen</button>
+  </div>
+</div>
+
+<div class="k-toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/config.js"></script>
+<script src="js/store.js"></script>
+<script src="js/kiosk.js"></script>
+<script>
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
