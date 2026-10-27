@@ -3,7 +3,8 @@
 iPad-Kasse für den Getränkekasten im Schwartauer Segler-Verein: Mitglied
 suchen → 4-stellige PIN → Getränk antippen → Menge oder ganzer Kasten →
 buchen. Der Kassenwart rechnet per Knopfdruck ab und bekommt fertige
-A4-Rechnungen mit GiroCode, SEPA-Liste und CSV-Export.
+A4-Rechnungen, die zugleich als SEPA-Vorabankündigung dienen,
+SEPA-Liste und CSV-Export.
 
 **Stand: Demo-Version.** Alle Daten liegen im Browser des Geräts
 (localStorage). Es ist **kein** Server, kein Supabase-Projekt und kein
@@ -38,7 +39,8 @@ Nach 60 Sekunden ohne Eingabe meldet sich die Kasse von allein ab.
 ## Kassenwart-Bereich
 
 - **Übersicht:** Monatsumsatz, offene Beträge, meistgebuchte Getränke.
-- **Mitglieder:** anlegen, CSV-Import (z. B. Export aus easyVerein), PIN
+- **Mitglieder:** anlegen, CSV-Import (z. B. Export aus easyVerein, auch auf dem
+  iPad über die Dateien-App), Mandatsreferenz, PIN
   vergeben. Eine PIN wird nur einmal angezeigt und ist danach nur
   verschlüsselt gespeichert. PIN-Zettel lassen sich drucken (10 pro A4-Seite).
 - **Getränke & Preise:** Kacheln, Symbol, Farbe, Stück- und Kastenpreis.
@@ -46,6 +48,9 @@ Nach 60 Sekunden ohne Eingabe meldet sich die Kasse von allein ab.
 - **Abrechnung:** Zeitraum wählen (letzter Monat, Quartal, Saison …),
   Vorschau prüfen, Rechnungen erstellen. Jede Buchung wird genau einmal
   abgerechnet, die Rechnungsnummern laufen fortlaufend (`SSV-G-2026-0001`).
+  Jede Rechnung ist zugleich die SEPA-Vorabankündigung: Betrag, Einzugstermin,
+  Mandatsreferenz, Gläubiger-ID. Mitglieder ohne Mandat bekommen stattdessen
+  die Bankverbindung zur Überweisung.
   Danach: drucken oder als PDF sichern (mit Anlage der Einzelbuchungen),
   als bezahlt markieren, stornieren, E-Mail-Entwurf öffnen, SEPA-Liste und
   Rechnungsliste als CSV.
@@ -84,7 +89,7 @@ App festsetzen.
 - Echte Getränkepreise und Kastengrößen.
 - Umsatzsteuer-Hinweis auf der Rechnung mit Kassenwart oder Steuerberater
   klären (Feld „Steuerhinweis“).
-- Bankverbindung und IBAN des Vereins.
+- Gläubiger-ID des Vereins und die Mandatsreferenzen der Mitglieder (stehen in easyVerein).
 - Abrechnungsrhythmus (monatlich, quartalsweise, zum Saisonende).
 - Wer hat Kassenwart-Zugänge?
 
@@ -98,8 +103,7 @@ js/config.js        Modus: demo oder supabase
 js/store.js         Datenschicht (Demo- und Datenbank-Speicher, gleiche Schnittstelle)
 js/kiosk.js         Kassen-Logik
 js/admin.js         Kassenwart-Logik
-js/drucken.js       Rechnungslayout, GiroCode (EPC-QR)
-js/qrcode*.js       QR-Bibliothek (Kazuhiko Arase, MIT)
+js/drucken.js       Rechnungslayout inkl. SEPA-Vorabankündigung
 supabase/schema.sql Tabellen, RLS, Funktionen
 sw.js               Offline-Cache der Oberfläche (Daten werden nie gecacht)
 ```

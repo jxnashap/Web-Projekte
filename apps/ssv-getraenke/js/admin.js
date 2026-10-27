@@ -106,14 +106,14 @@
       (ohnePin ? '<button class="a-btn dunkel" id="m-pins">PINs für ' + ohnePin + ' vergeben</button>' : '') +
       '<button class="a-btn primaer" id="m-neu">+ Neues Mitglied</button>') +
       '<div class="a-filter"><input class="a-suche" id="m-suche" type="search" placeholder="Suchen …" value="' + esc(suche) + '"></div>' +
-      '<div class="a-panel"><table class="a-tab"><thead><tr><th>Nr.</th><th>Name</th><th>Ort</th><th>Zahlart</th><th>PIN</th><th class="r">Offen</th><th></th></tr></thead><tbody id="m-liste"></tbody></table></div>';
+      '<div class="a-panel"><table class="a-tab"><thead><tr><th>Nr.</th><th>Name</th><th>Ort</th><th>Lastschrift</th><th>PIN</th><th class="r">Offen</th><th></th></tr></thead><tbody id="m-liste"></tbody></table></div>';
     const render = () => {
       const f = $('#m-suche').value.trim().toLowerCase();
       $('#m-liste').innerHTML = cache.mitglieder.filter((m) => !f || (m.vorname + ' ' + m.nachname + ' ' + (m.nr || '') + ' ' + (m.ort || '')).toLowerCase().includes(f))
         .map((m) => {
           const gesperrt = m.gesperrt_bis && new Date(m.gesperrt_bis) > new Date();
           return '<tr class="' + (m.aktiv ? '' : 'inaktiv') + '"><td>' + esc(m.nr || '') + '</td><td><strong>' + esc(m.nachname) + '</strong>, ' + esc(m.vorname) + (m.aktiv ? '' : ' <span class="a-tag">inaktiv</span>') + '</td>' +
-            '<td>' + esc(m.ort || '') + '</td><td>' + (m.sepa ? '<span class="a-tag">SEPA</span>' : 'Überweisung') + '</td>' +
+            '<td>' + esc(m.ort || '') + '</td><td>' + (m.sepa ? '<span class="a-tag ok">Lastschrift</span>' : '<span class="a-tag warn">kein Mandat</span>') + '</td>' +
             '<td>' + (gesperrt ? '<span class="a-tag rot">gesperrt</span>' : m.hat_pin ? '<span class="a-tag ok">✓</span>' : '<span class="a-tag warn">fehlt</span>') + '</td>' +
             '<td class="r">' + H.geld(H.eur(offenProM.get(m.id) || 0)) + '</td>' +
             '<td class="r"><button class="a-btn klein" data-pin="' + m.id + '">Neue PIN</button> <button class="a-btn klein" data-edit="' + m.id + '">Bearbeiten</button></td></tr>';
@@ -140,7 +140,8 @@
       '<label class="a-feld voll">Straße und Hausnummer<input name="strasse" value="' + esc(m.strasse || '') + '"></label>' +
       '<label class="a-feld">PLZ<input name="plz" inputmode="numeric" value="' + esc(m.plz || '') + '"></label>' +
       '<label class="a-feld">Ort<input name="ort" value="' + esc(m.ort || '') + '"></label>' +
-      '<label class="a-feld check voll"><input type="checkbox" name="sepa"' + (m.sepa ? ' checked' : '') + '> SEPA-Lastschriftmandat liegt vor (Rechnung wird eingezogen)</label>' +
+      '<label class="a-feld">Mandatsreferenz<input name="mandatsreferenz" value="' + esc(m.mandatsreferenz || '') + '" placeholder="wie im SEPA-Mandat"></label>' +
+      '<label class="a-feld check" style="align-self:end"><input type="checkbox" name="sepa"' + (m.sepa !== false ? ' checked' : '') + '> SEPA-Lastschriftmandat liegt vor</label>' +
       '<label class="a-feld check voll"><input type="checkbox" name="aktiv"' + (m.aktiv !== false ? ' checked' : '') + '> Aktiv (erscheint an der Kasse)</label>' +
       '<label class="a-feld voll">Notiz<textarea name="notiz" rows="2">' + esc(m.notiz || '') + '</textarea></label>' +
       '</form><div class="a-modal-fuss">' + (neu ? '' : '<button class="a-btn gefahr" id="mf-del" style="margin-right:auto">Entfernen</button>') +
@@ -193,8 +194,8 @@
   /* CSV-Import, z. B. Mitgliederexport aus easyVerein oder Excel */
   function csvImport() {
     const el = modal('<h2>Mitglieder importieren</h2>' +
-      '<p class="a-hinweis">CSV-Datei mit Kopfzeile, z. B. ein Export aus easyVerein oder Excel. Erkannt werden die Spalten <strong>Vorname, Nachname</strong> (Pflicht) sowie Mitgliedsnummer, E-Mail, Straße, PLZ, Ort. Trennzeichen Semikolon oder Komma.</p>' +
-      '<label class="a-feld">Datei<input type="file" id="csv-datei" accept=".csv,text/csv"></label>' +
+      '<p class="a-hinweis">CSV-Datei mit Kopfzeile, z. B. ein Export aus easyVerein oder Excel. Erkannt werden die Spalten <strong>Vorname, Nachname</strong> (Pflicht) sowie Mitgliedsnummer, Mandatsreferenz, E-Mail, Straße, PLZ, Ort. Auf dem iPad öffnet „Datei“ die Dateien-App (iCloud Drive, E-Mail-Anhänge, USB-Stick). Trennzeichen Semikolon oder Komma.</p>' +
+      '<label class="a-feld">Datei<input type="file" id="csv-datei" accept=".csv,text/csv,text/comma-separated-values,text/plain,application/vnd.ms-excel"></label>' +
       '<label class="a-feld" style="margin-top:12px">… oder hier einfügen<textarea id="csv-text" rows="6" placeholder="Vorname;Nachname;Mitgliedsnummer;E-Mail&#10;Anna;Albers;1001;anna@beispiel.de"></textarea></label>' +
       '<p class="k-sub" id="csv-vorschau"></p>' +
       '<label class="a-feld check"><input type="checkbox" id="csv-pins" checked> Allen neuen Mitgliedern direkt eine PIN vergeben</label>' +
@@ -216,7 +217,7 @@
         return exakt >= 0 ? exakt : kopfz.findIndex((h) => h !== 'vorname' && namen.some((n) => h.includes(n)));
       };
       const ix = { vorname: idx('vorname'), nachname: idx('nachname', 'familienname', 'name'), nr: idx('mitgliedsnummer', 'mitgliedsnr', 'nummer', 'nr'),
-        email: idx('email', 'mail'), strasse: idx('strasse', 'straße', 'anschrift'), plz: idx('plz', 'postleitzahl'), ort: idx('ort', 'stadt', 'wohnort') };
+        email: idx('email', 'mail'), mandatsreferenz: idx('mandatsreferenz', 'mandat'), strasse: idx('strasse', 'straße', 'anschrift'), plz: idx('plz', 'postleitzahl'), ort: idx('ort', 'stadt', 'wohnort') };
       if (ix.vorname < 0 || ix.nachname < 0) { zeilen = []; $('#csv-vorschau', el).textContent = 'Spalten „Vorname" und „Nachname" nicht gefunden.'; return; }
       zeilen = ls.slice(1).map(split).map((c) => { const o = {}; Object.entries(ix).forEach(([k, i]) => { if (i >= 0) o[k] = c[i] || ''; }); return o; })
         .filter((o) => o.vorname && o.nachname);
@@ -239,7 +240,7 @@
       const neu = []; let doppelt = 0;
       for (const z of zeilen) {
         if (vorhanden.has((z.vorname + '|' + z.nachname).toLowerCase())) { doppelt++; continue; }
-        neu.push(await S.mitgliedSpeichern({ ...z, aktiv: true, sepa: false }));
+        neu.push(await S.mitgliedSpeichern({ ...z, aktiv: true, sepa: true }));
       }
       cache.mitglieder = await S.mitglieder();
       if ($('#csv-pins', el).checked && neu.length) {
@@ -376,6 +377,7 @@
     const vorschau = [...proM.entries()].map(([id, x]) => ({ m: mitglied(id), ...x })).sort((a, b) => name(a.m).localeCompare(name(b.m), 'de'));
     const gesamt = vorschau.reduce((s, x) => s + x.c, 0);
     const ohneAdresse = vorschau.filter((x) => x.m && (!x.m.strasse || !x.m.ort)).length;
+    const ohneMandat = vorschau.filter((x) => x.m && !x.m.sepa).length;
     const status = (r) => r.storniert_am ? '<span class="a-tag rot">storniert</span>' : r.bezahlt_am ? '<span class="a-tag ok">bezahlt ' + H.datum(r.bezahlt_am) + '</span>'
       : (r.faellig && r.faellig < heute()) ? '<span class="a-tag rot">überfällig</span>' : '<span class="a-tag warn">offen</span>';
     const offeneRe = rechnungen.filter((r) => !r.storniert_am && !r.bezahlt_am);
@@ -387,9 +389,11 @@
       '<label class="a-feld">Bis<input type="date" id="a-bis" value="' + aZeitraum.bis + '"></label>' +
       '<label class="a-feld">Rechnungsdatum<input type="date" id="a-datum" value="' + aZeitraum.datum + '"></label></div>' +
       '<h2 style="margin-top:8px">2 · Vorschau: ' + vorschau.length + ' Rechnungen über ' + H.geld(H.eur(gesamt)) + '</h2>' +
+      (ohneMandat ? '<p class="a-hinweis warn">' + ohneMandat + ' Mitglieder ohne SEPA-Mandat – ihre Rechnung nennt statt des Einzugs die Bankverbindung zur Überweisung.</p>' : '') +
+      (!e.glaeubiger_id ? '<p class="a-hinweis warn">Bitte unter Einstellungen die Gläubiger-ID eintragen – sie gehört auf jede Lastschrift-Ankündigung.</p>' : '') +
       (ohneAdresse ? '<p class="a-hinweis warn">' + ohneAdresse + ' Mitglieder ohne vollständige Anschrift – die Rechnung entsteht trotzdem, ggf. vorher unter „Mitglieder" ergänzen.</p>' : '') +
       (vorschau.length ? '<table class="a-tab"><thead><tr><th>Mitglied</th><th>Zahlart</th><th class="r">Buchungen</th><th class="r">Betrag</th></tr></thead><tbody>' +
-        vorschau.map((x) => '<tr><td>' + esc(name(x.m)) + '</td><td>' + (x.m && x.m.sepa ? 'SEPA' : 'Überweisung') + '</td><td class="r">' + x.n + '</td><td class="r">' + H.geld(H.eur(x.c)) + '</td></tr>').join('') +
+        vorschau.map((x) => '<tr><td>' + esc(name(x.m)) + '</td><td>' + (x.m && x.m.sepa ? 'Lastschrift' : '<span class="a-tag warn">kein Mandat</span>') + '</td><td class="r">' + x.n + '</td><td class="r">' + H.geld(H.eur(x.c)) + '</td></tr>').join('') +
         '</tbody><tfoot><tr><td colspan="3">Summe</td><td class="r">' + H.geld(H.eur(gesamt)) + '</td></tr></tfoot></table>'
         : '<p class="k-sub">Keine offenen Buchungen in diesem Zeitraum.</p>') +
       '<div class="a-modal-fuss"><button class="a-btn primaer" id="a-los"' + (vorschau.length ? '' : ' disabled') + '>3 · ' + vorschau.length + ' Rechnungen erstellen</button></div></div>' +
@@ -398,7 +402,7 @@
       '<button class="a-btn" id="r-sepa">SEPA-Liste (CSV)</button><button class="a-btn" id="r-csv">Rechnungsliste (CSV)</button></div></div>' +
       (rechnungen.length ? '<table class="a-tab"><thead><tr><th>Nr.</th><th>Datum</th><th>Mitglied</th><th>Zeitraum</th><th class="r">Betrag</th><th>Zahlart</th><th>Status</th><th></th></tr></thead><tbody>' +
         rechnungen.map((r) => '<tr class="' + (r.storniert_am ? 'storniert' : '') + '"><td><strong>' + esc(r.nr) + '</strong></td><td>' + H.datum(r.datum) + '</td><td>' + esc(r.empfaenger.vorname + ' ' + r.empfaenger.nachname) + '</td>' +
-          '<td>' + H.datum(r.von) + ' – ' + H.datum(r.bis) + '</td><td class="r">' + H.geld(r.summe) + '</td><td>' + (r.sepa ? 'SEPA' : 'Überweisung') + '</td><td>' + status(r) + '</td>' +
+          '<td>' + H.datum(r.von) + ' – ' + H.datum(r.bis) + '</td><td class="r">' + H.geld(r.summe) + '</td><td>' + (r.sepa ? 'Lastschrift' : 'Überweisung') + '</td><td>' + status(r) + '</td>' +
           '<td class="r" style="white-space:nowrap"><button class="a-btn klein" data-druck="' + r.id + '">Ansehen</button> ' +
           (r.empfaenger.email && !r.storniert_am ? '<button class="a-btn klein" data-mail="' + r.id + '">E-Mail</button> ' : '') +
           (!r.storniert_am ? (r.bezahlt_am ? '<button class="a-btn klein" data-unbezahlt="' + r.id + '">Offen</button> ' : '<button class="a-btn klein" data-bezahlt="' + r.id + '">Bezahlt</button> ') +
@@ -432,7 +436,7 @@
       if (t.dataset.mail) {
         const r = rechnungen.find((x) => x.id === t.dataset.mail);
         const text = 'Moin ' + r.empfaenger.vorname + ',\n\nanbei deine Getränkeabrechnung ' + r.nr + ' für den Zeitraum ' + H.datum(r.von) + ' bis ' + H.datum(r.bis) + ' über ' + H.geld(r.summe) + '.\n\n' +
-          (r.sepa ? e.sepa_text : 'Bitte überweise den Betrag bis zum ' + H.datum(r.faellig) + ' auf ' + (e.iban || '[IBAN]') + ' (' + e.bank + '), Verwendungszweck: ' + r.nr + '.') +
+          (r.sepa ? 'Den Betrag ziehen wir am ' + H.datum(r.faellig) + ' per SEPA-Lastschrift ein (Mandatsreferenz ' + (r.empfaenger.mandatsreferenz || r.empfaenger.nr || '') + ', Gläubiger-ID ' + (e.glaeubiger_id || '') + ').' : 'Bitte überweise den Betrag bis zum ' + H.datum(r.faellig) + ' auf ' + (e.iban || '[IBAN]') + ' (' + e.bank + '), Verwendungszweck: ' + r.nr + '.') +
           '\n\nViele Grüße\n' + e.verein_name;
         location.href = 'mailto:' + encodeURIComponent(r.empfaenger.email) + '?subject=' + encodeURIComponent('Getränkeabrechnung ' + r.nr) + '&body=' + encodeURIComponent(text);
         toast('Tipp: Die Rechnung vorher über „Ansehen" als PDF speichern und anhängen.');
@@ -441,12 +445,12 @@
     $('#r-druck-offen').addEventListener('click', () => drucken('rechnung', offeneRe.map((r) => r.id)));
     $('#r-csv').addEventListener('click', () => csvDownload('rechnungen.csv', [['Rechnungsnr', 'Datum', 'Fällig', 'Mitgliedsnr', 'Name', 'Von', 'Bis', 'Betrag', 'Zahlart', 'Bezahlt am', 'Storniert']]
       .concat(rechnungen.map((r) => [r.nr, H.datum(r.datum), H.datum(r.faellig), r.empfaenger.nr, r.empfaenger.vorname + ' ' + r.empfaenger.nachname, H.datum(r.von), H.datum(r.bis),
-        zahl(r.summe), r.sepa ? 'SEPA' : 'Überweisung', H.datum(r.bezahlt_am), r.storniert_am ? 'ja' : '']))));
+        zahl(r.summe), r.sepa ? 'Lastschrift' : 'Überweisung', H.datum(r.bezahlt_am), r.storniert_am ? 'ja' : '']))));
     $('#r-sepa').addEventListener('click', () => {
       const s = rechnungen.filter((r) => r.sepa && !r.storniert_am && !r.bezahlt_am);
       if (!s.length) return toast('Keine offenen SEPA-Rechnungen.');
-      csvDownload('sepa-einzug.csv', [['Mitgliedsnr', 'Name', 'Betrag', 'Verwendungszweck', 'Fällig']]
-        .concat(s.map((r) => [r.empfaenger.nr, r.empfaenger.vorname + ' ' + r.empfaenger.nachname, zahl(r.summe), 'Getränke ' + r.nr, H.datum(r.faellig)])));
+      csvDownload('sepa-einzug.csv', [['Mitgliedsnr', 'Name', 'Mandatsreferenz', 'Betrag', 'Verwendungszweck', 'Einzug am']]
+        .concat(s.map((r) => [r.empfaenger.nr, r.empfaenger.vorname + ' ' + r.empfaenger.nachname, r.empfaenger.mandatsreferenz || r.empfaenger.nr, zahl(r.summe), 'Getraenke ' + r.nr, H.datum(r.faellig)])));
     });
   }
 
@@ -457,11 +461,11 @@
     main.innerHTML = kopf('Einstellungen', 'Angaben für die Rechnungen und das Verhalten der Kasse.') +
       '<div class="a-panel"><h2>Verein &amp; Rechnung</h2><form id="ef" class="a-form">' +
       f('verein_name', 'Vereinsname', 'voll') + f('verein_strasse', 'Straße') + f('verein_ort', 'PLZ und Ort') + f('verein_email', 'E-Mail') + f('steuernummer', 'Steuernummer') +
-      f('bank', 'Bank') + f('iban', 'IBAN') + f('bic', 'BIC') + f('rechnung_praefix', 'Rechnungsnummer-Präfix') +
-      f('zahlungsziel_tage', 'Zahlungsziel (Tage)', ' type="number" min="0"') + f('storno_minuten', 'Selbst-Storno an der Kasse (Minuten)', ' type="number" min="0"') +
+      f('glaeubiger_id', 'Gläubiger-ID (SEPA)') + f('bank', 'Bank') + f('iban', 'IBAN (nur für Überweisungen ohne Mandat)') + f('bic', 'BIC') + f('rechnung_praefix', 'Rechnungsnummer-Präfix') +
+      f('zahlungsziel_tage', 'Einzug nach Rechnungsdatum (Tage, mind. 14 für die Vorabankündigung)', ' type="number" min="0"') + f('storno_minuten', 'Selbst-Storno an der Kasse (Minuten)', ' type="number" min="0"') +
       f('abmelden_sekunden', 'Automatisch abmelden nach (Sekunden)', ' type="number" min="15"') +
       '<label class="a-feld voll">Steuerhinweis auf der Rechnung<textarea name="steuerhinweis" rows="2">' + esc(e.steuerhinweis) + '</textarea></label>' +
-      '<label class="a-feld voll">Text bei SEPA-Lastschrift<textarea name="sepa_text" rows="2">' + esc(e.sepa_text) + '</textarea></label>' +
+      '<label class="a-feld voll">Zusatz bei SEPA-Lastschrift<textarea name="sepa_text" rows="2">' + esc(e.sepa_text) + '</textarea></label>' +
       f('fusstext', 'Grußzeile', 'voll') +
       '</form><div class="a-modal-fuss"><button class="a-btn primaer" id="ef-ok">Speichern</button></div></div>' +
       '<div class="a-panel"><h2>Kasse (iPad)</h2>' +

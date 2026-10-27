@@ -65,7 +65,11 @@
 
     'termine-naechste'(I, opt = {}) {
       const n = termineSortiert(I.termine).filter((t) => !terminVorbei(t)).slice(0, Number(opt.limit || 4));
-      if (!n.length) return '<p class="cms-leer">Die nächsten Termine trägt der Vorstand nach der Jahresplanung hier ein.</p>';
+      if (!n.length) {
+        const zuletzt = termineSortiert(I.termine).filter(terminVorbei).slice(-2).reverse();
+        return '<p class="cms-leer">Die nächsten Termine trägt der Vorstand nach der Jahresplanung hier ein.</p>' +
+          (zuletzt.length ? '<p class="cms-zuletzt">Zuletzt</p><ol class="cms-termine kompakt">' + zuletzt.map(terminZeile).join('') + '</ol>' : '');
+      }
       return '<ol class="cms-termine kompakt">' + n.map(terminZeile).join('') + '</ol>';
     },
 

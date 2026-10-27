@@ -15,7 +15,8 @@
   --night: #0E1B45;      /* Stander-Marineblau */
   --night-2: #16295F;    /* Kontrast-Sektionen */
   --gold: #B8232B;       /* Stander-Rot (Akzent auf hell) */
-  --gold-2: #EE6A5F;     /* helles Signalrot (Akzent auf dunkel) */
+  --gold-2: #E4473B;     /* Signalrot für große Schrift und Linien auf dunkel */
+  --sand-hell: #E6D8BC;  /* Tauwerk-Sand: kleine Beschriftungen auf dunkel */
   --ink: #1C2440;        /* Fließtext dunkel */
   --muted: #5E6478;      /* Sekundärtext */
   --muted-2: #8E93A3;    /* noch leiser */
@@ -230,7 +231,7 @@ body.nav-open .nav-overlay { opacity: 1; visibility: visible; transition-delay: 
   color: var(--gold-2); transform: translateY(-0.7em); transition: color 0.4s var(--ease);
 }
 .main-nav a:hover, .main-nav a.active { color: var(--gold-2); }
-.main-nav a.active .nl-label { border-bottom: 1px solid rgba(238, 106, 95, 0.5); padding-bottom: 4px; }
+.main-nav a.active .nl-label { border-bottom: 1px solid rgba(228, 71, 59, 0.5); padding-bottom: 4px; }
 .nav-contact-li { margin-top: clamp(10px, 2.4vh, 26px); }
 .nav-contact-li a { font-style: italic; color: var(--gold-2); }
 .nav-overlay-foot {
@@ -387,7 +388,7 @@ body.nav-open { overflow: hidden; }
 .shield-svg.draw .s-draw { animation: draw 1.8s var(--ease) forwards; }
 .shield-svg .s-check { fill: none; stroke: var(--gold-2); stroke-width: 2; stroke-linecap: round; stroke-dasharray: var(--len); stroke-dashoffset: var(--len); }
 .shield-svg.draw .s-check { animation: draw 0.7s var(--ease) 1.5s forwards; }
-.shield-svg .s-glow { fill: rgba(238,106,95,0.06); }
+.shield-svg .s-glow { fill: rgba(228,71,59,0.06); }
 .encrypt {
   font-family: var(--sans); letter-spacing: 0.24em; font-weight: 500; font-size: 0.82rem;
   color: var(--gold-2); text-transform: uppercase; margin-top: 22px; min-height: 1.4em;
@@ -580,7 +581,7 @@ body.nav-open { overflow: hidden; }
 }
 .scroll-cue span {
   position: absolute; left: 0; top: -45%; width: 1px; height: 45%;
-  background: linear-gradient(rgba(238,106,95,0), var(--gold-2));
+  background: linear-gradient(rgba(228,71,59,0), var(--gold-2));
   animation: cue 2.8s cubic-bezier(0.6, 0.05, 0.35, 1) infinite;
 }
 @keyframes cue { 0% { top: -45%; } 65%, 100% { top: 110%; } }
@@ -948,3 +949,14 @@ html.cms-vorschau body::after { content: "Vorschau mit lokalen Änderungen"; pos
 .dark em, .dark .em { color: var(--gold-2); }
 .site-footer li { font-size: .95rem; }
 .hero-cine .eyebrow, .page-hero-cine .breadcrumbs { text-shadow: 0 1px 10px rgba(8,14,36,.45); }
+
+/* UX-Check: kleine Beschriftungen auf dunklem Grund in Tauwerk-Sand statt Rot
+   (Rot bleibt für große kursive Akzente, Linien und Punkte – dort ist der Kontrast ausreichend) */
+.dark .eyebrow, .hero-cine .eyebrow, .page-hero-cine .eyebrow,
+body.cine .site-header:not(.solid) .brand-sub, body.nav-open .brand-sub,
+.site-footer h4, .cms-zahl > span:last-child, .cms-rolle, .ohne-bild .cms-news-meta,
+.kompass-koord { color: var(--sand-hell); }
+.dark .eyebrow::before, .hero-cine .eyebrow::before { content: ""; display: inline-block; width: 22px; height: 1px; background: var(--gold-2); vertical-align: middle; margin-right: 12px; }
+.hero-cine .trust-row span { color: rgba(244,241,234,.86); }
+.cms-suffix { color: var(--sand-hell); }
+.cms-zuletzt { margin: 26px 0 6px; font-size: .68rem; letter-spacing: .26em; text-transform: uppercase; color: var(--muted-2); }

@@ -30,7 +30,8 @@
     zahlungsziel_tage: 14,
     rechnung_praefix: 'SSV-G',
     steuerhinweis: '[PLATZHALTER: Umsatzsteuer-Hinweis mit Kassenwart/Steuerberater abstimmen]',
-    sepa_text: 'Der Rechnungsbetrag wird zum Fälligkeitsdatum per SEPA-Lastschrift von Ihrem Konto eingezogen.',
+    glaeubiger_id: '',
+    sepa_text: 'Bitte sorge zum Einzugstermin für ausreichende Deckung deines Kontos.',
     fusstext: 'Vielen Dank – und allzeit gute Fahrt!',
     storno_minuten: 15,
     abmelden_sekunden: 60
@@ -83,7 +84,7 @@
         id: uuid(), nr: String(1001 + i), vorname: v, nachname: n,
         email: (v + '.' + n).toLowerCase().replace(/ß/g, 'ss').replace(/ü/g, 'ue').replace(/ö/g, 'oe') + '@beispiel.de',
         strasse: 'Beispielweg ' + (i + 3), plz: '2361' + (i % 10), ort: orte[i % orte.length],
-        sepa: i % 3 !== 0, notiz: '', aktiv: true, pin: '1234', fehlversuche: 0, gesperrt_bis: null
+        sepa: i !== 4, mandatsreferenz: 'SSV-' + (1001 + i), notiz: '', aktiv: true, pin: '1234', fehlversuche: 0, gesperrt_bis: null
       }));
       const P = (name, emoji, farbe, preis, kg, kp, sort) => ({ id: uuid(), name, emoji, farbe, preis, kasten_groesse: kg, kasten_preis: kp, sort, aktiv: true });
       const produkte = [
@@ -115,7 +116,7 @@
         });
       }
       buchungen.sort((a, b) => a.zeit.localeCompare(b.zeit));
-      return { version: 1, mitglieder, produkte, buchungen, rechnungen: [], einstellungen: { ...STANDARD_EINSTELLUNGEN, bank: 'Demo-Bank [PLATZHALTER]', iban: 'DE02 1203 0000 0000 2020 51' }, admin: { email: 'kassenwart@demo', passwort: 'demo' } };
+      return { version: 1, mitglieder, produkte, buchungen, rechnungen: [], einstellungen: { ...STANDARD_EINSTELLUNGEN, bank: 'Demo-Bank [PLATZHALTER]', glaeubiger_id: 'DE98ZZZ09999999999 [DEMO]' }, admin: { email: 'kassenwart@demo', passwort: 'demo' } };
     }
 
     _m(id) { return this.d.mitglieder.find((m) => m.id === id); }
@@ -214,9 +215,9 @@
         .sort((a, b) => a.nachname.localeCompare(b.nachname, 'de') || a.vorname.localeCompare(b.vorname, 'de'));
     }
     async mitgliedSpeichern(m) {
-      const felder = ['nr', 'vorname', 'nachname', 'email', 'strasse', 'plz', 'ort', 'sepa', 'notiz', 'aktiv'];
+      const felder = ['nr', 'vorname', 'nachname', 'email', 'strasse', 'plz', 'ort', 'sepa', 'mandatsreferenz', 'notiz', 'aktiv'];
       let z = m.id && this._m(m.id);
-      if (!z) { z = { id: uuid(), pin: null, fehlversuche: 0, gesperrt_bis: null, aktiv: true, sepa: false }; this.d.mitglieder.push(z); }
+      if (!z) { z = { id: uuid(), pin: null, fehlversuche: 0, gesperrt_bis: null, aktiv: true, sepa: true }; this.d.mitglieder.push(z); }
       felder.forEach((f) => { if (f in m) z[f] = m[f]; });
       this._sichern(); return { ...z, pin: undefined, hat_pin: !!z.pin };
     }
@@ -273,7 +274,7 @@
         const r = {
           id: uuid(), nr: praefix + '-' + jahr + '-' + pad(lfd, 4), mitglied_id: m.id, datum, von, bis, faellig: tag(faellig),
           summe: eur(bs.reduce((s, b) => s + ct(b.betrag), 0)),
-          empfaenger: { nr: m.nr, vorname: m.vorname, nachname: m.nachname, strasse: m.strasse, plz: m.plz, ort: m.ort, email: m.email },
+          empfaenger: { nr: m.nr, vorname: m.vorname, nachname: m.nachname, strasse: m.strasse, plz: m.plz, ort: m.ort, email: m.email, mandatsreferenz: m.mandatsreferenz || '' },
           positionen: verdichten(bs), sepa: !!m.sepa, bezahlt_am: null, storniert_am: null, erstellt: new Date().toISOString()
         };
         this.d.rechnungen.push(r); bs.forEach((b) => { b.rechnung_id = r.id; });
@@ -366,10 +367,10 @@
     }
     async angemeldet() { return !!(await this._jwt()); }
 
-    static get M_SPALTEN() { return 'id,nr,vorname,nachname,email,strasse,plz,ort,sepa,notiz,aktiv,hat_pin,fehlversuche,gesperrt_bis'; }
+    static get M_SPALTEN() { return 'id,nr,vorname,nachname,email,strasse,plz,ort,sepa,mandatsreferenz,notiz,aktiv,hat_pin,fehlversuche,gesperrt_bis'; }
     mitglieder() { return this._req('/rest/v1/mitglieder?select=' + SupabaseSpeicher.M_SPALTEN + '&order=nachname,vorname'); }
     async mitgliedSpeichern(m) {
-      const felder = ['nr', 'vorname', 'nachname', 'email', 'strasse', 'plz', 'ort', 'sepa', 'notiz', 'aktiv'];
+      const felder = ['nr', 'vorname', 'nachname', 'email', 'strasse', 'plz', 'ort', 'sepa', 'mandatsreferenz', 'notiz', 'aktiv'];
       const body = {}; felder.forEach((f) => { if (f in m) body[f] = m[f]; });
       const sel = '?select=' + SupabaseSpeicher.M_SPALTEN;
       const r = m.id

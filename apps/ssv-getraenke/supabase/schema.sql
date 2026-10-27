@@ -37,7 +37,8 @@ create table if not exists public.mitglieder (
   strasse      text,
   plz          text,
   ort          text,
-  sepa         boolean not null default false,
+  sepa         boolean not null default true,
+  mandatsreferenz text,
   notiz        text,
   aktiv        boolean not null default true,
   pin_hash     text,
@@ -324,7 +325,8 @@ begin
     select v_praefix || '-' || v_jahr || '-' || lpad(v_lfd::text, 4, '0'), m.id, p_datum, p_von, p_bis,
            p_datum + v_ziel, sum(p.betrag),
            jsonb_build_object('nr', m.nr, 'vorname', m.vorname, 'nachname', m.nachname,
-                              'strasse', m.strasse, 'plz', m.plz, 'ort', m.ort, 'email', m.email),
+                              'strasse', m.strasse, 'plz', m.plz, 'ort', m.ort, 'email', m.email,
+                              'mandatsreferenz', m.mandatsreferenz),
            jsonb_agg(jsonb_build_object('name', p.produkt_name, 'einheit', p.einheit, 'anzahl', p.anzahl,
                                         'stueck', p.stueck, 'einzelpreis', p.einzelpreis, 'betrag', p.betrag)
                      order by p.produkt_name, p.einheit),
@@ -383,7 +385,7 @@ grant execute on function public.is_admin(), public.admin_pin_setzen(uuid, text)
   public.admin_rechnungen_erstellen(date, date, date), public.admin_rechnung_stornieren(uuid) to authenticated;
 -- Den PIN-Hash bekommt auch der Kassenwart nie zu sehen (Spaltenrechte statt Tabellenrecht).
 revoke select on public.mitglieder from authenticated;
-grant select (id, nr, vorname, nachname, email, strasse, plz, ort, sepa, notiz, aktiv, hat_pin,
+grant select (id, nr, vorname, nachname, email, strasse, plz, ort, sepa, mandatsreferenz, notiz, aktiv, hat_pin,
               fehlversuche, gesperrt_bis, erstellt) on public.mitglieder to authenticated;
 
 -- ------------------------------------------------------------ Erster Admin --

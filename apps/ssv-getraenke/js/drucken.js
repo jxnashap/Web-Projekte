@@ -9,27 +9,20 @@
   const q = new URLSearchParams(location.search);
   const STANDER = '<svg class="k-stander"><use href="#stander"/></svg>';
 
-  /* GiroCode (EPC-QR): Banking-Apps übernehmen Empfänger, IBAN, Betrag und Verwendungszweck */
-  function girocode(e, r) {
-    const iban = (e.iban || '').replace(/\s/g, '').toUpperCase();
-    if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(iban)) return '';
-    const daten = ['BCD', '002', '1', 'SCT', (e.bic || '').replace(/\s/g, ''), e.verein_name.slice(0, 70), iban,
-      'EUR' + Number(r.summe).toFixed(2), '', '', ('Getraenke ' + r.nr).slice(0, 140)].join('\n');
-    const qr = qrcode(0, 'M'); qr.addData(daten, 'Byte'); qr.make();
-    return '<div class="r-qr">' + qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }) + 'GiroCode – mit der<br>Banking-App scannen</div>';
-  }
-
   function rechnungsBlatt(r, e, buchungen) {
     const em = r.empfaenger;
     const pos = r.positionen.map((p) =>
       '<tr><td>' + esc(p.name) + (p.einheit === 'kasten' ? ' – Kasten (' + p.stueck + ' Stk.)' : '') + '</td>' +
       '<td class="r">' + p.anzahl + ' ' + (p.einheit === 'kasten' ? (p.anzahl === 1 ? 'Kasten' : 'Kästen') : 'Stk.') + '</td>' +
       '<td class="r">' + H.geld(p.einzelpreis) + '</td><td class="r">' + H.geld(p.betrag) + '</td></tr>').join('');
+    // Vorabankündigung (Pre-Notification) mit Betrag, Termin, Mandatsreferenz und Gläubiger-ID
     const zahlung = r.sepa
-      ? '<div><strong>Zahlung per SEPA-Lastschrift</strong><br>' + esc(e.sepa_text) + '<br>Fälligkeit: ' + H.datum(r.faellig) + '</div>'
-      : girocode(e, r) + '<div><strong>Bitte überweisen bis ' + H.datum(r.faellig) + '</strong><br>' +
-        'Empfänger: ' + esc(e.verein_name) + '<br>IBAN: ' + esc(e.iban || '[PLATZHALTER IBAN]') + (e.bic ? ' · BIC: ' + esc(e.bic) : '') + '<br>' +
-        'Bank: ' + esc(e.bank) + '<br>Verwendungszweck: <strong>' + esc(r.nr) + '</strong></div>';
+      ? '<div><strong>Einzug per SEPA-Lastschrift</strong><br>Den Rechnungsbetrag von <strong>' + H.geld(r.summe) + '</strong> ziehen wir am <strong>' + H.datum(r.faellig) +
+        '</strong> von deinem Konto ein.<br>Mandatsreferenz: ' + esc(em.mandatsreferenz || em.nr || '[PLATZHALTER]') + ' · Gläubiger-ID: ' + esc(e.glaeubiger_id || '[PLATZHALTER]') +
+        (e.sepa_text ? '<br>' + esc(e.sepa_text) : '') + '</div>'
+      : '<div><strong>Bitte überweisen bis ' + H.datum(r.faellig) + '</strong><br>Für dich liegt uns kein SEPA-Lastschriftmandat vor.<br>' +
+        'Empfänger: ' + esc(e.verein_name) + ' · IBAN: ' + esc(e.iban || '[PLATZHALTER IBAN]') + (e.bic ? ' · BIC: ' + esc(e.bic) : '') + '<br>' +
+        'Verwendungszweck: <strong>' + esc(r.nr) + '</strong></div>';
     const fuss = '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort) + '</span>' +
       '<span>Steuer-Nr. ' + esc(e.steuernummer) + '</span><span>' + esc(e.bank) + (e.iban ? ' · ' + esc(e.iban) : '') + '</span></div>';
 
