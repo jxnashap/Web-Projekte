@@ -1,7 +1,4 @@
 [
   { "url": "http://www.ssv-net.de/", "path": ".preview-cache/ssv/index.html" },
-  { "url": "https://www.ssv-net.de/", "path": ".preview-cache/ssv/index-https.html" },
-  { "url": "http://www.ssv-net.de/robots.txt", "path": ".preview-cache/ssv/robots.txt" },
-  { "url": "http://www.ssv-net.de/sitemap.xml", "path": ".preview-cache/ssv/sitemap.xml" },
-  { "url": "https://ssv-net.de/", "path": ".preview-cache/ssv/index-nowww.html" }
+  { "url": "https://r.jina.ai/http://www.ssv-net.de/", "path": ".preview-cache/ssv/index.md" }
 ]
