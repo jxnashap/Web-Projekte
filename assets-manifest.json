@@ -1,14 +1,30 @@
 [
  {
-  "url": "http://www.ssv-net.de/dokumente/Beitraege2024-02_SSV.pdf",
-  "path": "webseiten/ssv-segelverein/dokumente/beitraege-2024.pdf"
+  "url": "https://r.jina.ai/https://easyverein.com/api/",
+  "path": ".preview-cache/recherche/easyverein-api.md"
  },
  {
-  "url": "http://www.ssv-net.de/dokumente/Satzung-SSVvom14022014.pdf",
-  "path": "webseiten/ssv-segelverein/dokumente/satzung.pdf"
+  "url": "https://r.jina.ai/https://easyverein.com/preise/",
+  "path": ".preview-cache/recherche/easyverein-preise.md"
  },
  {
-  "url": "http://www.ssv-net.de/dokumente/Hafenbetriebsordnung.pdf",
-  "path": "webseiten/ssv-segelverein/dokumente/hafenbetriebsordnung.pdf"
+  "url": "https://r.jina.ai/https://python-easyverein.readthedocs.io/en/stable/usage/",
+  "path": ".preview-cache/recherche/python-easyverein.md"
+ },
+ {
+  "url": "https://r.jina.ai/https://easyverein.com/api/v2.0/",
+  "path": ".preview-cache/recherche/easyverein-api-v2.md"
+ },
+ {
+  "url": "https://r.jina.ai/https://supabase.com/privacy",
+  "path": ".preview-cache/recherche/supabase-privacy.md"
+ },
+ {
+  "url": "https://r.jina.ai/https://supabase.com/legal/dpa",
+  "path": ".preview-cache/recherche/supabase-dpa.md"
+ },
+ {
+  "url": "https://r.jina.ai/https://supabase.com/legal/subprocessors",
+  "path": ".preview-cache/recherche/supabase-subprocessors.md"
  }
 ]
