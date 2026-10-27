@@ -280,10 +280,13 @@ body.rechnung-seite { background: #e9e6df; }
 .r-tab td { padding: 1.8mm 1.5mm; border-bottom: 1px solid #ddd; }
 .r-tab .r { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .r-tab tfoot td { border-bottom: 0; border-top: 2px solid #111; font-weight: 700; font-size: 11pt; }
-.r-zahlung { display: flex; gap: 7mm; align-items: flex-start; margin-top: 5mm; padding: 4mm 5mm; background: #f6f4ef; border-radius: 3mm; }
-.r-zahlung .r-qr { flex: none; text-align: center; font-size: 7.5pt; color: #555; }
-.r-zahlung .r-qr img, .r-zahlung .r-qr svg { width: 26mm; height: 26mm; display: block; margin-bottom: 1mm; }
-.r-fuss { position: absolute; left: 22mm; right: 18mm; bottom: 10mm; border-top: 1px solid #ccc; padding-top: 3mm; font-size: 7.5pt; color: #666; display: flex; justify-content: space-between; gap: 6mm; }
+.r-zahlung { margin-top: 5mm; padding: 4mm 5mm; background: #f6f4ef; border-left: 2px solid var(--rot); border-radius: 0 3mm 3mm 0; }
+.r-zahlung p { margin: 0 0 2mm; }
+.r-zahlung p:last-child { margin: 0; color: #555; }
+.r-gruss { margin-top: 7mm; }
+.r-gruss span { color: #555; }
+.r-steuer { margin-top: 5mm; font-size: 7.5pt; color: #777; }
+.r-fuss { position: absolute; left: 22mm; right: 18mm; bottom: 10mm; border-top: 1px solid #ddd; padding-top: 2.5mm; font-size: 6.5pt; color: #888; display: flex; justify-content: space-between; gap: 6mm; }
 .r-anhang h2 { font-size: 12pt; color: var(--navy); margin: 10mm 0 2mm; }
 .r-anhang .r-tab { font-size: 8.5pt; }
 .r-storno { position: absolute; top: 90mm; left: 0; right: 0; text-align: center; font-size: 60pt; font-weight: 800; color: rgba(211,37,44,.18); transform: rotate(-18deg); pointer-events: none; }

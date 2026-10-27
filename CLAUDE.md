@@ -20,7 +20,7 @@ Repo für alle Website-Projekte. Struktur:
 ## `apps/` – Web-Apps
 - `apps/ssv-getraenke/` – Getränkekasse für den SSV: iPad-Kiosk (Name → PIN → Kacheln →
   Stück/Kasten), Kassenwart-Bereich (Mitglieder, CSV-Import, PIN-Zettel, Preise,
-  Abrechnung, A4-Rechnungen mit GiroCode, SEPA-/CSV-Export). Demo-Modus (localStorage);
+  Abrechnung, A4-Rechnungen im persönlichen Ton mit Lastschrift-Ankündigung, SEPA-/CSV-Export). Demo-Modus (localStorage);
   Datenbankschema `supabase/schema.sql` lokal getestet, **nichts deployt** – auf
   Wunsch des Nutzers keine Verknüpfung mit bestehenden Supabase-/Vercel-Projekten.
 

@@ -221,7 +221,7 @@ FOOTER = f'''
           <ul>
             <li><a href="{EASYVEREIN}" rel="noopener">Vereinsverwaltung (easyVerein)</a></li>
             <li><a href="verein.html#dokumente">Dokumente</a></li>
-            <li><a href="verwaltung/">Redaktion</a></li>
+            <li><a href="verwaltung/index.html">Redaktion</a></li>
             <li><a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></li>
           </ul>
         </div>

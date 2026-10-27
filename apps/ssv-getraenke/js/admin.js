@@ -41,8 +41,9 @@
     return '<div class="a-kopf"><div><h1>' + titel + '</h1>' + (unter ? '<p>' + unter + '</p>' : '') + '</div><div class="a-aktionen">' + (aktionen || '') + '</div></div>';
   }
   function drucken(art, ids) {
-    if (art === 'pins') window.open('drucken.html?art=pins', '_blank');
-    else window.open('drucken.html?art=rechnung&ids=' + ids.join(','), '_blank');
+    const url = art === 'pins' ? 'drucken.html?art=pins' : 'drucken.html?art=rechnung&ids=' + ids.join(',');
+    // Falls Pop-ups blockiert sind (z. B. iPad im Vollbildmodus): im selben Fenster öffnen
+    if (!window.open(url, '_blank')) location.href = url;
   }
 
   /* -------------------------------------------------------------- Übersicht */
@@ -435,9 +436,9 @@
       }
       if (t.dataset.mail) {
         const r = rechnungen.find((x) => x.id === t.dataset.mail);
-        const text = 'Moin ' + r.empfaenger.vorname + ',\n\nanbei deine Getränkeabrechnung ' + r.nr + ' für den Zeitraum ' + H.datum(r.von) + ' bis ' + H.datum(r.bis) + ' über ' + H.geld(r.summe) + '.\n\n' +
-          (r.sepa ? 'Den Betrag ziehen wir am ' + H.datum(r.faellig) + ' per SEPA-Lastschrift ein (Mandatsreferenz ' + (r.empfaenger.mandatsreferenz || r.empfaenger.nr || '') + ', Gläubiger-ID ' + (e.glaeubiger_id || '') + ').' : 'Bitte überweise den Betrag bis zum ' + H.datum(r.faellig) + ' auf ' + (e.iban || '[IBAN]') + ' (' + e.bank + '), Verwendungszweck: ' + r.nr + '.') +
-          '\n\nViele Grüße\n' + e.verein_name;
+        const text = 'Moin ' + r.empfaenger.vorname + ',\n\nanbei deine Getränkeabrechnung vom ' + H.datum(r.von) + ' bis ' + H.datum(r.bis) + ' über ' + H.geld(r.summe) + '.\n\n' +
+          (r.sepa ? 'Du musst nichts weiter tun – wir buchen den Betrag am ' + H.datum(r.faellig) + ' per Lastschrift ab.' : 'Bitte überweise den Betrag bis zum ' + H.datum(r.faellig) + ' auf ' + (e.iban || '[IBAN]') + ', Verwendungszweck: ' + r.nr + '.') +
+          '\n\nBei Fragen sprich mich einfach an.\n\n' + e.fusstext + '\n' + (e.kassenwart_name || e.verein_name);
         location.href = 'mailto:' + encodeURIComponent(r.empfaenger.email) + '?subject=' + encodeURIComponent('Getränkeabrechnung ' + r.nr) + '&body=' + encodeURIComponent(text);
         toast('Tipp: Die Rechnung vorher über „Ansehen" als PDF speichern und anhängen.');
       }
@@ -461,7 +462,7 @@
     main.innerHTML = kopf('Einstellungen', 'Angaben für die Rechnungen und das Verhalten der Kasse.') +
       '<div class="a-panel"><h2>Verein &amp; Rechnung</h2><form id="ef" class="a-form">' +
       f('verein_name', 'Vereinsname', 'voll') + f('verein_strasse', 'Straße') + f('verein_ort', 'PLZ und Ort') + f('verein_email', 'E-Mail') + f('steuernummer', 'Steuernummer') +
-      f('glaeubiger_id', 'Gläubiger-ID (SEPA)') + f('bank', 'Bank') + f('iban', 'IBAN (nur für Überweisungen ohne Mandat)') + f('bic', 'BIC') + f('rechnung_praefix', 'Rechnungsnummer-Präfix') +
+      f('glaeubiger_id', 'Gläubiger-ID (SEPA)') + f('bank', 'Bank') + f('iban', 'IBAN (nur für Überweisungen ohne Mandat)') + f('bic', 'BIC') + f('rechnung_praefix', 'Rechnungsnummer-Präfix') + f('kassenwart_name', 'Name des Kassenwarts (Gruß auf der Rechnung)') +
       f('zahlungsziel_tage', 'Einzug nach Rechnungsdatum (Tage, mind. 14 für die Vorabankündigung)', ' type="number" min="0"') + f('storno_minuten', 'Selbst-Storno an der Kasse (Minuten)', ' type="number" min="0"') +
       f('abmelden_sekunden', 'Automatisch abmelden nach (Sekunden)', ' type="number" min="15"') +
       '<label class="a-feld voll">Steuerhinweis auf der Rechnung<textarea name="steuerhinweis" rows="2">' + esc(e.steuerhinweis) + '</textarea></label>' +

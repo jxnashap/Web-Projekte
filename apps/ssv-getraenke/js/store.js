@@ -31,8 +31,9 @@
     rechnung_praefix: 'SSV-G',
     steuerhinweis: '[PLATZHALTER: Umsatzsteuer-Hinweis mit Kassenwart/Steuerberater abstimmen]',
     glaeubiger_id: '',
-    sepa_text: 'Bitte sorge zum Einzugstermin für ausreichende Deckung deines Kontos.',
-    fusstext: 'Vielen Dank – und allzeit gute Fahrt!',
+    sepa_text: '',
+    kassenwart_name: 'Carsten Schneider',
+    fusstext: 'Danke, dass du dabei bist – und allzeit gute Fahrt!',
     storno_minuten: 15,
     abmelden_sekunden: 60
   };
@@ -68,7 +69,7 @@
       try { this.d = JSON.parse(localStorage.getItem(this.KEY)); } catch (e) { this.d = null; }
       if (!this.d || !this.d.version) this.d = this._beispieldaten();
     }
-    _sichern() { localStorage.setItem(this.KEY, JSON.stringify(this.d)); }
+    _sichern() { try { localStorage.setItem(this.KEY, JSON.stringify(this.d)); } catch (e) { console.warn('Demo-Daten konnten nicht gespeichert werden', e); } }
     zuruecksetzen() { localStorage.removeItem(this.KEY); this._laden(); }
 
     _beispieldaten() {
@@ -203,12 +204,12 @@
     /* ---- Verwaltung ---- */
     async anmelden(email, pw) {
       if (email.trim().toLowerCase() === this.d.admin.email && pw === this.d.admin.passwort) {
-        sessionStorage.setItem('ssvg-demo-admin', '1'); return true;
+        try { sessionStorage.setItem('ssvg-demo-admin', '1'); } catch (e) { this._admin = true; } return true;
       }
       throw new Error('E-Mail oder Passwort falsch.');
     }
-    async abmelden() { sessionStorage.removeItem('ssvg-demo-admin'); }
-    async angemeldet() { return sessionStorage.getItem('ssvg-demo-admin') === '1'; }
+    async abmelden() { this._admin = false; try { sessionStorage.removeItem('ssvg-demo-admin'); } catch (e) { /* egal */ } }
+    async angemeldet() { try { return this._admin || sessionStorage.getItem('ssvg-demo-admin') === '1'; } catch (e) { return !!this._admin; } }
 
     async mitglieder() {
       return this.d.mitglieder.map(({ pin, ...m }) => ({ ...m, hat_pin: !!pin }))
