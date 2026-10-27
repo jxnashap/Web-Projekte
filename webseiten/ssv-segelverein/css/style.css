@@ -960,3 +960,42 @@ body.cine .site-header:not(.solid) .brand-sub, body.nav-open .brand-sub,
 .hero-cine .trust-row span { color: rgba(244,241,234,.86); }
 .cms-suffix { color: var(--sand-hell); }
 .cms-zuletzt { margin: 26px 0 6px; font-size: .68rem; letter-spacing: .26em; text-transform: uppercase; color: var(--muted-2); }
+
+/* ============================================================
+   Boote: Wellen-Fußzeile mit vorbeisegelnden Yachten + Opti-Kurs
+   (nur transform/opacity, ruht bei prefers-reduced-motion)
+   ============================================================ */
+.site-footer { background: #0A1433; }
+.segelband { position: relative; height: 96px; overflow: hidden; background: var(--paper); margin-bottom: -1px; pointer-events: none; }
+.segelband.auf-dunkel { background: var(--night); }
+.segelband .wellen { position: absolute; left: 0; bottom: 0; width: 200%; height: 60px; display: block; will-change: transform; }
+.wellen-hinten path { fill: rgba(22,41,95,.55); }
+.auf-dunkel .wellen-hinten path { fill: #16295F; }
+.wellen-vorn path { fill: #0A1433; }
+.wellen-hinten { animation: wellen 34s linear infinite reverse; }
+.wellen-vorn { animation: wellen 22s linear infinite; }
+@keyframes wellen { from { transform: translate3d(0,0,0); } to { transform: translate3d(-50%,0,0); } }
+.segelband .boot { position: absolute; left: 0; will-change: transform; }
+.boot-nah { width: 62px; height: 57px; bottom: 25px; animation: segeln 64s linear infinite; animation-delay: -18s; }
+.boot-fern { width: 34px; height: 31px; bottom: 41px; opacity: .55; animation: segeln-zurueck 110s linear infinite; animation-delay: -60s; }
+@keyframes segeln { from { transform: translate3d(-90px,0,0); } to { transform: translate3d(calc(100vw + 40px),0,0); } }
+@keyframes segeln-zurueck { from { transform: translate3d(calc(100vw + 40px),0,0) scaleX(-1); } to { transform: translate3d(-60px,0,0) scaleX(-1); } }
+.schaukeln { transform-box: fill-box; transform-origin: 50% 85%; animation: schaukeln 4.2s ease-in-out infinite alternate; }
+.boot-fern .schaukeln { animation-duration: 5.6s; }
+@keyframes schaukeln { 0% { transform: rotate(-3deg) translateY(0); } 50% { transform: rotate(1.5deg) translateY(1.5px); } 100% { transform: rotate(3deg) translateY(-1px); } }
+@media (max-width: 760px) { .segelband { height: 80px; } .segelband .wellen { width: 400%; } .boot-nah { width: 50px; height: 46px; bottom: 24px; } }
+
+.kurs { position: relative; height: 64px; }
+.kurs-linie { position: absolute; left: 0; right: 0; bottom: 12px; border-top: 1px dashed rgba(244,241,234,.28); }
+.kurs-kielwasser { position: absolute; left: 0; right: 0; bottom: 12px; height: 2px; background: linear-gradient(90deg, rgba(228,71,59,0), var(--gold-2)); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); }
+.kurs-opti { position: absolute; left: 0; bottom: 4px; width: 60px; height: 56px; will-change: transform; }
+.kurs-opti .schaukeln { animation-duration: 3.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .segelband .wellen, .segelband .boot, .schaukeln { animation: none !important; }
+  .boot-nah { transform: translate3d(68vw,0,0); }
+  .boot-fern { transform: translate3d(22vw,0,0) scaleX(-1); }
+  .kurs-opti { left: auto; right: 0; }
+}
+.segelband + .site-footer { padding-top: clamp(36px, 5vw, 64px); }
+.kurs-opti { width: 70px; height: 65px; }

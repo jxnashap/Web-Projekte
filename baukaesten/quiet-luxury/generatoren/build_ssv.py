@@ -237,6 +237,7 @@ FOOTER = f'''
   <script src="js/inhalte-standard.js"></script>
   <script src="js/cms.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/boote.js"></script>
 </body>
 </html>
 '''
@@ -281,6 +282,51 @@ ICO_HAND   = ico('<path class="dl" d="M14 34 L26 22 L36 28 L50 16"/><path class=
 ICO_PINSEL = ico('<path class="dl" d="M40 10 L54 24 L30 48 L16 34 Z"/><path class="dl dl-gold" d="M16 34 C 10 40, 10 50, 8 56 C 14 54, 24 54, 30 48"/>')
 ICO_FEST   = ico('<path class="dl" d="M12 52 L24 12 L36 52"/><path class="dl dl-gold" d="M16 38 H32"/><path class="dl" d="M44 20 C 44 14, 54 14, 54 20 C 54 28, 44 28, 44 36 V40 M44 48 V50"/>')
 ICO_JUGEND = ico('<path class="dl" d="M32 8 V48"/><path class="dl dl-gold" d="M32 10 C 46 20, 50 34, 50 44 H32"/><path class="dl" d="M10 52 C 20 58, 44 58, 54 52 L50 48 H14 Z"/>')
+
+
+# ------------------------------------------------------------------ Segelboote
+import math
+def welle(breite, hoehe, mitte, amp, periode, phase=0.0):
+    pts = []
+    for x in range(0, breite + 1, 10):
+        y = mitte + amp * math.sin(2 * math.pi * x / periode + phase)
+        pts.append(f"{x},{y:.1f}")
+    return f'M0,{hoehe} L' + ' L'.join(pts) + f' L{breite},{hoehe} Z'
+
+WELLE_HINTEN = welle(2880, 60, 16, 7, 360, 1.3)
+WELLE_VORN = welle(2880, 60, 27, 5, 240)
+
+def boot(klasse, n):
+    # Kleine Segelyacht: Rumpf in Marine mit roter Wasserlinie, Groß- und Vorsegel, roter Stander im Topp
+    return f'''<svg class="boot {klasse}" viewBox="0 0 80 74" aria-hidden="true"><g class="schaukeln">
+          <path d="M38 6 L38 54" stroke="#0E1B45" stroke-width="1.6"/>
+          <path d="M38 7 L47 9.5 L38 12 Z" fill="#B8232B"/>
+          <path d="M40 13 C 52 26, 60 40, 66 52 L40 52 Z" fill="#FFFFFF" stroke="rgba(14,27,69,.35)" stroke-width=".8"/>
+          <path d="M36 16 C 30 30, 22 42, 14 52 L36 52 Z" fill="#F4F1EA" stroke="rgba(14,27,69,.3)" stroke-width=".8"/>
+          <path d="M6 55 L74 55 L66 66 Q 40 69 14 66 Z" fill="#0E1B45" stroke="rgba(244,241,234,.35)" stroke-width=".8"/>
+          <path d="M9 58.5 L71 58.5" stroke="#B8232B" stroke-width="1.6"/>
+        </g></svg>'''
+
+def segelband(dunkel):
+    return f'''
+  <div class="segelband{' auf-dunkel' if dunkel else ''}" aria-hidden="true">
+    <svg class="wellen wellen-hinten" viewBox="0 0 2880 60" preserveAspectRatio="none"><path d="{WELLE_HINTEN}"/></svg>
+    {boot("boot-fern", 2)}
+    {boot("boot-nah", 1)}
+    <svg class="wellen wellen-vorn" viewBox="0 0 2880 60" preserveAspectRatio="none"><path d="{WELLE_VORN}"/></svg>
+  </div>
+'''
+
+# Opti für den Ausbildungskurs auf der Jugendseite (fährt beim Scrollen mit)
+OPTI_KURS = '''<div class="kurs reveal" data-kurs aria-hidden="true">
+          <span class="kurs-linie"></span><span class="kurs-kielwasser"></span>
+          <svg class="kurs-opti" viewBox="0 0 60 56"><g class="schaukeln">
+            <path d="M24 4 L24 42" stroke="#F4F1EA" stroke-width="1.4"/>
+            <path d="M25 7 L45 3 L50 40 L25 40 Z" fill="#FFFFFF"/>
+            <text x="33" y="30" font-size="9" font-family="Georgia,serif" fill="#0E1B45">O</text>
+            <path d="M10 43 L50 43 L47 51 L13 51 Z" fill="#E4473B"/>
+          </g></svg>
+        </div>'''
 
 PAGES = {}
 
@@ -507,7 +553,8 @@ PAGES["jugend.html"] = {
       <div class="container">
         <p class="eyebrow reveal">Ausbildung</p>
         <h2 class="reveal d1">Schritt für Schritt<br>aufs <em>Wasser.</em></h2>
-        <div class="process vier" style="margin-top:56px">
+        ''' + OPTI_KURS + '''
+        <div class="process vier" style="margin-top:28px">
           <div class="step reveal"><span class="st-num">01</span><h3>Optimist</h3><p>Ab ca. 6 Jahren in der Einmannjolle – Anfänger und Fortgeschrittene trainieren gemeinsam, begleitet von Trainern und Sicherungsbooten.</p></div>
           <div class="step reveal d1"><span class="st-num">02</span><h3>Winter-Theorie</h3><p>Umgang mit dem Boot, Seemannsknoten, Segeltheorie und Regeln für das Verhalten auf dem Wasser.</p></div>
           <div class="step reveal d2"><span class="st-num">03</span><h3>Jüngstenschein</h3><p>Mit einer kleinen Prüfung bescheinigt er gute Kenntnisse im Umgang mit dem Boot.</p></div>
@@ -682,7 +729,8 @@ PAGES["datenschutz.html"] = {
 
 # ------------------------------------------------------------------ schreiben
 for fname, cfg in PAGES.items():
-    html = head(cfg["title"], cfg["desc"], "cine" if cfg["cine"] else "") + header(cfg["active"]) + cfg["body"] + FOOTER
+    fuss = FOOTER.replace('  <footer class="site-footer">', segelband(fname == "index.html") + '  <footer class="site-footer">', 1)
+    html = head(cfg["title"], cfg["desc"], "cine" if cfg["cine"] else "") + header(cfg["active"]) + cfg["body"] + fuss
     open(os.path.join(ROOT, fname), "w", encoding="utf-8").write(html)
     print("wrote", fname, len(html))
 
