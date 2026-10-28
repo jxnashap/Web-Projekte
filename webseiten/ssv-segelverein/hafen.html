@@ -104,13 +104,24 @@
           <h2 class="reveal d1">53°54'41" N<br><em>10°42'04" O</em></h2>
           <p class="reveal d2">Zur Teerhofsinsel 5B · 23554 Lübeck – am nördlichen Travearm, gegenüber dem Naturschutzgebiet.</p>
           <div class="hero-actions reveal d3" style="margin-top:28px">
-            <a class="btn btn-solid" href="https://www.openstreetmap.org/?mlat=53.91139&amp;mlon=10.70111#map=16/53.91139/10.70111" rel="noopener">Karte öffnen (OpenStreetMap)</a>
-            <a class="btn btn-line" href="tel:+491795916979">Hafenmeister anrufen</a>
+            <a class="btn btn-solid" href="https://www.google.com/maps/search/?api=1&amp;query=53.91139%2C10.70111" target="_blank" rel="noopener">In Google Maps öffnen</a>
+            <a class="btn btn-line" href="https://maps.apple.com/?ll=53.91139,10.70111&amp;q=Schwartauer%20Segler-Verein&amp;z=16" target="_blank" rel="noopener">In Apple Karten öffnen</a>
           </div>
-          <p class="reveal d3" style="font-size:.85rem;opacity:.7">Die Karte öffnet sich auf openstreetmap.org – auf dieser Seite wird nichts nachgeladen.</p>
+          <p class="reveal d3" style="margin-top:18px"><a class="link-gold" href="tel:+491795916979">Hafenmeister anrufen · 0179 5916979</a></p>
         </div>
-        <div class="split-media figure-wide reveal d1">
-          <img src="bilder/hafen-morgen.jpg" alt="Steganlage des SSV im Morgenlicht" loading="lazy">
+        <div class="karte-wrap reveal d1" data-karte="https://maps.google.com/maps?q=53.91139,10.70111&amp;z=15&amp;output=embed">
+          <div class="karte-platzhalter">
+            <svg class="karte-muster" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+              <path d="M-10 190 C 80 150, 140 210, 230 170 S 360 120, 420 150" fill="none" stroke="rgba(244,241,234,.16)" stroke-width="26"/>
+              <path d="M40 -10 L90 310 M300 -10 L250 310 M-10 60 L410 90 M-10 250 L410 230" stroke="rgba(244,241,234,.07)" stroke-width="2"/>
+              <path d="M200 30 c-15 0-27 12-27 27 c0 21 27 48 27 48 s27-27 27-48 c0-15-12-27-27-27z" fill="#E4473B"/>
+              <circle cx="200" cy="57" r="9" fill="#0E1B45"/>
+            </svg>
+            <p class="karte-titel">Karte von Google Maps anzeigen?</p>
+            <p class="karte-text">Beim Laden werden Daten wie eure IP-Adresse an Google übertragen. Mehr dazu in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
+            <button type="button" class="btn btn-solid" data-karte-laden>Karte laden</button>
+            <label class="karte-merken"><input type="checkbox" data-karte-merken> Karten künftig immer anzeigen</label>
+          </div>
         </div>
       </div>
     </section>
@@ -204,5 +215,6 @@
   <script src="js/cms.js"></script>
   <script src="js/script.js"></script>
   <script src="js/boote.js"></script>
+  <script src="js/karte.js"></script>
 </body>
 </html>

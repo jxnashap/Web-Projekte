@@ -48,3 +48,8 @@ ihren ursprünglichen Branches (PR #1/#2).
 - Recherche-Regeln: nur belegte Fakten verwenden, Unbelegtes als `[PLATZHALTER]`
   markieren; Design-Referenzen inspirieren, werden aber nie kopiert.
 - QA immer über die Screenshot-Tools der Baukästen (Reveal-Zählung muss n/n sein).
+- **Karten/Anfahrt: immer Google Maps und/oder Apple Karten – kein OpenStreetMap** (Vorgabe
+  des Nutzers). Standard: Buttons „In Google Maps öffnen“ (`google.com/maps/search/?api=1&query=lat,lng`)
+  und „In Apple Karten öffnen“ (`maps.apple.com/?ll=lat,lng&q=Name`); eine eingebettete
+  Google-Karte nur per 2-Klick-Lösung (lädt erst nach Klick, Hinweis + Datenschutz-Absatz),
+  Vorlage: `webseiten/ssv-segelverein/js/karte.js`.

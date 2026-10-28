@@ -999,3 +999,17 @@ body.cine .site-header:not(.solid) .brand-sub, body.nav-open .brand-sub,
 }
 .segelband + .site-footer { padding-top: clamp(36px, 5vw, 64px); }
 .kurs-opti { width: 70px; height: 65px; }
+
+/* Karte (Google Maps, 2-Klick) */
+.karte-wrap { position: relative; aspect-ratio: 4 / 3; border-radius: 4px; overflow: hidden; background: var(--night-2); border: 1px solid rgba(244,241,234,.12); }
+.karte-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.karte-platzhalter { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 28px; }
+.karte-muster { position: absolute; inset: 0; width: 100%; height: 100%; }
+.karte-platzhalter > *:not(.karte-muster) { position: relative; }
+.karte-titel { font-family: var(--serif); font-size: 1.45rem; color: var(--paper); margin: 96px 0 8px; }
+.karte-text { font-size: .85rem; color: rgba(244,241,234,.72); max-width: 34ch; margin: 0 0 18px; }
+.karte-text a { color: var(--sand-hell); text-decoration: underline; }
+.karte-merken { margin-top: 14px; font-size: .78rem; color: rgba(244,241,234,.62); display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.karte-merken input { accent-color: var(--gold-2); }
+@media (max-width: 520px) { .karte-wrap { aspect-ratio: 3 / 4; } .karte-titel { margin-top: 110px; } }
+.karte-titel { line-height: 1.2; }

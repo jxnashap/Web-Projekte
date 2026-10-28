@@ -14,7 +14,10 @@ import json, os
 ROOT = "/home/user/Web-Projekte/webseiten/ssv-segelverein"
 EASYVEREIN = "https://easyverein.com/public/SSVLuebeck"
 ANTRAG = "https://easyverein.com/public/SSVLuebeck/applicationform/"
-OSM = "https://www.openstreetmap.org/?mlat=53.91139&amp;mlon=10.70111#map=16/53.91139/10.70111"
+# Karten: immer Google Maps / Apple Karten (Vorgabe des Nutzers). Eingebettete Google-Karte nur per 2-Klick.
+GMAPS = "https://www.google.com/maps/search/?api=1&amp;query=53.91139%2C10.70111"
+AMAPS = "https://maps.apple.com/?ll=53.91139,10.70111&amp;q=Schwartauer%20Segler-Verein&amp;z=16"
+GMAPS_EMBED = "https://maps.google.com/maps?q=53.91139,10.70111&amp;z=15&amp;output=embed"
 
 NAV = [("index.html", "Start"), ("verein.html", "Verein"), ("jugend.html", "Jugend"),
        ("hafen.html", "Hafen &amp; Gäste"), ("termine.html", "Termine"), ("galerie.html", "Galerie")]
@@ -238,6 +241,7 @@ FOOTER = f'''
   <script src="js/cms.js"></script>
   <script src="js/script.js"></script>
   <script src="js/boote.js"></script>
+  <script src="js/karte.js"></script>
 </body>
 </html>
 '''
@@ -611,13 +615,24 @@ PAGES["hafen.html"] = {
           <h2 class="reveal d1">53°54'41" N<br><em>10°42'04" O</em></h2>
           <p class="reveal d2">Zur Teerhofsinsel 5B · 23554 Lübeck – am nördlichen Travearm, gegenüber dem Naturschutzgebiet.</p>
           <div class="hero-actions reveal d3" style="margin-top:28px">
-            <a class="btn btn-solid" href="''' + OSM + '''" rel="noopener">Karte öffnen (OpenStreetMap)</a>
-            <a class="btn btn-line" href="tel:+491795916979">Hafenmeister anrufen</a>
+            <a class="btn btn-solid" href="''' + GMAPS + '''" target="_blank" rel="noopener">In Google Maps öffnen</a>
+            <a class="btn btn-line" href="''' + AMAPS + '''" target="_blank" rel="noopener">In Apple Karten öffnen</a>
           </div>
-          <p class="reveal d3" style="font-size:.85rem;opacity:.7">Die Karte öffnet sich auf openstreetmap.org – auf dieser Seite wird nichts nachgeladen.</p>
+          <p class="reveal d3" style="margin-top:18px"><a class="link-gold" href="tel:+491795916979">Hafenmeister anrufen · 0179 5916979</a></p>
         </div>
-        <div class="split-media figure-wide reveal d1">
-          <img src="bilder/hafen-morgen.jpg" alt="Steganlage des SSV im Morgenlicht" loading="lazy">
+        <div class="karte-wrap reveal d1" data-karte="''' + GMAPS_EMBED + '''">
+          <div class="karte-platzhalter">
+            <svg class="karte-muster" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+              <path d="M-10 190 C 80 150, 140 210, 230 170 S 360 120, 420 150" fill="none" stroke="rgba(244,241,234,.16)" stroke-width="26"/>
+              <path d="M40 -10 L90 310 M300 -10 L250 310 M-10 60 L410 90 M-10 250 L410 230" stroke="rgba(244,241,234,.07)" stroke-width="2"/>
+              <path d="M200 30 c-15 0-27 12-27 27 c0 21 27 48 27 48 s27-27 27-48 c0-15-12-27-27-27z" fill="#E4473B"/>
+              <circle cx="200" cy="57" r="9" fill="#0E1B45"/>
+            </svg>
+            <p class="karte-titel">Karte von Google Maps anzeigen?</p>
+            <p class="karte-text">Beim Laden werden Daten wie eure IP-Adresse an Google übertragen. Mehr dazu in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
+            <button type="button" class="btn btn-solid" data-karte-laden>Karte laden</button>
+            <label class="karte-merken"><input type="checkbox" data-karte-merken> Karten künftig immer anzeigen</label>
+          </div>
         </div>
       </div>
     </section>
@@ -718,7 +733,7 @@ PAGES["datenschutz.html"] = {
         <h3>4. Redaktionsinhalte</h3>
         <p>[PLATZHALTER: Wird das Redaktionssystem mit einer Datenbank betrieben, hier Anbieter, Serverstandort und Auftragsverarbeitungsvertrag nennen.]</p>
         <h3>5. Externe Links</h3>
-        <p>Mitgliedschaftsantrag und Vereinsverwaltung laufen über easyVerein, die Karte über OpenStreetMap. Diese Seiten öffnen sich erst nach eurem Klick; dort gelten die Datenschutzhinweise der jeweiligen Anbieter.</p>
+        <p>Mitgliedschaftsantrag und Vereinsverwaltung laufen über easyVerein. Auf der Seite „Hafen &amp; Gäste“ lässt sich eine Karte von Google Maps (Google Ireland Ltd.) einblenden – sie wird erst nach eurem Klick auf „Karte laden“ nachgeladen; erst dann werden Daten wie eure IP-Adresse an Google übertragen (Art. 6 Abs. 1 lit. a DSGVO). Wer „Karten künftig immer anzeigen“ wählt, speichert diese Einstellung nur im eigenen Browser und kann sie dort jederzeit löschen. Die Links zu Google Maps und Apple Karten öffnen die jeweiligen Dienste. Diese Seiten öffnen sich erst nach eurem Klick; dort gelten die Datenschutzhinweise der jeweiligen Anbieter.</p>
         <h3>6. Fotos von Personen</h3>
         <p>[PLATZHALTER: Hinweis zur Veröffentlichung von Vereinsfotos und Vorstandsbildern, Einwilligungen]</p>
         <h3>7. Eure Rechte</h3>

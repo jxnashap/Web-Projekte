@@ -49,8 +49,9 @@ setzen und die URL eintragen. Dann sind Änderungen sofort für alle sichtbar.
   schreiben nur Redakteure) und Foto-Bucket `website`. Lokal mit
   PostgreSQL 16 getestet.
 - Schriften liegen auf dem eigenen Server (keine Google Fonts), es gibt keine
-  Cookies, kein Tracking und keine eingebettete Google-Karte (nur ein Link zu
-  OpenStreetMap).
+  Cookies und kein Tracking. Anfahrt über Google Maps und Apple Karten (Links);
+  die eingebettete Google-Karte lädt erst nach Klick auf „Karte laden“
+  (2-Klick-Lösung, `js/karte.js`).
 - QA: `node baukaesten/quiet-luxury/tools/shot-ssv.js index,verein,jugend,hafen,termine,galerie 1440 <ordner>`.
   Bei 1440 px und 390 px stimmen alle Reveals (n/n), es gibt keinen
   horizontalen Scroll und keine leeren Bereiche.
