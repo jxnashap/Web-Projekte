@@ -22,9 +22,9 @@ function walk(dir, base = '') {
   for (const f of fs.readdirSync(dir)) {
     const p = path.join(dir, f);
     if (fs.statSync(p).isDirectory()) { if (!['media', 'img', 'fonts', 'css', 'js', 'api', 'node_modules'].includes(f)) out = out.concat(walk(p, base + '/' + f)); }
-    else if (f.endsWith('.html')) out.push(base + '/' + f.replace(/\.html$/, '').replace(/^index$/, ''));
+    else if (f.endsWith('.html')) out.push(f === 'index.html' ? base + '/' : base + '/' + f);
   }
-  return out.map(p => p.replace(/\/$/, '') || '/');
+  return out;
 }
 if (!PAGES.length) PAGES = walk(SITE).sort();
 
@@ -32,7 +32,7 @@ const END_CSS = `
 html{scroll-behavior:auto!important}
 *,*::before,*::after{animation-play-state:paused!important}
 .boot{display:none!important}
-.rv,.rv-img,.neon-split .c{opacity:1!important;transform:none!important;filter:none!important;clip-path:none!important;transition:none!important}
+.rv,.rv-img img,.neon-split .c{opacity:1!important;transform:none!important;filter:none!important;clip-path:none!important;transition:none!important}
 .mq-track{animation:none!important;transform:none!important}
 `;
 
@@ -44,8 +44,8 @@ html{scroll-behavior:auto!important}
       return req.on('end', () => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true,"mock":true}'); });
     }
     let file = path.join(SITE, u);
-    if (u === '/') file = path.join(SITE, 'index.html');
-    else if (!path.extname(u)) file = path.join(SITE, u + '.html');
+    // Ordner-URLs wie auf jedem Webspace: /events/ → events/index.html
+    if (u.endsWith('/')) file = path.join(SITE, u, 'index.html');
     if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) {
       res.writeHead(404, { 'Content-Type': 'text/html' }); return fs.createReadStream(path.join(SITE, '404.html')).pipe(res);
     }
@@ -99,7 +99,7 @@ html{scroll-behavior:auto!important}
       });
       return { rv: [q('.rv.in,.rv-img.in,.neon-split.in'), q('.rv,.rv-img,.neon-split')],
                noalt: [...document.images].filter(i => !i.hasAttribute('alt')).length,
-               noname: [...document.querySelectorAll('a,button')].filter(a => !(a.innerText.trim() || a.getAttribute('aria-label') || a.querySelector('img[alt]:not([alt=""])'))).length,
+               noname: [...document.querySelectorAll('a,button')].filter(a => a.getClientRects().length && !(a.innerText.trim() || a.getAttribute('aria-label') || a.querySelector('img[alt]:not([alt=""])'))).length,
                h1: q('h1'), title: document.title, overflow: sw - vw, wide,
                ph: q('.ph'), dashes: (document.body.innerText.match(/[–—]/g) || []).length };
     }, VIEW.width);

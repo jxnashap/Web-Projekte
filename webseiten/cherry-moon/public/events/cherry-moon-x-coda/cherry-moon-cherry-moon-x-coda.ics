@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cherry Moon//Events//DE
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:c1e609b7938fdf47@cherry-moon.de
+DTSTAMP:20261106T222106Z
+DTSTART:20261121T220000Z
+DTEND:20261122T040000Z
+SUMMARY:Cherry Moon x Coda
+LOCATION:Coda Club\, Congressplatz 2\, 20355 Hamburg
+URL:https://cherry-moon.de/events/cherry-moon-x-coda
+DESCRIPTION:Tickets: https://cherry-moon.de/events/cherry-moon-x-coda
+END:VEVENT
+END:VCALENDAR

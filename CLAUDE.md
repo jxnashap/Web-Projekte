@@ -11,6 +11,11 @@ Repo für alle Website-Projekte. Struktur:
 - `webseiten/myimmoapp/` – MyImmo-SaaS für private Vermieter (Premium-Estate v2,
   Fraunces/Outfit, Gold/Charcoal, Higgsfield-Video-Hero + Scroll-Scrub,
   echte App-Screenshots) · PR #8
+- `webseiten/cherry-moon/` – Partyreihe Hamburg und Ostsee (Neon-Baukasten,
+  Schwarz/Kirsch-Neon, Archivo + Archivo Black wie die bestehende Seite).
+  Statische Vorlage, der Ticketshop auf cherry-moon.de bleibt; „Ticket kaufen“ führt dorthin.
+  Video-Hero aus eigenen TikToks (Texte weggeschnitten), Event-Liste sortiert sich nach Datum,
+  ZIP unter 10 MB. Hinweise und Platzhalter: `HINWEISE.md`
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
@@ -27,12 +32,19 @@ ihren ursprünglichen Branches (PR #1/#2).
   mit Blur, Scroll-Scrub-Kapitel, Video-Scrub, 3D-Tilt, Spotlight, Video-Hero
   (AV1+H264), Gerät-Rahmen, Float-Chips. Higgsfield-Rezept: Still (Nano Banana,
   2 Cr.) → Kling 3.0 Turbo Bild-zu-Video (7,5–10 Cr.).
+- `baukaesten/neon/` – für Clubs, Partyreihen und Bars: Leuchtröhren-Glow, Überschriften
+  zünden Buchstabe für Buchstabe, Einschalt-Intro, Event-Karten mit automatischem Archiv
+  und Countdown, Stadt/Strand-Videos, Bento-Galerie mit Lightbox. Relative Links, läuft auf
+  jedem Webspace. QA: `tools/shot.js`, `tools/umbruch.js`, `tools/interact.js`.
+  Erstes Projekt: cherry-moon (`generatoren/build_cherry_moon.py`).
 
 ## Arbeitsweise
 - Pro Projekt ein Branch `claude/<projekt>` + ein PR; Auslieferung als ZIP nach `auslieferung/`.
 - Externe Assets kommen über die GitHub-Actions-Asset-Bridge
   (`.github/workflows/fetch-assets.yml` + `assets-manifest.json` am Repo-Root) –
-  die Build-Umgebung hat keinen freien Internetzugriff.
+  die Build-Umgebung hat keinen freien Internetzugriff. Modi: Download (Standard),
+  `mirror` (ganze Seite spiegeln), `render` und `shot` (im Browser rendern bzw. Screenshot),
+  `ytdlp` und `ytdlp-list` (Videos, TikTok-Listen), `transcribe` (Whisper).
 - Recherche-Regeln: nur belegte Fakten verwenden, Unbelegtes als `[PLATZHALTER]`
   markieren; Design-Referenzen inspirieren, werden aber nie kopiert.
 - QA immer über die Screenshot-Tools der Baukästen (Reveal-Zählung muss n/n sein).

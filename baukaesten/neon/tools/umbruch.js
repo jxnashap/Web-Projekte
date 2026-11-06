@@ -12,13 +12,13 @@ function walk(dir, base = '') {
   for (const f of fs.readdirSync(dir)) {
     const p = path.join(dir, f);
     if (fs.statSync(p).isDirectory()) { if (!['media', 'img', 'fonts', 'css', 'js'].includes(f)) out = out.concat(walk(p, base + '/' + f)); }
-    else if (f.endsWith('.html')) out.push((base + '/' + f.replace(/\.html$/, '').replace(/^index$/, '')).replace(/\/$/, '') || '/');
+    else if (f.endsWith('.html')) out.push(f === 'index.html' ? base + '/' : base + '/' + f);
   }
   return out.sort();
 }
 const server = http.createServer((req, res) => {
   const u = decodeURIComponent(req.url.split('?')[0]);
-  const f = u === '/' ? path.join(SITE, 'index.html') : path.extname(u) ? path.join(SITE, u) : path.join(SITE, u + '.html');
+  const f = u.endsWith('/') ? path.join(SITE, u, 'index.html') : path.join(SITE, u);
   if (!fs.existsSync(f) || /\.(mp4|webm)$/.test(f)) { res.writeHead(404); return res.end(); }
   res.writeHead(200, { 'Content-Type': MIME[path.extname(f).slice(1)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res);
 }).listen(0);
@@ -36,7 +36,7 @@ const server = http.createServer((req, res) => {
       await p.waitForTimeout(100);
       const bad = await p.evaluate(() => {
         const out = [];
-        document.querySelectorAll('.neon-split .w').forEach(w => {
+        document.querySelectorAll('.neon-split .wd').forEach(w => {
           // Zeichen (.c) bzw. Wort-Innenteil einzeln vermessen: unterschiedliche Zeilen = Bruch im Wort
           // Zeichenmodus: Zeichen auf verschiedenen Zeilen. Wortmodus: Wort-Box höher als eine Zeile.
           const chars = [...w.querySelectorAll('.c')].filter(el => !el.classList.contains('hy'));

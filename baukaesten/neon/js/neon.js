@@ -46,7 +46,7 @@
           n.textContent.split(/(\s+)/).forEach(function (part) {
             if (!part) return;
             if (/^\s+$/.test(part)) { frag.appendChild(d.createTextNode(part)); return; }
-            var word = d.createElement('span'); word.className = 'w';
+            var word = d.createElement('span'); word.className = 'wd';
             Array.prototype.forEach.call(part, function (ch) {
               var c = d.createElement('span'); c.className = 'c'; c.textContent = ch;
               c.style.setProperty('--i', i++);
@@ -109,6 +109,13 @@
         if (f.tagName === 'A') f.href = v; else f.textContent = v;
       });
       var cd = $('[data-countdown]', slot); if (cd) cd.dataset.countdown = src[0].dataset.start;
+    });
+    // Ticket-Button zum nächsten Event; ohne kommende Termine zur Eventübersicht
+    $$('[data-fill-href]').forEach(function (a) {
+      var nxt = $$('[data-pool] [data-end]').filter(function (c) { return new Date(c.dataset.end).getTime() >= now; })
+        .sort(function (x, y) { return new Date(x.dataset.start) - new Date(y.dataset.start); })[0];
+      if (nxt) a.href = nxt.dataset[a.dataset.fillHref];
+      else if (a.dataset.fallback) { a.href = a.dataset.fallback; a.target = ''; }
     });
   }
 
