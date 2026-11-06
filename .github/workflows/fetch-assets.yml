@@ -55,25 +55,25 @@ jobs:
               # ganze Website samt CSS, Bildern und Schriften spiegeln
               ua="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
               depth=$(echo "$item" | jq -r '.depth // 2')
-              wget -q -e robots=off -r -l "$depth" -p -E -k --no-parent -U "$ua" --quota=120m -P "$path" "$url" || true
-              wget -q -e robots=off -p -H -E -k -U "$ua" --quota=60m -P "$path/_extern" "$url" || true
+              timeout 420 wget -q -e robots=off --timeout=20 --tries=2 -r -l "$depth" -p -E -k --no-parent -U "$ua" --quota=120m -P "$path" "$url" || true
+              timeout 180 wget -q -e robots=off --timeout=20 --tries=2 -p -H -E -k -U "$ua" --quota=60m -P "$path/_extern" "$url" || true
             elif [ "$mode" = "shot" ] || [ "$mode" = "render" ]; then
               if [ ! -d /tmp/pw/node_modules/playwright ]; then
                 (mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm i --silent playwright@1.47.2 && npx playwright install --with-deps chromium >/dev/null)
               fi
               device=$(echo "$item" | jq -r '.device // empty')
               width=$(echo "$item" | jq -r '.width // empty')
-              NODE_PATH=/tmp/pw/node_modules node .github/scripts/browse.js "$url" "$path" "$mode" "$device" "$width" || echo "browser failed: $url"
+              NODE_PATH=/tmp/pw/node_modules timeout 150 node .github/scripts/browse.js "$url" "$path" "$mode" "$device" "$width" || echo "browser failed: $url"
             elif [ "$mode" = "ytdlp-list" ]; then
               command -v yt-dlp >/dev/null || pip install -q yt-dlp
-              yt-dlp --flat-playlist -J "$url" > "$path" || echo "yt-dlp list failed: $url"
+              timeout 180 yt-dlp --socket-timeout 20 --flat-playlist -J "$url" > "$path" || echo "yt-dlp list failed: $url"
             elif [ "$mode" = "ytdlp" ]; then
               command -v yt-dlp >/dev/null || pip install -q yt-dlp
-              yt-dlp -q --no-warnings --write-info-json -f "best[ext=mp4]/best" -o "$path" "$url" || echo "yt-dlp failed: $url"
+              timeout 300 yt-dlp --socket-timeout 20 -q --no-warnings --write-info-json -f "best[ext=mp4]/best" -o "$path" "$url" || echo "yt-dlp failed: $url"
             elif [ -n "$headers" ]; then
-              curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -H "$headers" -o "$path" "$url"
+              curl -sSLk --max-time 90 --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -H "$headers" -o "$path" "$url"
             else
-              curl -sSLk --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -o "$path" "$url"
+              curl -sSLk --max-time 90 --retry 3 --retry-delay 2 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -o "$path" "$url"
             fi
             [ -e "$path" ] && echo "fetched: $path ($(du -sb "$path" | cut -f1) bytes)" || echo "missing: $path"
           done
