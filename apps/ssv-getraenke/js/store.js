@@ -72,7 +72,10 @@
 
     _laden() {
       try { this.d = JSON.parse(localStorage.getItem(this.KEY)); } catch (e) { this.d = null; }
-      if (!this.d || this.d.version !== 2) {
+      // Neu anlegen, wenn noch keine Daten da sind – oder der Hafen-Manager inzwischen einen ganz anderen Mitgliederstamm hat (Demo zurückgesetzt)
+      const hm = this.d && this.d.version === 2 && this._hafenMitglieder();
+      const fremd = hm && hm.length && !this.d.mitglieder.some((m) => hm.some((h) => h.id === m.id));
+      if (!this.d || this.d.version !== 2 || fremd) {
         this.d = this._beispieldaten();
         // Historie: September abgerechnet und eingezogen, Oktober abgerechnet
         const j = new Date(); const vm = (k) => new Date(j.getFullYear(), j.getMonth() - k, 1);

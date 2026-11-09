@@ -52,14 +52,14 @@
         '<div class="aktionen" style="margin-top:10px"><button class="btn gruen" id="awok">Abwesenheit melden</button></div>' +
         (aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') + '</div>' : '') +
       '<div class="panel"><h2>Meine Rechnungen</h2><div id="rechnungen"></div>' +
-      '<p class="hinweis" style="margin-top:12px">Hafengeld und Getränke werden per Lastschrift eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p></div></div></div>';
+      '<p class="hinweis" style="margin-top:12px">Beitrag, Hafengeld und Getränke werden per Lastschrift eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p></div></div></div>';
 
     // Rechnungen: Hafen sofort, Getränke sobald die Kasse geantwortet hat
-    const hafenPosten = res.map((r) => ({ art: 'Hafen', nr: r.nr, datum: r.datum || '', text: r.periode === 'sommer' ? 'Sommer ' + r.saison : 'Winter ' + r.saison + '/' + String(r.saison + 1).slice(2),
+    const hafenPosten = res.map((r) => ({ art: r.periode === 'beitrag' ? 'Beitrag' : 'Hafen', nr: r.nr, datum: r.datum || '', text: r.periode === 'beitrag' ? 'Mitgliedsbeitrag ' + r.saison : H.periodeText(r),
       summe: r.summe, bezahlt_am: r.bezahlt_am, sepa: r.sepa, faellig: r.faellig, href: 'drucken.html?art=rechnungen&ids=' + r.id }));
     const rechnungenZeigen = (getraenke) => {
       const alle = hafenPosten.concat(getraenke || []).sort((x, y) => (y.datum || '').localeCompare(x.datum || '') || y.nr.localeCompare(x.nr));
-      $('#rechnungen').innerHTML = alle.length ? '<table class="tab"><tbody>' + alle.map((r) => '<tr><td><strong style="white-space:nowrap">' + esc(r.nr) + '</strong><br><span class="tag' + (r.art === 'Hafen' ? '' : ' gold') + '">' + r.art + '</span> <small style="color:var(--muted)">' + esc(r.text) + '</small></td><td class="r">' + H.geld(r.summe) + '</td><td>' +
+      $('#rechnungen').innerHTML = alle.length ? '<table class="tab"><tbody>' + alle.map((r) => '<tr><td><strong style="white-space:nowrap">' + esc(r.nr) + '</strong><br><span class="tag' + (r.art === 'Hafen' ? '' : r.art === 'Beitrag' ? ' gruen' : ' gold') + '">' + r.art + '</span> <small style="color:var(--muted)">' + esc(r.text) + '</small></td><td class="r">' + H.geld(r.summe) + '</td><td>' +
         (r.bezahlt_am ? '<span class="tag ok">bezahlt</span>' : r.sepa ? '<span class="tag">Lastschrift ' + H.kurz(r.faellig) + '</span>' : '<span class="tag warn">offen</span>') +
         '</td><td class="r"><a class="btn klein" href="' + r.href + '" target="_blank">PDF</a></td></tr>').join('') + '</tbody></table>' : '<p class="leer">Noch keine Rechnungen.</p>';
     };

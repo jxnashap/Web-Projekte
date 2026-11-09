@@ -39,7 +39,19 @@
     const P = (text, menge, einheit, einzelpreis) => ({ text, menge, einheit, einzelpreis, betrag: eur(ct(einzelpreis) * menge) });
     const label = periode === 'sommer' ? 'Sommer ' + saison : 'Winter ' + saison + '/' + String(saison + 1).slice(2);
 
-    d.belegungen.filter((b) => b.saison === saison && b.periode === periode).forEach((bel) => {
+    // Mitgliedsbeitrag: jedes Mitglied, das am 1.1. des Jahres Mitglied ist (bzw. im Jahr eintritt)
+    if (periode === 'beitrag') {
+      const B = gb.beitraege || window.HAFEN.GEBUEHREN_2024.beitraege;
+      const A = window.HAFEN.H.ART;
+      d.mitglieder.filter((m) => m.art !== 'gast' && (!m.eintritt || m.eintritt <= saison + '-12-31') && (!m.austritt || m.austritt > saison + '-01-01')).forEach((m) => {
+        const b = B[m.art]; if (!b) return;
+        pos(m.id, P('Vereinsbeitrag ' + saison + ' (' + A[m.art] + ')', 1, 'Jahr', b.verein));
+        if (b.verband) pos(m.id, P('Verbandsbeitrag ' + saison + ' (wird an den Segler-Verband weitergegeben)', 1, 'Jahr', b.verband));
+        if (m.art === 'probe') pos(m.id, P('Eintrittsgeld Probemitglied (je Probejahr)', 1, 'Jahr', gb.eintrittsgeld_probe != null ? gb.eintrittsgeld_probe : 130));
+      });
+    }
+
+    if (periode !== 'beitrag') d.belegungen.filter((b) => b.saison === saison && b.periode === periode).forEach((bel) => {
       const boot = d.boote.find((x) => x.id === bel.boot_id); if (!boot) return;
       const m = d.mitglieder.find((x) => x.id === boot.eigner_id); if (!m) return;
       const bootTxt = ' · „' + boot.name + '“';
@@ -71,7 +83,7 @@
 
     // Alle noch offenen Kran-Einsätze bis zum Stichtag – sie laufen mit der nächsten Abrechnung mit
     const bis = stichtag || window.HAFEN.H.tag(new Date());
-    d.kran.filter((k) => !k.abgerechnet && k.datum <= bis).forEach((k) => {
+    if (periode !== 'beitrag') d.kran.filter((k) => !k.abgerechnet && k.datum <= bis).forEach((k) => {
       const boot = d.boote.find((x) => x.id === k.boot_id); if (!boot) return;
       const std = Math.max(1, Math.ceil(k.minuten / 60));
       const preis = k.art === 'mast' ? gb.mastenkran_std : gb.schiffskran_std;
@@ -91,7 +103,7 @@
   function saisonAbrechnen(d, saison, periode, datum) {
     const e = d.einstellungen;
     const jahr = datum.slice(0, 4);
-    const praefix = (e.rechnung_praefix || 'SSV-H') + '-' + jahr + '-';
+    const praefix = (periode === 'beitrag' ? (e.beitrag_praefix || 'SSV-B') : (e.rechnung_praefix || 'SSV-H')) + '-' + jahr + '-';
     let lfd = d.rechnungen.filter((r) => r.nr.startsWith(praefix)).reduce((mx, r) => Math.max(mx, parseInt(r.nr.slice(praefix.length), 10)), 0);
     const faellig = new Date(datum + 'T12:00:00'); faellig.setDate(faellig.getDate() + Number(e.zahlungsziel_tage || 14));
     const neu = [];

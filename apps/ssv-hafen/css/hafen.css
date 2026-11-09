@@ -158,3 +158,11 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   .main { padding: 18px 12px 60px; }
   .form, .form.drei, .zwei { grid-template-columns: 1fr; }
 }
+
+/* Drucken aus der Verwaltung (z. B. Verbandsmeldung): nur der Inhalt */
+@media print {
+  .shell { display: block; }
+  .nav, .kopf .aktionen, .demo-band, .toast, .modal { display: none !important; }
+  body { background: #fff; }
+  .panel { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+}

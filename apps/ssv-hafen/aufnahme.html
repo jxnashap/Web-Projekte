@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E1B45">
+<title>Mitglied werden · Schwartauer Segler-Verein</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/hafen.css">
+<style>
+  body { background: var(--navy); }
+  .auf { max-width: 680px; margin: 0 auto; padding: 22px 16px 48px; }
+  .auf-kopf { color: #fff; text-align: center; padding: 10px 0 20px; }
+  .auf-kopf .stander { width: 64px; height: 52px; }
+  .auf-kopf h1 { color: #fff; font-size: 30px; margin: 6px 0 6px; }
+  .auf-kopf p { margin: 0 auto; color: rgba(255,255,255,.78); max-width: 520px; }
+  .karte { background: #fff; border-radius: 20px; padding: 22px; margin-bottom: 14px; }
+  .karte h2 { font-size: 20px; margin: 0 0 4px; }
+  .karte > p.unter { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+  .arten { display: grid; gap: 8px; }
+  .art { display: flex; gap: 12px; align-items: flex-start; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; cursor: pointer; }
+  .art:has(input:checked) { border-color: var(--navy); background: rgba(14,27,69,.04); }
+  .art input { margin-top: 4px; accent-color: var(--navy); }
+  .art strong { display: block; color: var(--navy); }
+  .art span { font-size: 13.5px; color: var(--muted); }
+  .art b { margin-left: auto; white-space: nowrap; color: var(--navy); font-weight: 650; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; margin: 10px 0; }
+  .check input { margin-top: 3px; accent-color: var(--navy); flex: none; }
+  .mandat { font-size: 13px; color: var(--muted); background: var(--paper); border-radius: 12px; padding: 12px 14px; margin: 10px 0; }
+  .fehlertext { color: var(--rot); font-size: 13px; min-height: 1em; }
+  .danke { text-align: center; }
+  .danke svg { width: 80px; height: 80px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="sc"><path d="M14 8H118L94 33L118 58H14Z"/></clipPath>
+  <symbol id="stander" viewBox="0 0 124 100"><rect x="6" y="2" width="5" height="96" rx="2.5" fill="currentColor" opacity=".7"/><path d="M14 8H118L94 33L118 58H14Z" fill="#132a6b"/><g clip-path="url(#sc)"><path d="M14 8L104 58M14 58L104 8" stroke="#fff" stroke-width="15"/><path d="M14 8L104 58M14 58L104 8" stroke="#d3252c" stroke-width="9"/></g><path d="M14 8H118L94 33L118 58H14Z" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2"/></symbol></defs></svg>
+<div class="auf">
+  <div class="auf-kopf">
+    <svg class="stander"><use href="#stander"/></svg>
+    <h1>Mitglied werden</h1>
+    <p>Schön, dass du zu uns an die Trave kommen möchtest! Füll den Antrag in Ruhe aus – der Vorstand meldet sich nach der Entscheidung bei dir.</p>
+  </div>
+  <form id="f" novalidate>
+    <div class="karte">
+      <h2>1 · Art der Mitgliedschaft</h2>
+      <p class="unter">Jahresbeiträge laut Gebührenordnung, inklusive Verbandsbeitrag.</p>
+      <div class="arten" id="arten"></div>
+      <p class="hinweis" style="margin-top:12px">Laut Satzung werden neue Mitglieder im Regelfall zunächst als fördernde Mitglieder aufgenommen. Erwachsene können eine Probemitgliedschaft von bis zu drei Jahren beantragen – sie geht der ausübenden Mitgliedschaft voraus.</p>
+    </div>
+    <div class="karte">
+      <h2>2 · Über dich</h2>
+      <div class="form">
+        <label class="feld">Vorname<input name="vorname" required autocomplete="given-name"></label>
+        <label class="feld">Nachname<input name="nachname" required autocomplete="family-name"></label>
+        <label class="feld">Geburtsdatum<input name="geburtsdatum" type="date" required></label>
+        <label class="feld">Geschlecht<select name="geschlecht"><option value="">bitte wählen</option><option value="w">weiblich</option><option value="m">männlich</option><option value="d">divers</option></select><small>für die Meldung an den Sportverband</small></label>
+        <label class="feld voll">Straße und Hausnummer<input name="strasse" required autocomplete="street-address"></label>
+        <label class="feld">PLZ<input name="plz" required inputmode="numeric" autocomplete="postal-code"></label>
+        <label class="feld">Ort<input name="ort" required autocomplete="address-level2"></label>
+        <label class="feld">E-Mail<input name="email" type="email" required autocomplete="email"></label>
+        <label class="feld">Telefon<input name="tel" type="tel" autocomplete="tel"></label>
+        <label class="feld voll" id="eb-feld" hidden>Erziehungsberechtigte Person (Vor- und Nachname)<input name="erziehungsberechtigt"><small>Bei Minderjährigen stellt eine erziehungsberechtigte Person den Antrag.</small></label>
+      </div>
+      <p class="fehlertext" id="alter-hinweis"></p>
+    </div>
+    <div class="karte">
+      <h2>3 · Boot (optional)</h2>
+      <label class="check"><input type="checkbox" id="hat-boot"> Ich habe ein Boot</label>
+      <div id="boot" hidden>
+        <div class="form">
+          <label class="feld">Bootsname<input name="boot_name"></label>
+          <label class="feld">Typ<input name="boot_typ" placeholder="z. B. Folkeboot"></label>
+          <label class="feld">Länge (m)<input name="boot_laenge" type="number" step="0.01" min="2" max="20" inputmode="decimal"></label>
+          <label class="feld">Breite (m)<input name="boot_breite" type="number" step="0.01" min="1" max="6" inputmode="decimal"></label>
+        </div>
+        <label class="check"><input type="checkbox" name="warteliste"> Bitte auf die Warteliste für einen Liegeplatz setzen</label>
+      </div>
+    </div>
+    <div class="karte">
+      <h2>4 · Lastschrift</h2>
+      <p class="unter">Beiträge und Hafengeld ziehen wir bequem per Lastschrift ein.</p>
+      <div class="form">
+        <label class="feld voll">Kontoinhaber/in<input name="kontoinhaber" autocomplete="name"></label>
+        <label class="feld voll">IBAN<input name="iban" autocomplete="off" placeholder="DE…" spellcheck="false"></label>
+      </div>
+      <p class="fehlertext" id="iban-hinweis"></p>
+      <div class="mandat"><strong>SEPA-Lastschriftmandat</strong><br>
+        Ich ermächtige den <span data-verein></span>, Zahlungen von meinem Konto mittels Lastschrift einzuziehen. Zugleich weise ich mein Kreditinstitut an, die vom Verein auf mein Konto gezogenen Lastschriften einzulösen.
+        Hinweis: Ich kann innerhalb von acht Wochen, beginnend mit dem Belastungsdatum, die Erstattung des belasteten Betrages verlangen. Es gelten dabei die mit meinem Kreditinstitut vereinbarten Bedingungen.<br>
+        Gläubiger-Identifikationsnummer: <span data-glaeubiger></span> · Die Mandatsreferenz teilen wir dir nach der Aufnahme mit.<br>
+        <em>[PLATZHALTER: mit der Bank klären, ob ein online erteiltes Mandat genügt – sonst wird das unterschriebene Mandat nach der Aufnahme nachgereicht.]</em></div>
+      <label class="check"><input type="checkbox" name="mandat" checked> Ich erteile das SEPA-Lastschriftmandat.</label>
+    </div>
+    <div class="karte">
+      <h2>5 · Zum Schluss</h2>
+      <label class="feld">Möchtest du uns noch etwas sagen? (optional)<textarea name="nachricht" rows="3"></textarea></label>
+      <label class="check"><input type="checkbox" name="satzung" required> Ich erkenne die <a href="../website/dokumente/satzung.pdf" target="_blank" rel="noopener">Satzung</a> und die <a href="../website/dokumente/hafenbetriebsordnung.pdf" target="_blank" rel="noopener">Hafenbetriebsordnung</a> des Vereins an.</label>
+      <label class="check"><input type="checkbox" name="datenschutz" required> Ich habe die <a href="../website/datenschutz.html" target="_blank" rel="noopener">Datenschutzhinweise</a> gelesen. Meine Angaben werden für die Mitgliederverwaltung, den Beitragseinzug und die Meldung an die Sportverbände genutzt.</label>
+      <p class="fehlertext" id="fehler"></p>
+      <button class="btn primaer" style="width:100%;padding:14px;font-size:16px" type="submit">Antrag absenden</button>
+      <p class="hinweis" style="margin-top:12px">Über die Aufnahme entscheidet der Vorstand auf Empfehlung des Aufnahmeausschusses (Satzung § 6), bei Jugendmitgliedern ein Vorstandsmitglied gemeinsam mit dem Jugendwart.</p>
+    </div>
+  </form>
+</div>
+<script src="js/daten.js"></script>
+<script src="js/gebuehren.js"></script>
+<script src="js/sepa.js"></script>
+<script>
+(function () {
+  'use strict';
+  const HF = window.HAFEN, H = HF.H, Q = HF.Q, SEPA = window.HAFEN_SEPA;
+  const d0 = HF.laden(), e = d0.einstellungen;
+  const jahr = new Date().getFullYear();
+  const gb = window.HAFEN_GEBUEHREN.gebuehrenFuer(d0, jahr), B = gb.beitraege || HF.GEBUEHREN_2024.beitraege;
+  const preis = (art) => B[art].verein + B[art].verband + (art === 'probe' ? (gb.eintrittsgeld_probe || 0) : 0);
+  const ARTEN = [
+    ['foerdernd', 'Fördernde Mitgliedschaft', 'der Regelfall für neue Mitglieder'],
+    ['probe', 'Probemitgliedschaft', 'für Erwachsene, die aktiv segeln möchten · bis zu 3 Jahre · inkl. Eintrittsgeld-Rate ' + H.geld(gb.eintrittsgeld_probe || 0)],
+    ['jugend', 'Jugend', 'unter 18 Jahren – Opti, Jolle, Jugendgruppe'],
+    ['jugend_geschwister', 'Jugend – Geschwisterkind', 'wenn schon ein Geschwisterkind Jugendmitglied ist'],
+    ['ausbildung', 'In Ausbildung oder Studium', 'ab 18 Jahren, mit Nachweis'],
+    ['partner', 'Ehe- oder Lebenspartner/in', 'eines Vereinsmitglieds']
+  ];
+  document.getElementById('arten').innerHTML = ARTEN.map(([k, t, u], i) => '<label class="art"><input type="radio" name="art" value="' + k + '"' + (i === 0 ? ' checked' : '') + '><div><strong>' + t + '</strong><span>' + H.esc(u) + '</span></div><b>' + H.geld(preis(k)) + ' / Jahr</b></label>').join('');
+  document.querySelectorAll('[data-verein]').forEach((x) => { x.textContent = e.verein_name; });
+  document.querySelectorAll('[data-glaeubiger]').forEach((x) => { x.textContent = e.glaeubiger_id || '[PLATZHALTER]'; });
+
+  const f = document.getElementById('f');
+  const alter = () => f.geburtsdatum.value ? Q.alterAm({ geburtsdatum: f.geburtsdatum.value }, H.tag(new Date())) : null;
+  function pruefeAlter() {
+    const a = alter(), art = f.art.value, hinweis = document.getElementById('alter-hinweis');
+    document.getElementById('eb-feld').hidden = !(a != null && a < 18);
+    f.erziehungsberechtigt.required = a != null && a < 18;
+    let t = '';
+    if (a != null && a < 18 && !art.startsWith('jugend')) t = 'Unter 18? Dann passt die Jugendmitgliedschaft.';
+    if (a != null && a >= 18 && art.startsWith('jugend')) t = 'Ab 18 passt „In Ausbildung oder Studium“, eine Probe- oder fördernde Mitgliedschaft.';
+    hinweis.textContent = t; return !t;
+  }
+  f.addEventListener('change', pruefeAlter);
+  document.getElementById('hat-boot').addEventListener('change', (ev) => { document.getElementById('boot').hidden = !ev.target.checked; });
+  f.iban.addEventListener('blur', () => { const v = f.iban.value.replace(/\s/g, ''); document.getElementById('iban-hinweis').textContent = v && !SEPA.ibanGueltig(v) ? 'Diese IBAN stimmt nicht – bitte noch einmal prüfen.' : ''; });
+
+  f.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const fehler = document.getElementById('fehler'); fehler.textContent = '';
+    if (!f.checkValidity()) { f.reportValidity(); return; }
+    if (!pruefeAlter()) { fehler.textContent = 'Bitte die Art der Mitgliedschaft prüfen (siehe Hinweis bei „Über dich“).'; return; }
+    const x = Object.fromEntries(new FormData(f));
+    const ibanNr = (x.iban || '').replace(/\s/g, '').toUpperCase();
+    if (x.mandat && !ibanNr) { fehler.textContent = 'Für das Lastschriftmandat brauchen wir deine IBAN.'; return; }
+    if (ibanNr && !SEPA.ibanGueltig(ibanNr)) { fehler.textContent = 'Die IBAN ist ungültig – bitte prüfen.'; return; }
+    const hatBoot = document.getElementById('hat-boot').checked && x.boot_name;
+    const antrag = {
+      id: H.uid('A'), eingang: new Date().toISOString(), status: 'neu', art: x.art,
+      vorname: x.vorname.trim(), nachname: x.nachname.trim(), geburtsdatum: x.geburtsdatum, geschlecht: x.geschlecht,
+      strasse: x.strasse.trim(), plz: x.plz.trim(), ort: x.ort.trim(), email: x.email.trim(), tel: (x.tel || '').trim(), erziehungsberechtigt: (x.erziehungsberechtigt || '').trim(),
+      boot: hatBoot ? { name: x.boot_name.trim(), typ: (x.boot_typ || '').trim(), laenge: Number(x.boot_laenge) || 0, breite: Number(x.boot_breite) || 0 } : null,
+      warteliste: !!(hatBoot && x.warteliste), kontoinhaber: (x.kontoinhaber || (x.vorname + ' ' + x.nachname)).trim(), iban: ibanNr, bic: '',
+      mandat: !!x.mandat && !!ibanNr, satzung: !!x.satzung, datenschutz: !!x.datenschutz, nachricht: (x.nachricht || '').trim()
+    };
+    // Kurz vor dem Speichern frisch laden, damit parallele Änderungen nicht verloren gehen (Demo: Browser-Speicher)
+    const d = HF.laden(); d.antraege.push(antrag); HF.sichern();
+    document.querySelector('.auf').innerHTML = '<div class="karte danke"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" fill="rgba(29,138,90,.1)" stroke="#1d8a5a" stroke-width="4"/><path d="M24 41l11 11 22-24" fill="none" stroke="#1d8a5a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      '<h2 style="margin:10px 0 6px">Danke, ' + H.esc(antrag.vorname) + '!</h2><p>Dein Antrag ist bei uns angekommen. Der Vorstand meldet sich nach seiner Entscheidung per E-Mail bei dir – mit deiner Mitgliedsnummer und allem, was du für den Start brauchst.</p>' +
+      '<p>Fragen? Schreib uns an <a href="mailto:' + H.esc(e.verein_email) + '">' + H.esc(e.verein_email) + '</a>.</p></div>';
+    window.scrollTo(0, 0);
+  });
+})();
+</script>
+</body>
+</html>

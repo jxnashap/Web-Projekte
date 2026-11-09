@@ -14,10 +14,11 @@
     vorstand: { name: 'Vorstand', tabs: '*', bank: true },
     brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'warteliste', 'lagern'], bank: false },
     hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'abwesenheiten', 'lagern'], bank: false },
-    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'einstellungen'], bank: true }
+    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'einstellungen'], bank: true }
   };
   const TABS = [
-    ['Hafen', [['uebersicht', 'Übersicht'], ['plan', 'Hafenplan'], ['plaetze', 'Liegeplätze'], ['boote', 'Boote'], ['eigner', 'Eigner & Mitglieder']]],
+    ['Hafen', [['uebersicht', 'Übersicht'], ['plan', 'Hafenplan'], ['plaetze', 'Liegeplätze'], ['boote', 'Boote']]],
+    ['Mitglieder', [['eigner', 'Mitglieder & Eigner'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
     ['Betrieb', [['belegung', 'Belegung'], ['abwesenheiten', 'Abwesenheiten'], ['gaeste', 'Gastlieger'], ['warteliste', 'Warteliste'], ['lagern', 'Ein-/Auslagern & Kran'], ['arbeitsdienst', 'Arbeitsdienst']]],
     ['Finanzen', [['abrechnung', 'Abrechnung & Lastschrift'], ['gebuehren', 'Gebührenordnung'], ['einstellungen', 'Einstellungen']]]
   ];
@@ -265,28 +266,34 @@
 
   /* ============================================================ Eigner & Mitglieder */
   V.eigner = (main) => {
-    main.innerHTML = kopf('Eigner & Mitglieder', d.mitglieder.length + ' Personen mit Boot oder Platzwunsch', '<button class="btn" id="import">CSV-Import</button><button class="btn primaer" id="neu">+ Person</button>') +
+    const mitgl = d.mitglieder.filter((m) => Q.istMitglied(m, heute)).length;
+    main.innerHTML = kopf('Mitglieder & Eigner', mitgl + ' Mitglieder · ' + (d.mitglieder.length - mitgl) + ' weitere (Saison-Gäste, Ausgetretene)',
+      (bankSichtbar() ? '<button class="btn" id="import">Mitglieder importieren (CSV)</button>' : '') + '<button class="btn primaer" id="neu">+ Person</button>') +
       (bankSichtbar() ? '' : '<p class="hinweis">Bankdaten sind für deine Rolle ausgeblendet.</p>') +
-      '<div class="filter"><input class="suche" id="such" placeholder="Name, Nr., Ort …"></div>' +
+      '<div class="filter"><input class="suche" id="such" placeholder="Name, Nr., Ort …"><select class="suche" id="artf" style="min-width:0"><option value="">Alle Arten</option>' +
+      Object.entries(H.ART).map(([k, v]) => '<option value="' + k + '">' + v + '</option>').join('') + '</select></div>' +
       '<div class="panel"><table class="tab"><thead><tr><th>Nr.</th><th>Name</th><th>Art</th><th>Boot(e)</th><th>Telefon</th><th>Kfz</th><th>Lastschrift</th></tr></thead><tbody id="tb"></tbody></table></div>';
     const render = () => {
-      const f = $('#such').value.toLowerCase();
-      $('#tb').innerHTML = d.mitglieder.slice().sort((a, b) => a.nachname.localeCompare(b.nachname, 'de')).filter((m) => !f || (m.nr + ' ' + Q.name(m) + ' ' + m.ort).toLowerCase().includes(f)).map((m) =>
-        '<tr class="klickbar" data-m="' + m.id + '"><td>' + esc(m.nr) + '</td><td><strong>' + esc(m.nachname) + '</strong>, ' + esc(m.vorname) + '</td><td><span class="tag">' + H.ART[m.art] + '</span></td>' +
+      const f = $('#such').value.toLowerCase(), af = $('#artf').value;
+      $('#tb').innerHTML = d.mitglieder.slice().sort((a, b) => a.nachname.localeCompare(b.nachname, 'de')).filter((m) => (!f || (m.nr + ' ' + Q.name(m) + ' ' + m.ort).toLowerCase().includes(f)) && (!af || m.art === af)).map((m) =>
+        '<tr class="klickbar' + (m.austritt && m.austritt <= heute ? ' blass' : '') + '" data-m="' + m.id + '"><td>' + esc(m.nr) + '</td><td><strong>' + esc(m.nachname) + '</strong>, ' + esc(m.vorname) + (m.austritt && m.austritt <= heute ? ' <span class="tag">ausgetreten</span>' : '') + '</td><td><span class="tag">' + (H.ART[m.art] || esc(m.art)) + '</span></td>' +
         '<td>' + Q.booteVon(m.id).map((b) => esc(b.name)).join(', ') + '</td><td>' + esc(m.tel) + '</td><td>' + esc(m.kfz || '') + '</td>' +
         '<td>' + (m.iban && m.mandat_ref ? '<span class="tag ok">Mandat ' + esc(m.mandat_ref) + '</span>' : '<span class="tag warn">kein Mandat</span>') + '</td></tr>').join('');
     };
-    render(); $('#such').addEventListener('input', render);
+    render(); $('#such').addEventListener('input', render); $('#artf').addEventListener('change', render);
     $('#tb').addEventListener('click', (e) => { const r = e.target.closest('[data-m]'); if (r) mitgliedForm(Q.mitglied(r.dataset.m)); });
     $('#neu').addEventListener('click', () => mitgliedForm({ art: 'ausuebend' }));
-    $('#import').addEventListener('click', () => toast('CSV-Import (z. B. Mitgliederliste aus Excel) ist vorbereitet – Spalten wie in der Getränkekasse, plus IBAN und Mandat.'));
+    if ($('#import')) $('#import').addEventListener('click', importDialog);
   };
   function mitgliedForm(m) {
     const neu = !m.id; const bank = bankSichtbar();
     const el = modal('<h2>' + (neu ? 'Neue Person' : esc(Q.name(m))) + '</h2><form id="f" class="form">' +
       '<label class="feld">Vorname<input name="vorname" required value="' + esc(m.vorname || '') + '"></label><label class="feld">Nachname<input name="nachname" required value="' + esc(m.nachname || '') + '"></label>' +
       '<label class="feld">Mitglieds-/Kundennr.<input name="nr" value="' + esc(m.nr || '') + '"></label>' +
-      '<label class="feld">Art<select name="art">' + Object.entries(H.ART).map(([k, v]) => '<option value="' + k + '"' + (m.art === k ? ' selected' : '') + '>' + v + '</option>').join('') + '</select><small>bestimmt die Liegeplatzgebühr</small></label>' +
+      '<label class="feld">Art<select name="art">' + Object.entries(H.ART).map(([k, v]) => '<option value="' + k + '"' + (m.art === k ? ' selected' : '') + '>' + v + '</option>').join('') + '</select><small>bestimmt Beitrag und Liegeplatzgebühr</small></label>' +
+      '<label class="feld">Geburtsdatum<input name="geburtsdatum" type="date" value="' + esc(m.geburtsdatum || '') + '"></label><label class="feld">Geschlecht<select name="geschlecht"><option value="">–</option>' +
+      Object.entries(H.GESCHLECHT).map(([k, v]) => '<option value="' + k + '"' + (m.geschlecht === k ? ' selected' : '') + '>' + v + '</option>').join('') + '</select><small>für die Verbandsmeldung</small></label>' +
+      '<label class="feld">Eintritt<input name="eintritt" type="date" value="' + esc(m.eintritt || '') + '"></label><label class="feld">Austritt zum<input name="austritt" type="date" value="' + esc(m.austritt || '') + '"><small>leer = Mitglied</small></label>' +
       '<label class="feld">E-Mail<input name="email" type="email" value="' + esc(m.email || '') + '"></label><label class="feld">Telefon<input name="tel" value="' + esc(m.tel || '') + '"></label>' +
       '<label class="feld voll">Straße<input name="strasse" value="' + esc(m.strasse || '') + '"></label><label class="feld">PLZ<input name="plz" value="' + esc(m.plz || '') + '"></label><label class="feld">Ort<input name="ort" value="' + esc(m.ort || '') + '"></label>' +
       '<label class="feld">Kfz-Kennzeichen<input name="kfz" value="' + esc(m.kfz || '') + '"><small>laut Hafenbetriebsordnung empfohlen</small></label><span></span>' +
@@ -298,10 +305,236 @@
       const x = Object.fromEntries(new FormData(f));
       if (bank && x.iban && !SEPA.ibanGueltig(x.iban)) return toast('Die IBAN ist ungültig (Prüfziffer stimmt nicht).', 'fehler');
       if (bank && x.iban) x.iban = x.iban.replace(/\s/g, '').toUpperCase();
-      if (neu) d.mitglieder.push({ id: H.uid('M'), notiz: '', ...x }); else Object.assign(m, x);
+      if (neu) d.mitglieder.push({ id: H.uid('M'), notiz: '', ...x, nr: x.nr || Q.naechsteNr() }); else Object.assign(m, x);
       speichern('Gespeichert.'); zu(); zeige(tab);
     });
   }
+
+  /* ============================================================ Mitglieder-Import (CSV) */
+  // Spaltennamen, wie sie in Exporten (easyVerein, Excel-Listen) typischerweise heißen
+  const IMPORT_SPALTEN = {
+    nr: ['mitgliedsnummer', 'mitgliedsnr', 'mitgliedsnr.', 'mitglieds-nr', 'mitglieds-nr.', 'mitglieds nr', 'mitgliedernummer', 'mitglied nr', 'nr', 'nr.', 'nummer'],
+    vorname: ['vorname', 'first name', 'firstname'],
+    nachname: ['nachname', 'familienname', 'last name', 'lastname', 'name'],
+    email: ['e-mail', 'email', 'e-mail-adresse', 'emailadresse', 'e-mail privat', 'mail'],
+    tel: ['telefon', 'telefonnummer', 'mobil', 'mobilnummer', 'handy', 'telefon privat', 'tel', 'tel.'],
+    strasse: ['straße', 'strasse', 'straße und hausnummer', 'strasse und hausnummer', 'anschrift', 'adresse', 'str.'],
+    plz: ['plz', 'postleitzahl'],
+    ort: ['ort', 'wohnort', 'stadt'],
+    geburtsdatum: ['geburtsdatum', 'geburtstag', 'geboren', 'geboren am', 'geb.-datum', 'geb.datum', 'geb.'],
+    geschlecht: ['geschlecht', 'anrede'],
+    art: ['mitgliedsart', 'beitragsgruppe', 'beitragsart', 'mitgliedschaft', 'mitgliedsstatus', 'art', 'status'],
+    eintritt: ['eintritt', 'eintrittsdatum', 'beitritt', 'beitrittsdatum', 'mitglied seit'],
+    austritt: ['austritt', 'austrittsdatum'],
+    iban: ['iban'],
+    bic: ['bic', 'swift', 'bic/swift'],
+    kontoinhaber: ['kontoinhaber', 'kontoinhaber/in', 'inhaber', 'name des kontoinhabers'],
+    mandat_ref: ['mandatsreferenz', 'sepa-mandatsreferenz', 'mandatsref', 'mandatsref.', 'mandat'],
+    mandat_datum: ['mandatsdatum', 'datum der mandatserteilung', 'mandatserteilung', 'mandat vom', 'datum mandat', 'unterschrift mandat', 'mandat erteilt am'],
+    kfz: ['kfz', 'kfz-kennzeichen', 'kennzeichen']
+  };
+  const IMPORT_LABEL = { nr: 'Mitgliedsnr.', vorname: 'Vorname', nachname: 'Nachname', email: 'E-Mail', tel: 'Telefon', strasse: 'Straße', plz: 'PLZ', ort: 'Ort', geburtsdatum: 'Geburtsdatum',
+    geschlecht: 'Geschlecht', art: 'Mitgliedsart', eintritt: 'Eintritt', austritt: 'Austritt', iban: 'IBAN', bic: 'BIC', kontoinhaber: 'Kontoinhaber', mandat_ref: 'Mandatsreferenz', mandat_datum: 'Mandatsdatum', kfz: 'Kfz' };
+
+  function csvLesen(text) {
+    text = text.replace(/^﻿/, '');
+    const erste = text.split(/\r?\n/)[0] || '';
+    const trenner = [';', '\t', ','].map((t) => [t, erste.split(t).length]).sort((a, b) => b[1] - a[1])[0][0];
+    const zeilen = []; let zeile = [], feld = '', inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQ) { if (c === '"') { if (text[i + 1] === '"') { feld += '"'; i++; } else inQ = false; } else feld += c; continue; }
+      if (c === '"') inQ = true;
+      else if (c === trenner) { zeile.push(feld); feld = ''; }
+      else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; zeile.push(feld); feld = ''; if (zeile.some((x) => x.trim())) zeilen.push(zeile); zeile = []; }
+      else feld += c;
+    }
+    zeile.push(feld); if (zeile.some((x) => x.trim())) zeilen.push(zeile);
+    return zeilen;
+  }
+  function spaltenZuordnen(kopfzeile) {
+    const norm = kopfzeile.map((k) => k.trim().toLowerCase().replace(/\s+/g, ' '));
+    const zu = {}; const belegt = new Set();
+    Object.entries(IMPORT_SPALTEN).forEach(([feld, aliase]) => {           // 1. exakte Treffer
+      for (const a of aliase) { const i = norm.findIndex((k, j) => k === a && !belegt.has(j)); if (i >= 0) { zu[feld] = i; belegt.add(i); break; } }
+    });
+    Object.entries(IMPORT_SPALTEN).forEach(([feld, aliase]) => {           // 2. „beginnt mit“ für längere Namen
+      if (feld in zu) return;
+      for (const a of aliase.filter((x) => x.length >= 5)) { const i = norm.findIndex((k, j) => k.startsWith(a) && !belegt.has(j)); if (i >= 0) { zu[feld] = i; belegt.add(i); break; } }
+    });
+    return { zu, unbekannt: kopfzeile.filter((k, i) => !belegt.has(i) && k.trim()) };
+  }
+  const datumIso = (v) => {
+    v = String(v || '').trim(); let m;
+    if ((m = v.match(/^(\d{4})-(\d{2})-(\d{2})/))) return m[1] + '-' + m[2] + '-' + m[3];
+    if ((m = v.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/))) { let j = Number(m[3]); if (j < 100) j += j > 30 ? 1900 : 2000; return j + '-' + H.pad(m[2]) + '-' + H.pad(m[1]); }
+    return '';
+  };
+  const geschlechtWert = (v) => { v = String(v || '').trim().toLowerCase(); if (/^(w|weiblich|frau|f|female)/.test(v)) return 'w'; if (/^(m|männlich|maennlich|herr|male)/.test(v)) return 'm'; if (/^d/.test(v)) return 'd'; return ''; };
+  const artWert = (v) => {
+    v = String(v || '').toLowerCase(); if (!v.trim()) return '';
+    if (/förder|foerder|passiv/.test(v)) return 'foerdernd'; if (/probe/.test(v)) return 'probe'; if (/geschwister/.test(v)) return 'jugend_geschwister';
+    if (/ausbild|azubi|student|schüler über|studier/.test(v)) return 'ausbildung'; if (/jugend|kind|junior/.test(v)) return 'jugend';
+    if (/partner|ehe/.test(v)) return 'partner'; if (/gast/.test(v)) return 'gast'; return 'ausuebend';
+  };
+
+  function importAuswerten(text) {
+    const zeilen = csvLesen(text); if (zeilen.length < 2) return { fehler: 'Keine Daten gefunden – erste Zeile muss die Spaltennamen enthalten.' };
+    const { zu, unbekannt } = spaltenZuordnen(zeilen[0]);
+    if (!('vorname' in zu) || !('nachname' in zu)) return { fehler: 'Spalten „Vorname“ und „Nachname“ nicht gefunden. Erkannt: ' + (Object.keys(zu).map((k) => IMPORT_LABEL[k]).join(', ') || 'nichts') };
+    const zeilenNeu = zeilen.slice(1).map((z, i) => {
+      const x = {}; Object.entries(zu).forEach(([f, j]) => { x[f] = String(z[j] == null ? '' : z[j]).trim(); });
+      ['geburtsdatum', 'eintritt', 'austritt', 'mandat_datum'].forEach((f) => { if (f in x) x[f] = datumIso(x[f]); });
+      if ('geschlecht' in x) x.geschlecht = geschlechtWert(x.geschlecht);
+      if ('art' in x) x.art = artWert(x.art);
+      if (x.iban) x.iban = x.iban.replace(/\s/g, '').toUpperCase();
+      const hinweise = [];
+      if (x.iban && !SEPA.ibanGueltig(x.iban)) { hinweise.push('IBAN ungültig – wird nicht übernommen'); delete x.iban; }
+      if (x.mandat_ref && !x.mandat_datum) hinweise.push('Mandatsdatum fehlt – bis dahin kein Lastschrifteinzug');
+      const gleich = (a, b) => String(a || '').toLowerCase() === String(b || '').toLowerCase();
+      const vorh = (x.nr && d.mitglieder.find((m) => m.nr === x.nr)) ||
+        (x.vorname && x.nachname && d.mitglieder.find((m) => gleich(m.vorname, x.vorname) && gleich(m.nachname, x.nachname) && (!x.geburtsdatum || !m.geburtsdatum || m.geburtsdatum === x.geburtsdatum)));
+      if (!vorh && (!x.vorname || !x.nachname)) return { zeile: i + 2, x, status: 'fehler', hinweise: ['Vor- oder Nachname fehlt'] };
+      if (vorh) { x.vorname = x.vorname || vorh.vorname; x.nachname = x.nachname || vorh.nachname; }
+      return { zeile: i + 2, x, status: vorh ? 'aktualisieren' : 'neu', m: vorh, hinweise };
+    });
+    return { zu, unbekannt, zeilen: zeilenNeu };
+  }
+
+  function importDialog() {
+    const el = modal('<h2>Mitglieder importieren</h2><p>CSV-Datei mit Spaltennamen in der ersten Zeile – z. B. der Mitglieder-Export aus easyVerein oder eine Excel-Liste (in Excel: <em>Speichern unter → CSV UTF-8</em>). ' +
+      'Erkannt werden u. a. Mitgliedsnummer, Vorname, Nachname, Anschrift, Geburtsdatum, Geschlecht, Mitgliedsart, Eintritt, IBAN, BIC, Kontoinhaber, Mandatsreferenz und Mandatsdatum.</p>' +
+      '<div class="aktionen"><label class="btn primaer">Datei wählen<input type="file" id="idatei" accept=".csv,.txt,text/csv" hidden></label><button class="btn" id="ivorlage">Vorlage herunterladen</button></div>' +
+      '<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--muted)">… oder Text einfügen</summary><textarea id="itext" rows="6" style="width:100%;margin-top:8px;font:12px monospace" placeholder="Mitgliedsnummer;Vorname;Nachname;…"></textarea><button class="btn klein" id="ipruefen" style="margin-top:6px">Prüfen</button></details>' +
+      '<div id="ierg"></div><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="iok" disabled>Übernehmen</button></div>', true);
+    let ergebnis = null;
+    const zeigeErgebnis = (text) => {
+      ergebnis = importAuswerten(text);
+      const box = $('#ierg', el);
+      if (ergebnis.fehler) { box.innerHTML = '<p class="hinweis warn">' + esc(ergebnis.fehler) + '</p>'; $('#iok', el).disabled = true; return; }
+      const z = ergebnis.zeilen; const n = (st) => z.filter((r) => r.status === st).length;
+      box.innerHTML = '<p style="margin-top:14px"><span class="tag ok">' + n('neu') + ' neu</span> <span class="tag">' + n('aktualisieren') + ' aktualisieren</span> ' + (n('fehler') ? '<span class="tag rot">' + n('fehler') + ' fehlerhaft (werden übersprungen)</span>' : '') + '</p>' +
+        '<p style="font-size:12.5px;color:var(--muted)">Erkannte Spalten: ' + Object.keys(ergebnis.zu).map((k) => IMPORT_LABEL[k]).join(', ') + (ergebnis.unbekannt.length ? ' · ignoriert: ' + ergebnis.unbekannt.map(esc).join(', ') : '') + '</p>' +
+        '<div style="max-height:320px;overflow:auto"><table class="tab"><thead><tr><th>Zeile</th><th>Nr.</th><th>Name</th><th>Art</th><th>Status</th><th>Hinweis</th></tr></thead><tbody>' +
+        z.slice(0, 300).map((r) => '<tr' + (r.status === 'fehler' ? ' class="blass"' : '') + '><td>' + r.zeile + '</td><td>' + esc(r.x.nr || (r.m ? r.m.nr : '')) + '</td><td>' + esc((r.x.nachname || '') + ', ' + (r.x.vorname || '')) + '</td><td>' + (r.x.art ? H.ART[r.x.art] : (r.m ? H.ART[r.m.art] : 'ausübend')) + '</td>' +
+          '<td>' + (r.status === 'neu' ? '<span class="tag ok">neu</span>' : r.status === 'aktualisieren' ? '<span class="tag">aktualisieren</span>' : '<span class="tag rot">Fehler</span>') + '</td><td style="font-size:12px">' + r.hinweise.map(esc).join('<br>') + '</td></tr>').join('') +
+        '</tbody></table></div><p class="hinweis" style="margin-top:10px">Bestehende Mitglieder werden über die Mitgliedsnummer (sonst Name + Geburtsdatum) erkannt. Leere Zellen überschreiben nichts. Die Getränkekasse übernimmt neue Mitglieder automatisch.</p>';
+      $('#iok', el).disabled = !(n('neu') + n('aktualisieren'));
+    };
+    $('#idatei', el).addEventListener('change', (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      const lesen = (enc) => new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsText(f, enc); });
+      lesen('utf-8').then((t) => (t.includes('�') ? lesen('windows-1252') : t)).then(zeigeErgebnis);   // ältere Excel-Exporte sind Windows-kodiert
+    });
+    $('#ipruefen', el).addEventListener('click', () => zeigeErgebnis($('#itext', el).value));
+    $('#ivorlage', el).addEventListener('click', () => download('ssv-mitglieder-vorlage.csv', csv([['Mitgliedsnummer', 'Vorname', 'Nachname', 'Geburtsdatum', 'Geschlecht', 'Mitgliedsart', 'Eintritt', 'Straße', 'PLZ', 'Ort', 'E-Mail', 'Telefon', 'IBAN', 'BIC', 'Kontoinhaber', 'Mandatsreferenz', 'Mandatsdatum'],
+      ['2101', 'Erika', 'Musterfrau', '14.03.1975', 'weiblich', 'ausübend', '01.04.2010', 'Hafenstraße 1', '23554', 'Lübeck', 'erika@beispiel.de', '0451 123456', 'DE02120300000000202051', '', 'Erika Musterfrau', 'SSV-2101', '01.04.2010']]), 'text/csv'));
+    $('#iok', el).addEventListener('click', () => {
+      if (!ergebnis || ergebnis.fehler) return;
+      let neu = 0, akt = 0;
+      ergebnis.zeilen.forEach((r) => {
+        if (r.status === 'fehler') return;
+        const werte = {}; Object.entries(r.x).forEach(([k, v]) => { if (v !== '' && v != null) werte[k] = v; });
+        if (r.status === 'aktualisieren') { Object.assign(r.m, werte); akt++; return; }
+        d.mitglieder.push({ id: H.uid('M'), art: 'ausuebend', email: '', tel: '', strasse: '', plz: '', ort: '', iban: '', bic: '', kontoinhaber: '', mandat_ref: '', mandat_datum: '', kfz: '', notiz: 'Import ' + H.datum(heute), austritt: '',
+          ...werte, nr: werte.nr || Q.naechsteNr(), kontoinhaber: werte.kontoinhaber || (werte.iban ? werte.vorname + ' ' + werte.nachname : '') });
+        neu++;
+      });
+      speichern(neu + ' Mitglieder angelegt, ' + akt + ' aktualisiert.'); zu(); zeige('eigner');
+    });
+  }
+
+  /* ============================================================ Aufnahmeanträge */
+  const beitragFuer = (art, jahr) => { const gb = G.gebuehrenFuer(d, jahr); const b = (gb.beitraege || HF.GEBUEHREN_2024.beitraege)[art]; if (!b) return 0; return Math.round((b.verein + b.verband + (art === 'probe' ? (gb.eintrittsgeld_probe || 0) : 0)) * 100) / 100; };
+  V.antraege = (main) => {
+    const alle = (d.antraege || []).slice().sort((a, b) => b.eingang.localeCompare(a.eingang));
+    const neu = alle.filter((a) => a.status === 'neu'), erledigt = alle.filter((a) => a.status !== 'neu');
+    const jahr = Number(heute.slice(0, 4));
+    main.innerHTML = kopf('Aufnahmeanträge', 'Online gestellte Anträge – der Vorstand entscheidet auf Empfehlung des Aufnahmeausschusses (Satzung § 6). Danach ist das Mitglied mit Nummer und Lastschriftmandat angelegt.', '<a class="btn" href="aufnahme.html" target="_blank">Antragsformular öffnen ↗</a>') +
+      (neu.length ? neu.map((a) => '<div class="panel"><div class="kopf" style="margin-bottom:6px"><div><h2 style="margin:0">' + esc(a.vorname + ' ' + a.nachname) + '</h2><p>' + esc(H.ART[a.art] || a.art) + ' · ' +
+        (a.geburtsdatum ? Q.alterAm(a, heute) + ' Jahre · ' : '') + esc(a.plz + ' ' + a.ort) + ' · eingegangen ' + H.datum(a.eingang) + '</p></div><div class="aktionen"><button class="btn" data-ansehen="' + a.id + '">Ansehen</button>' +
+        (darf('antraege') && rolle === 'vorstand' ? '<button class="btn gefahr" data-ab="' + a.id + '">Ablehnen</button><button class="btn primaer" data-auf="' + a.id + '">Aufnehmen</button>' : '') + '</div></div>' +
+        '<p style="margin:0;color:var(--muted);font-size:13.5px">Beitrag ' + jahr + ': <strong>' + H.geld(beitragFuer(a.art, jahr)) + '</strong> pro Jahr · ' + (a.mandat ? 'SEPA-Mandat erteilt' : 'kein Mandat (Überweisung)') +
+        (a.boot ? ' · Boot „' + esc(a.boot.name) + '“ (' + esc(a.boot.typ || '') + ', ' + H.zahl(a.boot.laenge) + ' m)' + (a.warteliste ? ' – möchte auf die Warteliste' : '') : '') +
+        (a.erziehungsberechtigt ? ' · erziehungsberechtigt: ' + esc(a.erziehungsberechtigt) : '') + '</p>' + (a.nachricht ? '<p style="margin:8px 0 0">„' + esc(a.nachricht) + '“</p>' : '') + '</div>').join('')
+        : '<div class="panel"><p class="leer">Keine offenen Anträge.</p></div>') +
+      (rolle !== 'vorstand' && neu.length ? '<p class="hinweis">Über Aufnahmen entscheidet der Vorstand.</p>' : '') +
+      (erledigt.length ? '<div class="panel"><h2>Erledigt</h2><table class="tab"><thead><tr><th>Eingang</th><th>Name</th><th>Art</th><th>Entscheidung</th></tr></thead><tbody>' + erledigt.map((a) =>
+        '<tr><td>' + H.datum(a.eingang) + '</td><td>' + esc(a.vorname + ' ' + a.nachname) + '</td><td>' + esc(H.ART[a.art] || a.art) + '</td><td>' + (a.status === 'angenommen' ? '<span class="tag ok">aufgenommen</span> Nr. ' + esc((Q.mitglied(a.mitglied_id) || {}).nr || '') : '<span class="tag rot">abgelehnt</span> ' + esc(a.grund || '')) +
+        ' <small style="color:var(--muted)">' + H.datum(a.entschieden) + '</small></td></tr>').join('') + '</tbody></table></div>' : '');
+    main.querySelectorAll('[data-ansehen]').forEach((b) => b.addEventListener('click', () => antragZeigen(d.antraege.find((a) => a.id === b.dataset.ansehen))));
+    main.querySelectorAll('[data-auf]').forEach((b) => b.addEventListener('click', () => antragAufnehmen(d.antraege.find((a) => a.id === b.dataset.auf))));
+    main.querySelectorAll('[data-ab]').forEach((b) => b.addEventListener('click', () => {
+      const a = d.antraege.find((x) => x.id === b.dataset.ab); const grund = prompt('Antrag von ' + a.vorname + ' ' + a.nachname + ' ablehnen – Grund (für die Akte):', ''); if (grund === null) return;
+      Object.assign(a, { status: 'abgelehnt', grund, entschieden: heute, entschieden_von: ROLLEN[rolle].name }); speichern('Antrag abgelehnt.'); zeige('antraege');
+    }));
+  };
+  function antragZeigen(a) {
+    const z = (l, v) => v ? '<dt>' + l + '</dt><dd>' + v + '</dd>' : '';
+    modal('<h2>Antrag ' + esc(a.vorname + ' ' + a.nachname) + '</h2><div class="detail" style="box-shadow:none;padding:0;position:static"><dl>' +
+      z('Mitgliedsart', esc(H.ART[a.art] || a.art)) + z('Geburtsdatum', H.datum(a.geburtsdatum)) + z('Geschlecht', H.GESCHLECHT[a.geschlecht] || '') + z('Anschrift', esc(a.strasse) + ', ' + esc(a.plz + ' ' + a.ort)) +
+      z('E-Mail', esc(a.email)) + z('Telefon', esc(a.tel)) + z('Erziehungsberechtigt', esc(a.erziehungsberechtigt)) +
+      z('Boot', a.boot ? '„' + esc(a.boot.name) + '“ · ' + esc(a.boot.typ || '') + ' · ' + H.zahl(a.boot.laenge) + ' × ' + H.zahl(a.boot.breite || 0) + ' m' + (a.warteliste ? ' · Warteliste gewünscht' : '') : '') +
+      z('Kontoinhaber', esc(a.kontoinhaber)) + z('IBAN', iban(a.iban)) + z('SEPA-Mandat', a.mandat ? 'erteilt am ' + H.datum(a.eingang) : 'nein') +
+      z('Satzung / Datenschutz', (a.satzung ? 'Satzung anerkannt' : '–') + ' · ' + (a.datenschutz ? 'Datenschutz bestätigt' : '–')) + z('Nachricht', esc(a.nachricht)) +
+      '</dl></div><div class="modal-fuss"><button class="btn" data-zu>Schließen</button></div>');
+  }
+  function antragAufnehmen(a) {
+    const nr = Q.naechsteNr();
+    if (!confirm(a.vorname + ' ' + a.nachname + ' als ' + H.ART[a.art] + ' aufnehmen? Mitgliedsnummer ' + nr + (a.mandat ? ', Mandatsreferenz SSV-' + nr : '') + (a.boot && a.warteliste ? ', Eintrag auf der Warteliste' : '') + '.')) return;
+    const m = { id: H.uid('M'), nr, vorname: a.vorname, nachname: a.nachname, art: a.art, email: a.email, tel: a.tel, strasse: a.strasse, plz: a.plz, ort: a.ort,
+      geburtsdatum: a.geburtsdatum, geschlecht: a.geschlecht, eintritt: heute, austritt: '', iban: a.iban || '', bic: a.bic || '', kontoinhaber: a.kontoinhaber || '',
+      mandat_ref: a.mandat ? 'SSV-' + nr : '', mandat_datum: a.mandat ? a.eingang.slice(0, 10) : '', kfz: '',
+      notiz: [a.erziehungsberechtigt ? 'Erziehungsberechtigt: ' + a.erziehungsberechtigt : '', 'Online-Antrag vom ' + H.datum(a.eingang)].filter(Boolean).join(' · ') };
+    d.mitglieder.push(m);
+    if (a.boot && a.warteliste) {
+      const l = Number(a.boot.laenge) || 0;
+      d.warteliste.push({ id: H.uid('W'), mitglied_id: m.id, datum: a.eingang.slice(0, 10), boot_laenge: l, boot_breite: Number(a.boot.breite) || 0, wunsch_box: l > 9 ? 'I' : l > 7 ? 'II' : 'III',
+        notiz: 'Boot „' + a.boot.name + '“' + (a.boot.typ ? ' (' + a.boot.typ + ')' : '') + ' · aus Online-Antrag', status: 'wartend' });
+    }
+    Object.assign(a, { status: 'angenommen', mitglied_id: m.id, entschieden: heute, entschieden_von: ROLLEN[rolle].name });
+    speichern(m.vorname + ' ist jetzt Mitglied Nr. ' + nr + '.'); zeige('antraege');
+    const el = modal('<h2>Willkommen an Bord, ' + esc(m.vorname) + '!</h2><p>Mitglied Nr. <strong>' + nr + '</strong> ist angelegt' + (m.mandat_ref ? ' (Mandatsreferenz ' + esc(m.mandat_ref) + ')' : '') + '. Die erste Beitragsrechnung entsteht mit der nächsten Beitragsabrechnung.</p>' +
+      '<p class="hinweis">Tipp: Begrüßungs-E-Mail mit Mitgliedsnummer und dem Hinweis auf „Mein SSV“ und den Getränke-Code verschicken.</p>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Schließen</button><a class="btn primaer" id="mail" href="mailto:' + encodeURIComponent(m.email) + '?subject=' + encodeURIComponent('Willkommen im Schwartauer Segler-Verein') + '&body=' +
+      encodeURIComponent('Moin ' + m.vorname + ',\n\nschön, dass du dabei bist! Deine Mitgliedsnummer ist ' + nr + '.\n\nIn „Mein SSV“ findest du deine Rechnungen und kannst dort deinen Code für die Getränkekasse festlegen – oder du legst ihn beim ersten Mal direkt am iPad im Vereinsheim fest (mit deiner Mitgliedsnummer).\n\nAllzeit gute Fahrt!\nDein Vorstand') + '">Begrüßungs-E-Mail schreiben</a></div>');
+    $('#mail', el).addEventListener('click', () => setTimeout(zu, 300));
+  }
+
+  /* ============================================================ Verbandsmeldung */
+  // Bestandserhebung: Mitglieder zum Stichtag 1.1. nach Altersgruppen und Geschlecht
+  const ALTERSGRUPPEN = [['bis 6', 0, 6], ['7–14', 7, 14], ['15–18', 15, 18], ['19–26', 19, 26], ['27–40', 27, 40], ['41–60', 41, 60], ['über 60', 61, 999]];
+  const verbandStand = { jahr: SAISON + 1 };
+  V.verband = (main) => {
+    const jahr = verbandStand.jahr, stichtag = jahr + '-01-01';
+    const liste = d.mitglieder.filter((m) => Q.istMitglied(m, stichtag));
+    const alterJ = (m) => m.geburtsdatum ? jahr - Number(m.geburtsdatum.slice(0, 4)) : null;   // Jahrgangsprinzip
+    const G4 = ['m', 'w', 'd', ''];
+    const tabelle = ALTERSGRUPPEN.map(([n, von, bis]) => { const inG = liste.filter((m) => { const a = alterJ(m); return a != null && a >= von && a <= bis; }); return [n, ...G4.map((g) => inG.filter((m) => (m.geschlecht || '') === g).length), inG.length]; });
+    const ohneAlter = liste.filter((m) => alterJ(m) == null);
+    if (ohneAlter.length) tabelle.push(['ohne Geburtsdatum', ...G4.map((g) => ohneAlter.filter((m) => (m.geschlecht || '') === g).length), ohneAlter.length]);
+    const summe = ['Gesamt', ...G4.map((g, i) => tabelle.reduce((s, z) => s + z[i + 1], 0)), liste.length];
+    const gb = G.gebuehrenFuer(d, jahr); const B = gb.beitraege || HF.GEBUEHREN_2024.beitraege;
+    const nachArt = Object.keys(H.ART).filter((k) => k !== 'gast').map((k) => { const n = liste.filter((m) => m.art === k).length; return [H.ART[k], n, B[k] ? B[k].verband : 0, n * (B[k] ? B[k].verband : 0)]; }).filter((z) => z[1]);
+    const luecken = liste.filter((m) => !m.geburtsdatum || !m.geschlecht);
+    main.innerHTML = kopf('Verbandsmeldung ' + jahr, 'Bestandserhebung zum Stichtag ' + H.datum(stichtag) + ' · ' + liste.length + ' Mitglieder (ohne Saison-Gäste)',
+      [SAISON, SAISON + 1].map((j) => '<button class="btn' + (j === jahr ? ' aktiv' : '') + '" data-vj="' + j + '">' + j + '</button>').join('') + '<button class="btn" id="vcsv">CSV</button><button class="btn" id="vdruck">Drucken</button>') +
+      '<div class="panel"><h2>Nach Alter und Geschlecht</h2><table class="tab"><thead><tr><th>Altersgruppe</th><th class="r">männlich</th><th class="r">weiblich</th><th class="r">divers</th><th class="r">ohne Angabe</th><th class="r">gesamt</th></tr></thead><tbody>' +
+      tabelle.map((z) => '<tr><td>' + z[0] + '</td>' + z.slice(1).map((v, i) => '<td class="r">' + (i === 4 ? '<strong>' + v + '</strong>' : v || '–') + '</td>').join('') + '</tr>').join('') +
+      '</tbody><tfoot><tr>' + summe.map((v, i) => '<td' + (i ? ' class="r"' : '') + '>' + v + '</td>').join('') + '</tr></tfoot></table>' +
+      '<p class="hinweis" style="margin-top:12px">Alter nach Jahrgang (' + jahr + ' minus Geburtsjahr). Altersgruppen wie in der üblichen Bestandserhebung der Landessportverbände. [PLATZHALTER: Gruppen und Meldeweg mit dem Landessportverband Schleswig-Holstein / Segler-Verband abgleichen]</p></div>' +
+      '<div class="panel"><h2>Nach Mitgliedsart</h2><table class="tab"><thead><tr><th>Art</th><th class="r">Anzahl</th><th class="r">Verbandsbeitrag je Person</th><th class="r">Verbandsbeitrag gesamt</th></tr></thead><tbody>' +
+      nachArt.map((z) => '<tr><td>' + z[0] + '</td><td class="r">' + z[1] + '</td><td class="r">' + H.geld(z[2]) + '</td><td class="r">' + H.geld(z[3]) + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td>Summe</td><td class="r">' + liste.length + '</td><td></td><td class="r">' + H.geld(nachArt.reduce((s, z) => s + z[3], 0)) + '</td></tr></tfoot></table>' +
+      '<p class="hinweis" style="margin-top:12px">Der Verbandsbeitrag wird mit dem Mitgliedsbeitrag eingezogen und an den Verband weitergegeben (Gebührenordnung 2024).</p></div>' +
+      (luecken.length ? '<div class="panel"><h2>Fehlende Angaben (' + luecken.length + ')</h2><p class="hinweis warn">Für eine vollständige Meldung bitte Geburtsdatum und Geschlecht ergänzen.</p><table class="tab"><tbody>' +
+        luecken.map((m) => '<tr class="klickbar" data-m="' + m.id + '"><td>' + esc(m.nr) + '</td><td>' + esc(Q.name(m)) + '</td><td>' + (!m.geburtsdatum ? '<span class="tag warn">Geburtsdatum</span> ' : '') + (!m.geschlecht ? '<span class="tag warn">Geschlecht</span>' : '') + '</td></tr>').join('') + '</tbody></table></div>' : '');
+    main.querySelectorAll('[data-vj]').forEach((b) => b.addEventListener('click', () => { verbandStand.jahr = Number(b.dataset.vj); zeige('verband'); }));
+    main.querySelectorAll('[data-m]').forEach((r) => r.addEventListener('click', () => mitgliedForm(Q.mitglied(r.dataset.m))));
+    $('#vdruck').addEventListener('click', () => window.print());
+    $('#vcsv').addEventListener('click', () => download('ssv-bestandserhebung-' + jahr + '.csv', csv([['Bestandserhebung ' + jahr + ', Stichtag ' + H.datum(stichtag)], ['Altersgruppe', 'männlich', 'weiblich', 'divers', 'ohne Angabe', 'gesamt']]
+      .concat(tabelle, [summe], [[]], [['Mitgliedsart', 'Anzahl', 'Verbandsbeitrag je Person', 'Verbandsbeitrag gesamt']], nachArt.map((z) => [z[0], z[1], H.zahl(z[2]), H.zahl(z[3])]))), 'text/csv'));
+  };
 
   /* ============================================================ Belegung */
   const belegungStand = { periode: imSommer ? 'sommer' : 'winter' };
@@ -491,45 +724,47 @@
   };
 
   /* ============================================================ Abrechnung */
-  const abrStand = { periode: imSommer ? 'sommer' : 'winter', datum: heute };
+  const abrStand = { periode: imSommer ? 'sommer' : 'winter', datum: heute, beitragJahr: SAISON + 1 };
   V.abrechnung = (main) => {
     const per = abrStand.periode, e = d.einstellungen;
-    const vs = G.vorschau(d, SAISON, per, abrStand.datum).filter((x) => x.summe > 0);
+    const jahr = per === 'beitrag' ? abrStand.beitragJahr : SAISON;
+    const vs = G.vorschau(d, jahr, per, abrStand.datum).filter((x) => x.summe > 0);
     const offen = vs.filter((x) => !x.schon_abgerechnet);
     const ohneMandat = offen.filter((x) => !(x.m.iban && x.m.mandat_ref && x.m.mandat_datum));
     const res = d.rechnungen.slice().sort((a, b) => b.nr.localeCompare(a.nr));
     const sepaBereit = res.filter((r) => r.sepa && !r.sepa_lauf && !r.storniert_am && !r.bezahlt_am);
     const sepaOk = SEPA.ibanGueltig(e.iban) && SEPA.glaeubigerGueltig(e.glaeubiger_id);
-    const label = per === 'sommer' ? 'Sommer ' + SAISON : 'Winter ' + SAISON + '/' + String(SAISON + 1).slice(2);
-    main.innerHTML = kopf('Abrechnung & Lastschrift', 'Laut Gebührenordnung: Sommer nach dem Auslagern, Winter nach dem Einlagern einziehen.',
+    const label = H.periodeText({ periode: per, saison: jahr });
+    main.innerHTML = kopf('Abrechnung & Lastschrift', 'Mitgliedsbeitrag einmal im Jahr · laut Gebührenordnung Sommer nach dem Auslagern, Winter nach dem Einlagern.',
+      [SAISON, SAISON + 1].map((j) => '<button class="btn' + (per === 'beitrag' && jahr === j ? ' aktiv' : '') + '" data-per="beitrag" data-jahr="' + j + '">Beitrag ' + j + '</button>').join('') +
       '<button class="btn' + (per === 'sommer' ? ' aktiv' : '') + '" data-per="sommer">Sommer ' + SAISON + '</button><button class="btn' + (per === 'winter' ? ' aktiv' : '') + '" data-per="winter">Winter ' + SAISON + '/' + String(SAISON + 1).slice(2) + '</button>') +
       '<div class="panel"><h2>1 · Vorschau ' + label + '</h2>' +
       (offen.length ? '<p>' + offen.length + ' Mitglieder · <strong>' + H.geld(offen.reduce((s, x) => s + x.summe, 0)) + '</strong>' + (vs.length > offen.length ? ' · ' + (vs.length - offen.length) + ' bereits abgerechnet' : '') + '</p>' : '<p class="hinweis ok">' + label + ' ist vollständig abgerechnet.</p>') +
       (ohneMandat.length ? '<p class="hinweis warn">' + ohneMandat.length + ' ohne SEPA-Mandat – ihre Rechnung nennt die Bankverbindung zur Überweisung.</p>' : '') +
       (offen.length ? '<table class="tab"><thead><tr><th>Mitglied</th><th>Art</th><th>Positionen</th><th class="r">Betrag</th></tr></thead><tbody>' + offen.map((x) =>
-        '<tr><td>' + esc(Q.name(x.m)) + '</td><td><span class="tag">' + H.ART[x.m.art] + '</span></td><td style="font-size:12.5px;color:var(--muted)">' + x.positionen.map((p) => esc(p.text.split(' · ')[0])).join('<br>') + '</td><td class="r">' + H.geld(x.summe) + '</td></tr>').join('') +
+        '<tr><td>' + esc(Q.name(x.m)) + '</td><td><span class="tag">' + H.ART[x.m.art] + '</span></td><td style="font-size:12.5px;color:var(--muted)">' + x.positionen.map((p) => esc(p.text.split(' · ')[0].replace(/ \(wird an den Segler-Verband weitergegeben\)/, '')) + (per === 'beitrag' ? ' · ' + H.geld(p.betrag) : '')).join('<br>') + '</td><td class="r">' + H.geld(x.summe) + '</td></tr>').join('') +
         '</tbody><tfoot><tr><td colspan="3">Summe</td><td class="r">' + H.geld(offen.reduce((s, x) => s + x.summe, 0)) + '</td></tr></tfoot></table>' +
         '<div class="filter" style="margin-top:14px"><label class="feld">Rechnungsdatum<input type="date" id="rdat" value="' + abrStand.datum + '"></label><button class="btn primaer" id="los">2 · ' + offen.length + ' Rechnungen erstellen</button></div>' : '') + '</div>' +
       '<div class="panel"><div class="kopf" style="margin-bottom:8px"><h2 style="margin:0">3 · Lastschrift an die Bank</h2><div class="aktionen"><button class="btn dunkel" id="sepa"' + (sepaBereit.length && sepaOk ? '' : ' disabled') + '>SEPA-Datei erzeugen (' + sepaBereit.length + ')</button><button class="btn" id="csvr">Rechnungsliste CSV</button></div></div>' +
       (!sepaOk ? '<p class="hinweis warn">Für die Lastschrift-Datei fehlen gültige Vereinsdaten (IBAN und Gläubiger-ID) unter Einstellungen.</p>' : '<p class="hinweis">Erzeugt eine Sammellastschrift im aktuellen Bankformat <strong>pain.008.001.08</strong> (Pflicht ab November 2026). Die Datei im Online-Banking des Vereins hochladen; Einzug am Fälligkeitstag der Rechnungen.</p>') +
       (d.sepa_laeufe.length ? '<p style="font-size:13px;color:var(--muted)">Bisherige Dateien: ' + d.sepa_laeufe.map((l) => esc(l.id) + ' (' + l.anzahl + ' Posten, ' + H.geld(l.summe) + ')').join(' · ') + '</p>' : '') +
       '<table class="tab"><thead><tr><th>Nr.</th><th>Datum</th><th>Mitglied</th><th>Periode</th><th class="r">Betrag</th><th>Zahlung</th><th>Status</th><th></th></tr></thead><tbody>' +
-      res.map((r) => '<tr' + (r.storniert_am ? ' class="blass"' : '') + '><td><strong style="white-space:nowrap">' + esc(r.nr) + '</strong></td><td>' + H.datum(r.datum) + '</td><td>' + esc(r.empfaenger.vorname + ' ' + r.empfaenger.nachname) + '</td><td>' + (r.periode === 'sommer' ? 'Sommer' : 'Winter') + ' ' + r.saison + '</td>' +
+      res.map((r) => '<tr' + (r.storniert_am ? ' class="blass"' : '') + '><td><strong style="white-space:nowrap">' + esc(r.nr) + '</strong></td><td>' + H.datum(r.datum) + '</td><td>' + esc(r.empfaenger.vorname + ' ' + r.empfaenger.nachname) + '</td><td>' + H.periodeText(r) + '</td>' +
         '<td class="r">' + H.geld(r.summe) + '</td><td>' + (r.sepa ? 'Lastschrift' + (r.sepa_lauf ? ' <small style="color:var(--muted)">' + esc(r.sepa_lauf) + '</small>' : '') : 'Überweisung') + '</td>' +
         '<td>' + (r.storniert_am ? '<span class="tag rot">storniert</span>' : r.bezahlt_am ? '<span class="tag ok">bezahlt</span>' : r.faellig < heute ? '<span class="tag rot">überfällig</span>' : '<span class="tag warn">offen</span>') + '</td>' +
         '<td class="r" style="white-space:nowrap"><button class="btn klein" data-zeige="' + r.id + '">Ansehen</button> ' + (!r.storniert_am && !r.bezahlt_am ? '<button class="btn klein" data-bez="' + r.id + '">Bezahlt</button> <button class="btn klein gefahr" data-storno="' + r.id + '">Storno</button>' : '') + '</td></tr>').join('') + '</tbody></table></div>';
-    main.querySelectorAll('[data-per]').forEach((b) => b.addEventListener('click', () => { abrStand.periode = b.dataset.per; zeige('abrechnung'); }));
+    main.querySelectorAll('[data-per]').forEach((b) => b.addEventListener('click', () => { abrStand.periode = b.dataset.per; if (b.dataset.jahr) abrStand.beitragJahr = Number(b.dataset.jahr); zeige('abrechnung'); }));
     const rdat = $('#rdat'); if (rdat) rdat.addEventListener('change', () => { abrStand.datum = rdat.value; });
     const los = $('#los'); if (los) los.addEventListener('click', () => {
       if (!confirm(offen.length + ' Rechnungen für ' + label + ' erstellen?')) return;
-      const neu = G.saisonAbrechnen(d, SAISON, per, abrStand.datum); speichern(neu.length + ' Rechnungen erstellt.'); zeige('abrechnung');
+      const neu = G.saisonAbrechnen(d, jahr, per, abrStand.datum); speichern(neu.length + ' Rechnungen erstellt.'); zeige('abrechnung');
       if (neu.length && confirm('Rechnungen jetzt ansehen / als PDF sichern?')) oeffnen('drucken.html?art=rechnungen&ids=' + neu.map((r) => r.id).join(','));
     });
     $('#sepa').addEventListener('click', () => {
       const ungueltig = [];
       const posten = sepaBereit.map((r) => { const m = Q.mitglied(r.mitglied_id);
         if (!SEPA.ibanGueltig(m.iban)) { ungueltig.push(r.nr); return null; }
-        return { betrag: r.summe, mandat_ref: r.mandat_ref, mandat_datum: r.mandat_datum, name: m.kontoinhaber || Q.name(m), iban: m.iban, bic: m.bic, zweck: 'Hafengeld ' + r.nr + ' ' + (r.periode === 'sommer' ? 'Sommer ' : 'Winter ') + r.saison, e2e: r.nr, re: r }; }).filter(Boolean);
+        return { betrag: r.summe, mandat_ref: r.mandat_ref, mandat_datum: r.mandat_datum, name: m.kontoinhaber || Q.name(m), iban: m.iban, bic: m.bic, zweck: (r.periode === 'beitrag' ? 'Mitgliedsbeitrag ' + r.saison + ' ' + r.nr : 'Hafengeld ' + r.nr + ' ' + H.periodeText(r)), e2e: r.nr, re: r }; }).filter(Boolean);
       if (!posten.length) return toast('Keine gültigen Posten.', 'fehler');
       // je Fälligkeitstag eine Datei, damit der Einzugstermin stimmt
       const nachTag = new Map(); posten.forEach((p) => { const t = p.re.faellig; if (!nachTag.has(t)) nachTag.set(t, []); nachTag.get(t).push(p); });
@@ -543,7 +778,7 @@
       });
       speichern(posten.length + ' Lastschriften in ' + nachTag.size + ' Datei(en) erzeugt.' + (ungueltig.length ? ' Übersprungen (IBAN ungültig): ' + ungueltig.join(', ') : '')); zeige('abrechnung');
     });
-    $('#csvr').addEventListener('click', () => download('hafen-rechnungen.csv', csv([['Nr', 'Datum', 'Fällig', 'Mitgliedsnr', 'Name', 'Periode', 'Betrag', 'Zahlart', 'SEPA-Datei', 'Bezahlt am', 'Storniert']].concat(res.map((r) => [r.nr, H.datum(r.datum), H.datum(r.faellig), r.empfaenger.nr, r.empfaenger.vorname + ' ' + r.empfaenger.nachname, r.periode + ' ' + r.saison, H.zahl(r.summe), r.sepa ? 'Lastschrift' : 'Überweisung', r.sepa_lauf || '', H.datum(r.bezahlt_am), r.storniert_am ? 'ja' : '']))), 'text/csv'));
+    $('#csvr').addEventListener('click', () => download('hafen-rechnungen.csv', csv([['Nr', 'Datum', 'Fällig', 'Mitgliedsnr', 'Name', 'Periode', 'Betrag', 'Zahlart', 'SEPA-Datei', 'Bezahlt am', 'Storniert']].concat(res.map((r) => [r.nr, H.datum(r.datum), H.datum(r.faellig), r.empfaenger.nr, r.empfaenger.vorname + ' ' + r.empfaenger.nachname, H.periodeText(r), H.zahl(r.summe), r.sepa ? 'Lastschrift' : 'Überweisung', r.sepa_lauf || '', H.datum(r.bezahlt_am), r.storniert_am ? 'ja' : '']))), 'text/csv'));
     main.querySelectorAll('[data-zeige]').forEach((b) => b.addEventListener('click', () => oeffnen('drucken.html?art=rechnungen&ids=' + b.dataset.zeige)));
     main.querySelectorAll('[data-bez]').forEach((b) => b.addEventListener('click', () => { d.rechnungen.find((r) => r.id === b.dataset.bez).bezahlt_am = heute; speichern('Als bezahlt markiert.'); zeige('abrechnung'); }));
     main.querySelectorAll('[data-storno]').forEach((b) => b.addEventListener('click', () => { if (!confirm('Rechnung stornieren? Das Mitglied erscheint danach wieder in der Vorschau.')) return; G.stornieren(d, b.dataset.storno); speichern('Storniert.'); zeige('abrechnung'); }));
@@ -560,9 +795,12 @@
       '</tbody></table></div><div class="panel"><table class="tab"><tbody>' + einzel('Gast, einzelne Übernachtung', 'gast_nacht', '€') + einzel('Stromumlage (ausübend/Probe)', 'stromumlage', '€') +
       einzel('Landstellplatz außen', 'land_aussen_m2', '€ / m²') + einzel('Landstellplatz Halle (nur Winter)', 'land_halle_m2', '€ / m²') + einzel('Palette', 'palette_halbjahr', '€ / Halbjahr') +
       einzel('Schiffskran', 'schiffskran_std', '€ / angef. Std.') + einzel('Mastenkran', 'mastenkran_std', '€ / angef. Std.') + einzel('Schlüsselpfand', 'schluesselpfand', '€') + '</tbody></table></div>' +
+      '<div class="panel"><table class="tab"><thead><tr><th>Mitgliedsbeitrag (Jahr)</th><th class="r">Vereinsbeitrag</th><th class="r">Verbandsbeitrag</th><th class="r">zusammen</th></tr></thead><tbody>' +
+      Object.entries(gb.beitraege || {}).map(([art, w]) => '<tr><td>' + H.ART[art] + '</td>' + ['verein', 'verband'].map((t) => '<td class="r"><input class="suche" style="min-width:0;width:90px;text-align:right" data-k="beitraege.' + art + '.' + t + '" value="' + w[t] + '"></td>').join('') +
+        '<td class="r">' + H.geld(w.verein + w.verband) + '</td></tr>').join('') + '</tbody></table><table class="tab"><tbody>' + einzel('Eintrittsgeld Probemitglied (je Probejahr, bis zu 3 Jahre)', 'eintrittsgeld_probe', '€') + '</tbody></table></div>' +
       '<p class="hinweis">Neue Gebühren nach der Jahreshauptversammlung hier eintragen. Bereits erstellte Rechnungen ändern sich dadurch nicht.</p>';
     $('#ok').addEventListener('click', () => {
-      main.querySelectorAll('[data-k]').forEach((i) => { const [k, b] = i.dataset.k.split('.'); const v = Number(String(i.value).replace(',', '.')); if (isNaN(v)) return; if (b) gb[k][b] = v; else gb[k] = v; });
+      main.querySelectorAll('[data-k]').forEach((i) => { const [k, b, c] = i.dataset.k.split('.'); const v = Number(String(i.value).replace(',', '.')); if (isNaN(v)) return; if (c) gb[k][b][c] = v; else if (b) gb[k][b] = v; else gb[k] = v; });
       speichern('Gebührenordnung gespeichert.');
     });
   };
@@ -589,10 +827,11 @@
   /* ============================================================ Navigation */
   function nav() {
     const anfragen = d.gaeste.filter((g) => g.status === 'angemeldet').length;
+    const neueAntraege = (d.antraege || []).filter((a) => a.status === 'neu').length;
     $('#nav').innerHTML = '<div class="marke"><svg class="stander"><use href="#stander"/></svg><div><strong>Hafen-Manager</strong><span>SSV · Teerhofinsel</span></div></div>' +
       '<div class="rolle-chip">Angemeldet als <strong>' + ROLLEN[rolle].name + '</strong></div>' +
       TABS.map(([gruppe, ts]) => { const sichtbar = ts.filter(([t]) => darf(t)); return sichtbar.length ? '<div class="nav-gruppe">' + gruppe + '</div>' + sichtbar.map(([t, n]) =>
-        '<button data-tab="' + t + '" class="' + (t === tab ? 'aktiv' : '') + '">' + n + (t === 'gaeste' && anfragen ? '<span class="zahl">' + anfragen + '</span>' : '') + '</button>').join('') : ''; }).join('') +
+        '<button data-tab="' + t + '" class="' + (t === tab ? 'aktiv' : '') + '">' + n + (t === 'gaeste' && anfragen ? '<span class="zahl">' + anfragen + '</span>' : '') + (t === 'antraege' && neueAntraege ? '<span class="zahl">' + neueAntraege + '</span>' : '') + '</button>').join('') : ''; }).join('') +
       '<div class="nav-unten"><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">Rolle wechseln</button></div>';
   }
   function zeige(t) {

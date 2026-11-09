@@ -11,11 +11,13 @@
 
   function rechnung(r) {
     const em = r.empfaenger;
-    const winter = r.periode === 'winter';
-    const label = winter ? 'Winter ' + r.saison + '/' + String(r.saison + 1).slice(2) : 'Sommer ' + r.saison;
-    const intro = winter
-      ? 'das Winterlager hat begonnen – hier ist deine Abrechnung für den ' + label + ':'
-      : 'die Saison läuft – schön, dass du wieder auf dem Wasser bist! Hier ist deine Abrechnung für den ' + label + ':';
+    const winter = r.periode === 'winter', beitrag = r.periode === 'beitrag';
+    const label = H.periodeText(r);
+    const intro = beitrag
+      ? 'danke, dass du auch ' + r.saison + ' Teil unseres Vereins bist! Mit deinem Beitrag halten wir Hafen, Stege, Jugendarbeit und Vereinsheim in Schuss. Hier ist deine Beitragsrechnung:'
+      : winter
+        ? 'das Winterlager hat begonnen – hier ist deine Abrechnung für den ' + label + ':'
+        : 'die Saison läuft – schön, dass du wieder auf dem Wasser bist! Hier ist deine Abrechnung für den ' + label + ':';
     const betrag = '<strong>' + H.geld(r.summe) + '</strong>';
     const zahlung = r.sepa
       ? '<p>Du musst nichts weiter tun: Die ' + betrag + ' buchen wir am <strong>' + H.datum(r.faellig) + '</strong> ganz bequem per Lastschrift von deinem Konto ab.</p>'
@@ -23,8 +25,8 @@
     return '<section class="blatt">' + (r.storniert_am ? '<div class="r-storno">STORNIERT</div>' : '') + kopf +
       '<div class="r-absender">' + esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort) + '</div>' +
       '<div class="r-adresse">' + esc(em.vorname + ' ' + em.nachname) + '<br>' + esc(em.strasse || '') + '<br>' + esc(((em.plz || '') + ' ' + (em.ort || '')).trim()) + '</div>' +
-      '<div class="r-meta"><span>Rechnungsnummer</span><strong>' + esc(r.nr) + '</strong><span>Rechnungsdatum</span><span>' + H.datum(r.datum) + '</span><span>Mitgliedsnummer</span><span>' + esc(em.nr) + '</span><span>Leistungszeitraum</span><span>' + label + '</span></div>' +
-      '<h1>Deine Hafenabrechnung</h1><p>Moin ' + esc(em.vorname) + ',</p><p>' + intro + '</p>' +
+      '<div class="r-meta"><span>Rechnungsnummer</span><strong>' + esc(r.nr) + '</strong><span>Rechnungsdatum</span><span>' + H.datum(r.datum) + '</span><span>Mitgliedsnummer</span><span>' + esc(em.nr) + '</span><span>' + (beitrag ? 'Beitragsjahr' : 'Leistungszeitraum') + '</span><span>' + (beitrag ? r.saison : label) + '</span></div>' +
+      '<h1>' + (beitrag ? 'Dein Mitgliedsbeitrag ' + r.saison : 'Deine Hafenabrechnung') + '</h1><p>Moin ' + esc(em.vorname) + ',</p><p>' + intro + '</p>' +
       '<table class="r-tab"><thead><tr><th>Leistung</th><th class="r">Menge</th><th class="r">Einzelpreis</th><th class="r">Betrag</th></tr></thead><tbody>' +
       r.positionen.map((p) => '<tr><td>' + esc(p.text) + '</td><td class="r">' + H.zahl(p.menge, p.menge % 1 ? 2 : 0) + ' ' + esc(p.einheit) + '</td><td class="r">' + H.geld(p.einzelpreis) + '</td><td class="r">' + H.geld(p.betrag) + '</td></tr>').join('') +
       '</tbody><tfoot><tr><td colspan="3">Zusammen</td><td class="r">' + H.geld(r.summe) + '</td></tr></tfoot></table>' +

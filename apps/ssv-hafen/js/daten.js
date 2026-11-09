@@ -29,6 +29,7 @@
     hafenmeister_name: 'Dieter Voß',
     hafenmeister_tel: '0179 5916979',
     rechnung_praefix: 'SSV-H',
+    beitrag_praefix: 'SSV-B',
     zahlungsziel_tage: 14,
     stromumlage_ueber_hafen: true,
     arbeitsdienst_soll: 15,
@@ -50,7 +51,18 @@
     palette_halbjahr: 100,
     schiffskran_std: 75,
     mastenkran_std: 25,
-    schluesselpfand: 50
+    schluesselpfand: 50,
+    // Mitgliedsbeiträge je Jahr: Vereinsbeitrag + Verbandsbeitrag (wird an den Verband weitergereicht)
+    beitraege: {
+      ausuebend: { verein: 180, verband: 18.43 },
+      probe: { verein: 180, verband: 18.43 },
+      foerdernd: { verein: 70, verband: 18.43 },
+      partner: { verein: 30, verband: 0 },
+      jugend: { verein: 55, verband: 9.44 },
+      jugend_geschwister: { verein: 25, verband: 9.44 },
+      ausbildung: { verein: 65, verband: 18.43 }
+    },
+    eintrittsgeld_probe: 130   // „je 130 € (3 Jahre)“ – in jedem der drei Probejahre
   };
 
   /* ------------------------------------------------------------ Liegeplätze */
@@ -212,7 +224,39 @@
         stunden: wahl([3, 4, 5, 6, 8]), taetigkeit: wahl(['Auslagern', 'Einlagern', 'Steg-Wartung', 'Gartenarbeit', 'Malerarbeiten', 'Jugendtraining']) });
     });
 
-    return { version: 1, einstellungen: { ...STANDARD_EINSTELLUNGEN, glaeubiger_id: 'DE98ZZZ09999999999', iban: demoIban('23050101', 1234567), bic: 'NOLADE21SPL', bank: 'Demo-Sparkasse [PLATZHALTER]' },
+    // Mitglieder ohne Boot: Ausübende, Partner, Jugend, Auszubildende, Fördernde
+    [['ausuebend', 10], ['partner', 4], ['jugend', 8], ['jugend_geschwister', 2], ['ausbildung', 3], ['foerdernd', 5]].forEach(([art, n]) => {
+      for (let i = 0; i < n; i++) { const m = mitglied(art); if (art.startsWith('jugend')) { m.kfz = ''; m.kontoinhaber = 'Familie ' + m.nachname; } }
+    });
+
+    // Persönliche Angaben (für Beitragsgruppe und Verbandsmeldung) – eigener Zufall, damit der Rest gleich bleibt
+    const r2 = zufall(7);
+    const WEIBLICH = new Set(['Anna', 'Clara', 'Elke', 'Greta', 'Ida', 'Karin', 'Maren', 'Petra', 'Sina', 'Ute', 'Wiebke', 'Svenja', 'Kirsten', 'Birte', 'Heike', 'Telse', 'Imke', 'Frauke']);
+    const ALTER = { jugend: [8, 17], jugend_geschwister: [7, 14], ausbildung: [18, 25], probe: [24, 55], partner: [35, 75] };
+    mitglieder.forEach((m) => {
+      const [a, b] = ALTER[m.art] || [28, 82];
+      const jahr = 2026 - (a + Math.floor(r2() * (b - a + 1)));
+      m.geburtsdatum = jahr + '-' + pad(1 + Math.floor(r2() * 12)) + '-' + pad(1 + Math.floor(r2() * 28));
+      m.geschlecht = WEIBLICH.has(m.vorname) ? 'w' : 'm';
+      const ein = m.art === 'probe' ? 2024 + Math.floor(r2() * 3) : Math.max(jahr + 6, 1975 + Math.floor(r2() * 50));
+      m.eintritt = Math.min(ein, 2026) + '-0' + (1 + Math.floor(r2() * 9)) + '-01';
+      m.austritt = '';
+    });
+    mitglieder[mitglieder.length - 1].geschlecht = 'd';
+
+    // Online-Aufnahmeanträge (warten auf den Vorstand)
+    const antraege = [
+      { id: uid('A'), eingang: '2026-11-03T19:42:00', status: 'neu', art: 'probe', vorname: 'Lena', nachname: 'Bruhn', geburtsdatum: '1991-05-17', geschlecht: 'w',
+        strasse: 'Am Holstentor 4', plz: '23552', ort: 'Lübeck', email: 'lena.bruhn@beispiel.de', tel: '0151 2345678', erziehungsberechtigt: '',
+        boot: { name: 'Seeperle', typ: 'Folkeboot', laenge: 7.64, breite: 2.2 }, warteliste: true, kontoinhaber: 'Lena Bruhn', iban: demoIban('21050170', 4455667), bic: '',
+        mandat: true, satzung: true, datenschutz: true, nachricht: 'Ich segle seit Jahren und suche einen Liegeplatz an der Trave.' },
+      { id: uid('A'), eingang: '2026-11-07T10:15:00', status: 'neu', art: 'jugend', vorname: 'Mats', nachname: 'Rehder', geburtsdatum: '2014-08-02', geschlecht: 'm',
+        strasse: 'Lindenallee 12', plz: '23611', ort: 'Bad Schwartau', email: 'familie.rehder@beispiel.de', tel: '0451 223344', erziehungsberechtigt: 'Katrin Rehder',
+        boot: null, warteliste: false, kontoinhaber: 'Katrin Rehder', iban: demoIban('23050101', 9988776), bic: '', mandat: true, satzung: true, datenschutz: true,
+        nachricht: 'Mats möchte im Opti-Training mitmachen.' }
+    ];
+
+    return { version: 2, antraege, einstellungen: { ...STANDARD_EINSTELLUNGEN, glaeubiger_id: 'DE98ZZZ09999999999', iban: demoIban('23050101', 1234567), bic: 'NOLADE21SPL', bank: 'Demo-Sparkasse [PLATZHALTER]' },
       gebuehren: { 2026: { ...GEBUEHREN_2024 } }, saisons: [{ jahr: 2026, auslagern: '2026-04-11', einlagern: '2026-10-24' }],
       liegeplaetze: lp, landplaetze: landplaetze(), mitglieder, boote, belegungen, abwesenheiten, gaeste, warteliste, kran, arbeitsdienst, rechnungen: [], sepa_laeufe: [], zaehler: { quittung: 42 } };
   }
@@ -221,14 +265,16 @@
   let d;
   function laden() {
     try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) { d = null; }
-    if (!d || d.version !== 1) {
+    if (!d || d.version !== 2) {
       d = beispieldaten();
       if (window.HAFEN_GEBUEHREN && window.HAFEN_GEBUEHREN.saisonAbrechnen) {
-        // Sommer 2026 wurde im April abgerechnet und bezahlt – als Historie anlegen
+        // Historie: Beitrag 2026 im Januar, Sommer 2026 im April abgerechnet und eingezogen
+        window.HAFEN_GEBUEHREN.saisonAbrechnen(d, 2026, 'beitrag', '2026-01-20').forEach((re) => { re.bezahlt_am = '2026-02-05'; re.sepa_lauf = 'SEPA-2026-01'; });
         window.HAFEN_GEBUEHREN.saisonAbrechnen(d, 2026, 'sommer', '2026-04-20').forEach((re) => { re.bezahlt_am = '2026-05-05'; re.sepa_lauf = 'SEPA-2026-04'; });
       }
       sichern();
     }
+    if (!d.antraege) d.antraege = [];
     return d;
   }
   function sichern() { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { console.warn('Demo-Daten nicht gespeichert', e); } }
@@ -242,12 +288,19 @@
     kurz: (s) => s ? new Date(s + 'T12:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) : '',
     esc: (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
     zahl: (v, n = 2) => Number(v).toLocaleString('de-DE', { minimumFractionDigits: n, maximumFractionDigits: n }),
-    ART: { ausuebend: 'ausübend', probe: 'Probemitglied', foerdernd: 'fördernd', gast: 'Saison-Gast' },
+    ART: { ausuebend: 'ausübend', probe: 'Probemitglied', foerdernd: 'fördernd', partner: 'Ehe-/Lebenspartner', jugend: 'Jugend',
+      jugend_geschwister: 'Jugend (Geschwister)', ausbildung: 'in Ausbildung (ab 18)', gast: 'Saison-Gast (kein Mitglied)' },
+    GESCHLECHT: { w: 'weiblich', m: 'männlich', d: 'divers' },
+    periodeText: (r) => r.periode === 'beitrag' ? 'Beitrag ' + r.saison : r.periode === 'sommer' ? 'Sommer ' + r.saison : 'Winter ' + r.saison + '/' + String(r.saison + 1).slice(2),
     BRUECKE: { ost: 'Ostbrücke', west: 'Westbrücke', schwimm: 'Schwimmbrücke', laengs: 'Längsseits' }
   };
 
   const Q = {
     mitglied: (id) => d.mitglieder.find((m) => m.id === id),
+    // Mitglied am Stichtag (kein Saison-Gast, eingetreten, nicht ausgetreten)
+    istMitglied: (m, stichtag) => m.art !== 'gast' && (!m.eintritt || m.eintritt <= stichtag) && (!m.austritt || m.austritt > stichtag),
+    alterAm: (m, stichtag) => { if (!m.geburtsdatum) return null; const [j, mo, t] = m.geburtsdatum.split('-').map(Number); const [sj, sm, st] = stichtag.split('-').map(Number); return sj - j - (sm < mo || (sm === mo && st < t) ? 1 : 0); },
+    naechsteNr: () => String(d.mitglieder.reduce((mx, m) => Math.max(mx, /^\d+$/.test(m.nr) ? Number(m.nr) : 0), 2000) + 1),
     boot: (id) => d.boote.find((b) => b.id === id),
     platz: (id) => d.liegeplaetze.find((p) => p.id === id) || d.landplaetze.find((p) => p.id === id),
     name: (m) => m ? m.vorname + ' ' + m.nachname : '–',
