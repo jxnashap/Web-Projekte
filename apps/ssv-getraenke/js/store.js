@@ -394,7 +394,7 @@
   class SupabaseSpeicher {
     constructor(url, key) {
       this.modus = 'supabase'; this.url = url.replace(/\/$/, ''); this.key = key;
-      this.TOKEN = 'ssvg-kasse-token'; this.SESSION = 'ssvg-session';
+      this.TOKEN = 'ssvg-kasse-token'; this.SESSION = 'ssv-session'; // gemeinsame Sitzung mit Hafen-Manager und Mein SSV
     }
     _session() { try { return JSON.parse(localStorage.getItem(this.SESSION)); } catch (e) { return null; } }
     async _jwt() {

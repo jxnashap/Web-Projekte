@@ -14,13 +14,16 @@
   function toast(t) { const el = $('#toast'); el.textContent = t; el.className = 'toast zeigen'; clearTimeout(toast.t); toast.t = setTimeout(() => { el.className = 'toast'; }, 3000); }
   function modal(html) { const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte" role="dialog" aria-modal="true">' + html + '</div></div>'; const el = m.firstChild; el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-zu]')) m.innerHTML = ''; }); return el; }
 
+  const DBM = HF.modus === 'supabase';   // Vereinsdatenbank: angemeldetes Mitglied, keine Auswahl
   const sel = $('#wer');
   // Jedes Mitglied hat einen Zugang – mit oder ohne Boot
   const alle = d.mitglieder.filter((m) => m.art !== 'gast').sort((a, b) => a.nachname.localeCompare(b.nachname, 'de') || a.vorname.localeCompare(b.vorname, 'de'));
   const mitBoot = alle.filter((m) => Q.booteVon(m.id).length);
   sel.innerHTML = alle.map((m) => '<option value="' + m.id + '">' + esc(m.nachname + ', ' + m.vorname) + (Q.booteVon(m.id).length ? ' ⛵' : '') + '</option>').join('');
-  let mid; try { mid = sessionStorage.getItem('ssv-mein') || mitBoot[0].id; } catch (e) { mid = mitBoot[0].id; }
-  if (!alle.some((m) => m.id === mid)) mid = mitBoot[0].id;
+  const erster = (mitBoot[0] || alle[0] || {}).id;
+  let mid; try { mid = sessionStorage.getItem('ssv-mein') || erster; } catch (e) { mid = erster; }
+  if (!alle.some((m) => m.id === mid)) mid = erster;
+  if (DBM) { mid = HF.db.mitgliedId; sel.hidden = true; }
   sel.value = mid;
   sel.addEventListener('change', () => { mid = sel.value; try { sessionStorage.setItem('ssv-mein', mid); } catch (e) { /* egal */ } zeigen(); });
 
@@ -42,7 +45,8 @@
     const awAktuell = aw.find((a) => a.bis >= heute);
     const res = d.rechnungen.filter((r) => r.mitglied_id === mid && !r.storniert_am);
     const warte = d.warteliste.filter((w) => w.status === 'wartend').sort((x, y) => x.datum.localeCompare(y.datum));
-    const meinW = warte.findIndex((w) => w.mitglied_id === mid);
+    let meinW = warte.findIndex((w) => w.mitglied_id === mid);
+    if (DBM) { const wp = HF.db.warteplatz; meinW = wp ? wp.platz - 1 : -1; if (wp) warte[meinW] = { datum: wp.seit }; }
     const vs = b ? Q.versicherungsStatus(b, heute) : 'ok';
     const platzText = platzS ? (platzS.bez ? esc(platzS.bez) : (platzS.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(platzS.nr)) : '';
     const wasser = sommer && sommer.platz_typ === 'wasser';
@@ -59,7 +63,7 @@
         '<div class="aktionen" style="margin-top:10px"><button class="btn gruen" id="awok">Abwesenheit melden</button></div>' +
         (aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') : '';
 
-    $('#main').innerHTML = '<div class="demo-band"><strong>Demo</strong> – erfundene Daten. Im Echtbetrieb meldest du dich mit deinem eigenen Zugang an.</div>' +
+    $('#main').innerHTML = (DBM ? '' : '<div class="demo-band"><strong>Demo</strong> – erfundene Daten. Im Echtbetrieb meldest du dich mit deinem eigenen Zugang an.</div>') +
       '<div class="kopf"><div><h1>Moin ' + esc(m.vorname) + '!</h1><p>' + H.ART[m.art] + ' · Mitgliedsnr. ' + esc(m.nr) + '</p></div></div>' +
       (vs !== 'ok' && b ? '<p class="hinweis warn">Dein Versicherungsnachweis ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'fehlt noch' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte unter „Mein Boot“ aktualisieren.</p>' : '') +
       '<div class="blick">' + kachel('rechnungen', 'Offen', '…', 'Rechnungen', 'k-offen') +
@@ -83,7 +87,7 @@
 
     // Rechnungen: Hafen und Beitrag sofort, Getränke sobald die Kasse geantwortet hat
     const hafenPosten = res.map((r) => ({ art: r.periode === 'beitrag' ? 'Beitrag' : 'Hafen', nr: r.nr, datum: r.datum || '', text: r.periode === 'beitrag' ? String(r.saison) : H.periodeText(r),
-      summe: r.summe, bezahlt_am: r.bezahlt_am, sepa: r.sepa, faellig: r.faellig, href: 'drucken.html?art=rechnungen&ids=' + r.id }));
+      summe: r.summe, bezahlt_am: r.bezahlt_am, sepa: r.sepa, faellig: r.faellig, href: 'drucken.html?art=rechnungen&ids=' + r.id + (DBM ? '&mein=1' : '') }));
     let alleZeigen = false;
     const rechnungenZeigen = (getraenke) => {
       const alle = hafenPosten.concat(getraenke || []).sort((x, y) => (y.datum || '').localeCompare(x.datum || '') || y.nr.localeCompare(x.nr));
@@ -111,15 +115,24 @@
       const f = $('#awf'); if (!f.reportValidity()) return; const x = Object.fromEntries(new FormData(f));
       if (x.bis < x.von) return toast('Das Rückkehrdatum liegt vor der Abfahrt.');
       d.abwesenheiten.push({ id: H.uid('AW'), boot_id: b.id, platz_id: sommer.platz_id, von: x.von, bis: x.bis, notiz: x.notiz, gemeldet: 'Mitglied (Mein SSV)' });
-      HF.sichern(); toast('Gemeldet – gute Fahrt!'); zeigen();
+      HF.sichern().then(() => toast('Gemeldet – gute Fahrt!'), (e) => toast('Nicht gespeichert: ' + e.message)); zeigen();
     });
-    document.querySelectorAll('[data-weg]').forEach((btn) => btn.addEventListener('click', () => { d.abwesenheiten = d.abwesenheiten.filter((a) => a.id !== btn.dataset.weg); HF.sichern(); zeigen(); }));
+    document.querySelectorAll('[data-weg]').forEach((btn) => btn.addEventListener('click', () => { d.abwesenheiten = d.abwesenheiten.filter((a) => a.id !== btn.dataset.weg); HF.sichern().catch((e) => toast('Nicht gelöscht: ' + e.message)); zeigen(); }));
     const dat = $('#daten'); if (dat) dat.addEventListener('click', () => {
       const el = modal('<h2>Daten aktualisieren</h2><form id="df" class="form"><label class="feld">Versicherung<input name="versicherung" value="' + esc(b.versicherung || '') + '"></label><label class="feld">versichert bis<input name="vers_bis" type="date" value="' + esc(b.vers_bis || '') + '"></label>' +
         '<label class="feld">Gewicht (t)<input name="gewicht_t" type="number" step="0.1" value="' + b.gewicht_t + '"></label><label class="feld">Kfz-Kennzeichen<input name="kfz" value="' + esc(m.kfz || '') + '"></label>' +
         '<label class="feld">Telefon<input name="tel" value="' + esc(m.tel || '') + '"></label><label class="feld">E-Mail<input name="email" type="email" value="' + esc(m.email || '') + '"></label></form>' +
         '<p class="hinweis">Bankverbindung ändern? Bitte formlos an den Kassenwart – dafür braucht es ein neues SEPA-Mandat.</p><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="dok">Speichern</button></div>');
-      $('#dok', el).addEventListener('click', () => { const x = Object.fromEntries(new FormData($('#df', el))); b.versicherung = x.versicherung; b.vers_bis = x.vers_bis; b.gewicht_t = Number(x.gewicht_t) || b.gewicht_t; m.kfz = x.kfz; m.tel = x.tel; m.email = x.email; HF.sichern(); $('#modal').innerHTML = ''; toast('Gespeichert.'); zeigen(); });
+      $('#dok', el).addEventListener('click', async () => {
+        const x = Object.fromEntries(new FormData($('#df', el)));
+        if (DBM) {   // Mitglieder ändern nur über die Datenbank-Funktion (nur eigene Kontakt- und Bootsdaten)
+          try { await HF.meinDatenAendern({ tel: x.tel, email: x.email, kfz: x.kfz, boot_id: b.id, versicherung: x.versicherung, vers_bis: x.vers_bis, gewicht_t: x.gewicht_t }); }
+          catch (e) { return toast('Nicht gespeichert: ' + e.message); }
+        }
+        b.versicherung = x.versicherung; b.vers_bis = x.vers_bis; b.gewicht_t = Number(x.gewicht_t) || b.gewicht_t; m.kfz = x.kfz; m.tel = x.tel; m.email = x.email;
+        if (!DBM) HF.sichern();
+        $('#modal').innerHTML = ''; toast('Gespeichert.'); zeigen();
+      });
     });
   }
   /* ---------------------------------------------------------- Getränkekasse */

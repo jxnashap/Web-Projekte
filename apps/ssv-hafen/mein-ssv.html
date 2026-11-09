@@ -38,6 +38,9 @@
   .sek-info { margin-left: auto; font-size: 13px; color: var(--muted); text-align: right; }
   .sek-inhalt { margin-top: 14px; }
   .panel.sek { display: block; width: 100%; box-sizing: border-box; }
+  .login-karte { max-width: 440px; margin: 30px auto; }
+  .login-links { margin: 14px 0 0; font-size: 14px; }
+  .login-links a { color: var(--navy); }
   table.rechn td { vertical-align: middle; }
   @media (max-width: 860px) {
     .mein-kopf { padding: 12px 16px; gap: 10px; }
@@ -70,12 +73,14 @@
 <main class="mein" id="main"></main>
 <div id="modal"></div>
 <div class="toast" id="toast"></div>
+<script src="js/config.js"></script>
+<script src="js/sb.js"></script>
 <script src="js/daten.js"></script>
 <script src="js/gebuehren.js"></script>
 <script src="js/plan.js"></script>
 <!-- Getränkekasse: Buchungen, Rechnungen und Code (Demo: gleicher Browser-Speicher wie die Kasse) -->
 <script src="../ssv-getraenke/js/config.js"></script>
 <script src="../ssv-getraenke/js/store.js"></script>
-<script src="js/mein.js"></script>
+<script src="js/mein-start.js"></script>
 </body>
 </html>

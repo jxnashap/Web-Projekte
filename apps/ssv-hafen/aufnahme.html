@@ -110,6 +110,8 @@
     </div>
   </form>
 </div>
+<script src="js/config.js"></script>
+<script src="js/sb.js"></script>
 <script src="js/daten.js"></script>
 <script src="js/gebuehren.js"></script>
 <script src="js/sepa.js"></script>
@@ -117,9 +119,11 @@
 (function () {
   'use strict';
   const HF = window.HAFEN, H = HF.H, Q = HF.Q, SEPA = window.HAFEN_SEPA;
-  const d0 = HF.laden(), e = d0.einstellungen;
+  const SB = window.SSV_SB;   // Vereinsdatenbank: Angaben und Antrag über öffentliche Funktionen
+  const d0 = SB ? null : HF.laden();
+  let e = d0 ? d0.einstellungen : { ...HF.STANDARD_EINSTELLUNGEN };
   const jahr = new Date().getFullYear();
-  const gb = window.HAFEN_GEBUEHREN.gebuehrenFuer(d0, jahr), B = gb.beitraege || HF.GEBUEHREN_2024.beitraege;
+  let gb = d0 ? window.HAFEN_GEBUEHREN.gebuehrenFuer(d0, jahr) : { ...HF.GEBUEHREN_2024 }; let B = gb.beitraege || HF.GEBUEHREN_2024.beitraege;
   const preis = (art) => B[art].verein + B[art].verband + (art === 'probe' ? (gb.eintrittsgeld_probe || 0) : 0);
   const ARTEN = [
     ['foerdernd', 'Fördernde Mitgliedschaft', 'der Regelfall für neue Mitglieder'],
@@ -129,9 +133,18 @@
     ['ausbildung', 'In Ausbildung oder Studium', 'ab 18 Jahren, mit Nachweis'],
     ['partner', 'Ehe- oder Lebenspartner/in', 'eines Vereinsmitglieds']
   ];
+  const artenZeigen = () => { const gewaehlt = (document.querySelector('[name=art]:checked') || {}).value;
   document.getElementById('arten').innerHTML = ARTEN.map(([k, t, u], i) => '<label class="art"><input type="radio" name="art" value="' + k + '"' + (i === 0 ? ' checked' : '') + '><div><strong>' + t + '</strong><span>' + H.esc(u) + '</span></div><b>' + H.geld(preis(k)) + ' / Jahr</b></label>').join('');
+  if (gewaehlt) document.querySelector('[name=art][value="' + gewaehlt + '"]').checked = true;
   document.querySelectorAll('[data-verein]').forEach((x) => { x.textContent = e.verein_name; });
-  document.querySelectorAll('[data-glaeubiger]').forEach((x) => { x.textContent = e.glaeubiger_id || '[PLATZHALTER]'; });
+  document.querySelectorAll('[data-glaeubiger]').forEach((x) => { x.textContent = e.glaeubiger_id || '[PLATZHALTER]'; }); };
+  artenZeigen();
+  if (SB) SB.rpc('aufnahme_info', {}, true).then((i) => {
+    if (i.beitraege) B = i.beitraege; if (i.eintrittsgeld_probe != null) gb = { ...gb, eintrittsgeld_probe: Number(i.eintrittsgeld_probe) };
+    e = { ...e, verein_name: i.verein_name || e.verein_name, verein_email: i.verein_email || e.verein_email, glaeubiger_id: i.glaeubiger_id || '' };
+    ARTEN[1][2] = 'für Erwachsene, die aktiv segeln möchten · bis zu 3 Jahre · inkl. Eintrittsgeld-Rate ' + H.geld(gb.eintrittsgeld_probe || 0);
+    artenZeigen();
+  }).catch(() => {});
 
   const f = document.getElementById('f');
   const alter = () => f.geburtsdatum.value ? Q.alterAm({ geburtsdatum: f.geburtsdatum.value }, H.tag(new Date())) : null;
@@ -148,7 +161,7 @@
   document.getElementById('hat-boot').addEventListener('change', (ev) => { document.getElementById('boot').hidden = !ev.target.checked; });
   f.iban.addEventListener('blur', () => { const v = f.iban.value.replace(/\s/g, ''); document.getElementById('iban-hinweis').textContent = v && !SEPA.ibanGueltig(v) ? 'Diese IBAN stimmt nicht – bitte noch einmal prüfen.' : ''; });
 
-  f.addEventListener('submit', (ev) => {
+  f.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const fehler = document.getElementById('fehler'); fehler.textContent = '';
     if (!f.checkValidity()) { f.reportValidity(); return; }
@@ -167,7 +180,11 @@
       mandat: !!x.mandat && !!ibanNr, satzung: !!x.satzung, datenschutz: !!x.datenschutz, nachricht: (x.nachricht || '').trim()
     };
     // Kurz vor dem Speichern frisch laden, damit parallele Änderungen nicht verloren gehen (Demo: Browser-Speicher)
-    const d = HF.laden(); d.antraege.push(antrag); HF.sichern();
+    if (SB) {
+      const knopf = f.querySelector('button[type=submit]'); knopf.disabled = true; knopf.textContent = 'Wird gesendet …';
+      try { const { id, ...p } = antrag; await SB.rpc('antrag_stellen', { p }, true); }
+      catch (err) { knopf.disabled = false; knopf.textContent = 'Antrag absenden'; fehler.textContent = err.message; return; }
+    } else { const d = HF.laden(); d.antraege.push(antrag); HF.sichern(); }
     document.querySelector('.auf').innerHTML = '<div class="karte danke"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" fill="rgba(29,138,90,.1)" stroke="#1d8a5a" stroke-width="4"/><path d="M24 41l11 11 22-24" fill="none" stroke="#1d8a5a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
       '<h2 style="margin:10px 0 6px">Danke, ' + H.esc(antrag.vorname) + '!</h2><p>Dein Antrag ist bei uns angekommen. Der Vorstand meldet sich nach seiner Entscheidung per E-Mail bei dir – mit deiner Mitgliedsnummer und allem, was du für den Start brauchst.</p>' +
       '<p>Fragen? Schreib uns an <a href="mailto:' + H.esc(e.verein_email) + '">' + H.esc(e.verein_email) + '</a>.</p></div>';

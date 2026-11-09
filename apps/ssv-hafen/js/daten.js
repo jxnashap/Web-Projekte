@@ -12,7 +12,9 @@
   const KEY = 'ssv-hafen-demo-v1';
   const pad = (n, l = 2) => String(n).padStart(l, '0');
   const tag = (d) => { d = new Date(d); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
-  const uid = (p) => p + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3);
+  // Vereinsdatenbank aktiv? (js/config.js + js/sb.js) – dann echte UUIDs statt Demo-Kennungen
+  const SB = window.SSV_SB || null;
+  const uid = (p) => SB && crypto.randomUUID ? crypto.randomUUID() : p + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3);
 
   /* ------------------------------------------------------------ Grundwerte */
   const STANDARD_EINSTELLUNGEN = {
@@ -264,6 +266,7 @@
   /* ------------------------------------------------------------ Speicher */
   let d;
   function laden() {
+    if (SB) return d;   // Datenbank-Modus: Daten kommen aus verbinden()
     try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) { d = null; }
     if (!d || d.version !== 2) {
       d = beispieldaten();
@@ -277,8 +280,164 @@
     if (!d.antraege) d.antraege = [];
     return d;
   }
-  function sichern() { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { console.warn('Demo-Daten nicht gespeichert', e); } }
-  function zuruecksetzen() { try { localStorage.removeItem(KEY); } catch (e) { /* egal */ } return laden(); }
+  function sichern() {
+    if (SB) return dbSichern();
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { console.warn('Demo-Daten nicht gespeichert', e); }
+    return Promise.resolve();
+  }
+  function zuruecksetzen() { if (SB) return d; try { localStorage.removeItem(KEY); } catch (e) { /* egal */ } return laden(); }
+
+  /* ============================================================ Vereinsdatenbank
+   * Lädt beim Start alles, was die angemeldete Person sehen darf (Zeilenschutz in der Datenbank),
+   * in dieselbe Struktur wie die Demo – die Oberfläche bleibt unverändert. Beim Speichern werden
+   * nur geänderte, neue und gelöschte Einträge übertragen. */
+  const SP = {
+    mitglieder: ['id', 'nr', 'vorname', 'nachname', 'art', 'email', 'tel', 'strasse', 'plz', 'ort', 'mandatsreferenz', 'kfz', 'notiz', 'geburtsdatum', 'geschlecht', 'eintritt', 'austritt', 'aktiv'],
+    mitglieder_bank: ['mitglied_id', 'iban', 'bic', 'kontoinhaber', 'mandat_datum'],
+    boote: ['id', 'name', 'typ', 'eigner_id', 'laenge', 'breite', 'tiefgang', 'gewicht_t', 'segelnr', 'versicherung', 'vers_bis', 'notiz'],
+    belegungen: ['id', 'saison', 'periode', 'boot_id', 'platz_typ', 'platz_id', 'art', 'flaeche_m2', 'sommer_an_land_jahr', 'nicht_kranen', 'notiz'],
+    abwesenheiten: ['id', 'boot_id', 'platz_id', 'von', 'bis', 'notiz', 'gemeldet'],
+    gaeste: ['id', 'bootsname', 'skipper', 'herkunft', 'tel', 'email', 'laenge', 'breite', 'ankunft', 'naechte', 'platz_id', 'betrag', 'zahlung', 'quittung_nr', 'status', 'quelle', 'erstellt'],
+    warteliste: ['id', 'mitglied_id', 'datum', 'boot_laenge', 'boot_breite', 'wunsch_box', 'notiz', 'status'],
+    kran: ['id', 'boot_id', 'datum', 'art', 'minuten', 'notiz', 'abgerechnet'],
+    arbeitsdienst: ['id', 'mitglied_id', 'datum', 'stunden', 'taetigkeit'],
+    hafen_rechnungen: ['id', 'nr', 'mitglied_id', 'datum', 'saison', 'periode', 'faellig', 'positionen', 'summe', 'empfaenger', 'sepa', 'mandat_ref', 'mandat_datum', 'bezahlt_am', 'storniert_am', 'sepa_lauf'],
+    sepa_laeufe: ['id', 'datum', 'faellig', 'anzahl', 'summe'],
+    antraege: ['id', 'eingang', 'status', 'art', 'vorname', 'nachname', 'geburtsdatum', 'geschlecht', 'strasse', 'plz', 'ort', 'email', 'tel', 'erziehungsberechtigt', 'boot', 'warteliste',
+      'kontoinhaber', 'iban', 'bic', 'mandat', 'satzung', 'datenschutz', 'nachricht', 'mitglied_id', 'entschieden', 'entschieden_von', 'grund'],
+    liegeplaetze: ['id', 'nr', 'bruecke', 'box', 'max_laenge', 'max_breite', 'strom', 'gesperrt', 'sonderpreis', 'notiz'],
+    landplaetze: ['id', 'bez', 'art', 'bereich'],
+    saisons: ['jahr', 'auslagern', 'einlagern'],
+    gebuehren: ['jahr', 'daten'],
+    hafen_einstellungen: ['id', 'daten']
+  };
+  const PK = { mitglieder_bank: 'mitglied_id', saisons: 'jahr', gebuehren: 'jahr' };
+  // Reihenfolge: erst Eltern, dann Kinder (beim Löschen umgekehrt)
+  const REIHE = ['mitglieder', 'mitglieder_bank', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst',
+    'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'gebuehren', 'hafen_einstellungen'];
+  const db = { rollen: [], bereich: null, finanz: false, schnapp: {}, schreibbar: new Set(), warteplatz: null, mitgliedId: null, onFehler: null };
+
+  // Datenbankzeile ← → Oberflächen-Objekt
+  const leerZuNull = (o) => { const z = {}; Object.keys(o).forEach((k) => { z[k] = o[k] === '' || o[k] === undefined ? null : o[k]; }); return z; };
+  const pick = (o, sp) => { const z = {}; sp.forEach((k) => { z[k] = o[k] === undefined ? null : o[k]; }); return leerZuNull(z); };
+  function zeilen() {
+    const heute = tag(new Date());
+    const z = {};
+    z.mitglieder = d.mitglieder.map((m) => pick({ ...m, mandatsreferenz: m.mandat_ref, aktiv: !(m.austritt && m.austritt <= heute) }, SP.mitglieder));
+    if (db.finanz) z.mitglieder.forEach((r, i) => { const m = d.mitglieder[i]; r.sepa = !!(m.iban && m.mandat_ref && m.mandat_datum); });
+    z.mitglieder_bank = db.finanz ? d.mitglieder.filter((m) => m.iban || m.kontoinhaber || m.bic || m.mandat_datum).map((m) => pick({ ...m, mitglied_id: m.id }, SP.mitglieder_bank)) : [];
+    ['boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons'].forEach((t) => { z[t] = (d[t] || []).map((o) => pick(o, SP[t])); });
+    z.hafen_rechnungen = d.rechnungen.map((o) => pick(o, SP.hafen_rechnungen));
+    z.gebuehren = Object.entries(d.gebuehren || {}).map(([jahr, daten]) => ({ jahr: Number(jahr), daten }));
+    const { zaehler, ...einst } = d.einstellungen; // Zähler leben in den Daten selbst
+    z.hafen_einstellungen = [{ id: 1, daten: einst }];
+    return z;
+  }
+  const schluessel = (t, r) => String(r[PK[t] || 'id']);
+  function schnappschuss(z) { const s = {}; Object.entries(z).forEach(([t, liste]) => { s[t] = new Map(liste.map((r) => [schluessel(t, r), JSON.stringify(r)])); }); return s; }
+
+  async function verbinden(opt = {}) {
+    if (!SB) return d;
+    const rollen = await SB.rpc('meine_rollen');
+    db.rollen = rollen || [];
+    // „mitglied“: nur die eigenen Daten (Mein SSV) – auch für Funktionsträger, die ja selbst Mitglied sind
+    const personal = opt.bereich !== 'mitglied' && db.rollen.some((r) => ['vorstand', 'kassenwart', 'brueckenwart', 'hafenmeister'].includes(r));
+    db.finanz = db.rollen.includes('vorstand') || db.rollen.includes('kassenwart');
+    db.bereich = personal ? 'personal' : 'mitglied';
+    const hol = (t, sel = '*', zusatz = '') => SB.req('/rest/v1/' + t + '?select=' + sel + zusatz);
+    let ich = null;
+    if (!personal) {
+      const u = await SB.rpc('mitglied_uebersicht');   // verknüpft das Konto beim ersten Login mit dem Mitglied
+      if (!u) throw Object.assign(new Error('Zu deinem Konto ist noch kein Mitglied hinterlegt.'), { code: 'kein_mitglied' });
+      const m = await SB.req('/rest/v1/mitglieder?select=id&user_id=eq.' + SB.uid());
+      if (!m.length) throw Object.assign(new Error('Zu deinem Konto ist noch kein Mitglied hinterlegt.'), { code: 'kein_mitglied' });
+      ich = m[0].id;
+    }
+    const leer = () => Promise.resolve([]);
+    if (ich) {   // Mein SSV: gezielt nur die eigenen Zeilen holen
+      const [mg, bank, boote, re, lp, landp, sais, geb, einst] = await Promise.all([
+        hol('mitglieder', SP.mitglieder.concat(['sepa']).join(','), '&id=eq.' + ich), hol('mitglieder_bank', '*', '&mitglied_id=eq.' + ich),
+        hol('boote', '*', '&eigner_id=eq.' + ich), hol('hafen_rechnungen', '*', '&mitglied_id=eq.' + ich + '&order=nr'),
+        hol('liegeplaetze', '*', '&order=id'), hol('landplaetze', '*', '&order=id'), hol('saisons'),
+        hol('gebuehren').catch(() => []), hol('hafen_einstellungen').catch(() => [])]);
+      const ids = boote.map((b) => b.id).join(',');
+      const [bel, aw] = ids ? await Promise.all([hol('belegungen', '*', '&boot_id=in.(' + ids + ')'), hol('abwesenheiten', '*', '&boot_id=in.(' + ids + ')')]) : [[], []];
+      return fertig(true, { mg, bank, boote, bel, aw, gaeste: [], warte: [], kran: [], ad: [], re, sl: [], an: [], lp, landp, sais, geb, einst }, ich);
+    }
+    const daten = await Promise.all([
+      hol('mitglieder', SP.mitglieder.concat(['sepa']).join(','), '&order=nachname,vorname'),
+      db.finanz || !personal ? hol('mitglieder_bank') : leer(),
+      hol('boote'), hol('belegungen'), hol('abwesenheiten'),
+      personal ? hol('gaeste', '*', '&order=erstellt') : leer(),
+      personal ? hol('warteliste', '*', '&order=datum') : leer(),
+      personal ? hol('kran') : leer(), personal ? hol('arbeitsdienst') : leer(),
+      db.finanz || !personal ? hol('hafen_rechnungen', '*', '&order=nr') : leer(),
+      db.finanz ? hol('sepa_laeufe') : leer(), db.finanz ? hol('antraege', '*', '&order=eingang') : leer(),
+      hol('liegeplaetze', '*', '&order=id'), hol('landplaetze', '*', '&order=id'), hol('saisons'),
+      hol('gebuehren').catch(() => []), hol('hafen_einstellungen').catch(() => [])
+    ]);
+    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst] = daten;
+    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst }, null);
+  }
+  async function fertig(mitgliedsbereich, x, ich) {
+    const personal = !mitgliedsbereich;
+    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst } = x;
+    const bankVon = new Map(bank.map((b) => [b.mitglied_id, b]));
+    const zahl = (o, felder) => { felder.forEach((f) => { if (o[f] != null) o[f] = Number(o[f]); }); return o; };
+    d = {
+      version: 2,
+      einstellungen: { ...STANDARD_EINSTELLUNGEN, ...((einst[0] && einst[0].daten) || {}) },
+      gebuehren: geb.length ? Object.fromEntries(geb.map((g) => [g.jahr, g.daten])) : { 2024: { ...GEBUEHREN_2024 } },
+      saisons: sais,
+      liegeplaetze: lp.map((p) => zahl(p, ['max_laenge', 'max_breite', 'sonderpreis'])), landplaetze: landp,
+      mitglieder: mg.map((m) => { const b = bankVon.get(m.id) || {}; return { ...m, mandat_ref: m.mandatsreferenz || '', iban: b.iban || '', bic: b.bic || '', kontoinhaber: b.kontoinhaber || '', mandat_datum: b.mandat_datum || '' }; }),
+      boote: boote.map((b) => zahl(b, ['laenge', 'breite', 'tiefgang', 'gewicht_t'])),
+      belegungen: bel.map((b) => zahl(b, ['flaeche_m2'])), abwesenheiten: aw,
+      gaeste: gaeste.map((g) => zahl(g, ['laenge', 'breite', 'betrag'])), warteliste: warte.map((w) => zahl(w, ['boot_laenge', 'boot_breite'])),
+      kran, arbeitsdienst: ad.map((a) => zahl(a, ['stunden'])),
+      rechnungen: re.map((r) => zahl(r, ['summe'])), sepa_laeufe: sl.map((x) => zahl(x, ['summe'])), antraege: an,
+      zaehler: { quittung: 0 }
+    };
+    d.mitglieder.forEach((m) => { delete m.mandatsreferenz; delete m.sepa; delete m.aktiv; });
+    // Quittungsnummern laufen über die vorhandenen Nummern weiter
+    d.zaehler.quittung = d.gaeste.reduce((mx, g) => Math.max(mx, Number(String(g.quittung_nr || '').split('-').pop()) || 0), 0);
+    db.bereich = personal ? 'personal' : 'mitglied';
+    if (!personal) {
+      db.mitgliedId = ich;
+      db.warteplatz = await SB.rpc('mein_wartelistenplatz').catch(() => null);
+    }
+    // Was diese Person zurückschreiben darf (der Rest ist für sie nur lesbar)
+    db.schreibbar = new Set(personal
+      ? ['mitglieder', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'liegeplaetze', 'landplaetze', 'saisons']
+        .concat(db.finanz ? ['mitglieder_bank', 'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'gebuehren', 'hafen_einstellungen'] : [])
+      : ['abwesenheiten']);
+    db.schnapp = schnappschuss(zeilen());
+    return d;
+  }
+
+  let schlange = Promise.resolve();
+  function dbSichern() {
+    const job = async () => {
+      const jetzt = zeilen(); const neuS = schnappschuss(jetzt);
+      for (const t of REIHE) {
+        if (!db.schreibbar.has(t)) continue;
+        const alt = db.schnapp[t] || new Map(); const geaendert = jetzt[t].filter((r) => alt.get(schluessel(t, r)) !== JSON.stringify(r));
+        if (geaendert.length) {
+          await SB.req('/rest/v1/' + t + '?on_conflict=' + (PK[t] || 'id'), { method: 'POST', body: geaendert, prefer: 'resolution=merge-duplicates,return=minimal' });
+          geaendert.forEach((r) => alt.set(schluessel(t, r), JSON.stringify(r)));
+        }
+      }
+      for (const t of REIHE.slice().reverse()) {
+        if (!db.schreibbar.has(t) || ['mitglieder', 'hafen_rechnungen', 'hafen_einstellungen', 'gebuehren'].includes(t)) continue;  // diese werden nie gelöscht
+        const alt = db.schnapp[t] || new Map(); const weg = [...alt.keys()].filter((k) => !neuS[t].has(k));
+        if (weg.length) { await SB.req('/rest/v1/' + t + '?' + (PK[t] || 'id') + '=in.(' + weg.join(',') + ')', { method: 'DELETE' }); weg.forEach((k) => alt.delete(k)); }
+      }
+    };
+    const lauf = schlange.then(job);
+    schlange = lauf.catch(() => {});   // nächste Speicherung läuft trotzdem; Fehlgeschlagenes wird dabei erneut versucht
+    return lauf.catch((e) => { if (db.onFehler) { db.onFehler(e); return false; } throw e; });
+  }
+  async function meinDatenAendern(p) { await SB.rpc('mein_daten_aendern', { p }); }
 
   /* ------------------------------------------------------------ Abfragen */
   const H = {
@@ -336,5 +495,6 @@
     }
   };
 
-  window.HAFEN = { laden, sichern, zuruecksetzen, get d() { return d; }, H, Q, STANDARD_EINSTELLUNGEN, GEBUEHREN_2024, demoIban };
+  window.HAFEN = { laden, sichern, zuruecksetzen, get d() { return d; }, H, Q, STANDARD_EINSTELLUNGEN, GEBUEHREN_2024, demoIban,
+    modus: SB ? 'supabase' : 'demo', verbinden, db, meinDatenAendern };
 })();

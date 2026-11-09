@@ -33,7 +33,10 @@
   let planStand = { modus: 'sommer', datum: imSommer ? heute : '2026-08-15', ansicht: 'gesamt', markiere: null };
 
   /* ------------------------------------------------------------ Helfer */
-  function speichern(meldung) { HF.sichern(); if (meldung) toast(meldung); }
+  const DB = HF.modus === 'supabase';
+  // Speichern: Demo sofort im Browser, Vereinsdatenbank im Hintergrund – Fehler werden gemeldet
+  HF.db.onFehler = (e) => toast('Nicht gespeichert: ' + e.message, 'fehler');
+  function speichern(meldung) { const p = HF.sichern(); if (meldung) toast(meldung); return p; }
   function toast(t, art) { const el = $('#toast'); el.textContent = t; el.className = 'toast zeigen' + (art ? ' ' + art : ''); clearTimeout(toast.t); toast.t = setTimeout(() => { el.className = 'toast'; }, 3200); }
   function modal(html, breit) {
     const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte' + (breit ? ' breit' : '') + '" role="dialog" aria-modal="true">' + html + '</div></div>';
@@ -43,7 +46,7 @@
   }
   function zu() { $('#modal').innerHTML = ''; }
   function kopf(titel, unter, aktionen) { return '<div class="kopf"><div><h1>' + titel + '</h1>' + (unter ? '<p>' + unter + '</p>' : '') + '</div><div class="aktionen">' + (aktionen || '') + '</div></div>'; }
-  const DEMO = '<div class="demo-band"><strong>Demo:</strong> Alle Personen, Boote und Bankdaten sind erfunden. Die Zuordnung der Brücken und die Box-Maße sind Annahmen, bis der Verein sie bestätigt.</div>';
+  const DEMO = DB ? '' : '<div class="demo-band"><strong>Demo:</strong> Alle Personen, Boote und Bankdaten sind erfunden. Die Zuordnung der Brücken und die Box-Maße sind Annahmen, bis der Verein sie bestätigt.</div>';
   const iban = (s) => bankSichtbar() ? esc(String(s || '').replace(/(.{4})/g, '$1 ').trim()) : (s ? '•••• ' + esc(String(s).slice(-4)) : '');
   const bootTxt = (b) => b ? '„' + esc(b.name) + '“ · ' + esc(b.typ) : '–';
   const masse = (b) => H.zahl(b.laenge) + ' × ' + H.zahl(b.breite) + ' m';
@@ -814,14 +817,14 @@
       f('glaeubiger_id', 'Gläubiger-ID') + f('iban', 'IBAN des Vereins') + f('bic', 'BIC') + f('bank', 'Bank') + f('kassenwart_name', 'Kassenwart (Gruß auf Rechnungen)') + f('hafenmeister_name', 'Hafenmeister') + f('hafenmeister_tel', 'Telefon Hafenmeister') +
       f('rechnung_praefix', 'Rechnungsnummer-Präfix') + f('zahlungsziel_tage', 'Einzug nach Rechnungsdatum (Tage)', 'number') + f('arbeitsdienst_soll', 'Arbeitsdienst-Soll (Std./Jahr)', 'number') +
       '<label class="feld check voll"><input type="checkbox" name="stromumlage_ueber_hafen"' + (e.stromumlage_ueber_hafen ? ' checked' : '') + '> Stromumlage mit der Hafenrechnung einziehen (sonst über den Mitgliedsbeitrag)</label></form></div>' +
-      '<div class="panel"><h2>Demo</h2><p class="hinweis">Setzt alle Daten auf die erfundenen Beispieldaten zurück.</p><button class="btn gefahr" id="reset">Demo zurücksetzen</button></div>';
+      (DB ? '' : '<div class="panel"><h2>Demo</h2><p class="hinweis">Setzt alle Daten auf die erfundenen Beispieldaten zurück.</p><button class="btn gefahr" id="reset">Demo zurücksetzen</button></div>');
     $('#ok').addEventListener('click', () => {
       const x = Object.fromEntries(new FormData($('#f'))); x.stromumlage_ueber_hafen = !!x.stromumlage_ueber_hafen; ['zahlungsziel_tage', 'arbeitsdienst_soll'].forEach((k) => { x[k] = Number(x[k]) || 0; });
       if (x.iban && !SEPA.ibanGueltig(x.iban)) return toast('IBAN des Vereins ist ungültig.', 'fehler');
       if (x.glaeubiger_id && !SEPA.glaeubigerGueltig(x.glaeubiger_id)) return toast('Gläubiger-ID hat ein ungültiges Format.', 'fehler');
       Object.assign(e, x); speichern('Gespeichert.');
     });
-    $('#reset').addEventListener('click', () => { if (confirm('Alle Demo-Daten zurücksetzen?')) { d = HF.zuruecksetzen(); toast('Zurückgesetzt.'); zeige('uebersicht'); } });
+    if ($('#reset')) $('#reset').addEventListener('click', () => { if (confirm('Alle Demo-Daten zurücksetzen?')) { d = HF.zuruecksetzen(); toast('Zurückgesetzt.'); zeige('uebersicht'); } });
   };
 
   /* ============================================================ Navigation */
@@ -837,7 +840,7 @@
       '<div class="rolle-chip">Angemeldet als <strong>' + ROLLEN[rolle].name + '</strong></div>' +
       TABS.map(([gruppe, ts]) => { const sichtbar = ts.filter(([t]) => darf(t)); return sichtbar.length ? '<div class="nav-gruppe">' + gruppe + '</div>' + sichtbar.map(([t, n]) =>
         '<button data-tab="' + t + '" class="' + (t === tab ? 'aktiv' : '') + '">' + n + (t === 'gaeste' && anfragen ? '<span class="zahl">' + anfragen + '</span>' : '') + (t === 'antraege' && neueAntraege ? '<span class="zahl">' + neueAntraege + '</span>' : '') + '</button>').join('') : ''; }).join('') +
-      '<div class="nav-unten"><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">Rolle wechseln</button></div></div>';
+      '<div class="nav-unten"><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">' + (DB ? 'Abmelden' : 'Rolle wechseln') + '</button></div></div>';
   }
   function zeige(t) {
     if (!darf(t)) t = 'uebersicht';
@@ -849,9 +852,10 @@
     if (auf) { const nv = $('#nav'); const o = nv.classList.toggle('offen'); auf.setAttribute('aria-expanded', o); return; }
     const n = e.target.closest('#nav [data-tab]'); if (n) return zeige(n.dataset.tab);
     const g = e.target.closest('[data-gehe]'); if (g && darf(g.dataset.gehe)) return zeige(g.dataset.gehe);
+    if (e.target.closest('#abmelden') && DB) { try { sessionStorage.removeItem('ssv-hafen-rolle'); } catch (x) { /* egal */ } window.SSV_SB.abmelden().then(() => location.reload()); return; }
     if (e.target.closest('#abmelden')) { rolle = null; try { sessionStorage.removeItem('ssv-hafen-rolle'); } catch (x) { /* egal */ } start(); }
   });
-  $('#rollen').addEventListener('click', (e) => { const b = e.target.closest('[data-rolle]'); if (!b) return; rolle = b.dataset.rolle; try { sessionStorage.setItem('ssv-hafen-rolle', rolle); } catch (x) { /* egal */ } start(); });
+  if ($('#rollen')) $('#rollen').addEventListener('click', (e) => { const b = e.target.closest('[data-rolle]'); if (!b) return; rolle = b.dataset.rolle; try { sessionStorage.setItem('ssv-hafen-rolle', rolle); } catch (x) { /* egal */ } start(); });
 
   // Demo: Änderungen aus anderen Fenstern (QR-Gastanmeldung, Mein SSV) sofort übernehmen,
   // damit beim nächsten Speichern nichts überschrieben wird

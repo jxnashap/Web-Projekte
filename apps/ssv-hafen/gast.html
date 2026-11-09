@@ -52,13 +52,19 @@
   <p style="color:rgba(255,255,255,.6);text-align:center;font-size:12px;margin-top:16px" data-t="ds">Deine Angaben nutzen wir nur für die Liegeplatzvergabe und Abrechnung.</p>
 </div>
 <div class="toast" id="toast"></div>
+<script src="js/config.js"></script>
+<script src="js/sb.js"></script>
 <script src="js/daten.js"></script>
 <script src="js/gebuehren.js"></script>
 <script>
 (function () {
   'use strict';
-  const HF = window.HAFEN, d = HF.laden(), H = HF.H, e = d.einstellungen;
-  const gb = window.HAFEN_GEBUEHREN.gebuehrenFuer(d, new Date().getFullYear());
+  // Vereinsdatenbank: Preis und Hafenmeister kommen über eine öffentliche Funktion, die Anmeldung legt genau einen Eintrag an
+  const HF = window.HAFEN, SB = window.SSV_SB, H = HF.H;
+  const d = SB ? null : HF.laden();
+  let e = d ? d.einstellungen : { hafenmeister_name: 'Hafenmeister', hafenmeister_tel: '' };
+  let gb = d ? window.HAFEN_GEBUEHREN.gebuehrenFuer(d, new Date().getFullYear()) : { gast_nacht: 15 };
+  if (SB) SB.rpc('gast_info', {}, true).then((i) => { gb = { gast_nacht: Number(i.gast_nacht) }; e = { hafenmeister_name: i.hafenmeister_name || 'Hafenmeister', hafenmeister_tel: i.hafenmeister_tel || '' }; setze(); }).catch(() => {});
   const T = {
     de: { titel: 'Moin und willkommen!', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', info: 'Grüne Schilder am Steg zeigen freie Plätze. Melde dich kurz an – der Hafenmeister bestätigt dir deinen Platz.', boot: 'Bootsname', skipper: 'Skipper', hafen: 'Heimathafen', tel: 'Telefon (für Rückfragen)', laenge: 'Länge (m)', breite: 'Breite (m)', ankunft: 'Ankunft', naechte: 'Nächte', senden: 'Anmelden', ds: 'Deine Angaben nutzen wir nur für die Liegeplatzvergabe und Abrechnung.', nacht: 'pro Nacht', danke: 'Danke, du bist angemeldet!', danke2: 'Der Hafenmeister weist dir gleich deinen Platz zu und kassiert die Liegegebühr. Fragen?' },
     en: { titel: 'Welcome aboard!', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', info: 'Green signs on the jetty mark free berths. Please register – the harbour master will confirm your berth.', boot: 'Boat name', skipper: 'Skipper', hafen: 'Home port', tel: 'Phone', laenge: 'Length (m)', breite: 'Beam (m)', ankunft: 'Arrival', naechte: 'Nights', senden: 'Register', ds: 'We only use your details to allocate your berth and for billing.', nacht: 'per night', danke: 'Thank you, you are registered!', danke2: 'The harbour master will assign your berth and collect the fee. Questions?' },
@@ -68,12 +74,16 @@
   const setze = () => { document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = T[lang][el.dataset.t]; }); document.getElementById('preis').textContent = H.geld(gb.gast_nacht) + ' ' + T[lang].nacht; document.documentElement.lang = lang; };
   document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => { lang = b.dataset.lang; document.querySelectorAll('[data-lang]').forEach((x) => x.classList.toggle('aktiv', x === b)); setze(); }));
   const f = document.getElementById('f'); f.ankunft.value = H.tag(new Date()); setze();
-  f.addEventListener('submit', (ev) => {
+  f.addEventListener('submit', async (ev) => {
     ev.preventDefault(); const x = Object.fromEntries(new FormData(f));
     const n = Math.max(1, Number(x.naechte) || 1);
-    d.gaeste.push({ id: H.uid('G'), bootsname: x.bootsname.trim(), skipper: x.skipper.trim(), herkunft: x.herkunft.trim(), tel: x.tel.trim(), email: '', laenge: Number(x.laenge), breite: Number(x.breite) || 0,
+    if (SB) {
+      const knopf = f.querySelector('button'); knopf.disabled = true;
+      try { await SB.rpc('gast_anmelden', { p: { bootsname: x.bootsname, skipper: x.skipper, herkunft: x.herkunft, tel: x.tel, laenge: x.laenge, breite: x.breite, ankunft: x.ankunft, naechte: n } }, true); }
+      catch (err) { knopf.disabled = false; alert(err.message); return; }
+    } else d.gaeste.push({ id: H.uid('G'), bootsname: x.bootsname.trim(), skipper: x.skipper.trim(), herkunft: x.herkunft.trim(), tel: x.tel.trim(), email: '', laenge: Number(x.laenge), breite: Number(x.breite) || 0,
       ankunft: x.ankunft, naechte: n, platz_id: '', betrag: n * gb.gast_nacht, zahlung: 'offen', quittung_nr: '', status: 'angemeldet', quelle: 'qr', erstellt: new Date().toISOString() });
-    HF.sichern();
+    if (!SB) HF.sichern();
     document.getElementById('karte').innerHTML = '<div class="danke"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" fill="rgba(29,138,90,.1)" stroke="#1d8a5a" stroke-width="4"/><path d="M24 41l11 11 22-24" fill="none" stroke="#1d8a5a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
       '<h2 style="margin:10px 0 6px">' + T[lang].danke + '</h2><p>' + T[lang].danke2 + '</p><p><strong>' + H.esc(e.hafenmeister_name) + '</strong> · <a href="tel:' + H.esc(e.hafenmeister_tel.replace(/\s/g, '')) + '">' + H.esc(e.hafenmeister_tel) + '</a></p></div>';
   });

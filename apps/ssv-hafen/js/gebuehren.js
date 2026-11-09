@@ -110,7 +110,7 @@
     vorschau(d, saison, periode, datum).filter((x) => !x.schon_abgerechnet && x.summe > 0).forEach((x) => {
       const m = x.m; lfd += 1;
       const re = {
-        id: 'R' + Math.random().toString(36).slice(2, 9), nr: praefix + String(lfd).padStart(4, '0'), mitglied_id: m.id, datum, saison, periode,
+        id: window.HAFEN.H.uid('R'), nr: praefix + String(lfd).padStart(4, '0'), mitglied_id: m.id, datum, saison, periode,
         faellig: window.HAFEN.H.tag(faellig), positionen: x.positionen.map(({ kran_id, ...p }) => p), summe: x.summe,
         empfaenger: { nr: m.nr, vorname: m.vorname, nachname: m.nachname, strasse: m.strasse, plz: m.plz, ort: m.ort, email: m.email, art: m.art },
         sepa: !!(m.iban && m.mandat_ref && m.mandat_datum), mandat_ref: m.mandat_ref || '', mandat_datum: m.mandat_datum || '',
