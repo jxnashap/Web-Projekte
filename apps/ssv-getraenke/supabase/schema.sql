@@ -511,12 +511,14 @@ create policy mitglied_eigene on public.buchungen for select to authenticated us
 
 -- Das Gerät (anon) darf ausschließlich die Kassen-Funktionen ausführen.
 revoke all on all tables in schema public from anon;
-revoke execute on all functions in schema public from anon, public;
+revoke execute on all functions in schema public from anon, public, authenticated;
 grant execute on function public.kasse_mitglieder(text), public.kasse_produkte(text),
   public.kasse_login(text, uuid, text), public.kasse_buchen(text, uuid, text, jsonb),
   public.kasse_verlauf(text, uuid, text), public.kasse_storno(text, uuid, text, uuid),
   public.kasse_optionen(text), public.kasse_pin_festlegen(text, uuid, text, text) to anon, authenticated;
 grant execute on function public.mitglied_uebersicht(), public.mitglied_pin_aendern(text) to authenticated;
+-- in den Zeilenschutz-Regeln verwendet (liefert nur die eigene Mitglieds-ID)
+grant execute on function public._mein_mitglied() to authenticated;
 grant execute on function public.is_admin(), public.admin_pin_setzen(uuid, text),
   public.admin_kasse_einrichten(text), public.admin_buchen(uuid, jsonb, timestamptz),
   public.admin_rechnungen_erstellen(date, date, date), public.admin_rechnung_stornieren(uuid),
