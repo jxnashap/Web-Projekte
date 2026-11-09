@@ -116,7 +116,7 @@ INHALTE = {
 STANDER = '''<svg class="stander-svg" viewBox="12 6 108 54" aria-hidden="true">
           <defs><clipPath id="st-clip{n}"><path d="M14 8L118 33L14 58Z"/></clipPath></defs>
           <path d="M14 8L118 33L14 58Z" fill="#132a6b"/>
-          <g clip-path="url(#st-clip{n})"><path d="M14 8L104 58M14 58L104 8" stroke="#fff" stroke-width="8"/><path d="M14 8L104 58M14 58L104 8" stroke="#d3252c" stroke-width="4.5"/></g>
+          <g clip-path="url(#st-clip{n})"><path d="M14 8L70 58M14 58L70 8" stroke="#fff" stroke-width="8"/><path d="M14 8L70 58M14 58L70 8" stroke="#d3252c" stroke-width="4.5"/></g>
           <path class="st-kante" d="M14 8L118 33L14 58Z" fill="none" stroke-width="2"/>
         </svg>'''
 
