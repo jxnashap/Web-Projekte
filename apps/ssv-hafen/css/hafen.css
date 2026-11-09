@@ -191,3 +191,25 @@ tr.klickbar:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px
 .skip:focus { left: 8px; }
 .nav button { padding: 7px 12px; } .nav-gruppe { padding: 8px 12px 2px; opacity: .6; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+.saison-wahl { display: block; margin-top: 6px; } .saison-wahl select { margin-left: 6px; background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.35); border-radius: 6px; padding: 2px 4px; }
+.saison-wahl select option { color: var(--ink); }
+@media (max-width: 860px) { .nav.offen .rolle-chip { display: block; } }
+
+/* ---- Handy (Gesamt-Check) ---- */
+.modal-x { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border: 0; background: transparent; font-size: 26px; line-height: 1; color: var(--muted); cursor: pointer; border-radius: 10px; }
+.modal-x:hover { background: var(--sand); }
+.modal-karte { position: relative; max-height: calc(100vh - 28px); max-height: calc(100dvh - 28px); overscroll-behavior: contain; }
+.modal-fuss { position: sticky; bottom: -22px; background: #fff; padding-top: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+body.modal-offen { overflow: hidden; }
+.toast { bottom: calc(22px + env(safe-area-inset-bottom)); }
+@media (max-width: 860px) {
+  input, select, textarea { font-size: 16px !important; }   /* iOS zoomt sonst beim Antippen */
+  .nav.offen .nav-inhalt { max-height: calc(100vh - 54px); max-height: calc(100dvh - 54px); overscroll-behavior: contain; }
+  .main { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+  .panel table.tab th:first-child, .panel table.tab td:first-child { position: sticky; left: 0; background: #fff; z-index: 1; box-shadow: 6px 0 6px -6px rgba(14,27,69,.25); }
+}
+@media (pointer: coarse) {
+  .btn.klein { min-height: 44px; padding: 10px 12px; }
+  details.sek > summary { min-height: 44px; }
+  .nav .nav-leiste button { min-height: 44px; }
+}

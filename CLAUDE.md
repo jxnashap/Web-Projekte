@@ -39,6 +39,9 @@ Repo für alle Website-Projekte. Struktur:
   **Echtbetrieb-Konten (nur SSV, getrennt von allen anderen Projekten):**
   Supabase Org „SSV Manager“, Projekt `jprpgadcycaawxlyozkm` (Frankfurt) – Schema aus
   `apps/ssv-hafen/supabase/ssv-komplett.sql` eingespielt (Kasse + Website + Hafen/Mitglieder, RLS je Rolle).
+  Bestehende DB nachziehen mit `nachtrag-01.sql` + `nachtrag-02.sql` (Anleitung `apps/ssv-hafen/INBETRIEBNAHME.md`);
+  `ssv-komplett.sql` wird aus schema.sql + website.sql + hafen.sql erzeugt – nie von Hand ändern.
+  Live (DB-Modus, geschützt): Projekt `ssv-live`; Paket bauen mit `apps/ssv-hafen/tools/paket_bauen.py`.
   Vercel-Konto schwartauerseglerverein@gmail.com, Team `ssv-manager` (team_PFmpBlwDeIPapupD2s1QuY2J),
   Projekt `ssv-vorschau` (Standard Protection = nur Team-Login). Hochladen: `apps/ssv-hafen/tools/vercel-vorschau.js`
   (Account-Token liegt als Netzwerk-Secret für api.vercel.com in der Umgebung; Node mit NODE_USE_ENV_PROXY=1).

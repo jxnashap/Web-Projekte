@@ -207,7 +207,7 @@
       '<label class="a-feld">Datei<input type="file" id="csv-datei" accept=".csv,text/csv,text/comma-separated-values,text/plain,application/vnd.ms-excel"></label>' +
       '<label class="a-feld" style="margin-top:12px">… oder hier einfügen<textarea id="csv-text" rows="6" placeholder="Vorname;Nachname;Mitgliedsnummer;E-Mail&#10;Anna;Albers;1001;anna@beispiel.de"></textarea></label>' +
       '<p class="k-sub" id="csv-vorschau"></p>' +
-      '<label class="a-feld check"><input type="checkbox" id="csv-pins" checked> Allen neuen Mitgliedern direkt eine PIN vergeben</label>' +
+      '<label class="a-feld check"><input type="checkbox" id="csv-pins"> Allen neuen Mitgliedern direkt eine PIN vergeben (sonst legen sie ihren Code selbst fest)</label>' +
       '<div class="a-modal-fuss"><button class="a-btn" data-zu>Abbrechen</button><button class="a-btn primaer" id="csv-ok" disabled>Importieren</button></div>');
     let zeilen = [];
     const parse = (text) => {
@@ -249,7 +249,7 @@
       const neu = []; let doppelt = 0;
       for (const z of zeilen) {
         if (vorhanden.has((z.vorname + '|' + z.nachname).toLowerCase())) { doppelt++; continue; }
-        neu.push(await S.mitgliedSpeichern({ ...z, aktiv: true, sepa: true }));
+        neu.push(await S.mitgliedSpeichern({ ...z, aktiv: true, sepa: !!z.mandatsreferenz }));   // Lastschrift nur mit Mandat
       }
       cache.mitglieder = await S.mitglieder();
       if ($('#csv-pins', el).checked && neu.length) {
@@ -286,6 +286,7 @@
       '<label class="a-feld">Reihenfolge<input name="sort" type="number" value="' + (p.sort || 0) + '"></label>' +
       '<label class="a-feld">Flaschen pro Kasten<input name="kasten_groesse" type="number" min="2" value="' + (p.kasten_groesse || '') + '" placeholder="leer = kein Kasten"></label>' +
       '<label class="a-feld">Kastenpreis (€)<input name="kasten_preis" inputmode="decimal" value="' + (p.kasten_preis != null ? zahl(p.kasten_preis) : '') + '"></label>' +
+      '<label class="a-feld">Jugendschutz<select name="ab_alter"><option value="">für alle</option><option value="16"' + (p.ab_alter === 16 ? ' selected' : '') + '>ab 16 (Bier, Wein, Sekt)</option><option value="18"' + (p.ab_alter === 18 ? ' selected' : '') + '>ab 18 (Spirituosen)</option></select></label>' +
       '<div class="a-feld voll">Symbol<div style="display:flex;flex-wrap:wrap;gap:6px" id="pf-emoji">' + EMOJIS.map((e) =>
         '<button type="button" data-e="' + e + '" class="a-btn klein" style="font-size:22px;' + (e === p.emoji ? 'outline:2px solid var(--rot)' : '') + '">' + e + '</button>').join('') + '</div></div>' +
       '<label class="a-feld">Akzentfarbe<input name="farbe" type="color" value="' + esc(p.farbe || '#132a6b') + '" style="height:44px;padding:4px"></label>' +
@@ -302,7 +303,7 @@
       const f = $('#pf', el); if (!f.reportValidity()) return;
       const d = Object.fromEntries(new FormData(f));
       const daten = { name: d.name.trim(), preis: geld(d.preis), sort: parseInt(d.sort, 10) || 0, emoji, farbe: d.farbe, aktiv: f.aktiv.checked,
-        kasten_groesse: d.kasten_groesse ? parseInt(d.kasten_groesse, 10) : null, kasten_preis: d.kasten_groesse ? geld(d.kasten_preis) : null };
+        kasten_groesse: d.kasten_groesse ? parseInt(d.kasten_groesse, 10) : null, kasten_preis: d.kasten_groesse ? geld(d.kasten_preis) : null, ab_alter: d.ab_alter ? Number(d.ab_alter) : null };
       if (isNaN(daten.preis) || daten.preis < 0) return toast('Bitte einen gültigen Preis eingeben.', 'fehler');
       if (daten.kasten_groesse && (daten.kasten_preis == null || isNaN(daten.kasten_preis))) return toast('Bitte auch den Kastenpreis eintragen.', 'fehler');
       if (p.id) daten.id = p.id;
@@ -493,7 +494,7 @@
       await S.einstellungenSpeichern(d); toast('Gespeichert.');
     });
     if ($('#k-ok')) $('#k-ok').addEventListener('click', async () => {
-      try { await S.kasseEinrichten($('#k-name').value); toast('Gerät eingerichtet – die Kasse ist bereit.'); } catch (err) { toast(err.message, 'fehler'); }
+      try { await S.kasseEinrichten($('#k-name').value); toast('Gerät eingerichtet – du bist abgemeldet, die Kasse startet.'); setTimeout(() => { location.href = 'index.html'; }, 1500); } catch (err) { toast(err.message, 'fehler'); }
     });
     if ($('#d-export')) {
       $('#d-export').addEventListener('click', async () => {

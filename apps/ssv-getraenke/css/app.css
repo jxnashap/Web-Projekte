@@ -101,7 +101,7 @@ body.kiosk { min-height: 100vh; min-height: 100dvh; display: flex; flex-directio
 .k-keypad .k-key-text { font-size: 17px; font-weight: 600; background: transparent; box-shadow: none; color: var(--ink-2); }
 .k-keypad.warten { opacity: .5; pointer-events: none; }
 .k-demo-hinweis { margin-top: 22px; font-size: 14px; color: var(--ink-3); }
-.k-neu { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 700; color: #166b46; background: rgba(29,138,90,.1); white-space: nowrap; border-radius: 99px; padding: 2px 9px; }
+.k-neu { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 700; color: #166b46; background: rgba(29,138,90,.1); border-radius: 99px; padding: 2px 9px; }
 .k-schritt { margin: 0 0 4px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ok); }
 .k-nr { height: 64px; margin: 18px auto 20px; max-width: 260px; border-bottom: 3px solid var(--navy); display: grid; place-items: center; font-size: 38px; font-weight: 600; letter-spacing: .12em; color: var(--navy); font-variant-numeric: tabular-nums; }
 .k-nr.wackeln { animation: wackeln .42s; border-color: var(--rot); }
@@ -329,3 +329,11 @@ body.rechnung-seite { background: #e9e6df; }
 /* Gesamt-Check: Verwaltung und Rechnungen mit derselben Überschrift-Schrift wie Website und Hafen-Manager */
 .a-kopf h1, .a-panel h2, .r-blatt h1, .a-login h1 { font-family: var(--font-serif); font-weight: 500; letter-spacing: 0; }
 .a-modal-karte h2 { font-family: var(--font-serif); font-weight: 500; }
+
+/* ---- Handy/iPad (Gesamt-Check) ---- */
+.a-feld.check input { flex: none; }
+.k-neu { white-space: normal; }
+.k-name { overflow: hidden; } .k-name > span { min-width: 0; }
+.a-modal-card { max-height: calc(100vh - 28px); max-height: calc(100dvh - 28px); overscroll-behavior: contain; }
+@media (max-width: 860px) { input, select, textarea { font-size: 16px !important; } .a-login form { padding: 22px; } }
+@media (pointer: coarse) { .a-btn.klein { min-height: 44px; } }

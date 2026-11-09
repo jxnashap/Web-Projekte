@@ -48,7 +48,7 @@
     try { await HF.verbinden({ bereich: 'mitglied' }); } catch (e) {
       if (e.code === 'kein_mitglied') {
         main.innerHTML = rahmen('<h1 style="font-size:24px;margin:0 0 8px">Fast da</h1><p>Zu deiner E-Mail-Adresse <strong>' + esc((SB.nutzer() || {}).email || '') + '</strong> ist im Verein noch kein Mitglied hinterlegt. ' +
-          'Bitte sag dem Kassenwart Bescheid, mit welcher Adresse du dich angemeldet hast – dann klappt es beim nächsten Mal.</p><div class="aktionen"><button class="btn" id="aus">Abmelden</button></div>');
+          'Bitte schreib kurz an <a href="mailto:' + esc(HF.STANDARD_EINSTELLUNGEN.verein_email) + '">' + esc(HF.STANDARD_EINSTELLUNGEN.verein_email) + '</a>, mit welcher Adresse du dich angemeldet hast – dann tragen wir sie bei dir ein.</p><div class="aktionen"><button class="btn" id="aus">Abmelden</button></div>');
         main.querySelector('#aus').addEventListener('click', () => SB.abmelden().then(() => ansicht('login')));
         return;
       }
@@ -57,7 +57,7 @@
     }
     // Mini-Hafenplan: Belegung anderer nur als Status, ohne Namen
     try {
-      const status = await SB.rpc('hafen_platzstatus', { p_saison: 2026, p_datum: HF.H.tag(new Date()) });
+      const status = await SB.rpc('hafen_platzstatus', { p_saison: HF.aktuelleSaison(), p_datum: HF.H.tag(new Date()) });
       const karte = new Map(status.map((x) => [x.platz_id, x.status]));
       HF.Q.statusWasser = (p) => karte.get(p.id) || 'frei';
     } catch (e) { /* Plan zeigt dann nur den eigenen Platz */ }

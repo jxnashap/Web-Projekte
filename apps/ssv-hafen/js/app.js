@@ -27,7 +27,7 @@
   const bankSichtbar = () => rolle && ROLLEN[rolle].bank;
 
   /* ------------------------------------------------------------ Saison */
-  const SAISON = 2026;
+  const SAISON = HF.aktuelleSaison();
   const sd = G.saisonDaten(d, SAISON);
   const imSommer = heute >= sd.auslagern && heute < sd.einlagern;
   let planStand = { modus: 'sommer', datum: imSommer ? heute : '2026-08-15', ansicht: 'gesamt', markiere: null };
@@ -41,13 +41,14 @@
   let vorModal = null;
   function modal(html, breit) {
     vorModal = document.activeElement;
-    const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte' + (breit ? ' breit' : '') + '" role="dialog" aria-modal="true" aria-labelledby="modal-titel">' + html + '</div></div>';
+    const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte' + (breit ? ' breit' : '') + '" role="dialog" aria-modal="true" aria-labelledby="modal-titel"><button class="modal-x" data-zu aria-label="Schließen">×</button>' + html + '</div></div>';
+    document.body.classList.add('modal-offen');
     const el = m.firstChild; el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-zu]')) zu(); });
     const t = el.querySelector('h2'); if (t) t.id = 'modal-titel';
     const f = el.querySelector('input:not([type=hidden]),select,textarea'); if (f) setTimeout(() => f.focus(), 30);
     return el;
   }
-  function zu() { $('#modal').innerHTML = ''; if (vorModal && vorModal.isConnected) vorModal.focus(); }
+  function zu() { $('#modal').innerHTML = ''; document.body.classList.remove('modal-offen'); if (vorModal && vorModal.isConnected) vorModal.focus(); }
   // Tastatur: Escape schließt Dialoge; klickbare Tabellenzeilen per Tab erreichbar und mit Enter/Leertaste zu öffnen
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && $('#modal').firstChild) return zu();
@@ -114,7 +115,7 @@
       '<div class="karten">' +
       '<div class="kz"><small>Liegeplätze belegt</small><strong>' + ((st.belegt || 0) + (st.unterwegs || 0) + (st.saisongast || 0)) + ' / ' + d.liegeplaetze.length + '</strong><span>' + (st.frei || 0) + ' frei · ' + (st.gesperrt || 0) + ' gesperrt</span></div>' +
       '<div class="kz"><small>Eigner unterwegs</small><strong style="color:var(--gruen)">' + (st.unterwegs || 0) + '</strong><span>grünes Schild am ' + H.kurz(tagX) + '</span></div>' +
-      '<div class="kz"><small>Gastlieger</small><strong style="color:#8a5e05">' + (st.gast || 0) + '</strong><span>am ' + H.kurz(tagX) + ' · ' + anfragen.length + ' Anfragen</span></div>' +
+      '<div class="kz"><small>Gastlieger</small><strong style="color:#8a5e05">' + (st.gast || 0) + '</strong><span>am ' + H.kurz(tagX) + ' · ' + anfragen.length + (anfragen.length === 1 ? ' Anfrage' : ' Anfragen') + '</span></div>' +
       '<div class="kz"><small>Winterlager</small><strong>' + Q.belegungen(SAISON, 'winter').length + '</strong><span>Boote an Land</span></div>' +
       '<div class="kz"><small>Warteliste</small><strong>' + warte + '</strong><span>Mitglieder warten</span></div>' +
       (darf('abrechnung') ? '<div class="kz"><small>Offene Rechnungen</small><strong>' + H.geld(offeneRe.reduce((s, r) => s + r.summe, 0)) + '</strong><span>' + offeneRe.length + ' Rechnungen</span></div>' : '') +
@@ -209,6 +210,7 @@
       if (!p.gesperrt) { const grund = prompt('Grund der Sperre (z. B. Dalben defekt):', ''); if (grund === null) return; p.notiz = grund; }
       p.gesperrt = !p.gesperrt; speichern(p.gesperrt ? 'Platz gesperrt.' : 'Sperre aufgehoben.'); zeige('plan');
     });
+    if (window.matchMedia('(max-width: 1200px)').matches) { const dt = document.querySelector('.detail'); if (dt) dt.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   }
 
   /* ============================================================ Liegeplätze */
@@ -518,7 +520,7 @@
     const el = modal('<h2>Willkommen an Bord, ' + esc(m.vorname) + '!</h2><p>Mitglied Nr. <strong>' + nr + '</strong> ist angelegt' + (m.mandat_ref ? ' (Mandatsreferenz ' + esc(m.mandat_ref) + ')' : '') + '. Die erste Beitragsrechnung entsteht mit der nächsten Beitragsabrechnung.</p>' +
       '<p class="hinweis">Tipp: Begrüßungs-E-Mail mit Mitgliedsnummer und dem Hinweis auf „Mein SSV“ und den Getränke-Code verschicken.</p>' +
       '<div class="modal-fuss"><button class="btn" data-zu>Schließen</button><a class="btn primaer" id="mail" href="mailto:' + encodeURIComponent(m.email) + '?subject=' + encodeURIComponent('Willkommen im Schwartauer Segler-Verein') + '&body=' +
-      encodeURIComponent('Moin ' + m.vorname + ',\n\nschön, dass du dabei bist! Deine Mitgliedsnummer ist ' + nr + '.\n\nIn „Mein SSV“ findest du deine Rechnungen und kannst dort deinen Code für die Getränkekasse festlegen – oder du legst ihn beim ersten Mal direkt am iPad im Vereinsheim fest (mit deiner Mitgliedsnummer).\n\nAllzeit gute Fahrt!\nDein Vorstand') + '">Begrüßungs-E-Mail schreiben</a></div>');
+      encodeURIComponent('Moin ' + m.vorname + ',\n\nschön, dass du dabei bist! Deine Mitgliedsnummer ist ' + nr + '.\n\nDein Zugang „Mein SSV“: ' + new URL('mein-ssv.html', location.href).href + ' – leg dort dein Konto mit genau dieser E-Mail-Adresse an (' + m.email + ').\n\nIn „Mein SSV“ findest du deine Rechnungen und kannst dort deinen Code für die Getränkekasse festlegen – oder du legst ihn beim ersten Mal direkt am iPad im Vereinsheim fest (mit deiner Mitgliedsnummer).\n\nAllzeit gute Fahrt!\nDein Vorstand') + '">Begrüßungs-E-Mail schreiben</a></div>');
     $('#mail', el).addEventListener('click', () => setTimeout(zu, 300));
   }
 
@@ -618,7 +620,7 @@
           '<td>' + (jetzt ? '<span class="tag gruen">unterwegs (' + H.kurz(planStand.datum) + ')</span>' : a.von > heute ? '<span class="tag">geplant</span>' : '') + ' <small style="color:var(--muted)">' + esc(a.gemeldet || '') + '</small></td>' +
           '<td class="r"><button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button></td></tr>'; }).join('') + '</tbody></table></div>';
     $('#neu').addEventListener('click', () => abwesenheitForm({}));
-    main.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => { d.abwesenheiten = d.abwesenheiten.filter((a) => a.id !== b.dataset.weg); speichern('Gelöscht.'); zeige(tab); }));
+    main.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => { if (!confirm('Abwesenheit löschen? Der Platz ist dann nicht mehr grün.')) return; d.abwesenheiten = d.abwesenheiten.filter((a) => a.id !== b.dataset.weg); speichern('Gelöscht.'); zeige(tab); }));
   };
   function abwesenheitForm(a) {
     const el = modal('<h2>Abwesenheit eintragen</h2><p class="hinweis ok">Der Platz wird für diesen Zeitraum im Hafenplan grün und kann an Gäste vergeben werden.</p><form id="f" class="form">' +
@@ -704,7 +706,10 @@
       if (!confirm(platzName(pid) + ' an ' + Q.name(m) + ' vergeben? Das Boot wird angelegt bzw. zugeordnet.')) return;
       let b2 = Q.booteVon(m.id)[0];
       if (!b2) { b2 = { id: H.uid('B'), name: '[Bootsname eintragen]', typ: '', eigner_id: m.id, laenge: x.boot_laenge, breite: x.boot_breite, tiefgang: 0, gewicht_t: 0, segelnr: '', versicherung: '', vers_bis: '', notiz: 'aus Warteliste' }; d.boote.push(b2); }
-      d.belegungen.push({ id: H.uid('BL'), saison: SAISON, periode: 'sommer', boot_id: b2.id, platz_typ: 'wasser', platz_id: pid, art: 'dauer', flaeche_m2: null, nicht_kranen: false, notiz: 'aus Warteliste' });
+      // Nach dem Einlagern gilt die Vergabe für den nächsten Sommer
+      const ziel = heute > sd.einlagern ? SAISON + 1 : SAISON;
+      d.belegungen.push({ id: H.uid('BL'), saison: ziel, periode: 'sommer', boot_id: b2.id, platz_typ: 'wasser', platz_id: pid, art: 'dauer', flaeche_m2: null, nicht_kranen: false, notiz: 'aus Warteliste' });
+      if (ziel !== SAISON) toast('Platz für den Sommer ' + ziel + ' vergeben.');
       x.status = 'vergeben: ' + platzName(pid); speichern(platzName(pid) + ' vergeben.'); zeige(tab);
     }));
   };
@@ -752,7 +757,7 @@
     const vs = G.vorschau(d, jahr, per, abrStand.datum).filter((x) => x.summe > 0);
     const offen = vs.filter((x) => !x.schon_abgerechnet);
     const ohneMandat = offen.filter((x) => !(x.m.iban && x.m.mandat_ref && x.m.mandat_datum));
-    const res = d.rechnungen.slice().sort((a, b) => b.nr.localeCompare(a.nr));
+    const res = d.rechnungen.slice().sort((a, b) => (b.datum || '').localeCompare(a.datum || '') || b.nr.localeCompare(a.nr));   // neueste zuerst
     const sepaBereit = res.filter((r) => r.sepa && !r.sepa_lauf && !r.storniert_am && !r.bezahlt_am);
     const sepaOk = SEPA.ibanGueltig(e.iban) && SEPA.glaeubigerGueltig(e.glaeubiger_id);
     const label = H.periodeText({ periode: per, saison: jahr });
@@ -782,6 +787,8 @@
       if (neu.length && confirm('Rechnungen jetzt ansehen / als PDF sichern?')) oeffnen('drucken.html?art=rechnungen&ids=' + neu.map((r) => r.id).join(','));
     });
     $('#sepa').addEventListener('click', () => {
+      const ersterEinzug = sepaBereit.map((r) => r.faellig).sort()[0];
+      if (!confirm('Lastschrift-Datei für ' + sepaBereit.length + ' Rechnungen erzeugen?\n\nDie Rechnung ist zugleich die Ankündigung des Einzugs (frühester Einzug ' + H.datum(ersterEinzug) + '). Haben alle Mitglieder ihre Rechnung bekommen – in „Mein SSV“, per E-Mail oder als Brief?')) return;
       const ungueltig = [];
       const posten = sepaBereit.map((r) => { const m = Q.mitglied(r.mitglied_id);
         if (!SEPA.ibanGueltig(m.iban)) { ungueltig.push(r.nr); return null; }
@@ -801,7 +808,7 @@
     });
     $('#csvr').addEventListener('click', () => download('hafen-rechnungen.csv', csv([['Nr', 'Datum', 'Fällig', 'Mitgliedsnr', 'Name', 'Periode', 'Betrag', 'Zahlart', 'SEPA-Datei', 'Bezahlt am', 'Storniert']].concat(res.map((r) => [r.nr, H.datum(r.datum), H.datum(r.faellig), r.empfaenger.nr, r.empfaenger.vorname + ' ' + r.empfaenger.nachname, H.periodeText(r), H.zahl(r.summe), r.sepa ? 'Lastschrift' : 'Überweisung', r.sepa_lauf || '', H.datum(r.bezahlt_am), r.storniert_am ? 'ja' : '']))), 'text/csv'));
     main.querySelectorAll('[data-zeige]').forEach((b) => b.addEventListener('click', () => oeffnen('drucken.html?art=rechnungen&ids=' + b.dataset.zeige)));
-    main.querySelectorAll('[data-bez]').forEach((b) => b.addEventListener('click', () => { d.rechnungen.find((r) => r.id === b.dataset.bez).bezahlt_am = heute; speichern('Als bezahlt markiert.'); zeige('abrechnung'); }));
+    main.querySelectorAll('[data-bez]').forEach((b) => b.addEventListener('click', () => { if (!confirm('Als bezahlt markieren?')) return; d.rechnungen.find((r) => r.id === b.dataset.bez).bezahlt_am = heute; speichern('Als bezahlt markiert.'); zeige('abrechnung'); }));
     main.querySelectorAll('[data-storno]').forEach((b) => b.addEventListener('click', () => { if (!confirm('Rechnung stornieren? Das Mitglied erscheint danach wieder in der Vorschau.')) return; G.stornieren(d, b.dataset.storno); speichern('Storniert.'); zeige('abrechnung'); }));
   };
 
@@ -850,12 +857,13 @@
     const anfragen = d.gaeste.filter((g) => g.status === 'angemeldet').length;
     const neueAntraege = (d.antraege || []).filter((a) => a.status === 'neu').length;
     const aktName = (TABS.flatMap(([, ts]) => ts).find(([t]) => t === tab) || [, ''])[1];
-    const zahlen = anfragen + neueAntraege;
+    const zahlen = (darf('gaeste') ? anfragen : 0) + (darf('antraege') ? neueAntraege : 0);   // nur, was diese Rolle bearbeiten kann
     $('#nav').classList.remove('offen');
     $('#nav').innerHTML = '<div class="nav-leiste"><svg class="stander"><use href="#stander"/></svg><strong>' + aktName + '</strong>' +
       '<button id="navauf" aria-expanded="false" aria-controls="nav-inhalt">Menü' + (zahlen ? '<span class="zahl">' + zahlen + '</span>' : '') + '</button></div><div class="nav-inhalt" id="nav-inhalt">' +
       '<div class="marke"><svg class="stander"><use href="#stander"/></svg><div><strong>Hafen-Manager</strong><span>SSV · Teerhofinsel</span></div></div>' +
-      '<div class="rolle-chip">Angemeldet als <strong>' + ROLLEN[rolle].name + '</strong></div>' +
+      '<div class="rolle-chip">Angemeldet als <strong>' + ROLLEN[rolle].name + '</strong><label class="saison-wahl">Saison <select id="saison-wahl">' +
+        [SAISON - 1, SAISON, SAISON + 1].map((j) => '<option' + (j === SAISON ? ' selected' : '') + '>' + j + '</option>').join('') + '</select></label></div>' +
       TABS.map(([gruppe, ts]) => { const sichtbar = ts.filter(([t]) => darf(t)); return sichtbar.length ? '<div class="nav-gruppe">' + gruppe + '</div>' + sichtbar.map(([t, n]) =>
         '<button data-tab="' + t + '" class="' + (t === tab ? 'aktiv' : '') + '"' + (t === tab ? ' aria-current="page"' : '') + '>' + n + (t === 'gaeste' && anfragen ? '<span class="zahl">' + anfragen + '</span>' : '') + (t === 'antraege' && neueAntraege ? '<span class="zahl">' + neueAntraege + '</span>' : '') + '</button>').join('') : ''; }).join('') +
       '<div class="nav-unten"><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">' + (DB ? 'Abmelden' : 'Rolle wechseln') + '</button></div></div>';
@@ -873,6 +881,13 @@
     if (e.target.closest('#abmelden') && DB) { try { sessionStorage.removeItem('ssv-hafen-rolle'); } catch (x) { /* egal */ } window.SSV_SB.abmelden().then(() => location.reload()); return; }
     if (e.target.closest('#abmelden')) { rolle = null; try { sessionStorage.removeItem('ssv-hafen-rolle'); } catch (x) { /* egal */ } start(); }
   });
+  document.addEventListener('change', (e) => {
+    if (e.target.id !== 'saison-wahl') return;
+    const u = new URL(location.href); u.searchParams.set('saison', e.target.value); location.href = u.toString();
+  });
+  // Vereinsdatenbank: nach 30 Minuten ohne Eingabe abmelden (Bankdaten nicht offen am Rechner lassen)
+  if (DB) { let ruhe; const neu = () => { clearTimeout(ruhe); ruhe = setTimeout(() => { window.SSV_SB.abmelden().then(() => location.reload()); }, 30 * 60e3); };
+    ['pointerdown', 'keydown'].forEach((ev) => document.addEventListener(ev, neu, { passive: true })); neu(); }
   if ($('#rollen')) $('#rollen').addEventListener('click', (e) => { const b = e.target.closest('[data-rolle]'); if (!b) return; rolle = b.dataset.rolle; try { sessionStorage.setItem('ssv-hafen-rolle', rolle); } catch (x) { /* egal */ } start(); });
 
   // Demo: Änderungen aus anderen Fenstern (QR-Gastanmeldung, Mein SSV) sofort übernehmen,

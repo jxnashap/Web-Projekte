@@ -867,7 +867,7 @@ body.nav-open .stander-svg .st-kante,
 
 /* Termine */
 .cms-termine { list-style: none; margin: 0; padding: 0; }
-.cms-termin { display: grid; grid-template-columns: 64px 1fr; gap: 20px; align-items: center; padding: 18px 0; border-top: 1px solid var(--line); }
+.cms-termin { display: grid; grid-template-columns: 64px minmax(0,1fr); gap: 20px; align-items: center; padding: 18px 0; border-top: 1px solid var(--line); }
 .cms-termin:last-child { border-bottom: 1px solid var(--line); }
 .cms-datum { text-align: center; border: 1px solid var(--line-gold); border-radius: 4px; padding: 8px 0 6px; background: var(--white); }
 .cms-datum strong { display: block; font-family: var(--serif); font-size: 1.6rem; font-weight: 500; color: var(--night); line-height: 1; }
@@ -1016,3 +1016,12 @@ body.cine .site-header:not(.solid) .brand-sub, body.nav-open .brand-sub,
 
 /* Gesamt-Check: Fokusring auf dunklem Grund sichtbar */
 .dark :focus-visible, .site-footer :focus-visible, .hero-cine :focus-visible, .nav-overlay :focus-visible { outline-color: var(--paper); }
+
+/* ---- Handy (Gesamt-Check) ---- */
+.nav-overlay { overflow-y: auto; overscroll-behavior: contain; }
+@media (max-height: 520px) { .main-nav { justify-content: flex-start; padding-top: 96px; } }
+.split { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.cms-termin h4 { overflow-wrap: anywhere; hyphens: auto; }
+.site-footer a { display: inline-block; padding: 6px 0; }
+@media (max-width: 360px) { .btn { padding: 15px 20px; letter-spacing: .12em; white-space: normal; } }

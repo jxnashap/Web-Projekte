@@ -123,7 +123,7 @@
     zustand.pin = ''; renderDots();
   }
   function angemeldet(r) {
-    zustand.bon = [];
+    zustand.bon = []; zustand.alter = r.alter == null ? null : Number(r.alter);
     $('#hallo-name').textContent = r.vorname;
     setzeSummen(r);
     renderKacheln(); renderBon(); zeige('s-auswahl');
@@ -197,7 +197,8 @@
     if (r.offen_summe != null) $('#offen-summe').textContent = H.geld(r.offen_summe);
   }
   function renderKacheln() {
-    $('#kacheln').innerHTML = zustand.produkte.map((p) =>
+    // Jugendschutz: Getränke mit Altersgrenze gar nicht erst anzeigen
+    $('#kacheln').innerHTML = zustand.produkte.filter((p) => !(p.ab_alter && zustand.alter != null && zustand.alter < p.ab_alter)).map((p) =>
       '<button class="k-kachel" data-id="' + p.id + '" style="--farbe:' + H.esc(p.farbe || '#132a6b') + '">' +
       '<span class="k-emoji">' + H.esc(p.emoji || '🥤') + '</span>' +
       '<span class="k-pname">' + H.esc(p.name) + '</span>' +
@@ -305,6 +306,8 @@
   }
   async function start() {
     uhr(); setInterval(uhr, 10e3);
+    // Am Kassen-iPad bleibt nie jemand aus der Verwaltung angemeldet
+    if (S.modus !== 'demo') { try { localStorage.removeItem('ssv-session'); } catch (e) { /* egal */ } }
     if (S.modus === 'demo') {
       $('#modus-badge').hidden = false; $('#demo-pin').hidden = false;
       $('#demo-pin').textContent = 'Demo: Beispiel-Mitglieder mit Code haben die 1234 · Mitglieder mit „Code festlegen“ probieren den ersten Besuch aus (die Mitgliedsnummer steht in „Mein SSV“ bzw. in der Verwaltung).';

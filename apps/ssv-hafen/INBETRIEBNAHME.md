@@ -5,11 +5,25 @@ liegt geschützt bei Vercel (Team „ssv-manager“, Projekt **ssv-live**). Die 
 Projekt **ssv-vorschau**. Beide sind nur nach Vercel-Login sichtbar, bis der Verein sie
 freigibt.
 
-## 1 · Datenbank-Nachtrag einspielen (einmalig)
+## 1 · Datenbank-Nachträge einspielen (einmalig, in dieser Reihenfolge)
 
-Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inhalt von
-`apps/ssv-hafen/supabase/nachtrag-01.sql` einfügen → **Run**.
-(Vereinsangaben für Mitglieder lesbar, Vorstand speichert Antragsentscheidungen, fester Suchpfad.)
+Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inhalt einfügen → **Run**:
+
+1. `apps/ssv-hafen/supabase/nachtrag-01.sql` – Vereinsangaben für Mitglieder lesbar, Vorstand speichert
+   Antragsentscheidungen, fester Suchpfad.
+2. `apps/ssv-hafen/supabase/nachtrag-02.sql` – Sicherheit und Datenschutz aus dem Gesamt-Check:
+   Spaltenrechte für Mitglieder (Konto-Verknüpfung, Getränke-Code und Bankdaten nicht mehr durch
+   Hafen-Rollen änderbar), Admin-Liste nur für den Vorstand, Hafenplan-Status nur für Mitglieder,
+   wachsende Sperre nach falschen Getränke-Codes, Jugendschutz an der Kasse (`ab_alter`),
+   Aufnahmeantrag prüft Alter und Zustimmung der Eltern, Löschfristen (`daten_aufraeumen()`),
+   Mitglieder ändern ihre Anschrift selbst.
+
+Beide dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
+
+**Löschfristen automatisch:** Database → Extensions → `pg_cron` aktivieren, dann einmal im SQL Editor:
+`select cron.schedule('ssv-loeschfristen', '0 3 * * 1', $$select public.daten_aufraeumen()$$);`
+(abgelehnte Anträge nach 6 Monaten, Gast-Kontaktdaten 12 Monate nach Abreise, Kontakt-/Bankdaten
+Ausgetretener nach 1 Jahr; Rechnungen bleiben wegen § 147 AO.)
 
 ## 2 · Anmelde-Einstellungen in Supabase
 
@@ -53,6 +67,11 @@ Einstellungen → **Dieses Gerät als Kasse einrichten**. Danach `…/ssv-getrae
 „Teilen → Zum Home-Bildschirm“, und mit **Geführter Zugriff** auf die Kasse festsetzen.
 Mitglieder legen ihren 4-stelligen Code beim ersten Mal selbst fest (mit Mitgliedsnummer).
 
+## 5a · Getränke mit Jugendschutz
+
+In der Getränkekasse (Kassenwart → Getränke) bei Bier, Wein, Sekt „ab 16“, bei Spirituosen „ab 18“
+wählen. Mitglieder ohne Geburtsdatum oder unter der Grenze sehen diese Getränke an der Kasse nicht.
+
 ## 6 · Website-Redaktion
 
 Konto mit Rolle `redaktion` (oder Vorstand) → `…/website/verwaltung/` anmelden →
@@ -62,6 +81,13 @@ Hinweis, Aktuelles, Termine, Zeiten, Fotos pflegen. Änderungen sind sofort live
 
 Mitglieder legen ihr Konto in **Mein SSV** (`…/ssv-hafen/mein-ssv.html` → „Konto anlegen“) selbst an –
 mit der E-Mail-Adresse, die im Mitgliederstamm steht. Voraussetzung: eigenes SMTP (Schritt 2).
+
+## 7a · Vor der Veröffentlichung prüfen
+
+- Website → **Impressum** und **Datenschutz**: alle `[PLATZHALTER]` ergänzen (Vorstand nach § 26 BGB,
+  Vereinsregister, Telefon, Bank, E-Mail-Versanddienst) und vom Vorstand freigeben lassen.
+- Mit Vercel und Supabase je einen **Auftragsverarbeitungsvertrag** (DPA) abschließen
+  (Vercel: Dashboard → Settings → Legal; Supabase: Organization → Legal Documents).
 
 ## 8 · Freigeben und Domain
 

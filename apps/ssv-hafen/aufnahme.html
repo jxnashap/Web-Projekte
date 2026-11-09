@@ -27,7 +27,7 @@
   @media (max-width: 560px) {
     .auf { padding: 14px 12px 40px; } .auf-kopf h1 { font-size: 26px; } .auf-kopf p { font-size: 14px; }
     .karte { padding: 16px; border-radius: 16px; }
-    .art { flex-wrap: wrap; padding: 10px 12px; } .art > div { flex: 1; min-width: 0; } .art b { margin-left: 26px; font-size: 14px; }
+    .art { flex-wrap: wrap; padding: 10px 12px; } .art > div { flex: 1 1 calc(100% - 32px); min-width: 0; } .art b { flex-basis: 100%; margin-left: 30px; font-size: 14px; } .art strong { overflow-wrap: anywhere; hyphens: auto; }
     .mandat { font-size: 12px; }
   }
   .check { display: block; position: relative; padding-left: 28px; font-size: 14px; margin: 10px 0; overflow-wrap: anywhere; }
@@ -37,6 +37,7 @@
   .danke { text-align: center; }
   .danke svg { width: 80px; height: 80px; }
   [hidden] { display: none !important; }
+  .auf { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
 </style>
 </head>
 <body>
@@ -69,6 +70,7 @@
         <label class="feld">E-Mail<input name="email" type="email" required autocomplete="email"></label>
         <label class="feld">Telefon<input name="tel" type="tel" autocomplete="tel"></label>
         <label class="feld voll" id="eb-feld" hidden>Erziehungsberechtigte Person (Vor- und Nachname)<input name="erziehungsberechtigt"><small>Bei Minderjährigen stellt eine erziehungsberechtigte Person den Antrag.</small></label>
+        <label class="check voll" id="eltern-feld" hidden><input type="checkbox" name="eltern_einverstanden"> Ich bin erziehungsberechtigt, stelle den Antrag im Einverständnis aller Erziehungsberechtigten und wir übernehmen die Beiträge.</label>
       </div>
       <p class="fehlertext" id="alter-hinweis"></p>
     </div>
@@ -89,7 +91,7 @@
       <h2>4 · Lastschrift</h2>
       <p class="unter">Beiträge und Hafengeld ziehen wir bequem per Lastschrift ein.</p>
       <div class="form">
-        <label class="feld voll">Kontoinhaber/in<input name="kontoinhaber" autocomplete="name"></label>
+        <label class="feld voll">Kontoinhaber/in<input name="kontoinhaber" autocomplete="name"><small id="kto-hinweis">Bei Minderjährigen: Konto der erziehungsberechtigten Person.</small></label>
         <label class="feld voll">IBAN<input name="iban" autocomplete="off" placeholder="DE…" spellcheck="false"></label>
       </div>
       <p class="fehlertext" id="iban-hinweis"></p>
@@ -98,7 +100,7 @@
         Hinweis: Ich kann innerhalb von acht Wochen, beginnend mit dem Belastungsdatum, die Erstattung des belasteten Betrages verlangen. Es gelten dabei die mit meinem Kreditinstitut vereinbarten Bedingungen.<br>
         Gläubiger-Identifikationsnummer: <span data-glaeubiger></span> · Die Mandatsreferenz teilen wir dir nach der Aufnahme mit.<br>
         <em>[PLATZHALTER: mit der Bank klären, ob ein online erteiltes Mandat genügt – sonst wird das unterschriebene Mandat nach der Aufnahme nachgereicht.]</em></div>
-      <label class="check"><input type="checkbox" name="mandat" checked> Ich erteile das SEPA-Lastschriftmandat.</label>
+      <label class="check"><input type="checkbox" name="mandat"> Ich erteile das SEPA-Lastschriftmandat.</label>
     </div>
     <div class="karte">
       <h2>5 · Zum Schluss</h2>
@@ -151,14 +153,16 @@
   const alter = () => f.geburtsdatum.value ? Q.alterAm({ geburtsdatum: f.geburtsdatum.value }, H.tag(new Date())) : null;
   function pruefeAlter() {
     const a = alter(), art = f.art.value, hinweis = document.getElementById('alter-hinweis');
-    document.getElementById('eb-feld').hidden = !(a != null && a < 18);
-    f.erziehungsberechtigt.required = a != null && a < 18;
+    const minder = a != null && a < 18;
+    document.getElementById('eb-feld').hidden = !minder; document.getElementById('eltern-feld').hidden = !minder;
+    f.erziehungsberechtigt.required = minder; f.eltern_einverstanden.required = minder; f.kontoinhaber.required = minder && !!f.mandat.checked;
     let t = '';
     if (a != null && a < 18 && !art.startsWith('jugend')) t = 'Unter 18? Dann passt die Jugendmitgliedschaft.';
     if (a != null && a >= 18 && art.startsWith('jugend')) t = 'Ab 18 passt „In Ausbildung oder Studium“, eine Probe- oder fördernde Mitgliedschaft.';
     hinweis.textContent = t; return !t;
   }
   f.addEventListener('change', pruefeAlter);
+  f.mandat.addEventListener('change', pruefeAlter);
   document.getElementById('hat-boot').addEventListener('change', (ev) => { document.getElementById('boot').hidden = !ev.target.checked; });
   f.iban.addEventListener('blur', () => { const v = f.iban.value.replace(/\s/g, ''); document.getElementById('iban-hinweis').textContent = v && !SEPA.ibanGueltig(v) ? 'Diese IBAN stimmt nicht – bitte noch einmal prüfen.' : ''; });
 
@@ -166,17 +170,18 @@
     ev.preventDefault();
     const fehler = document.getElementById('fehler'); fehler.textContent = '';
     if (!f.checkValidity()) { f.reportValidity(); return; }
-    if (!pruefeAlter()) { fehler.textContent = 'Bitte die Art der Mitgliedschaft prüfen (siehe Hinweis bei „Über dich“).'; return; }
+    if (!pruefeAlter()) { fehler.textContent = 'Bitte die Art der Mitgliedschaft prüfen (siehe Hinweis bei „Über dich“).'; document.getElementById('alter-hinweis').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
     const x = Object.fromEntries(new FormData(f));
     const ibanNr = (x.iban || '').replace(/\s/g, '').toUpperCase();
     if (x.mandat && !ibanNr) { fehler.textContent = 'Für das Lastschriftmandat brauchen wir deine IBAN.'; return; }
     if (ibanNr && !SEPA.ibanGueltig(ibanNr)) { fehler.textContent = 'Die IBAN ist ungültig – bitte prüfen.'; return; }
-    const hatBoot = document.getElementById('hat-boot').checked && x.boot_name;
+    const hatBoot = document.getElementById('hat-boot').checked && (x.boot_name || x.boot_typ || x.boot_laenge);   // auch ohne Bootsnamen
     const antrag = {
       id: H.uid('A'), eingang: new Date().toISOString(), status: 'neu', art: x.art,
       vorname: x.vorname.trim(), nachname: x.nachname.trim(), geburtsdatum: x.geburtsdatum, geschlecht: x.geschlecht,
       strasse: x.strasse.trim(), plz: x.plz.trim(), ort: x.ort.trim(), email: x.email.trim(), tel: (x.tel || '').trim(), erziehungsberechtigt: (x.erziehungsberechtigt || '').trim(),
-      boot: hatBoot ? { name: x.boot_name.trim(), typ: (x.boot_typ || '').trim(), laenge: Number(x.boot_laenge) || 0, breite: Number(x.boot_breite) || 0 } : null,
+      eltern_einverstanden: !!x.eltern_einverstanden,
+      boot: hatBoot ? { name: (x.boot_name || '').trim() || 'noch ohne Namen', typ: (x.boot_typ || '').trim(), laenge: Number(x.boot_laenge) || 0, breite: Number(x.boot_breite) || 0 } : null,
       warteliste: !!(hatBoot && x.warteliste), kontoinhaber: (x.kontoinhaber || (x.vorname + ' ' + x.nachname)).trim(), iban: ibanNr, bic: '',
       mandat: !!x.mandat && !!ibanNr, satzung: !!x.satzung, datenschutz: !!x.datenschutz, nachricht: (x.nachricht || '').trim()
     };
@@ -188,7 +193,7 @@
     } else { const d = HF.laden(); d.antraege.push(antrag); HF.sichern(); }
     document.querySelector('.auf').innerHTML = '<div class="karte danke"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" fill="rgba(29,138,90,.1)" stroke="#1d8a5a" stroke-width="4"/><path d="M24 41l11 11 22-24" fill="none" stroke="#1d8a5a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
       '<h2 style="margin:10px 0 6px">Danke, ' + H.esc(antrag.vorname) + '!</h2><p>Dein Antrag ist bei uns angekommen. Der Vorstand meldet sich nach seiner Entscheidung per E-Mail bei dir – mit deiner Mitgliedsnummer und allem, was du für den Start brauchst.</p>' +
-      '<p>Fragen? Schreib uns an <a href="mailto:' + H.esc(e.verein_email) + '">' + H.esc(e.verein_email) + '</a>.</p></div>';
+      '<p>Fragen? Schreib uns an <a href="mailto:' + H.esc(e.verein_email) + '">' + H.esc(e.verein_email) + '</a>.</p><p><a class="btn" href="../website/index.html">← Zur Website</a></p></div>';
     window.scrollTo(0, 0);
   });
 })();

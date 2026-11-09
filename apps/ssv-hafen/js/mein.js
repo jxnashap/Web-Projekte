@@ -8,14 +8,16 @@
   const KASSE_PFAD = '../ssv-getraenke/';
   const { H, Q } = HF; const esc = H.esc;
   const $ = (s, r = document) => r.querySelector(s);
-  let d = HF.laden(); const heute = H.tag(new Date()); const SAISON = 2026;
+  let d = HF.laden(); const heute = H.tag(new Date()); const SAISON = HF.aktuelleSaison();
   const sd = G.saisonDaten(d, SAISON);
 
   function toast(t) { const el = $('#toast'); el.textContent = t; el.className = 'toast zeigen'; clearTimeout(toast.t); toast.t = setTimeout(() => { el.className = 'toast'; }, 3000); }
-  function modal(html) { const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte" role="dialog" aria-modal="true" aria-labelledby="modal-titel">' + html + '</div></div>'; const el = m.firstChild; const t = el.querySelector('h2'); if (t) t.id = 'modal-titel'; el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-zu]')) m.innerHTML = ''; }); return el; }
+  function modal(html) { const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte" role="dialog" aria-modal="true" aria-labelledby="modal-titel"><button class="modal-x" data-zu aria-label="Schließen">×</button>' + html + '</div></div>'; const el = m.firstChild; const t = el.querySelector('h2'); if (t) t.id = 'modal-titel'; el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-zu]')) m.innerHTML = ''; }); return el; }
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#modal').innerHTML = ''; });
 
-  const DBM = HF.modus === 'supabase';   // Vereinsdatenbank: angemeldetes Mitglied, keine Auswahl
+  const DBM = HF.modus === 'supabase';
+  // Fußzeile mit Impressum und Datenschutz
+  if (!document.querySelector('.mein-fuss')) { const f = document.createElement('footer'); f.className = 'mein-fuss'; f.innerHTML = '<a href="../website/index.html">Zur Website</a> · <a href="../website/impressum.html">Impressum</a> · <a href="../website/datenschutz.html#mein-ssv">Datenschutz</a>'; document.body.insertBefore(f, document.getElementById('modal')); }   // Vereinsdatenbank: angemeldetes Mitglied, keine Auswahl
   const sel = $('#wer');
   // Jedes Mitglied hat einen Zugang – mit oder ohne Boot
   const alle = d.mitglieder.filter((m) => m.art !== 'gast').sort((a, b) => a.nachname.localeCompare(b.nachname, 'de') || a.vorname.localeCompare(b.vorname, 'de'));
@@ -51,6 +53,7 @@
     const vs = b ? Q.versicherungsStatus(b, heute) : 'ok';
     const platzText = platzS ? (platzS.bez ? esc(platzS.bez) : (platzS.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(platzS.nr)) : '';
     const wasser = sommer && sommer.platz_typ === 'wasser';
+    const inSaison = heute >= sd.auslagern && heute < sd.einlagern;   // grünes Schild nur, solange die Boote im Wasser sind
 
     const bootInhalt = b ? '<div class="detail" style="box-shadow:none;padding:0;position:static"><dl>' +
         '<dt>Typ</dt><dd>' + esc(b.typ) + '</dd><dt>Maße</dt><dd>' + H.zahl(b.laenge) + ' × ' + H.zahl(b.breite) + ' m · Tiefgang ' + H.zahl(b.tiefgang) + ' m · ' + H.zahl(b.gewicht_t, 1) + ' t</dd>' +
@@ -59,7 +62,7 @@
         '<dt>Versicherung</dt><dd>' + esc(b.versicherung || '–') + ', bis ' + H.datum(b.vers_bis) + '</dd><dt>Kfz</dt><dd>' + esc(m.kfz || '–') + '</dd></dl></div>' +
         (platzS && !platzS.bez ? '<div id="miniplan" class="plan-flaeche mini-plan"></div>' : '') +
         '<div class="aktionen" style="margin-top:12px"><button class="btn" id="daten">Daten aktualisieren</button></div>' : '';
-    const schildInhalt = wasser ? '<p style="margin-top:0;color:var(--muted)">Unterwegs? Dann wird dein Platz grün und der Hafenmeister kann ihn an Gäste geben. Bitte trotzdem das Schild am Steg drehen.</p>' +
+    const schildInhalt = wasser && !inSaison ? '<p style="margin:0">Dein Boot ist im Winterlager – das grüne Schild gibt’s wieder ab dem Auslagern' + (sd.auslagern > heute ? ' (' + H.datum(sd.auslagern) + ')' : '') + '.</p>' : wasser ? '<p style="margin-top:0;color:var(--muted)">Unterwegs? Dann wird dein Platz grün und der Hafenmeister kann ihn an Gäste geben. Bitte trotzdem das Schild am Steg drehen.</p>' +
         '<form id="awf" class="form"><label class="feld">ab<input type="date" name="von" required value="' + heute + '"></label><label class="feld">zurück am<input type="date" name="bis" required></label><label class="feld voll">Ziel (optional)<input name="notiz" placeholder="z. B. Dänische Südsee"></label></form>' +
         '<div class="aktionen" style="margin-top:10px"><button class="btn gruen" id="awok">Abwesenheit melden</button></div>' +
         (aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') : '';
@@ -74,6 +77,11 @@
       (b ? sektion('boot', 'Mein Boot', '„' + esc(b.name) + '“' + (platzText ? ' · ' + platzText : ''), bootInhalt) : '') +
       (meinW >= 0 ? sektion('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), '<p style="margin:0">Du stehst auf <strong>Platz ' + (meinW + 1) + '</strong> der Warteliste (seit ' + H.datum(warte[meinW].datum) + ').</p>') : '') +
       (KASSE ? sektion('kasse', 'Getränkekasse', 'wird geladen …', '<div id="kasse"><p class="leer">Wird geladen …</p></div>') : '') +
+      sektion('daten', 'Meine Daten', esc(m.ort || ''), '<div class="detail" style="box-shadow:none;padding:0;position:static"><dl>' +
+        '<dt>Anschrift</dt><dd>' + esc(m.strasse || '–') + '<br>' + esc(((m.plz || '') + ' ' + (m.ort || '')).trim()) + '</dd><dt>Telefon</dt><dd>' + esc(m.tel || '–') + '</dd><dt>E-Mail</dt><dd>' + esc(m.email || '–') + '</dd>' +
+        '<dt>Lastschrift</dt><dd>' + (m.iban ? 'Konto •••• ' + esc(String(m.iban).slice(-4)) : 'kein Mandat hinterlegt') + '</dd></dl></div>' +
+        '<div class="aktionen" style="margin-top:12px"><button class="btn" id="meine-daten">Daten ändern</button></div>' +
+        '<p class="hinweis" style="margin-top:12px">Neue Bankverbindung oder Fragen zu Rechnungen? Schreib an <a href="mailto:' + esc(d.einstellungen.verein_email) + '">' + esc(d.einstellungen.verein_email) + '</a> – für ein neues Konto braucht es ein neues Lastschriftmandat.</p>') +
       '</div><div>' +
       (wasser ? sektion('schild', 'Grünes Schild', awAktuell ? 'unterwegs ' + H.kurz(awAktuell.von) + '–' + H.kurz(awAktuell.bis) : 'Platz frei melden', schildInhalt, 'gruen-box') : '') +
       sektion('rechnungen', 'Meine Rechnungen', '', '<div id="rechnungen"></div><p class="hinweis" style="margin-top:12px">Alles wird per Lastschrift eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p>', '', true) +
@@ -119,10 +127,23 @@
       HF.sichern().then(() => toast('Gemeldet – gute Fahrt!'), (e) => toast('Nicht gespeichert: ' + e.message)); zeigen();
     });
     document.querySelectorAll('[data-weg]').forEach((btn) => btn.addEventListener('click', () => { d.abwesenheiten = d.abwesenheiten.filter((a) => a.id !== btn.dataset.weg); HF.sichern().catch((e) => toast('Nicht gelöscht: ' + e.message)); zeigen(); }));
+    $('#meine-daten').addEventListener('click', () => {
+      const el = modal('<h2>Meine Daten ändern</h2><form id="mf" class="form">' +
+        '<label class="feld voll">Straße und Hausnummer<input name="strasse" autocomplete="street-address" value="' + esc(m.strasse || '') + '"></label>' +
+        '<label class="feld">PLZ<input name="plz" inputmode="numeric" maxlength="5" autocomplete="postal-code" value="' + esc(m.plz || '') + '"></label><label class="feld">Ort<input name="ort" autocomplete="address-level2" value="' + esc(m.ort || '') + '"></label>' +
+        '<label class="feld">Telefon<input name="tel" type="tel" autocomplete="tel" value="' + esc(m.tel || '') + '"></label><label class="feld">E-Mail<input name="email" type="email" autocomplete="email" value="' + esc(m.email || '') + '"></label></form>' +
+        '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="mok">Speichern</button></div>');
+      $('#mok', el).addEventListener('click', async () => {
+        const x = Object.fromEntries(new FormData($('#mf', el)));
+        if (DBM) { try { await HF.meinDatenAendern(x); } catch (e) { return toast('Nicht gespeichert: ' + e.message); } }
+        Object.assign(m, x); if (!DBM) HF.sichern();
+        $('#modal').innerHTML = ''; toast('Gespeichert – danke!'); zeigen();
+      });
+    });
     const dat = $('#daten'); if (dat) dat.addEventListener('click', () => {
       const el = modal('<h2>Daten aktualisieren</h2><form id="df" class="form"><label class="feld">Versicherung<input name="versicherung" value="' + esc(b.versicherung || '') + '"></label><label class="feld">versichert bis<input name="vers_bis" type="date" value="' + esc(b.vers_bis || '') + '"></label>' +
-        '<label class="feld">Gewicht (t)<input name="gewicht_t" type="number" step="0.1" value="' + b.gewicht_t + '"></label><label class="feld">Kfz-Kennzeichen<input name="kfz" value="' + esc(m.kfz || '') + '"></label>' +
-        '<label class="feld">Telefon<input name="tel" value="' + esc(m.tel || '') + '"></label><label class="feld">E-Mail<input name="email" type="email" value="' + esc(m.email || '') + '"></label></form>' +
+        '<label class="feld">Gewicht (t)<input name="gewicht_t" inputmode="decimal" value="' + b.gewicht_t + '"></label><label class="feld">Kfz-Kennzeichen<input name="kfz" value="' + esc(m.kfz || '') + '"></label>' +
+        '<label class="feld">Telefon<input name="tel" type="tel" value="' + esc(m.tel || '') + '"></label><label class="feld">E-Mail<input name="email" type="email" value="' + esc(m.email || '') + '"></label></form>' +
         '<p class="hinweis">Bankverbindung ändern? Bitte formlos an den Kassenwart – dafür braucht es ein neues SEPA-Mandat.</p><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="dok">Speichern</button></div>');
       $('#dok', el).addEventListener('click', async () => {
         const x = Object.fromEntries(new FormData($('#df', el)));
@@ -130,7 +151,7 @@
           try { await HF.meinDatenAendern({ tel: x.tel, email: x.email, kfz: x.kfz, boot_id: b.id, versicherung: x.versicherung, vers_bis: x.vers_bis, gewicht_t: x.gewicht_t }); }
           catch (e) { return toast('Nicht gespeichert: ' + e.message); }
         }
-        b.versicherung = x.versicherung; b.vers_bis = x.vers_bis; b.gewicht_t = Number(x.gewicht_t) || b.gewicht_t; m.kfz = x.kfz; m.tel = x.tel; m.email = x.email;
+        b.versicherung = x.versicherung; b.vers_bis = x.vers_bis; b.gewicht_t = Number(String(x.gewicht_t).replace(',', '.')) || b.gewicht_t; m.kfz = x.kfz; m.tel = x.tel; m.email = x.email;
         if (!DBM) HF.sichern();
         $('#modal').innerHTML = ''; toast('Gespeichert.'); zeigen();
       });

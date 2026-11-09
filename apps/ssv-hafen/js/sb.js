@@ -35,7 +35,14 @@
   async function auth(pfad, body) {
     const r = await fetch(URL + '/auth/v1/' + pfad, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(j.error_description || j.msg || j.message || 'Anmeldung fehlgeschlagen');
+    if (!r.ok) {
+      const m = j.error_description || j.msg || j.message || '';
+      if (/already|registered|exists/i.test(m)) throw new Error('Für diese E-Mail gibt es schon ein Konto – melde dich an oder nutze „Passwort vergessen?“.');
+      if (/password/i.test(m) && /least|short|weak/i.test(m)) throw new Error('Das Passwort ist zu kurz oder zu einfach – bitte mindestens 8 Zeichen.');
+      if (/rate|too many|seconds/i.test(m)) throw new Error('Zu viele Versuche – bitte in ein paar Minuten noch einmal.');
+      if (/not confirmed/i.test(m)) throw new Error('Bitte bestätige zuerst deine E-Mail-Adresse (Link in der E-Mail).');
+      throw new Error(m || 'Anmeldung fehlgeschlagen');
+    }
     return j;
   }
 

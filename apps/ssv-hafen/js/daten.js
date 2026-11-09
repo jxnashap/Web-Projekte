@@ -496,5 +496,12 @@
   };
 
   window.HAFEN = { laden, sichern, zuruecksetzen, get d() { return d; }, H, Q, STANDARD_EINSTELLUNGEN, GEBUEHREN_2024, demoIban,
-    modus: SB ? 'supabase' : 'demo', verbinden, db, meinDatenAendern };
+    modus: SB ? 'supabase' : 'demo', verbinden, db, meinDatenAendern,
+    // Laufende Saison: ab dem Auslagern gilt das neue Jahr, davor (Januar–April) noch das Winterlager des Vorjahres.
+    // ?saison=2027 in der Adresse wählt eine andere.
+    aktuelleSaison() {
+      const wahl = Number(new URLSearchParams(location.search).get('saison')); if (wahl > 2000) return wahl;
+      const heute = tag(new Date()); const j = Number(heute.slice(0, 4));
+      const s = ((d && d.saisons) || []).find((x) => x.jahr === j); return heute < ((s && s.auslagern) || j + '-04-15') ? j - 1 : j;
+    } };
 })();

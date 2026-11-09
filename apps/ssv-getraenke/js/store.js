@@ -87,6 +87,8 @@
         this._sichern();
       }
       this._abgleich();
+      // Jugendschutz: Bier, Radler, Sekt erst ab 16 (ältere Demo-Daten nachrüsten)
+      this.d.produkte.forEach((p) => { if (!('ab_alter' in p)) p.ab_alter = /Pils|Radler|Sekt|Bier|Wein/.test(p.name) ? 16 : null; });
     }
     /* Gemeinsamer Mitgliederstamm: In der Demo kommen die Mitglieder aus dem Hafen-Manager
        (gleiche IDs), damit „Mein SSV“ Hafen- und Getränkerechnungen zusammen zeigen kann. */
@@ -100,7 +102,7 @@
       hm.forEach((h) => {
         let m = this._m(h.id);
         if (!m) { m = { id: h.id, pin: null, fehlversuche: 0, gesperrt_bis: null, aktiv: true, sepa: !!h.iban, notiz: '' }; this.d.mitglieder.push(m); geaendert = true; }
-        ['nr', 'vorname', 'nachname', 'email', 'strasse', 'plz', 'ort'].forEach((f) => { if (m[f] !== h[f]) { m[f] = h[f]; geaendert = true; } });
+        ['nr', 'vorname', 'nachname', 'email', 'strasse', 'plz', 'ort', 'geburtsdatum'].forEach((f) => { if (m[f] !== h[f]) { m[f] = h[f]; geaendert = true; } });
         const mr = h.mandat_ref || ''; if (m.mandatsreferenz !== mr) { m.mandatsreferenz = mr; geaendert = true; }
       });
       if (geaendert) this._sichern();
@@ -179,20 +181,22 @@
       if (!m.pin) return { ok: false, fehler: 'kein_pin' };
       if (m.gesperrt_bis && new Date(m.gesperrt_bis) > new Date()) return { ok: false, fehler: 'gesperrt', gesperrt_bis: m.gesperrt_bis };
       if (m.pin !== pin) {
-        const n = m.fehlversuche + 1;
-        m.fehlversuche = n >= 5 ? 0 : n;
-        m.gesperrt_bis = n >= 5 ? new Date(Date.now() + 5 * 60e3).toISOString() : null;
+        const n = m.fehlversuche + 1; m.fehlversuche = n;   // Sperre wird mit jeder Fehlerserie länger (5 → 15 → 45 Min. …)
+        m.gesperrt_bis = n % 5 === 0 ? new Date(Date.now() + Math.min(1440, 5 * Math.pow(3, n / 5 - 1)) * 60e3).toISOString() : null;
         this._sichern();
-        return { ok: false, fehler: 'pin', rest: Math.max(0, 5 - n) };
+        return { ok: false, fehler: 'pin', rest: n % 5 ? 5 - n % 5 : 0 };
       }
       if (m.fehlversuche || m.gesperrt_bis) { m.fehlversuche = 0; m.gesperrt_bis = null; this._sichern(); }
       return null;
     }
+    _alter(m) { if (!m || !m.geburtsdatum) return null; const g = new Date(m.geburtsdatum + 'T12:00:00'), h = new Date(); return h.getFullYear() - g.getFullYear() - (h < new Date(h.getFullYear(), g.getMonth(), g.getDate()) ? 1 : 0); }
     _buchen(mid, posten, quelle, zeit) {
       if (!Array.isArray(posten) || !posten.length) throw new Error('Keine Posten');
       let summe = 0; const neu = [];
       posten.forEach((po) => {
         const p = this.d.produkte.find((x) => x.id === po.produkt_id && x.aktiv);
+        const alt = this._alter(this._m(mid));
+        if (p && p.ab_alter && alt != null && alt < p.ab_alter) throw new Error(p.name + ' gibt es erst ab ' + p.ab_alter + ' Jahren.');
         if (!p) throw new Error('Produkt nicht verfügbar');
         const kasten = po.einheit === 'kasten';
         if (kasten && !p.kasten_groesse) throw new Error('Kein Kasten für ' + p.name);
@@ -220,7 +224,7 @@
     async kasseLogin(mid, pin) {
       const f = this._pruefen(mid, pin); if (f) return f;
       const m = this._m(mid);
-      return { ok: true, vorname: m.vorname, nachname: m.nachname, ...this._summen(mid) };
+      return { ok: true, vorname: m.vorname, nachname: m.nachname, alter: this._alter(m), ...this._summen(mid) };
     }
     async kasseBuchen(mid, pin, posten) {
       const f = this._pruefen(mid, pin); if (f) return f;
@@ -240,11 +244,10 @@
       if (m.pin) return { ok: false, fehler: 'schon_gesetzt' };
       if (m.gesperrt_bis && new Date(m.gesperrt_bis) > new Date()) return { ok: false, fehler: 'gesperrt', gesperrt_bis: m.gesperrt_bis };
       if (o.pin_erst_nr_pruefen && String(nr || '').trim() !== String(m.nr || '').trim()) {
-        const n = m.fehlversuche + 1;
-        m.fehlversuche = n >= 5 ? 0 : n;
-        m.gesperrt_bis = n >= 5 ? new Date(Date.now() + 5 * 60e3).toISOString() : null;
+        const n = m.fehlversuche + 1; m.fehlversuche = n;   // Sperre wird mit jeder Fehlerserie länger (5 → 15 → 45 Min. …)
+        m.gesperrt_bis = n % 5 === 0 ? new Date(Date.now() + Math.min(1440, 5 * Math.pow(3, n / 5 - 1)) * 60e3).toISOString() : null;
         this._sichern();
-        return { ok: false, fehler: 'nr', rest: Math.max(0, 5 - n) };
+        return { ok: false, fehler: 'nr', rest: n % 5 ? 5 - n % 5 : 0 };
       }
       if (!/^\d{4}$/.test(pin)) return { ok: false, fehler: 'format' };
       if (pinZuEinfach(pin)) return { ok: false, fehler: 'einfach' };
@@ -539,6 +542,7 @@
     async kasseEinrichten(name) {
       const t = await this._rpc('admin_kasse_einrichten', { p_name: name });
       localStorage.setItem(this.TOKEN, t); localStorage.setItem(this.TOKEN + '-name', name);
+      await this.abmelden();   // das iPad darf danach nur noch Kasse sein – niemand bleibt angemeldet
       return true;
     }
   }
