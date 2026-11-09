@@ -79,6 +79,11 @@ easyVerein hat laut allen gefundenen Beschreibungen **keine eigene
 Liegeplatzverwaltung**. Der Hafen-Manager ergänzt easyVerein also und
 ersetzt es nicht.
 
+> **Update (Nov. 2026):** Der Verein möchte easyVerein ablösen. Mitgliederstamm,
+> Mitglieder-Login („Mein SSV“) und Einzug laufen dann über den Hafen-Manager
+> und die Getränkekasse. Was easyVerein bisher zusätzlich erledigt
+> (Beitragseinzug, Aufnahmeantrag, ggf. Verbandsmeldung), muss noch geklärt werden.
+
 ## 4. Technische Eckpunkte
 
 - **SEPA:** Aktuelles Format ist pain.008.001.08 (DK-TVS 3.8). Die Altformate pain.008.001.02 enden laut Banken im **November 2026**, die neue Version ist also Pflicht. Alternativ übernimmt easyVerein den Einzug, wenn die API verfügbar ist.

@@ -10,7 +10,7 @@ Die Fragen aus der Recherche sind noch offen. Gebaut wird mit den folgenden
 | 2 | Bedeutung Box I/II/III | Größenklassen. Maximalmaße je Platz sind änderbar; Vorgabe I ≤ 11 × 3,7 m, II ≤ 9 × 3,1 m, III ≤ 7 × 2,6 m `[PLATZHALTER]` |
 | 3 | Landflächen | im Plan: 40 Palettenplätze, Halle (4 Plätze, m²), Außenlager (m²) |
 | 4 | Gebühren | Gebührenordnung 2024 als Startwert, je Saison änderbar |
-| 5 | Einzug | eigene Rechnungen plus Lastschrift-Datei pain.008.001.08 für die Bank, dazu CSV. Die easyVerein-API kommt später, falls verfügbar |
+| 5 | Einzug | eigene Rechnungen plus Lastschrift-Datei pain.008.001.08 für die Bank, dazu CSV. easyVerein entfällt (Entscheidung Nov. 2026), Mitglieder kommen einmalig per CSV |
 | 6 | Tageslieger | bar beim Hafenmeister mit Quittung, wahlweise Überweisung |
 | 7 | Rollen | Vorstand (alles), Kassenwart (Abrechnung, Gebühren, Bankdaten), Hafenmeister (Plan, Gäste, Abwesenheiten, Kran), Brückenwartin (Plan, Plätze, Boote, Belegung, Warteliste, Ein-/Auslagern) |
 | 8 | Grünes Schild | digital, das Mitglied meldet selbst. Gäste melden sich per QR-Code an, der Hafenmeister weist den Platz zu |

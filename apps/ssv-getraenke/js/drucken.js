@@ -61,8 +61,11 @@
 
   async function rechnungen() {
     const ids = (q.get('ids') || '').split(',').filter(Boolean);
-    if (!(await S.angemeldet())) { ziel.innerHTML = '<p style="padding:40px;text-align:center">Bitte zuerst im Kassenwart-Bereich anmelden.</p>'; return; }
-    const [liste, e, buchungen] = await Promise.all([S.rechnungenLaden(ids), S.einstellungen(), S.buchungen({ rechnung_ids: ids })]);
+    // ?mein=<Mitglied>: eigene Rechnung aus „Mein SSV“ (Echtbetrieb: per Mitglieder-Login und Zeilenschutz in der Datenbank)
+    const mein = q.get('mein');
+    if (!mein && !(await S.angemeldet())) { ziel.innerHTML = '<p style="padding:40px;text-align:center">Bitte zuerst im Kassenwart-Bereich anmelden.</p>'; return; }
+    const [liste, e, buchungen] = await Promise.all([mein ? S.meineRechnungen(mein, ids) : S.rechnungenLaden(ids), S.einstellungen(), S.buchungen({ rechnung_ids: ids })]);
+    if (!liste.length) { ziel.innerHTML = '<p style="padding:40px;text-align:center">Rechnung nicht gefunden.</p>'; return; }
     liste.sort((a, b) => a.nr.localeCompare(b.nr));
     document.getElementById('titel').textContent = liste.length === 1 ? 'Rechnung ' + liste[0].nr : liste.length + ' Rechnungen';
     document.title = liste.length === 1 ? 'Rechnung ' + liste[0].nr : 'Rechnungen';
@@ -84,7 +87,7 @@
     ziel.innerHTML = seiten.map((s) => '<section class="r-blatt" style="padding:12mm"><div class="r-pinzettel">' + s.map((z) =>
       '<div><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><small>SSV Getränkekasse</small><br><strong>' + esc(z.vorname + ' ' + z.nachname) + '</strong>' +
       (z.nr ? '<br><small>Mitgliedsnr. ' + esc(z.nr) + '</small>' : '') + '</div>' + STANDER + '</div>' +
-      '<div><small>Deine persönliche PIN</small><div class="pin">' + esc(z.pin) + '</div><small>Bitte nicht weitergeben. Vergessen? Kurz beim Kassenwart melden.</small></div></div>').join('') +
+      '<div><small>Deine persönliche PIN</small><div class="pin">' + esc(z.pin) + '</div><small>Bitte nicht weitergeben. Ändern oder vergessen? In „Mein SSV“ legst du jederzeit einen neuen fest.</small></div></div>').join('') +
       '</div></section>').join('') || '<p style="padding:40px;text-align:center">Keine PINs zum Drucken vorhanden.</p>';
     // Die Klartext-PINs nicht länger als nötig aufbewahren
     window.addEventListener('afterprint', () => sessionStorage.removeItem('ssvg-pinzettel'));

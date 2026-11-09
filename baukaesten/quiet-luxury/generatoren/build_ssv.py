@@ -12,8 +12,11 @@ danach selbst unter /verwaltung/."""
 import json, os
 
 ROOT = "/home/user/Web-Projekte/webseiten/ssv-segelverein"
-EASYVEREIN = "https://easyverein.com/public/SSVLuebeck"
-ANTRAG = "https://easyverein.com/public/SSVLuebeck/applicationform/"
+# Mitgliederbereich „Mein SSV“ (Rechnungen, Liegeplatz, grünes Schild, Getränke-Code).
+# Vorschau: Nachbarordner; im Echtbetrieb eigene Adresse, z. B. https://mein.ssv-net.de [PLATZHALTER]
+MEIN_SSV = "../ssv-hafen/mein-ssv.html"
+# Aufnahmeantrag vorerst per E-Mail (easyVerein entfällt) – später Online-Formular oder PDF [PLATZHALTER]
+ANTRAG = "mailto:info@ssv-net.de?subject=Mitgliedschaftsantrag"
 # Karten: immer Google Maps / Apple Karten (Vorgabe des Nutzers). Eingebettete Google-Karte nur per 2-Klick.
 GMAPS = "https://www.google.com/maps/search/?api=1&amp;query=53.91139%2C10.70111"
 AMAPS = "https://maps.apple.com/?ll=53.91139,10.70111&amp;q=Schwartauer%20Segler-Verein&amp;z=16"
@@ -175,6 +178,7 @@ def header(active):
       <nav class="main-nav" aria-label="Hauptnavigation">
         <ul>
 {items}        <li class="nav-contact-li"><a href="verein.html#mitglied"><span class="nl-num">·</span><span class="nl-label">Mitglied werden</span></a></li>
+        <li class="nav-contact-li"><a href="{MEIN_SSV}"><span class="nl-num">·</span><span class="nl-label">Mein SSV</span></a></li>
         </ul>
         <div class="nav-overlay-foot">
           <span><a href="mailto:info@ssv-net.de">info@ssv-net.de</a> &nbsp;·&nbsp; Zur Teerhofsinsel 5B, 23554 Lübeck</span>
@@ -222,7 +226,7 @@ FOOTER = f'''
         <div>
           <h4>Mitglieder</h4>
           <ul>
-            <li><a href="{EASYVEREIN}" rel="noopener">Vereinsverwaltung (easyVerein)</a></li>
+            <li><a href="{MEIN_SSV}">Mein SSV · Login für Mitglieder</a></li>
             <li><a href="verein.html#dokumente">Dokumente</a></li>
             <li><a href="verwaltung/index.html">Redaktion</a></li>
             <li><a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></li>
@@ -512,7 +516,7 @@ PAGES["verein.html"] = {
           <h2 class="reveal d1">Willkommen an <em>Bord.</em></h2>
           <p class="reveal d2" style="color:var(--muted)">Uns erreichen regelmäßig Anfragen nach Liegeplätzen oder einer Mitgliedschaft. Der schnellste Weg ist eine E-Mail an <a href="mailto:info@ssv-net.de">info@ssv-net.de</a> oder ein Gespräch mit unserer Brückenwartin. Für alle Fragen rund um Aufnahme oder Änderung einer Mitgliedschaft: einfach melden oder persönlich vorbeischauen.</p>
           <div class="hero-actions reveal d3" style="margin-top:30px">
-            <a class="btn btn-solid" href="''' + ANTRAG + '''" rel="noopener">Mitgliedschaftsantrag</a>
+            <a class="btn btn-solid" href="''' + ANTRAG + '''">Mitgliedschaft anfragen</a>
             <a class="btn btn-line" href="mailto:info@ssv-net.de">E-Mail schreiben</a>
           </div>
         </div>
@@ -522,8 +526,8 @@ PAGES["verein.html"] = {
             <li><a href="dokumente/beitraege-2024.pdf"><span>Mitgliedsbeiträge &amp; Liegeplatzgebühren</span><small>PDF · Stand Februar 2024</small></a></li>
             <li><a href="dokumente/satzung.pdf"><span>Satzung</span><small>PDF · vom 14.02.2014</small></a></li>
             <li><a href="dokumente/hafenbetriebsordnung.pdf"><span>Hafenbetriebsordnung</span><small>PDF</small></a></li>
-            <li><a href="''' + ANTRAG + '''" rel="noopener"><span>Mitgliedschaftsantrag</span><small>online über easyVerein</small></a></li>
-            <li><a href="''' + EASYVEREIN + '''" rel="noopener"><span>Vereinsverwaltung</span><small>Login für Mitglieder · easyVerein</small></a></li>
+            <li><a href="''' + ANTRAG + '''"><span>Mitgliedschaftsantrag</span><small>per E-Mail anfragen · [PLATZHALTER: Antrag als PDF]</small></a></li>
+            <li><a href="''' + MEIN_SSV + '''"><span>Mein SSV</span><small>Login für Mitglieder · Rechnungen, Liegeplatz, Getränke-Code</small></a></li>
           </ul>
         </div>
       </div>
@@ -732,8 +736,9 @@ PAGES["datenschutz.html"] = {
         <p>Die Schriften liegen auf unserem eigenen Server; beim Aufruf werden keine Daten an Google oder andere Schriftanbieter übertragen. Die Website setzt keine Cookies und verwendet kein Tracking.</p>
         <h3>4. Redaktionsinhalte</h3>
         <p>[PLATZHALTER: Wird das Redaktionssystem mit einer Datenbank betrieben, hier Anbieter, Serverstandort und Auftragsverarbeitungsvertrag nennen.]</p>
+        <p>Im Mitgliederbereich „Mein SSV“ melden sich Mitglieder mit ihrer E-Mail-Adresse an und sehen dort ausschließlich ihre eigenen Daten (Rechnungen, Liegeplatz, Getränkebuchungen). [PLATZHALTER: Anbieter der Datenbank, Serverstandort (EU), Auftragsverarbeitungsvertrag, Speicherdauer; Rechtsgrundlage Art. 6 Abs. 1 lit. b DSGVO (Mitgliedschaft)]</p>
         <h3>5. Externe Links</h3>
-        <p>Mitgliedschaftsantrag und Vereinsverwaltung laufen über easyVerein. Auf der Seite „Hafen &amp; Gäste“ lässt sich eine Karte von Google Maps (Google Ireland Ltd.) einblenden – sie wird erst nach eurem Klick auf „Karte laden“ nachgeladen; erst dann werden Daten wie eure IP-Adresse an Google übertragen (Art. 6 Abs. 1 lit. a DSGVO). Wer „Karten künftig immer anzeigen“ wählt, speichert diese Einstellung nur im eigenen Browser und kann sie dort jederzeit löschen. Die Links zu Google Maps und Apple Karten öffnen die jeweiligen Dienste. Diese Seiten öffnen sich erst nach eurem Klick; dort gelten die Datenschutzhinweise der jeweiligen Anbieter.</p>
+        <p>Auf der Seite „Hafen &amp; Gäste“ lässt sich eine Karte von Google Maps (Google Ireland Ltd.) einblenden – sie wird erst nach eurem Klick auf „Karte laden“ nachgeladen; erst dann werden Daten wie eure IP-Adresse an Google übertragen (Art. 6 Abs. 1 lit. a DSGVO). Wer „Karten künftig immer anzeigen“ wählt, speichert diese Einstellung nur im eigenen Browser und kann sie dort jederzeit löschen. Die Links zu Google Maps und Apple Karten öffnen die jeweiligen Dienste. Diese Seiten öffnen sich erst nach eurem Klick; dort gelten die Datenschutzhinweise der jeweiligen Anbieter.</p>
         <h3>6. Fotos von Personen</h3>
         <p>[PLATZHALTER: Hinweis zur Veröffentlichung von Vereinsfotos und Vorstandsbildern, Einwilligungen]</p>
         <h3>7. Eure Rechte</h3>

@@ -16,17 +16,22 @@ Repo für alle Website-Projekte. Struktur:
   Hinweis-Banner, Aktuelles, Termine, Zeiten & Preise, Fotos, Startbild, Vorstand,
   Zahlen – gepflegt ohne neues Deployment (`js/cms.js`, `supabase/website.sql`).
   Generator `baukaesten/quiet-luxury/generatoren/build_ssv.py`. Noch Demo-Modus.
+  **easyVerein ist raus** (Wunsch des Nutzers): Aufnahmeantrag vorerst per E-Mail,
+  Fußzeile/Menü/Dokumente verlinken „Mein SSV“ (`MEIN_SSV` im Generator, Vorschau `../ssv-hafen/`).
 
 ## `apps/` – Web-Apps
 - `apps/ssv-getraenke/` – Getränkekasse für den SSV: iPad-Kiosk (Name → PIN → Kacheln →
   Stück/Kasten), Kassenwart-Bereich (Mitglieder, CSV-Import, PIN-Zettel, Preise,
   Abrechnung, A4-Rechnungen im persönlichen Ton mit Lastschrift-Ankündigung, SEPA-/CSV-Export). Demo-Modus (localStorage);
+  Code (4-stellig) legt das Mitglied beim ersten Mal selbst fest (Mitgliedsnummer-Abfrage, abschaltbar),
+  ändern in „Mein SSV“; Demo teilt den Mitgliederstamm mit `../ssv-hafen/js/daten.js` (gleiche IDs);
   Datenbankschema `supabase/schema.sql` lokal getestet, **nichts deployt** – auf
   Wunsch des Nutzers keine Verknüpfung mit bestehenden Supabase-/Vercel-Projekten.
 - `apps/ssv-hafen/` – Hafen-Manager für den SSV (Prototyp, Demo-Modus): SVG-Hafenplan nach
   Luftbild (Ost 1–24, West 25–70, Schwimm 71–79, L1/L2 – Zuordnung = Annahme), Belegung
   Sommer/Winter, grünes Schild, Gastlieger + QR-Anmeldung, Warteliste, Kran, Arbeitsdienst,
-  Abrechnung nach Gebührenordnung 2024, SEPA-XML pain.008.001.08 (XSD-geprüft), „Mein SSV“.
+  Abrechnung nach Gebührenordnung 2024, SEPA-XML pain.008.001.08 (XSD-geprüft), „Mein SSV“ für jedes
+  Mitglied (Hafen- + Getränkerechnungen, grünes Schild, Getränke-Code ändern; lädt `../ssv-getraenke/js/store.js`).
   Recherche/Annahmen: `RECHERCHE.md`, `PLAN.md`. Später: neue, eigene Supabase-/Vercel-
   Projekte nur für den SSV (Zugangsdaten liefert der Nutzer).
 

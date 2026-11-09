@@ -47,6 +47,8 @@ create table if not exists public.mitglieder (
   gesperrt_bis timestamptz,
   erstellt     timestamptz not null default now()
 );
+-- Login für „Mein SSV“: Supabase-Konto des Mitglieds (wird beim ersten Login über die bestätigte E-Mail verknüpft)
+alter table public.mitglieder add column if not exists user_id uuid unique references auth.users(id) on delete set null;
 
 create table if not exists public.produkte (
   id            uuid primary key default gen_random_uuid(),
@@ -126,8 +128,11 @@ begin
   end if;
 
   select * into m from public.mitglieder where id = p_mitglied and aktiv for update;
-  if not found or m.pin_hash is null then
+  if not found then
     return jsonb_build_object('ok', false, 'fehler', 'mitglied');
+  end if;
+  if m.pin_hash is null then
+    return jsonb_build_object('ok', false, 'fehler', 'kein_pin');
   end if;
   if m.gesperrt_bis is not null and m.gesperrt_bis > now() then
     return jsonb_build_object('ok', false, 'fehler', 'gesperrt', 'gesperrt_bis', m.gesperrt_bis);
@@ -189,15 +194,78 @@ end $$;
 
 -- ------------------------------------------------- Kasse (anon, mit Gerät) --
 
-create or replace function public.kasse_mitglieder(p_token text)
-returns table (id uuid, vorname text, nachname text)
+-- Alle aktiven Mitglieder; hat_pin = false → das Mitglied legt beim ersten Mal selbst einen Code fest
+drop function if exists public.kasse_mitglieder(text);
+create function public.kasse_mitglieder(p_token text)
+returns table (id uuid, vorname text, nachname text, hat_pin boolean)
 language plpgsql stable security definer set search_path = public, extensions as $$
 begin
   if not exists (select 1 from public.kassen_geraete where token_hash = encode(digest(coalesce(p_token, ''), 'sha256'), 'hex')) then
     raise exception 'Kasse nicht eingerichtet' using errcode = '28000';
   end if;
-  return query select m.id, m.vorname, m.nachname from public.mitglieder m
-    where m.aktiv and m.pin_hash is not null order by m.nachname, m.vorname;
+  return query select m.id, m.vorname, m.nachname, m.hat_pin from public.mitglieder m
+    where m.aktiv order by m.nachname, m.vorname;
+end $$;
+
+-- Zu naheliegende Codes (1111, 1234, 2580 …) werden abgelehnt
+create or replace function public._pin_ok(p text) returns boolean
+language sql immutable as $$
+  select coalesce(p, '') ~ '^[0-9]{4}$' and p !~ '^(.)\1{3}$'
+     and p not in ('0123','1234','2345','3456','4567','5678','6789','9876','8765','7654','6543','5432','4321','3210','1212','2580');
+$$;
+
+create or replace function public._einstellung_bool(k text, standard boolean) returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((select (daten->>k)::boolean from public.einstellungen where id = 1), standard);
+$$;
+
+-- Was die Kasse über ihr Verhalten wissen darf (keine Bank- oder Vereinsdaten)
+create or replace function public.kasse_optionen(p_token text)
+returns jsonb language plpgsql stable security definer set search_path = public, extensions as $$
+declare e jsonb;
+begin
+  if not exists (select 1 from public.kassen_geraete where token_hash = encode(digest(coalesce(p_token, ''), 'sha256'), 'hex')) then
+    raise exception 'Kasse nicht eingerichtet' using errcode = '28000';
+  end if;
+  select daten into e from public.einstellungen where id = 1;
+  return jsonb_build_object(
+    'pin_selbst_festlegen', public._einstellung_bool('pin_selbst_festlegen', true),
+    'pin_erst_nr_pruefen',  public._einstellung_bool('pin_erst_nr_pruefen', true),
+    'abmelden_sekunden',    coalesce((e->>'abmelden_sekunden')::int, 60),
+    'storno_minuten',       coalesce((e->>'storno_minuten')::int, 15));
+end $$;
+
+-- Erstes Mal an der Kasse: Code selbst festlegen (nur solange noch keiner existiert).
+-- Mit eingeschalteter Prüfung muss die Mitgliedsnummer stimmen; Fehlversuche zählen wie beim Login.
+create or replace function public.kasse_pin_festlegen(p_token text, p_mitglied uuid, p_pin text, p_nr text)
+returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare m public.mitglieder;
+begin
+  if p_token is null or not exists (select 1 from public.kassen_geraete where token_hash = encode(digest(p_token, 'sha256'), 'hex')) then
+    return jsonb_build_object('ok', false, 'fehler', 'geraet');
+  end if;
+  if not public._einstellung_bool('pin_selbst_festlegen', true) then
+    return jsonb_build_object('ok', false, 'fehler', 'aus');
+  end if;
+  select * into m from public.mitglieder where id = p_mitglied and aktiv for update;
+  if not found then return jsonb_build_object('ok', false, 'fehler', 'mitglied'); end if;
+  if m.pin_hash is not null then return jsonb_build_object('ok', false, 'fehler', 'schon_gesetzt'); end if;
+  if m.gesperrt_bis is not null and m.gesperrt_bis > now() then
+    return jsonb_build_object('ok', false, 'fehler', 'gesperrt', 'gesperrt_bis', m.gesperrt_bis);
+  end if;
+  if public._einstellung_bool('pin_erst_nr_pruefen', true)
+     and (m.nr is null or btrim(coalesce(p_nr, '')) <> btrim(m.nr)) then
+    update public.mitglieder
+       set fehlversuche = case when m.fehlversuche + 1 >= 5 then 0 else m.fehlversuche + 1 end,
+           gesperrt_bis = case when m.fehlversuche + 1 >= 5 then now() + interval '5 minutes' else null end
+     where id = m.id;
+    return jsonb_build_object('ok', false, 'fehler', 'nr', 'rest', greatest(0, 4 - m.fehlversuche));
+  end if;
+  if coalesce(p_pin, '') !~ '^[0-9]{4}$' then return jsonb_build_object('ok', false, 'fehler', 'format'); end if;
+  if not public._pin_ok(p_pin) then return jsonb_build_object('ok', false, 'fehler', 'einfach'); end if;
+  update public.mitglieder set pin_hash = crypt(p_pin, gen_salt('bf', 8)), fehlversuche = 0, gesperrt_bis = null where id = m.id;
+  update public.kassen_geraete set zuletzt = now() where token_hash = encode(digest(p_token, 'sha256'), 'hex');
+  return jsonb_build_object('ok', true, 'vorname', m.vorname, 'nachname', m.nachname) || public._summen(m.id);
 end $$;
 
 create or replace function public.kasse_produkte(p_token text)
@@ -355,6 +423,67 @@ begin
   update public.buchungen set rechnung_id = null where rechnung_id = p_id;
 end $$;
 
+create or replace function public.admin_pin_zuruecksetzen(p_mitglied uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  perform public._nur_admin();
+  update public.mitglieder set pin_hash = null, fehlversuche = 0, gesperrt_bis = null where id = p_mitglied;
+end $$;
+
+-- --------------------------------------------- Mein SSV (Mitglied, angemeldet) --
+
+-- Mitglied des angemeldeten Kontos (für Zeilenschutz)
+create or replace function public._mein_mitglied() returns uuid
+language sql stable security definer set search_path = public as $$
+  select id from public.mitglieder where user_id = auth.uid() and aktiv;
+$$;
+
+-- Beim ersten Login: Konto über die bestätigte E-Mail-Adresse mit dem Mitglied verknüpfen
+create or replace function public._mitglied_verknuepfen() returns uuid
+language plpgsql security definer set search_path = public as $$
+declare mid uuid; mail text;
+begin
+  if auth.uid() is null then raise exception 'Bitte anmelden' using errcode = '28000'; end if;
+  mid := public._mein_mitglied();
+  if mid is not null then return mid; end if;
+  select lower(email) into mail from auth.users where id = auth.uid() and email_confirmed_at is not null;
+  if mail is null then return null; end if;
+  update public.mitglieder set user_id = auth.uid()
+   where id = (select id from public.mitglieder where lower(email) = mail and user_id is null and aktiv order by erstellt limit 1)
+   returning id into mid;
+  return mid;
+end $$;
+
+create or replace function public.mitglied_uebersicht()
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare mid uuid := public._mitglied_verknuepfen(); m public.mitglieder;
+begin
+  if mid is null then return null; end if;
+  select * into m from public.mitglieder where id = mid;
+  return jsonb_build_object(
+      'hat_pin', m.hat_pin,
+      'gesperrt_bis', case when m.gesperrt_bis > now() then m.gesperrt_bis end,
+      'buchungen', coalesce((select jsonb_agg(to_jsonb(b) order by b.zeit desc) from (
+          select id, zeit, produkt_name, einheit, anzahl, stueck, einzelpreis, betrag, storniert_am, rechnung_id
+            from public.buchungen where mitglied_id = mid order by zeit desc limit 20) b), '[]'::jsonb),
+      'rechnungen', coalesce((select jsonb_agg(jsonb_build_object('id', r.id, 'nr', r.nr, 'datum', r.datum, 'von', r.von, 'bis', r.bis,
+          'faellig', r.faellig, 'summe', r.summe, 'sepa', r.sepa, 'bezahlt_am', r.bezahlt_am) order by r.nr desc)
+          from public.rechnungen r where r.mitglied_id = mid and r.storniert_am is null), '[]'::jsonb)
+    ) || public._summen(mid);
+end $$;
+
+-- Code ändern oder vergessenen Code neu festlegen (das Konto-Login ersetzt den alten Code)
+create or replace function public.mitglied_pin_aendern(p_pin text)
+returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare mid uuid := public._mitglied_verknuepfen();
+begin
+  if mid is null then return jsonb_build_object('ok', false, 'fehler', 'mitglied'); end if;
+  if coalesce(p_pin, '') !~ '^[0-9]{4}$' then return jsonb_build_object('ok', false, 'fehler', 'format'); end if;
+  if not public._pin_ok(p_pin) then return jsonb_build_object('ok', false, 'fehler', 'einfach'); end if;
+  update public.mitglieder set pin_hash = crypt(p_pin, gen_salt('bf', 8)), fehlversuche = 0, gesperrt_bis = null where id = mid;
+  return jsonb_build_object('ok', true);
+end $$;
+
 -- ------------------------------------------------------------- Rechte/RLS --
 
 alter table public.admins         enable row level security;
@@ -374,19 +503,28 @@ begin
   end loop;
 end $$;
 
+-- Mitglieder sehen ihre eigenen Rechnungen und Buchungen (für die PDF-Ansicht in „Mein SSV“)
+drop policy if exists mitglied_eigene on public.rechnungen;
+create policy mitglied_eigene on public.rechnungen for select to authenticated using (mitglied_id = public._mein_mitglied());
+drop policy if exists mitglied_eigene on public.buchungen;
+create policy mitglied_eigene on public.buchungen for select to authenticated using (mitglied_id = public._mein_mitglied());
+
 -- Das Gerät (anon) darf ausschließlich die Kassen-Funktionen ausführen.
 revoke all on all tables in schema public from anon;
 revoke execute on all functions in schema public from anon, public;
 grant execute on function public.kasse_mitglieder(text), public.kasse_produkte(text),
   public.kasse_login(text, uuid, text), public.kasse_buchen(text, uuid, text, jsonb),
-  public.kasse_verlauf(text, uuid, text), public.kasse_storno(text, uuid, text, uuid) to anon, authenticated;
+  public.kasse_verlauf(text, uuid, text), public.kasse_storno(text, uuid, text, uuid),
+  public.kasse_optionen(text), public.kasse_pin_festlegen(text, uuid, text, text) to anon, authenticated;
+grant execute on function public.mitglied_uebersicht(), public.mitglied_pin_aendern(text) to authenticated;
 grant execute on function public.is_admin(), public.admin_pin_setzen(uuid, text),
   public.admin_kasse_einrichten(text), public.admin_buchen(uuid, jsonb, timestamptz),
-  public.admin_rechnungen_erstellen(date, date, date), public.admin_rechnung_stornieren(uuid) to authenticated;
+  public.admin_rechnungen_erstellen(date, date, date), public.admin_rechnung_stornieren(uuid),
+  public.admin_pin_zuruecksetzen(uuid) to authenticated;
 -- Den PIN-Hash bekommt auch der Kassenwart nie zu sehen (Spaltenrechte statt Tabellenrecht).
 revoke select on public.mitglieder from authenticated;
 grant select (id, nr, vorname, nachname, email, strasse, plz, ort, sepa, mandatsreferenz, notiz, aktiv, hat_pin,
-              fehlversuche, gesperrt_bis, erstellt) on public.mitglieder to authenticated;
+              fehlversuche, gesperrt_bis, erstellt, user_id) on public.mitglieder to authenticated;
 
 -- ------------------------------------------------------------ Erster Admin --
 -- Nach dem Anlegen des Kassenwart-Kontos (Authentication → Users → Add user):

@@ -15,6 +15,11 @@
   .mein { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
   .mein-raster { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
   .gruen-box { border: 2px solid var(--gruen); }
+  .kasse-zahlen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 12px; }
+  .kasse-zahlen div { background: var(--sand, #f5f1e8); border-radius: 12px; padding: 10px 12px; }
+  .kasse-zahlen small { display: block; color: var(--muted); font-size: 12px; }
+  .kasse-zahlen strong { font-size: 20px; color: var(--navy); }
+  .code-feld { font-size: 26px; letter-spacing: .3em; text-align: center; font-variant-numeric: tabular-nums; }
   @media (max-width: 860px) { .mein-raster { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -32,6 +37,9 @@
 <script src="js/daten.js"></script>
 <script src="js/gebuehren.js"></script>
 <script src="js/plan.js"></script>
+<!-- Getränkekasse: Buchungen, Rechnungen und Code (Demo: gleicher Browser-Speicher wie die Kasse) -->
+<script src="../ssv-getraenke/js/config.js"></script>
+<script src="../ssv-getraenke/js/store.js"></script>
 <script src="js/mein.js"></script>
 </body>
 </html>

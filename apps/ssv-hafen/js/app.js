@@ -279,7 +279,7 @@
     render(); $('#such').addEventListener('input', render);
     $('#tb').addEventListener('click', (e) => { const r = e.target.closest('[data-m]'); if (r) mitgliedForm(Q.mitglied(r.dataset.m)); });
     $('#neu').addEventListener('click', () => mitgliedForm({ art: 'ausuebend' }));
-    $('#import').addEventListener('click', () => toast('CSV-Import (z. B. easyVerein-Export) ist vorbereitet – Spalten wie in der Getränkekasse, plus IBAN und Mandat.'));
+    $('#import').addEventListener('click', () => toast('CSV-Import (z. B. Mitgliederliste aus Excel) ist vorbereitet – Spalten wie in der Getränkekasse, plus IBAN und Mandat.'));
   };
   function mitgliedForm(m) {
     const neu = !m.id; const bank = bankSichtbar();

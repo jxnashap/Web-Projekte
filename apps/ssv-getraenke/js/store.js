@@ -35,17 +35,22 @@
     kassenwart_name: 'Carsten Schneider',
     fusstext: 'Danke, dass du dabei bist – und allzeit gute Fahrt!',
     storno_minuten: 15,
-    abmelden_sekunden: 60
+    abmelden_sekunden: 60,
+    pin_selbst_festlegen: true,   // Mitglieder legen ihren Code beim ersten Mal selbst fest
+    pin_erst_nr_pruefen: true     // … nachdem sie ihre Mitgliedsnummer eingegeben haben
   };
+
+  /* Zu naheliegende Codes werden abgelehnt */
+  const SCHLECHTE_PIN = /^(\d)\1{3}$|^(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210|1212|2580|0000)$/;
+  const pinZuEinfach = (p) => SCHLECHTE_PIN.test(p);
 
   /* Zufalls-PIN ohne allzu naheliegende Muster */
   function zufallsPin() {
-    const schlecht = /^(\d)\1{3}$|^(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210|1212|2580)$/;
     let p;
     do {
       const a = new Uint32Array(1); crypto.getRandomValues(a);
       p = pad(a[0] % 10000, 4);
-    } while (schlecht.test(p));
+    } while (pinZuEinfach(p));
     return p;
   }
 
@@ -67,7 +72,35 @@
 
     _laden() {
       try { this.d = JSON.parse(localStorage.getItem(this.KEY)); } catch (e) { this.d = null; }
-      if (!this.d || !this.d.version) this.d = this._beispieldaten();
+      if (!this.d || this.d.version !== 2) {
+        this.d = this._beispieldaten();
+        // Historie: September abgerechnet und eingezogen, Oktober abgerechnet
+        const j = new Date(); const vm = (k) => new Date(j.getFullYear(), j.getMonth() - k, 1);
+        const ende = (d) => tag(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+        [2, 1].forEach((k) => {
+          const a = vm(k); this._rechnungenErstellen(tag(a), ende(a), tag(new Date(a.getFullYear(), a.getMonth() + 1, 3)));
+          if (k === 2) this.d.rechnungen.forEach((r) => { r.bezahlt_am = r.faellig; });
+        });
+        this._sichern();
+      }
+      this._abgleich();
+    }
+    /* Gemeinsamer Mitgliederstamm: In der Demo kommen die Mitglieder aus dem Hafen-Manager
+       (gleiche IDs), damit „Mein SSV“ Hafen- und Getränkerechnungen zusammen zeigen kann. */
+    _hafenMitglieder() {
+      const HF = window.HAFEN; if (!HF || !HF.laden) return null;
+      try { return (HF.d || HF.laden()).mitglieder.filter((m) => m.art !== 'gast'); } catch (e) { return null; }
+    }
+    _abgleich() {
+      const hm = this._hafenMitglieder(); if (!hm) return;
+      let geaendert = false;
+      hm.forEach((h) => {
+        let m = this._m(h.id);
+        if (!m) { m = { id: h.id, pin: null, fehlversuche: 0, gesperrt_bis: null, aktiv: true, sepa: !!h.iban, notiz: '' }; this.d.mitglieder.push(m); geaendert = true; }
+        ['nr', 'vorname', 'nachname', 'email', 'strasse', 'plz', 'ort'].forEach((f) => { if (m[f] !== h[f]) { m[f] = h[f]; geaendert = true; } });
+        const mr = h.mandat_ref || ''; if (m.mandatsreferenz !== mr) { m.mandatsreferenz = mr; geaendert = true; }
+      });
+      if (geaendert) this._sichern();
     }
     _sichern() { try { localStorage.setItem(this.KEY, JSON.stringify(this.d)); } catch (e) { console.warn('Demo-Daten konnten nicht gespeichert werden', e); } }
     zuruecksetzen() { localStorage.removeItem(this.KEY); this._laden(); }
@@ -81,12 +114,18 @@
         ['Volker', 'Voigt'], ['Wiebke', 'Wulf'], ['Svenja', 'Sievers'], ['Henning', 'Hansen']
       ];
       const orte = ['Bad Schwartau', 'Lübeck', 'Stockelsdorf', 'Ratekau'];
-      const mitglieder = namen.map(([v, n], i) => ({
-        id: uuid(), nr: String(1001 + i), vorname: v, nachname: n,
-        email: (v + '.' + n).toLowerCase().replace(/ß/g, 'ss').replace(/ü/g, 'ue').replace(/ö/g, 'oe') + '@beispiel.de',
-        strasse: 'Beispielweg ' + (i + 3), plz: '2361' + (i % 10), ort: orte[i % orte.length],
-        sepa: i !== 4, mandatsreferenz: 'SSV-' + (1001 + i), notiz: '', aktiv: true, pin: '1234', fehlversuche: 0, gesperrt_bis: null
-      }));
+      // Jedes dritte Mitglied hat noch keinen Code – so lässt sich „Code beim ersten Mal festlegen“ ausprobieren
+      const hm = this._hafenMitglieder();
+      const mitglieder = hm
+        ? hm.map((h, i) => ({ id: h.id, nr: h.nr, vorname: h.vorname, nachname: h.nachname, email: h.email, strasse: h.strasse, plz: h.plz, ort: h.ort,
+            sepa: !!h.iban, mandatsreferenz: h.mandat_ref || '', notiz: '', aktiv: true, pin: i % 3 === 2 ? null : '1234', fehlversuche: 0, gesperrt_bis: null }))
+        : namen.map(([v, n], i) => ({
+            id: uuid(), nr: String(1001 + i), vorname: v, nachname: n,
+            email: (v + '.' + n).toLowerCase().replace(/ß/g, 'ss').replace(/ü/g, 'ue').replace(/ö/g, 'oe') + '@beispiel.de',
+            strasse: 'Beispielweg ' + (i + 3), plz: '2361' + (i % 10), ort: orte[i % orte.length],
+            sepa: i !== 4, mandatsreferenz: 'SSV-' + (1001 + i), notiz: '', aktiv: true, pin: i % 3 === 2 ? null : '1234', fehlversuche: 0, gesperrt_bis: null
+          }));
+      const mitPin = mitglieder.filter((m) => m.pin);
       const P = (name, emoji, farbe, preis, kg, kp, sort) => ({ id: uuid(), name, emoji, farbe, preis, kasten_groesse: kg, kasten_preis: kp, sort, aktiv: true });
       const produkte = [
         P('Pils 0,33 l', '🍺', '#e0a526', 1.5, 24, 30, 1),
@@ -102,7 +141,7 @@
       let s = 7; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
       const buchungen = []; const jetzt = Date.now();
       for (let i = 0; i < 260; i++) {
-        const m = mitglieder[Math.floor(rnd() * mitglieder.length)];
+        const m = mitPin[Math.floor(rnd() * mitPin.length)];
         const p = produkte[Math.floor(rnd() * 6.6)];
         const kasten = p.kasten_groesse && rnd() < 0.06;
         const anzahl = kasten ? 1 : 1 + Math.floor(rnd() * rnd() * 4);
@@ -117,7 +156,7 @@
         });
       }
       buchungen.sort((a, b) => a.zeit.localeCompare(b.zeit));
-      return { version: 1, mitglieder, produkte, buchungen, rechnungen: [], einstellungen: { ...STANDARD_EINSTELLUNGEN, bank: 'Demo-Bank [PLATZHALTER]', glaeubiger_id: 'DE98ZZZ09999999999 [DEMO]' }, admin: { email: 'kassenwart@demo', passwort: 'demo' } };
+      return { version: 2, mitglieder, produkte, buchungen, rechnungen: [], einstellungen: { ...STANDARD_EINSTELLUNGEN, bank: 'Demo-Bank [PLATZHALTER]', glaeubiger_id: 'DE98ZZZ09999999999 [DEMO]' }, admin: { email: 'kassenwart@demo', passwort: 'demo' } };
     }
 
     _m(id) { return this.d.mitglieder.find((m) => m.id === id); }
@@ -133,7 +172,8 @@
     }
     _pruefen(mid, pin) {
       const m = this._m(mid);
-      if (!m || !m.aktiv || !m.pin) return { ok: false, fehler: 'mitglied' };
+      if (!m || !m.aktiv) return { ok: false, fehler: 'mitglied' };
+      if (!m.pin) return { ok: false, fehler: 'kein_pin' };
       if (m.gesperrt_bis && new Date(m.gesperrt_bis) > new Date()) return { ok: false, fehler: 'gesperrt', gesperrt_bis: m.gesperrt_bis };
       if (m.pin !== pin) {
         const n = m.fehlversuche + 1;
@@ -169,8 +209,8 @@
     /* ---- Kasse ---- */
     async kasseStatus() { return { eingerichtet: true, name: 'Demo-Kasse' }; }
     async kasseMitglieder() {
-      return this.d.mitglieder.filter((m) => m.aktiv && m.pin)
-        .map(({ id, vorname, nachname }) => ({ id, vorname, nachname }))
+      return this.d.mitglieder.filter((m) => m.aktiv)
+        .map(({ id, vorname, nachname, pin }) => ({ id, vorname, nachname, hat_pin: !!pin }))
         .sort((a, b) => a.nachname.localeCompare(b.nachname, 'de') || a.vorname.localeCompare(b.vorname, 'de'));
     }
     async kasseProdukte() { return this.d.produkte.filter((p) => p.aktiv).sort((a, b) => a.sort - b.sort); }
@@ -183,6 +223,30 @@
       const f = this._pruefen(mid, pin); if (f) return f;
       const summe = this._buchen(mid, posten, 'kasse');
       return { ok: true, summe, ...this._summen(mid) };
+    }
+    async kasseOptionen() {
+      const e = { ...STANDARD_EINSTELLUNGEN, ...this.d.einstellungen };
+      return { pin_selbst_festlegen: !!e.pin_selbst_festlegen, pin_erst_nr_pruefen: !!e.pin_erst_nr_pruefen,
+        abmelden_sekunden: Number(e.abmelden_sekunden) || 60, storno_minuten: Number(e.storno_minuten) || 15 };
+    }
+    /* Erstes Mal an der Kasse: Mitglied legt seinen Code selbst fest (ggf. nach Mitgliedsnummer) */
+    async kassePinFestlegen(mid, pin, nr) {
+      const o = await this.kasseOptionen(); const m = this._m(mid);
+      if (!o.pin_selbst_festlegen) return { ok: false, fehler: 'aus' };
+      if (!m || !m.aktiv) return { ok: false, fehler: 'mitglied' };
+      if (m.pin) return { ok: false, fehler: 'schon_gesetzt' };
+      if (m.gesperrt_bis && new Date(m.gesperrt_bis) > new Date()) return { ok: false, fehler: 'gesperrt', gesperrt_bis: m.gesperrt_bis };
+      if (o.pin_erst_nr_pruefen && String(nr || '').trim() !== String(m.nr || '').trim()) {
+        const n = m.fehlversuche + 1;
+        m.fehlversuche = n >= 5 ? 0 : n;
+        m.gesperrt_bis = n >= 5 ? new Date(Date.now() + 5 * 60e3).toISOString() : null;
+        this._sichern();
+        return { ok: false, fehler: 'nr', rest: Math.max(0, 5 - n) };
+      }
+      if (!/^\d{4}$/.test(pin)) return { ok: false, fehler: 'format' };
+      if (pinZuEinfach(pin)) return { ok: false, fehler: 'einfach' };
+      m.pin = pin; m.fehlversuche = 0; m.gesperrt_bis = null; this._sichern();
+      return { ok: true, vorname: m.vorname, nachname: m.nachname, ...this._summen(mid) };
     }
     async kasseVerlauf(mid, pin) {
       const f = this._pruefen(mid, pin); if (f) return f;
@@ -230,6 +294,29 @@
       if (!/^\d{4}$/.test(pin)) throw new Error('PIN muss vierstellig sein');
       const m = this._m(id); m.pin = pin; m.fehlversuche = 0; m.gesperrt_bis = null; this._sichern();
     }
+    /* Code löschen – das Mitglied legt beim nächsten Mal an der Kasse selbst einen neuen fest */
+    async pinZuruecksetzen(id) { const m = this._m(id); m.pin = null; m.fehlversuche = 0; m.gesperrt_bis = null; this._sichern(); }
+
+    /* ---- Mein SSV (Mitglied ist dort mit eigenem Konto angemeldet; Demo: per Auswahl) ---- */
+    async mitgliedUebersicht(mid) {
+      this._laden(); const m = this._m(mid);
+      if (!m) return null;
+      return {
+        hat_pin: !!m.pin, gesperrt_bis: m.gesperrt_bis && new Date(m.gesperrt_bis) > new Date() ? m.gesperrt_bis : null, ...this._summen(mid),
+        buchungen: this.d.buchungen.filter((b) => b.mitglied_id === mid).sort((a, b) => b.zeit.localeCompare(a.zeit)).slice(0, 20),
+        rechnungen: this.d.rechnungen.filter((r) => r.mitglied_id === mid && !r.storniert_am).sort((a, b) => b.nr.localeCompare(a.nr))
+          .map(({ id, nr, datum, von, bis, faellig, summe, sepa, bezahlt_am }) => ({ id, nr, datum, von, bis, faellig, summe, sepa, bezahlt_am }))
+      };
+    }
+    async mitgliedPinAendern(mid, pin) {
+      this._laden(); const m = this._m(mid);
+      if (!m) throw new Error('Mitglied nicht gefunden.');
+      if (!/^\d{4}$/.test(pin)) throw new Error('Der Code muss aus genau 4 Ziffern bestehen.');
+      if (pinZuEinfach(pin)) throw new Error('Dieser Code ist zu leicht zu erraten – bitte einen anderen wählen.');
+      m.pin = pin; m.fehlversuche = 0; m.gesperrt_bis = null; this._sichern();
+    }
+    /* Eigene Rechnungen für die Druckansicht (nur die des Mitglieds) */
+    async meineRechnungen(mid, ids) { this._laden(); return this.d.rechnungen.filter((r) => r.mitglied_id === mid && ids.includes(r.id)); }
 
     async produkte() { return [...this.d.produkte].sort((a, b) => a.sort - b.sort); }
     async produktSpeichern(p) {
@@ -259,7 +346,8 @@
 
     async rechnungen() { return [...this.d.rechnungen].sort((a, b) => b.nr.localeCompare(a.nr)); }
     async rechnungenLaden(ids) { return this.d.rechnungen.filter((r) => ids.includes(r.id)); }
-    async rechnungenErstellen(von, bis, datum) {
+    async rechnungenErstellen(von, bis, datum) { return this._rechnungenErstellen(von, bis, datum); }
+    _rechnungenErstellen(von, bis, datum) {
       if (von > bis) throw new Error('Zeitraum ungültig');
       const e = this.d.einstellungen; const jahr = datum.slice(0, 4); const praefix = e.rechnung_praefix || 'SSV-G';
       let lfd = this.d.rechnungen.filter((r) => r.nr.startsWith(praefix + '-' + jahr + '-'))
@@ -342,6 +430,11 @@
       const r = await this._rpc('kasse_verlauf', { p_token: this._tok, p_mitglied: mid, p_pin: pin }, false);
       if (r.buchungen) r.buchungen = r.buchungen.map(this._zahlen); return r;
     }
+    async kasseOptionen() {
+      try { return await this._rpc('kasse_optionen', { p_token: this._tok }, false); }
+      catch (e) { return { pin_selbst_festlegen: false, pin_erst_nr_pruefen: true, abmelden_sekunden: 60, storno_minuten: 15 }; }
+    }
+    async kassePinFestlegen(mid, pin, nr) { return this._zahlenSumme(await this._rpc('kasse_pin_festlegen', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p_nr: nr || null }, false)); }
     async kasseStorno(mid, pin, bid) { return this._zahlenSumme(await this._rpc('kasse_storno', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p_buchung: bid }, false)); }
     _zahlen(o) {
       ['preis', 'kasten_preis', 'betrag', 'einzelpreis', 'summe'].forEach((k) => { if (o[k] != null) o[k] = Number(o[k]); });
@@ -385,6 +478,18 @@
       await this._req('/rest/v1/mitglieder?id=eq.' + id, { method: 'DELETE' }); return 'geloescht';
     }
     pinSetzen(id, pin) { return this._rpc('admin_pin_setzen', { p_mitglied: id, p_pin: pin }); }
+    pinZuruecksetzen(id) { return this._rpc('admin_pin_zuruecksetzen', { p_mitglied: id }); }
+
+    /* ---- Mein SSV: das angemeldete Mitglied (auth.uid → mitglieder.user_id) ---- */
+    async mitgliedUebersicht() {
+      const r = await this._rpc('mitglied_uebersicht', {}); if (!r) return null;
+      this._zahlenSumme(r); (r.buchungen || []).forEach(this._zahlen); (r.rechnungen || []).forEach(this._zahlen); return r;
+    }
+    async mitgliedPinAendern(_mid, pin) {
+      const r = await this._rpc('mitglied_pin_aendern', { p_pin: pin });
+      if (!r.ok) throw new Error(r.fehler === 'einfach' ? 'Dieser Code ist zu leicht zu erraten – bitte einen anderen wählen.' : 'Der Code muss aus genau 4 Ziffern bestehen.');
+    }
+    async meineRechnungen(_mid, ids) { return (await this._req('/rest/v1/rechnungen?select=*&id=in.(' + ids.join(',') + ')')).map(this._zahlen); }
 
     async produkte() { return (await this._req('/rest/v1/produkte?select=*&order=sort,name')).map(this._zahlen); }
     async produktSpeichern(p) {
@@ -439,7 +544,7 @@
     speicher: K.modus === 'supabase' && K.supabaseUrl
       ? new SupabaseSpeicher(K.supabaseUrl, K.supabaseAnonKey)
       : new DemoSpeicher(),
-    hilfe: { ct, eur, pad, tag, zufallsPin, verdichten,
+    hilfe: { ct, eur, pad, tag, zufallsPin, pinZuEinfach, verdichten,
       geld: (v) => Number(v || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }),
       datum: (d) => d ? new Date(d.length === 10 ? d + 'T12:00:00' : d).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '',
       zeit: (d) => new Date(d).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }),

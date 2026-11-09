@@ -76,8 +76,10 @@
   <div class="k-pin">
     <div class="k-avatar" id="pin-avatar">AA</div>
     <h1 id="pin-name">Name</h1>
-    <p class="k-sub" id="pin-hinweis">Bitte deine 4-stellige PIN eingeben</p>
+    <p class="k-schritt" id="pin-schritt" hidden></p>
+    <p class="k-sub" id="pin-hinweis">Bitte deinen 4-stelligen Code eingeben</p>
     <div class="k-dots" id="pin-dots"><i></i><i></i><i></i><i></i></div>
+    <div class="k-nr" id="pin-nr" hidden><span id="pin-nr-wert"></span></div>
     <div class="k-keypad" id="keypad">
       <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
       <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
@@ -87,7 +89,8 @@
         <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 5H9l-6 7 6 7h12z"/><path d="m17 9-6 6M11 9l6 6"/></svg>
       </button>
     </div>
-    <p class="k-demo-hinweis" id="demo-pin" hidden>Demo: Alle Beispiel-Mitglieder haben die PIN 1234</p>
+    <button class="k-btn k-btn-primary k-btn-block k-nr-weiter" id="pin-weiter" hidden disabled>Weiter</button>
+    <p class="k-demo-hinweis" id="demo-pin" hidden></p>
   </div>
 </section>
 
@@ -155,6 +158,9 @@
 
 <div class="k-toast" id="toast" role="status" aria-live="polite"></div>
 
+<!-- Demo: gemeinsamer Mitgliederstamm mit dem Hafen-Manager („Mein SSV“). Fehlt der Ordner, nutzt die Kasse eigene Beispieldaten. -->
+<script src="../ssv-hafen/js/daten.js"></script>
+<script src="../ssv-hafen/js/gebuehren.js"></script>
 <script src="js/config.js"></script>
 <script src="js/store.js"></script>
 <script src="js/kiosk.js"></script>

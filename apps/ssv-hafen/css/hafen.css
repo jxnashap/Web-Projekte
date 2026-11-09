@@ -84,6 +84,7 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .tag.ok { background: rgba(29,138,90,.12); color: var(--ok); }
 .tag.gruen { background: rgba(47,163,107,.15); color: #1d7d50; }
 .tag.warn { background: rgba(199,129,27,.15); color: #93600f; }
+.tag.gold { background: rgba(176,141,87,.16); color: #7a5a26; }
 .tag.rot { background: rgba(184,35,43,.1); color: var(--rot); }
 .tag.gast { background: rgba(217,154,28,.16); color: #8a5e05; }
 .tag.lila { background: rgba(123,94,167,.14); color: var(--lila); }

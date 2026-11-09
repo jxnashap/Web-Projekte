@@ -117,7 +117,8 @@
             '<td>' + esc(m.ort || '') + '</td><td>' + (m.sepa ? '<span class="a-tag ok">Lastschrift</span>' : '<span class="a-tag warn">kein Mandat</span>') + '</td>' +
             '<td>' + (gesperrt ? '<span class="a-tag rot">gesperrt</span>' : m.hat_pin ? '<span class="a-tag ok">✓</span>' : '<span class="a-tag warn">fehlt</span>') + '</td>' +
             '<td class="r">' + H.geld(H.eur(offenProM.get(m.id) || 0)) + '</td>' +
-            '<td class="r"><button class="a-btn klein" data-pin="' + m.id + '">Neue PIN</button> <button class="a-btn klein" data-edit="' + m.id + '">Bearbeiten</button></td></tr>';
+            '<td class="r">' + (m.hat_pin ? '<button class="a-btn klein" data-reset="' + m.id + '" title="Code löschen – das Mitglied legt an der Kasse selbst einen neuen fest">Code zurücksetzen</button> ' : '') +
+            '<button class="a-btn klein" data-pin="' + m.id + '">Neue PIN</button> <button class="a-btn klein" data-edit="' + m.id + '">Bearbeiten</button></td></tr>';
         }).join('');
     };
     render();
@@ -128,6 +129,12 @@
     $('#m-liste').addEventListener('click', (e) => {
       const ed = e.target.closest('[data-edit]'); if (ed) return mitgliedForm(mitglied(ed.dataset.edit));
       const p = e.target.closest('[data-pin]'); if (p) return neuePin(mitglied(p.dataset.pin));
+      const r = e.target.closest('[data-reset]');
+      if (r) {
+        const m = mitglied(r.dataset.reset);
+        if (!confirm('Code von ' + name(m) + ' löschen? ' + m.vorname + ' legt beim nächsten Mal an der Kasse (oder in „Mein SSV“) selbst einen neuen fest.')) return;
+        S.pinZuruecksetzen(m.id).then(() => { toast('Code zurückgesetzt.'); mitgliederTab(main); }).catch((err) => toast(err.message, 'fehler'));
+      }
     });
   }
 
@@ -192,10 +199,10 @@
     zeigeTab('mitglieder');
   }
 
-  /* CSV-Import, z. B. Mitgliederexport aus easyVerein oder Excel */
+  /* CSV-Import, z. B. Mitgliederliste aus Excel oder der bisherigen Verwaltung */
   function csvImport() {
     const el = modal('<h2>Mitglieder importieren</h2>' +
-      '<p class="a-hinweis">CSV-Datei mit Kopfzeile, z. B. ein Export aus easyVerein oder Excel. Erkannt werden die Spalten <strong>Vorname, Nachname</strong> (Pflicht) sowie Mitgliedsnummer, Mandatsreferenz, E-Mail, Straße, PLZ, Ort. Auf dem iPad öffnet „Datei“ die Dateien-App (iCloud Drive, E-Mail-Anhänge, USB-Stick). Trennzeichen Semikolon oder Komma.</p>' +
+      '<p class="a-hinweis">CSV-Datei mit Kopfzeile, z. B. aus Excel oder der bisherigen Mitgliederverwaltung. Erkannt werden die Spalten <strong>Vorname, Nachname</strong> (Pflicht) sowie Mitgliedsnummer, Mandatsreferenz, E-Mail, Straße, PLZ, Ort. Auf dem iPad öffnet „Datei“ die Dateien-App (iCloud Drive, E-Mail-Anhänge, USB-Stick). Trennzeichen Semikolon oder Komma.</p>' +
       '<label class="a-feld">Datei<input type="file" id="csv-datei" accept=".csv,text/csv,text/comma-separated-values,text/plain,application/vnd.ms-excel"></label>' +
       '<label class="a-feld" style="margin-top:12px">… oder hier einfügen<textarea id="csv-text" rows="6" placeholder="Vorname;Nachname;Mitgliedsnummer;E-Mail&#10;Anna;Albers;1001;anna@beispiel.de"></textarea></label>' +
       '<p class="k-sub" id="csv-vorschau"></p>' +
@@ -465,6 +472,8 @@
       f('glaeubiger_id', 'Gläubiger-ID (SEPA)') + f('bank', 'Bank') + f('iban', 'IBAN (nur für Überweisungen ohne Mandat)') + f('bic', 'BIC') + f('rechnung_praefix', 'Rechnungsnummer-Präfix') + f('kassenwart_name', 'Name des Kassenwarts (Gruß auf der Rechnung)') +
       f('zahlungsziel_tage', 'Einzug nach Rechnungsdatum (Tage, mind. 14 für die Vorabankündigung)', ' type="number" min="0"') + f('storno_minuten', 'Selbst-Storno an der Kasse (Minuten)', ' type="number" min="0"') +
       f('abmelden_sekunden', 'Automatisch abmelden nach (Sekunden)', ' type="number" min="15"') +
+      '<label class="a-feld voll check"><input type="checkbox" name="pin_selbst_festlegen"' + (e.pin_selbst_festlegen ? ' checked' : '') + '> Mitglieder legen ihren 4-stelligen Code beim ersten Mal an der Kasse selbst fest</label>' +
+      '<label class="a-feld voll check"><input type="checkbox" name="pin_erst_nr_pruefen"' + (e.pin_erst_nr_pruefen ? ' checked' : '') + '> … vorher die eigene Mitgliedsnummer abfragen (schützt davor, dass jemand für andere einen Code anlegt)</label>' +
       '<label class="a-feld voll">Steuerhinweis auf der Rechnung<textarea name="steuerhinweis" rows="2">' + esc(e.steuerhinweis) + '</textarea></label>' +
       '<label class="a-feld voll">Zusatz bei SEPA-Lastschrift<textarea name="sepa_text" rows="2">' + esc(e.sepa_text) + '</textarea></label>' +
       f('fusstext', 'Grußzeile', 'voll') +
@@ -479,6 +488,7 @@
     $('#ef-ok').addEventListener('click', async () => {
       const d = Object.fromEntries(new FormData($('#ef')));
       ['zahlungsziel_tage', 'storno_minuten', 'abmelden_sekunden'].forEach((k) => { d[k] = parseInt(d[k], 10) || 0; });
+      d.pin_selbst_festlegen = !!d.pin_selbst_festlegen; d.pin_erst_nr_pruefen = !!d.pin_erst_nr_pruefen;
       await S.einstellungenSpeichern(d); toast('Gespeichert.');
     });
     if ($('#k-ok')) $('#k-ok').addEventListener('click', async () => {

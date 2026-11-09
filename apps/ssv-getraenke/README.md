@@ -28,7 +28,8 @@ mit.
 | Schritt | Was passiert |
 |---|---|
 | Wer bucht? | Namensliste mit A–Z-Leiste und Suchfeld |
-| PIN | 4 Ziffern, nach 5 Fehlversuchen 5 Minuten gesperrt |
+| Code | 4 Ziffern, nach 5 Fehlversuchen 5 Minuten gesperrt |
+| Erstes Mal | Wer noch keinen Code hat („Erstes Mal? Code festlegen“), gibt seine Mitgliedsnummer ein und legt den Code selbst fest (2× eingeben, 1234/1111 & Co. werden abgelehnt). Beides ist in den Einstellungen abschaltbar. |
 | Getränke | Kacheln mit Preis; antippen → 1–6 Stück oder 1–2 Kästen |
 | Bon | Mehrere Getränke sammeln, dann „Jetzt buchen · 13,00 €“ |
 | Fertig | „Prost, Jan!“, Monatssumme, Abmeldung nach 6 s |
@@ -39,9 +40,9 @@ Nach 60 Sekunden ohne Eingabe meldet sich die Kasse von allein ab.
 ## Kassenwart-Bereich
 
 - **Übersicht:** Monatsumsatz, offene Beträge, meistgebuchte Getränke.
-- **Mitglieder:** anlegen, CSV-Import (z. B. Export aus easyVerein, auch auf dem
+- **Mitglieder:** anlegen, CSV-Import (z. B. Liste aus Excel, auch auf dem
   iPad über die Dateien-App), Mandatsreferenz, PIN
-  vergeben. Eine PIN wird nur einmal angezeigt und ist danach nur
+  vergeben oder „Code zurücksetzen“ (das Mitglied legt dann selbst einen neuen fest). Eine PIN wird nur einmal angezeigt und ist danach nur
   verschlüsselt gespeichert. PIN-Zettel lassen sich drucken (10 pro A4-Seite).
 - **Getränke & Preise:** Kacheln, Symbol, Farbe, Stück- und Kastenpreis.
 - **Buchungen:** Filter, Storno, Nachtragen, CSV-Export.
@@ -55,7 +56,22 @@ Nach 60 Sekunden ohne Eingabe meldet sich die Kasse von allein ab.
   als bezahlt markieren, stornieren, E-Mail-Entwurf öffnen, SEPA-Liste und
   Rechnungsliste als CSV.
 - **Einstellungen:** Vereinsdaten, Bankverbindung, Steuerhinweis,
-  Zahlungsziel, Storno- und Abmeldezeit.
+  Zahlungsziel, Storno- und Abmeldezeit, Code selbst festlegen (an/aus) und
+  Mitgliedsnummer abfragen (an/aus).
+
+## Mein SSV (Mitgliederbereich)
+
+Im Mitgliederbereich des Hafen-Managers (`../ssv-hafen/mein-ssv.html`) sieht
+jedes Mitglied seine Getränkebuchungen, die Summe des Monats, die
+Getränkerechnungen (als PDF) neben den Hafenrechnungen und kann seinen Code
+ändern oder einen vergessenen Code neu festlegen. In der Demo teilen sich
+Kasse und Hafen-Manager den Mitgliederstamm (`../ssv-hafen/js/daten.js`);
+fehlt der Ordner, nutzt die Kasse eigene Beispieldaten.
+
+Im Echtbetrieb meldet sich das Mitglied mit seiner E-Mail-Adresse an
+(Supabase-Konto). Beim ersten Login wird das Konto über die **bestätigte**
+E-Mail mit dem Mitglied verknüpft (`mitglieder.user_id`). Es sieht nur seine
+eigenen Rechnungen und Buchungen (Row Level Security).
 
 ## Echtbetrieb: eine zentrale Datenbank
 
@@ -89,7 +105,7 @@ App festsetzen.
 - Echte Getränkepreise und Kastengrößen.
 - Umsatzsteuer-Hinweis auf der Rechnung mit Kassenwart oder Steuerberater
   klären (Feld „Steuerhinweis“).
-- Gläubiger-ID des Vereins und die Mandatsreferenzen der Mitglieder (stehen in easyVerein).
+- Gläubiger-ID des Vereins und die Mandatsreferenzen der Mitglieder (einmalig aus der bisherigen Verwaltung übernehmen).
 - Abrechnungsrhythmus (monatlich, quartalsweise, zum Saisonende).
 - Wer hat Kassenwart-Zugänge?
 
