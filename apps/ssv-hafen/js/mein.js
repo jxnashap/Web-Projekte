@@ -40,6 +40,7 @@
   }
   const kachel = (ziel, titel, wert, unter, id) => '<button type="button" data-ziel="' + ziel + '"' + (id ? ' id="' + id + '"' : '') + '><small>' + titel + '</small><strong>' + wert + '</strong><span>' + unter + '</span></button>';
 
+  const inSaisonF = () => heute >= sd.auslagern && heute < sd.einlagern;
   function zeigen() {
     const m = Q.mitglied(mid); const boote = Q.booteVon(mid);
     const b = boote[0]; const sommer = b && Q.belegungBoot(SAISON, 'sommer', b.id); const winter = b && Q.belegungBoot(SAISON, 'winter', b.id);
@@ -51,27 +52,36 @@
     let meinW = warte.findIndex((w) => w.mitglied_id === mid);
     if (DBM) { const wp = HF.db.warteplatz; meinW = wp ? wp.platz - 1 : -1; if (wp) warte[meinW] = { datum: wp.seit }; }
     const vs = b ? Q.versicherungsStatus(b, heute) : 'ok';
+    const naechste = (d.saisons || []).find((x) => x.jahr === SAISON + 1);
+    const auslagernNeu = heute < sd.auslagern ? sd.auslagern : naechste && naechste.auslagern;
+    const yy = String(SAISON + 1).slice(2);
+    // Wo ist das Boot gerade? Saison und tatsächlicher Ort getrennt
+    const ortJetzt = !b ? '' : inSaisonF() ? (platzS ? (platzS.bez ? esc(platzS.bez) + ' (Sommer an Land)' : 'im Wasser, ' + (platzS.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(platzS.nr)) : 'kein Sommerplatz bei uns')
+      : (platzW ? 'im Winterlager, ' + esc(platzW.bez) : 'im Winter ' + SAISON + '/' + yy + ' kein Landplatz bei uns gebucht');
+    const NW = { geprueft: ['Nachweis geprüft' + (b && b.vers_geprueft_am ? ' am ' + H.datum(b.vers_geprueft_am) : ''), 'ok'], eingereicht: ['Nachweis eingereicht – wird geprüft', 'gast'], selbst: ['selbst angegeben – bitte Nachweis hochladen', 'warn'] };
+    const nw = b ? (NW[b.vers_status] || ['noch kein Nachweis – bitte hochladen', 'warn']) : null;
     const platzText = platzS ? (platzS.bez ? esc(platzS.bez) : (platzS.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(platzS.nr)) : '';
     const wasser = sommer && sommer.platz_typ === 'wasser';
-    const inSaison = heute >= sd.auslagern && heute < sd.einlagern;   // grünes Schild nur, solange die Boote im Wasser sind
+    const inSaison = inSaisonF();   // grünes Schild nur, solange die Boote im Wasser sind
 
     const bootInhalt = b ? '<div class="detail" style="box-shadow:none;padding:0;position:static"><dl>' +
         '<dt>Typ</dt><dd>' + esc(b.typ) + '</dd><dt>Maße</dt><dd>' + H.zahl(b.laenge) + ' × ' + H.zahl(b.breite) + ' m · Tiefgang ' + H.zahl(b.tiefgang) + ' m · ' + H.zahl(b.gewicht_t, 1) + ' t</dd>' +
-        '<dt>Sommer ' + SAISON + '</dt><dd>' + (platzS ? (platzS.bez ? esc(platzS.bez) + ' (an Land)' : platzText + ', ' + H.BRUECKE[platzS.bruecke]) : '–') + '</dd>' +
-        '<dt>Winter ' + SAISON + '/' + String(SAISON + 1).slice(2) + '</dt><dd>' + (platzW ? esc(platzW.bez) : '–') + '</dd>' +
-        '<dt>Versicherung</dt><dd>' + esc(b.versicherung || '–') + ', bis ' + H.datum(b.vers_bis) + '</dd><dt>Kfz</dt><dd>' + esc(m.kfz || '–') + '</dd></dl></div>' +
-        (platzS && !platzS.bez ? '<div id="miniplan" class="plan-flaeche mini-plan"></div>' : '') +
-        '<div class="aktionen" style="margin-top:12px"><button class="btn" id="daten">Daten aktualisieren</button></div>' : '';
-    const schildInhalt = wasser && !inSaison ? '<p style="margin:0">Dein Boot ist im Winterlager – das grüne Schild gibt’s wieder ab dem Auslagern' + (sd.auslagern > heute ? ' (' + H.datum(sd.auslagern) + ')' : '') + '.</p>' : wasser ? '<p style="margin-top:0;color:var(--muted)">Unterwegs? Dann wird dein Platz grün und der Hafenmeister kann ihn an Gäste geben. Bitte trotzdem das Schild am Steg drehen.</p>' +
+        '<dt>Jetzt</dt><dd><strong>' + ortJetzt + '</strong></dd>' +
+        '<dt>Sommer ' + SAISON + '</dt><dd>' + (platzS ? (platzS.bez ? esc(platzS.bez) + ' (an Land)' : platzText + ', ' + H.BRUECKE[platzS.bruecke]) : 'kein Platz') + '</dd>' +
+        '<dt>Winter ' + SAISON + '/' + yy + '</dt><dd>' + (platzW ? esc(platzW.bez) : 'kein Landplatz bei uns') + '</dd>' +
+        '<dt>Versicherung</dt><dd>' + esc(b.versicherung || '–') + (b.vers_bis ? ', bis ' + H.datum(b.vers_bis) : '') + '<br><span class="tag ' + nw[1] + '">' + nw[0] + '</span></dd><dt>Kfz</dt><dd>' + esc(m.kfz || '–') + '</dd></dl></div>' +
+        (platzS && !platzS.bez ? '<div id="miniplan" class="plan-flaeche mini-plan"></div><p style="font-size:12px;color:var(--muted);margin:4px 0 0">' + (inSaisonF() ? 'Hafenplan heute' : 'Dein Sommerplatz ' + SAISON + ' (Saison beendet)') + '</p>' : '') +
+        '<div class="aktionen" style="margin-top:12px"><button class="btn primaer" id="nachweis">Versicherungsnachweis hochladen</button><button class="btn" id="daten">Daten aktualisieren</button></div>' : '';
+    const schildInhalt = wasser && !inSaison ? '<p style="margin:0">Das grüne Schild gibt es, solange die Boote im Wasser sind – wieder ab dem Auslagern' + (auslagernNeu ? ' am ' + H.datum(auslagernNeu) : '') + '. ' + (platzW ? 'Dein Boot steht gerade im Winterlager (' + esc(platzW.bez) + ').' : 'Im Winter ' + SAISON + '/' + yy + ' hast du bei uns keinen Landplatz gebucht.') + '</p>' : wasser ? '<p style="margin-top:0;color:var(--muted)">Unterwegs? Dann wird dein Platz grün und der Hafenmeister kann ihn an Gäste geben. Bitte trotzdem das Schild am Steg drehen.</p>' +
         '<form id="awf" class="form"><label class="feld">ab<input type="date" name="von" required value="' + heute + '"></label><label class="feld">zurück am<input type="date" name="bis" required></label><label class="feld voll">Ziel (optional)<input name="notiz" placeholder="z. B. Dänische Südsee"></label></form>' +
         '<div class="aktionen" style="margin-top:10px"><button class="btn gruen" id="awok">Abwesenheit melden</button></div>' +
         (aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') : '';
 
     $('#main').innerHTML = (DBM ? '' : '<div class="demo-band"><strong>Demo</strong> – erfundene Daten. Im Echtbetrieb meldest du dich mit deinem eigenen Zugang an.</div>') +
       '<div class="kopf"><div><h1>Moin ' + esc(m.vorname) + '!</h1><p>' + H.ART[m.art] + ' · Mitgliedsnr. ' + esc(m.nr) + '</p></div></div>' +
-      (vs !== 'ok' && b ? '<p class="hinweis warn">Dein Versicherungsnachweis ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'fehlt noch' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte unter „Mein Boot“ aktualisieren.</p>' : '') +
+      (vs !== 'ok' && b ? '<p class="hinweis warn">Deine Bootsversicherung ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'ist noch nicht hinterlegt' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte unter „Mein Boot“ einen neuen Nachweis hochladen.</p>' : '') +
       '<div class="blick">' + kachel('rechnungen', 'Offen', '…', 'Rechnungen', 'k-offen') +
-        (platzS ? kachel(wasser ? 'schild' : 'boot', 'Liegeplatz', platzText, awAktuell ? 'grün bis ' + H.kurz(awAktuell.bis) : (platzS.bez ? 'an Land' : H.BRUECKE[platzS.bruecke])) : meinW >= 0 ? kachel('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), 'seit ' + H.datum(warte[meinW].datum)) : kachel('rechnungen', 'Mitglied seit', m.eintritt ? m.eintritt.slice(0, 4) : '–', H.ART[m.art])) +
+        (b && !inSaison && platzW ? kachel('boot', 'Winterlager', esc(platzW.bez), SAISON + '/' + yy) : platzS ? kachel(wasser ? 'schild' : 'boot', 'Liegeplatz', platzText, !inSaison ? 'Sommer ' + SAISON + ' (beendet)' : awAktuell ? 'grün bis ' + H.kurz(awAktuell.bis) : (platzS.bez ? 'an Land' : H.BRUECKE[platzS.bruecke])) : meinW >= 0 ? kachel('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), 'seit ' + H.datum(warte[meinW].datum)) : kachel('rechnungen', 'Mitglied seit', m.eintritt ? m.eintritt.slice(0, 4) : '–', H.ART[m.art])) +
         (KASSE ? kachel('kasse', 'Getränke', '…', new Date().toLocaleDateString('de-DE', { month: 'long' }), 'k-getraenke') : '') + '</div>' +
       '<div class="mein-raster"><div>' +
       (b ? sektion('boot', 'Mein Boot', '„' + esc(b.name) + '“' + (platzText ? ' · ' + platzText : ''), bootInhalt) : '') +
@@ -84,7 +94,8 @@
         '<p class="hinweis" style="margin-top:12px">Neue Bankverbindung oder Fragen zu Rechnungen? Schreib an <a href="mailto:' + esc(d.einstellungen.verein_email) + '">' + esc(d.einstellungen.verein_email) + '</a> – für ein neues Konto braucht es ein neues Lastschriftmandat.</p>') +
       '</div><div>' +
       (wasser ? sektion('schild', 'Grünes Schild', awAktuell ? 'unterwegs ' + H.kurz(awAktuell.von) + '–' + H.kurz(awAktuell.bis) : 'Platz frei melden', schildInhalt, 'gruen-box') : '') +
-      sektion('rechnungen', 'Meine Rechnungen', '', '<div id="rechnungen"></div><p class="hinweis" style="margin-top:12px">Alles wird per Lastschrift eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p>', '', true) +
+      sektion('rechnungen', 'Meine Rechnungen', '', '<div id="rechnungen"></div><p class="hinweis" style="margin-top:12px">Mit Lastschriftmandat wird alles eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p>', '', true) +
+      sektion('schaden', 'Schaden melden', 'Steg, Strom, Kran …', '<p style="margin-top:0">Etwas kaputt im Hafen? Kurz melden – die Funktionsträger sehen es sofort und kümmern sich.</p><div class="aktionen"><button class="btn" id="schaden">Schaden melden</button></div>') +
       '</div></div>';
 
     // Aufklappen merken; Kacheln springen zum Bereich
@@ -96,7 +107,7 @@
 
     // Rechnungen: Hafen und Beitrag sofort, Getränke sobald die Kasse geantwortet hat
     const hafenPosten = res.map((r) => ({ art: r.periode === 'beitrag' ? 'Beitrag' : 'Hafen', nr: r.nr, datum: r.datum || '', text: r.periode === 'beitrag' ? String(r.saison) : H.periodeText(r),
-      summe: r.summe, bezahlt_am: r.bezahlt_am, sepa: r.sepa, faellig: r.faellig, href: 'drucken.html?art=rechnungen&ids=' + r.id + (DBM ? '&mein=1' : '') }));
+      summe: Q.rest(r) || r.summe, rest: Q.rest(r), stand: Q.rstatus(r, heute), bezahlt_am: Q.rest(r) === 0 ? (r.bezahlt_am || heute) : null, sepa: r.sepa, faellig: r.faellig, href: 'drucken.html?art=rechnungen&ids=' + r.id + (DBM ? '&mein=1' : '') }));
     let alleZeigen = false;
     const rechnungenZeigen = (getraenke) => {
       const alle = hafenPosten.concat(getraenke || []).sort((x, y) => (y.datum || '').localeCompare(x.datum || '') || y.nr.localeCompare(x.nr));
@@ -107,7 +118,7 @@
       const GRENZE = 4; const liste = alleZeigen ? alle : alle.slice(0, GRENZE);
       $('#rechnungen').innerHTML = alle.length ? '<table class="tab rechn"><tbody>' + liste.map((r) => '<tr><td><span class="tag' + (r.art === 'Hafen' ? '' : r.art === 'Beitrag' ? ' gruen' : ' gold') + '">' + r.art + '</span> ' + esc(r.text) +
         '<br><small style="color:var(--muted)">' + esc(r.nr) + '</small></td><td class="r"><strong>' + H.geld(r.summe) + '</strong><br>' +
-        (r.bezahlt_am ? '<span class="tag ok">bezahlt</span>' : r.sepa ? '<span class="tag">Einzug ' + H.kurz(r.faellig) + '</span>' : '<span class="tag warn">offen</span>') +
+        (r.bezahlt_am ? '<span class="tag ok">bezahlt</span>' : r.stand === 'ruecklastschrift' ? '<span class="tag rot">Lastschrift zurück – bitte überweisen</span>' : r.stand === 'teilbezahlt' ? '<span class="tag warn">Rest offen</span>' : r.sepa ? '<span class="tag">Einzug ' + H.kurz(r.faellig) + '</span>' : '<span class="tag warn">offen</span>') +
         '</td><td class="r"><a class="btn klein" href="' + r.href + '" target="_blank">PDF</a></td></tr>').join('') + '</tbody></table>' +
         (alle.length > GRENZE ? '<button class="btn klein" id="rmehr" style="margin-top:10px">' + (alleZeigen ? 'Weniger anzeigen' : 'Alle ' + alle.length + ' Rechnungen anzeigen') + '</button>' : '')
         : '<p class="leer">Noch keine Rechnungen.</p>';
@@ -141,22 +152,67 @@
       });
     });
     const dat = $('#daten'); if (dat) dat.addEventListener('click', () => {
-      const el = modal('<h2>Daten aktualisieren</h2><form id="df" class="form"><label class="feld">Versicherung<input name="versicherung" value="' + esc(b.versicherung || '') + '"></label><label class="feld">versichert bis<input name="vers_bis" type="date" value="' + esc(b.vers_bis || '') + '"></label>' +
+      const el = modal('<h2>Daten aktualisieren</h2><form id="df" class="form">' +
         '<label class="feld">Gewicht (t)<input name="gewicht_t" inputmode="decimal" value="' + b.gewicht_t + '"></label><label class="feld">Kfz-Kennzeichen<input name="kfz" value="' + esc(m.kfz || '') + '"></label>' +
         '<label class="feld">Telefon<input name="tel" type="tel" value="' + esc(m.tel || '') + '"></label><label class="feld">E-Mail<input name="email" type="email" value="' + esc(m.email || '') + '"></label></form>' +
         '<p class="hinweis">Bankverbindung ändern? Bitte formlos an den Kassenwart – dafür braucht es ein neues SEPA-Mandat.</p><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="dok">Speichern</button></div>');
       $('#dok', el).addEventListener('click', async () => {
         const x = Object.fromEntries(new FormData($('#df', el)));
         if (DBM) {   // Mitglieder ändern nur über die Datenbank-Funktion (nur eigene Kontakt- und Bootsdaten)
-          try { await HF.meinDatenAendern({ tel: x.tel, email: x.email, kfz: x.kfz, boot_id: b.id, versicherung: x.versicherung, vers_bis: x.vers_bis, gewicht_t: x.gewicht_t }); }
+          try { await HF.meinDatenAendern({ tel: x.tel, email: x.email, kfz: x.kfz, boot_id: b.id, gewicht_t: x.gewicht_t }); }
           catch (e) { return toast('Nicht gespeichert: ' + e.message); }
         }
-        b.versicherung = x.versicherung; b.vers_bis = x.vers_bis; b.gewicht_t = Number(String(x.gewicht_t).replace(',', '.')) || b.gewicht_t; m.kfz = x.kfz; m.tel = x.tel; m.email = x.email;
+        b.gewicht_t = Number(String(x.gewicht_t).replace(',', '.')) || b.gewicht_t; m.kfz = x.kfz; m.tel = x.tel; m.email = x.email;
         if (!DBM) HF.sichern();
         $('#modal').innerHTML = ''; toast('Gespeichert.'); zeigen();
       });
     });
   }
+  /* ---------------------------------------------------------- Versicherungsnachweis und Schadensmeldung */
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#nachweis')) nachweisDialog();
+    if (e.target.closest('#schaden')) schadenDialog();
+  });
+  function nachweisDialog() {
+    const m = Q.mitglied(mid); const b = Q.booteVon(mid)[0]; if (!b) return;
+    const el = modal('<h2>Versicherungsnachweis</h2><p>Lade die aktuelle Police oder Bestätigung deiner Versicherung hoch (PDF oder Foto). Der Verein prüft sie und hakt sie ab.</p><form id="nf" class="form">' +
+      '<label class="feld">Versicherung<input name="versicherung" required value="' + esc(b.versicherung || '') + '"></label><label class="feld">versichert bis<input name="vers_bis" type="date" required value="' + esc(b.vers_bis || '') + '"></label>' +
+      '<label class="feld voll">Nachweis (PDF oder Foto)<input name="datei" type="file" accept="application/pdf,image/*" required></label></form><p class="hinweis" id="nf-info" hidden></p>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="nok">Hochladen</button></div>');
+    $('#nok', el).addEventListener('click', async () => {
+      const fm = $('#nf', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); const info = $('#nf-info', el);
+      const knopf = $('#nok', el); knopf.disabled = true; knopf.textContent = 'Wird hochgeladen …';
+      try {
+        const datei = await HF.datei.lesen(fm.datei.files[0]);
+        if (DBM) await window.SSV_SB.rpc('mein_nachweis_hochladen', { p: { boot_id: b.id, versicherung: x.versicherung, vers_bis: x.vers_bis, ...datei } });
+        else { d.dokumente.push({ id: H.uid('D'), mitglied_id: m.id, boot_id: b.id, art: 'versicherung', hochgeladen: new Date().toISOString(), von: 'Mitglied (Mein SSV)', ...datei }); }
+        Object.assign(b, { versicherung: x.versicherung, vers_bis: x.vers_bis, vers_status: 'eingereicht', vers_geprueft_am: null, vers_geprueft_von: null });
+        if (!DBM) await HF.sichern();
+        $('#modal').innerHTML = ''; toast('Danke – der Nachweis ist eingereicht.'); zeigen();
+      } catch (er) { knopf.disabled = false; knopf.textContent = 'Hochladen'; info.textContent = er.message; info.className = 'hinweis warn'; info.hidden = false; }
+    });
+  }
+  function schadenDialog() {
+    const m = Q.mitglied(mid);
+    const el = modal('<h2>Schaden melden</h2><form id="sf" class="form"><label class="feld voll">Was ist kaputt?<input name="titel" required maxlength="120" placeholder="z. B. Stromsäule Ostbrücke ohne Funktion"></label>' +
+      '<label class="feld voll">Wo?<input name="ort" placeholder="z. B. Westbrücke bei Platz 40"></label><label class="feld voll">Beschreibung (optional)<textarea name="beschreibung" rows="3"></textarea></label>' +
+      '<label class="feld voll">Foto (optional)<input name="datei" type="file" accept="image/*"></label></form><p class="hinweis" id="sf-info" hidden></p>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="sok">Melden</button></div>');
+    $('#sok', el).addEventListener('click', async () => {
+      const fm = $('#sf', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); const knopf = $('#sok', el); knopf.disabled = true;
+      try {
+        const foto = fm.datei.files[0] ? await HF.datei.lesen(fm.datei.files[0]) : null;
+        if (DBM) await window.SSV_SB.rpc('schaden_melden', { p: { titel: x.titel, ort: x.ort, beschreibung: x.beschreibung, ...(foto || {}) } });
+        else {
+          const t = { id: H.uid('T'), titel: x.titel, beschreibung: x.beschreibung, ort: x.ort, platz_id: '', boot_id: null, art: 'schaden', prioritaet: 'normal', status: 'offen', verantwortlich: '', faellig: '', erstellt: new Date().toISOString(), erstellt_von: Q.name(m) + ' (Mein SSV)', erledigt_am: '', notiz: '' };
+          d.aufgaben.push(t); if (foto) d.dokumente.push({ id: H.uid('D'), mitglied_id: m.id, aufgabe_id: t.id, art: 'foto', hochgeladen: new Date().toISOString(), von: 'Mitglied (Mein SSV)', ...foto });
+          await HF.sichern();
+        }
+        $('#modal').innerHTML = ''; toast('Danke für die Meldung!');
+      } catch (er) { knopf.disabled = false; const i = $('#sf-info', el); i.textContent = er.message; i.className = 'hinweis warn'; i.hidden = false; }
+    });
+  }
+
   /* ---------------------------------------------------------- Getränkekasse */
   const monatText = (von) => new Date(von + 'T12:00:00').toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
   async function kasseZeigen(m, rechnungenZeigen) {

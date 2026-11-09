@@ -213,3 +213,16 @@ body.modal-offen { overflow: hidden; }
   details.sek > summary { min-height: 44px; }
   .nav .nav-leiste button { min-height: 44px; }
 }
+
+/* Feedback-Runde: Stichtag, Regeln, Verlauf, Abrechnungsfilter */
+.hinweis.stichtag { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.hinweis.stichtag .btn { flex: none; }
+ul.regeln { margin: 0 0 10px; padding-left: 18px; line-height: 1.6; font-size: 14px; }
+details.vorschau > summary { cursor: pointer; color: var(--marine, #1c3987); font-weight: 600; margin: 4px 0 10px; min-height: 32px; }
+table.verlauf td { vertical-align: top; }
+.feldname { display: inline-block; font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; background: rgba(28,57,135,.07); border-radius: 5px; padding: 0 5px; margin-right: 4px; }
+.abschnitt.nachweis { margin-top: 14px; }
+.tag.blass-tag { opacity: .7; }
+.detail dl { grid-template-columns: auto minmax(0, 1fr); }
+.detail dd { min-width: 0; overflow-wrap: anywhere; }
+.detail dd .tag, .hinweis .tag { white-space: normal; }

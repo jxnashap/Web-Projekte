@@ -7,6 +7,8 @@ freigibt.
 
 ## 1 · Datenbank-Nachträge einspielen (einmalig, in dieser Reihenfolge)
 
+Bereits eingespielt: 01, 02. Neu: 03.
+
 Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inhalt einfügen → **Run**:
 
 1. `apps/ssv-hafen/supabase/nachtrag-01.sql` – Vereinsangaben für Mitglieder lesbar, Vorstand speichert
@@ -18,7 +20,13 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    Aufnahmeantrag prüft Alter und Zustimmung der Eltern, Löschfristen (`daten_aufraeumen()`),
    Mitglieder ändern ihre Anschrift selbst.
 
-Beide dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
+3. `apps/ssv-hafen/supabase/nachtrag-03.sql` – verlässlicher Datenstand (Feedback-Runde): keine Doppelvergabe
+   von Plätzen (auch nicht, wenn zwei Personen gleichzeitig einweisen), Prüfung der Gastlieger in der Datenbank
+   (Freigabe des Eigners, Boxmaße, Tiefgang), Änderungsverlauf, Versicherungsnachweise und Dokumente,
+   Zahlungen je Rechnung (Teilzahlung, Rücklastschrift), Schäden & Wartung, Arbeitsdienst-Befreiung.
+   **Erst diesen Nachtrag einspielen, dann die neue Version in Vercel freischalten** – die Oberfläche braucht die neuen Spalten.
+
+Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 
 **Löschfristen automatisch:** Database → Extensions → `pg_cron` aktivieren, dann einmal im SQL Editor:
 `select cron.schedule('ssv-loeschfristen', '0 3 * * 1', $$select public.daten_aufraeumen()$$);`
@@ -81,6 +89,25 @@ Hinweis, Aktuelles, Termine, Zeiten, Fotos pflegen. Änderungen sind sofort live
 
 Mitglieder legen ihr Konto in **Mein SSV** (`…/ssv-hafen/mein-ssv.html` → „Konto anlegen“) selbst an –
 mit der E-Mail-Adresse, die im Mitgliederstamm steht. Voraussetzung: eigenes SMTP (Schritt 2).
+
+## 6a · Regeln und Grunddaten im Hafen-Manager festlegen (Vorstand)
+
+- **Einstellungen → Steuerhinweis** für Hafen-Rechnungen und Quittungen wählen (mit dem Steuerberater klären).
+  Solange nichts gewählt ist, steht auf Rechnungen kein Steuersatz und die Abrechnung zeigt eine Warnung.
+- **Einstellungen → Arbeitsdienst**: Soll, Aufforderung ab, Befreiung ab Alter, Ersatzzahlung je Fehlstunde,
+  Übertrag aus dem Vorjahr – dann „vom Vorstand beschlossen“ anhaken. Erst danach wird eine Ersatzzahlung berechnet
+  (mit der Beitragsrechnung des Folgejahres). Einzelne Befreiungen beim Mitglied eintragen.
+- **Liegeplätze → Maße**: echte Boxmaße, Brücke und – wenn bekannt – Wassertiefe je Platz; danach unter
+  Einstellungen „Boxmaße geprüft“ anhaken. Bis dahin kennzeichnet der Hafen-Manager die Platzempfehlung als Annahme.
+- **Saisontermine** (Auslagern/Einlagern) für das nächste Jahr in der Tabelle `saisons` eintragen.
+
+## 6b · Datensicherung
+
+- Supabase sichert die Datenbank im **Pro-Tarif täglich** (7 Tage, Wiederherstellung per Klick); im kostenlosen
+  Tarif gibt es keine automatische Sicherung. Für den Echtbetrieb Pro empfehlen.
+- Zusätzlich: Hafen-Manager → Einstellungen → **Datensicherung herunterladen** (JSON, enthält Bankdaten –
+  verschlüsselt aufbewahren), z. B. monatlich und vor jeder Jahresabrechnung.
+- Wer wann was geändert hat, steht im **Änderungsverlauf** (Vorstand und Kassenwart), 3 Jahre lang.
 
 ## 7a · Vor der Veröffentlichung prüfen
 

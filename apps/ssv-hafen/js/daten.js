@@ -35,6 +35,14 @@
     zahlungsziel_tage: 14,
     stromumlage_ueber_hafen: true,
     arbeitsdienst_soll: 15,
+    arbeitsdienst_mahnung_ab: 25,
+    arbeitsdienst_vorjahr: false,       // Fehlstunden des Vorjahres zählen mit
+    arbeitsdienst_befreit_ab: 0,        // Alter, ab dem niemand mehr Arbeitsdienst leisten muss (0 = keine Grenze)
+    arbeitsdienst_satz: 0,              // € je Fehlstunde (0 = wird nicht berechnet)
+    arbeitsdienst_bestaetigt: false,    // Regeln vom Vorstand bestätigt?
+    steuer_hinweis: '',                 // '' = noch nicht festgelegt · 'kleinunternehmer' · 'ust19' · 'frei'
+    steuer_text: '',
+    plan_bestaetigt: false,             // Boxmaße und Brückenzuordnung vom Verein bestätigt?
     flaeche_aufschlag_m: 0,
     fusstext: 'Danke, dass du dabei bist – und allzeit gute Fahrt!'
   };
@@ -79,7 +87,7 @@
     for (let nr = 1; nr <= 79; nr++) {
       const b = box(nr);
       lp.push({ id: 'LP' + pad(nr), nr: String(nr), bruecke: nr <= 24 ? 'ost' : nr <= 70 ? 'west' : 'schwimm', box: b,
-        max_laenge: MASSE[b][0], max_breite: MASSE[b][1], strom: true, gesperrt: false, sonderpreis: null, notiz: '' });
+        max_laenge: MASSE[b][0], max_breite: MASSE[b][1], tiefe: null, strom: true, gesperrt: false, sonderpreis: null, notiz: '' });
     }
     lp.push({ id: 'LPL1', nr: 'L1', bruecke: 'laengs', box: 'L', max_laenge: 12, max_breite: 4, strom: true, gesperrt: false, sonderpreis: 450, notiz: 'Längsseits – Sondertarif [PLATZHALTER]' });
     lp.push({ id: 'LPL2', nr: 'L2', bruecke: 'laengs', box: 'L', max_laenge: 12, max_breite: 4, strom: false, gesperrt: false, sonderpreis: 450, notiz: 'Längsseits – Sondertarif [PLATZHALTER]' });
@@ -151,6 +159,8 @@
       const bt = { id: uid('B'), name: BOOTSNAMEN[booteIdx++ % BOOTSNAMEN.length], typ: wahl(TYPEN[box]), eigner_id: eigner.id, laenge: l, breite: b,
         tiefgang: +(0.8 + r() * 1.1).toFixed(2), gewicht_t: +(ms[4] + r() * (ms[5] - ms[4])).toFixed(1), segelnr: 'GER ' + (1000 + Math.floor(r() * 8999)),
         versicherung: wahl(['Pantaenius', 'Wehring & Wolfes', 'Yacht-Pool', 'Nordwest Assekuranz', 'Allianz']), vers_bis: tag(bis), notiz: '', ...extra };
+      bt.vers_status = boote.length % 7 === 3 ? 'eingereicht' : boote.length % 3 === 0 ? 'selbst' : 'geprueft';
+      if (bt.vers_status === 'geprueft') { bt.vers_geprueft_am = '2026-04-0' + (1 + boote.length % 8); bt.vers_geprueft_von = 'Brückenwartin'; }
       boote.push(bt); return bt;
     }
 
@@ -204,6 +214,16 @@
       { id: uid('G'), bootsname: 'Elbe 3', skipper: 'Thomas Brandes', herkunft: 'Hamburg', tel: '0170 0000000', email: '', laenge: 11.2, breite: 3.6, ankunft: '2026-08-15', naechte: 2, platz_id: 'LPL2', betrag: 30, zahlung: 'ueberweisung', quittung_nr: 'Q-2026-042', status: 'eingewiesen', quelle: 'hafenmeister', erstellt: '2026-08-15T18:40:00' },
       { id: uid('G'), bootsname: 'Seute Deern II', skipper: 'Karl Behn', herkunft: 'Neustadt i. H.', tel: '', email: '', laenge: 7.6, breite: 2.7, ankunft: '2026-08-15', naechte: 1, platz_id: '', betrag: 15, zahlung: 'offen', quittung_nr: '', status: 'angemeldet', quelle: 'qr', erstellt: '2026-08-15T19:12:00' },
       { id: uid('G'), bootsname: 'Lykke', skipper: 'Jens Holm', herkunft: 'Aarhus (DK)', tel: '', email: '', laenge: 9.1, breite: 3.1, ankunft: '2026-07-02', naechte: 2, platz_id: 'LP41', betrag: 30, zahlung: 'bar', quittung_nr: 'Q-2026-027', status: 'abgereist', quelle: 'hafenmeister', erstellt: '2026-07-02T15:00:00' }
+    ];
+
+    gaeste.forEach((g) => { g.tiefgang = null; g.bezahlt_am = g.zahlung === 'bar' || g.quittung_nr ? g.ankunft : ''; });
+    gaeste[2].quittung_nr = ''; gaeste[2].bezahlt_am = '';   // Überweisung vereinbart, aber noch nicht eingegangen
+
+    // Schäden und Wartung
+    const aufgaben = [
+      { id: uid('T'), titel: 'Dalben an Platz 52 locker', beschreibung: 'Dalben wackelt bei Wind deutlich, Platz ist gesperrt.', ort: 'Westbrücke', platz_id: 'LP52', boot_id: null, art: 'schaden', prioritaet: 'hoch', status: 'in_arbeit', verantwortlich: 'Hafenmeister', faellig: '2026-11-30', erstellt: '2026-10-02T10:00:00', erstellt_von: 'Hafenmeister', erledigt_am: '', notiz: 'Taucher angefragt [BEISPIEL]' },
+      { id: uid('T'), titel: 'Stromsäule Ostbrücke ohne Funktion', beschreibung: 'Säule zwischen Platz 6 und 7, FI fliegt raus.', ort: 'Ostbrücke', platz_id: '', boot_id: null, art: 'schaden', prioritaet: 'normal', status: 'offen', verantwortlich: '', faellig: '', erstellt: '2026-11-05T17:30:00', erstellt_von: 'Mitglied (Mein SSV)', erledigt_am: '', notiz: '' },
+      { id: uid('T'), titel: 'Kran: jährliche Prüfung (UVV)', beschreibung: 'Prüfung durch Sachkundigen vor dem Auslagern.', ort: 'Kran', platz_id: '', boot_id: null, art: 'wartung', prioritaet: 'normal', status: 'offen', verantwortlich: 'Vorstand', faellig: '2027-03-15', erstellt: '2026-10-25T09:00:00', erstellt_von: 'Vorstand', erledigt_am: '', notiz: '' }
     ];
 
     // Warteliste (Anspruch laut Satzung § 10 I)
@@ -260,7 +280,8 @@
 
     return { version: 2, antraege, einstellungen: { ...STANDARD_EINSTELLUNGEN, glaeubiger_id: 'DE98ZZZ09999999999', iban: demoIban('23050101', 1234567), bic: 'NOLADE21SPL', bank: 'Demo-Sparkasse [PLATZHALTER]' },
       gebuehren: { 2026: { ...GEBUEHREN_2024 } }, saisons: [{ jahr: 2026, auslagern: '2026-04-11', einlagern: '2026-10-24' }],
-      liegeplaetze: lp, landplaetze: landplaetze(), mitglieder, boote, belegungen, abwesenheiten, gaeste, warteliste, kran, arbeitsdienst, rechnungen: [], sepa_laeufe: [], zaehler: { quittung: 42 } };
+      liegeplaetze: lp, landplaetze: landplaetze(), mitglieder, boote, belegungen, abwesenheiten, gaeste, warteliste, kran, arbeitsdienst, rechnungen: [], sepa_laeufe: [], zaehler: { quittung: 42 },
+      aufgaben, dokumente: [], aenderungen: [] };
   }
 
   /* ------------------------------------------------------------ Speicher */
@@ -278,11 +299,38 @@
       sichern();
     }
     if (!d.antraege) d.antraege = [];
+    ['aufgaben', 'dokumente', 'aenderungen'].forEach((k) => { if (!d[k]) d[k] = []; });
+    d.einstellungen = { ...STANDARD_EINSTELLUNGEN, ...d.einstellungen };
+    d.rechnungen.forEach((r) => { if (!r.zahlungen) r.zahlungen = []; });
+    if (!demoSchnapp) demoSchnapp = schnappschuss(zeilen(true));
     return d;
   }
+  // Demo: Änderungsverlauf wie in der Datenbank mitschreiben (wer, wann, was)
+  let demoSchnapp = null;
+  const TAB_DEMO = ['mitglieder', 'mitglieder_bank', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'gebuehren', 'hafen_einstellungen', 'aufgaben'];
+  function demoVerlauf() {
+    const neu = schnappschuss(zeilen(true));
+    if (demoSchnapp) {
+      const zeit = new Date().toISOString(); const wer = window.HAFEN.wer || 'Demo';
+      TAB_DEMO.forEach((t) => {
+        const a = demoSchnapp[t] || new Map(), b = neu[t] || new Map();
+        b.forEach((r, k) => { const o = a.get(k); const bez = bezeichnung(r);
+          if (!o) d.aenderungen.push({ id: zeit + k, zeit, wer, tabelle: t, datensatz: k, bezeichnung: bez, aktion: 'neu', aenderung: maske(t, r) });
+          else { const df = feldDiff(o, r); if (Object.keys(df).length) d.aenderungen.push({ id: zeit + k, zeit, wer, tabelle: t, datensatz: k, bezeichnung: bez, aktion: 'geaendert', aenderung: maskeDiff(t, Object.fromEntries(Object.entries(df).map(([f]) => [f, [o[f], r[f]]]))) }); } });
+        a.forEach((r, k) => { if (!b.has(k)) d.aenderungen.push({ id: zeit + k, zeit, wer, tabelle: t, datensatz: k, bezeichnung: bezeichnung(r), aktion: 'geloescht', aenderung: maske(t, r) }); });
+      });
+      if (d.aenderungen.length > 400) d.aenderungen = d.aenderungen.slice(-400);
+    }
+    demoSchnapp = neu;
+  }
+  const bezeichnung = (r) => [r.vorname, r.nachname].filter(Boolean).join(' ') || r.name || r.bootsname || r.nr || r.titel || r.platz_id || '';
+  const kuerzen = (v) => (v ? '…' + String(v).slice(-4) : v);
+  const maske = (t, r) => { const z = { ...r }; if ('iban' in z) z.iban = kuerzen(z.iban); return z; };
+  const maskeDiff = (t, df) => { if (df.iban) df.iban = df.iban.map(kuerzen); return df; };
   function sichern() {
     if (SB) return dbSichern();
-    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { console.warn('Demo-Daten nicht gespeichert', e); }
+    try { demoVerlauf(); } catch (e) { /* Verlauf ist nur Komfort */ }
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { console.warn('Demo-Daten nicht gespeichert', e); return Promise.reject(new Error('Der Browser-Speicher ist voll – bitte große Dateien entfernen.')); }
     return Promise.resolve();
   }
   function zuruecksetzen() { if (SB) return d; try { localStorage.removeItem(KEY); } catch (e) { /* egal */ } return laden(); }
@@ -292,20 +340,21 @@
    * in dieselbe Struktur wie die Demo – die Oberfläche bleibt unverändert. Beim Speichern werden
    * nur geänderte, neue und gelöschte Einträge übertragen. */
   const SP = {
-    mitglieder: ['id', 'nr', 'vorname', 'nachname', 'art', 'email', 'tel', 'strasse', 'plz', 'ort', 'mandatsreferenz', 'kfz', 'notiz', 'geburtsdatum', 'geschlecht', 'eintritt', 'austritt', 'aktiv'],
+    mitglieder: ['id', 'nr', 'vorname', 'nachname', 'art', 'email', 'tel', 'strasse', 'plz', 'ort', 'mandatsreferenz', 'kfz', 'notiz', 'geburtsdatum', 'geschlecht', 'eintritt', 'austritt', 'aktiv', 'arbeitsdienst_befreit'],
     mitglieder_bank: ['mitglied_id', 'iban', 'bic', 'kontoinhaber', 'mandat_datum'],
-    boote: ['id', 'name', 'typ', 'eigner_id', 'laenge', 'breite', 'tiefgang', 'gewicht_t', 'segelnr', 'versicherung', 'vers_bis', 'notiz'],
+    boote: ['id', 'name', 'typ', 'eigner_id', 'laenge', 'breite', 'tiefgang', 'gewicht_t', 'segelnr', 'versicherung', 'vers_bis', 'notiz', 'vers_status', 'vers_geprueft_am', 'vers_geprueft_von'],
     belegungen: ['id', 'saison', 'periode', 'boot_id', 'platz_typ', 'platz_id', 'art', 'flaeche_m2', 'sommer_an_land_jahr', 'nicht_kranen', 'notiz'],
     abwesenheiten: ['id', 'boot_id', 'platz_id', 'von', 'bis', 'notiz', 'gemeldet'],
-    gaeste: ['id', 'bootsname', 'skipper', 'herkunft', 'tel', 'email', 'laenge', 'breite', 'ankunft', 'naechte', 'platz_id', 'betrag', 'zahlung', 'quittung_nr', 'status', 'quelle', 'erstellt'],
+    gaeste: ['id', 'bootsname', 'skipper', 'herkunft', 'tel', 'email', 'laenge', 'breite', 'tiefgang', 'ankunft', 'naechte', 'platz_id', 'betrag', 'zahlung', 'bezahlt_am', 'quittung_nr', 'status', 'quelle', 'erstellt'],
     warteliste: ['id', 'mitglied_id', 'datum', 'boot_laenge', 'boot_breite', 'wunsch_box', 'notiz', 'status'],
     kran: ['id', 'boot_id', 'datum', 'art', 'minuten', 'notiz', 'abgerechnet'],
     arbeitsdienst: ['id', 'mitglied_id', 'datum', 'stunden', 'taetigkeit'],
-    hafen_rechnungen: ['id', 'nr', 'mitglied_id', 'datum', 'saison', 'periode', 'faellig', 'positionen', 'summe', 'empfaenger', 'sepa', 'mandat_ref', 'mandat_datum', 'bezahlt_am', 'storniert_am', 'sepa_lauf'],
+    hafen_rechnungen: ['id', 'nr', 'mitglied_id', 'datum', 'saison', 'periode', 'faellig', 'positionen', 'summe', 'empfaenger', 'sepa', 'mandat_ref', 'mandat_datum', 'bezahlt_am', 'storniert_am', 'sepa_lauf', 'zahlungen'],
     sepa_laeufe: ['id', 'datum', 'faellig', 'anzahl', 'summe'],
     antraege: ['id', 'eingang', 'status', 'art', 'vorname', 'nachname', 'geburtsdatum', 'geschlecht', 'strasse', 'plz', 'ort', 'email', 'tel', 'erziehungsberechtigt', 'boot', 'warteliste',
       'kontoinhaber', 'iban', 'bic', 'mandat', 'satzung', 'datenschutz', 'nachricht', 'mitglied_id', 'entschieden', 'entschieden_von', 'grund'],
-    liegeplaetze: ['id', 'nr', 'bruecke', 'box', 'max_laenge', 'max_breite', 'strom', 'gesperrt', 'sonderpreis', 'notiz'],
+    liegeplaetze: ['id', 'nr', 'bruecke', 'box', 'max_laenge', 'max_breite', 'tiefe', 'strom', 'gesperrt', 'sonderpreis', 'notiz'],
+    aufgaben: ['id', 'titel', 'beschreibung', 'ort', 'platz_id', 'boot_id', 'art', 'prioritaet', 'status', 'verantwortlich', 'faellig', 'erstellt', 'erstellt_von', 'erledigt_am', 'notiz'],
     landplaetze: ['id', 'bez', 'art', 'bereich'],
     saisons: ['jahr', 'auslagern', 'einlagern'],
     gebuehren: ['jahr', 'daten'],
@@ -314,19 +363,19 @@
   const PK = { mitglieder_bank: 'mitglied_id', saisons: 'jahr', gebuehren: 'jahr' };
   // Reihenfolge: erst Eltern, dann Kinder (beim Löschen umgekehrt)
   const REIHE = ['mitglieder', 'mitglieder_bank', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst',
-    'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'gebuehren', 'hafen_einstellungen'];
+    'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'gebuehren', 'hafen_einstellungen', 'aufgaben'];
   const db = { rollen: [], bereich: null, finanz: false, schnapp: {}, schreibbar: new Set(), warteplatz: null, mitgliedId: null, onFehler: null };
 
   // Datenbankzeile ← → Oberflächen-Objekt
   const leerZuNull = (o) => { const z = {}; Object.keys(o).forEach((k) => { z[k] = o[k] === '' || o[k] === undefined ? null : o[k]; }); return z; };
   const pick = (o, sp) => { const z = {}; sp.forEach((k) => { z[k] = o[k] === undefined ? null : o[k]; }); return leerZuNull(z); };
-  function zeilen() {
-    const heute = tag(new Date());
+  function zeilen(demo) {
+    const heute = tag(new Date()); const finanz = demo || db.finanz;
     const z = {};
     z.mitglieder = d.mitglieder.map((m) => pick({ ...m, mandatsreferenz: m.mandat_ref, aktiv: !(m.austritt && m.austritt <= heute) }, SP.mitglieder));
-    if (db.finanz) z.mitglieder.forEach((r, i) => { const m = d.mitglieder[i]; r.sepa = !!(m.iban && m.mandat_ref && m.mandat_datum); });
-    z.mitglieder_bank = db.finanz ? d.mitglieder.filter((m) => m.iban || m.kontoinhaber || m.bic || m.mandat_datum).map((m) => pick({ ...m, mitglied_id: m.id }, SP.mitglieder_bank)) : [];
-    ['boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons'].forEach((t) => { z[t] = (d[t] || []).map((o) => pick(o, SP[t])); });
+    if (finanz) z.mitglieder.forEach((r, i) => { const m = d.mitglieder[i]; r.sepa = !!(m.iban && m.mandat_ref && m.mandat_datum); });
+    z.mitglieder_bank = finanz ? d.mitglieder.filter((m) => m.iban || m.kontoinhaber || m.bic || m.mandat_datum).map((m) => pick({ ...m, mitglied_id: m.id }, SP.mitglieder_bank)) : [];
+    ['boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben'].forEach((t) => { z[t] = (d[t] || []).map((o) => pick(o, SP[t])); });
     z.hafen_rechnungen = d.rechnungen.map((o) => pick(o, SP.hafen_rechnungen));
     z.gebuehren = Object.entries(d.gebuehren || {}).map(([jahr, daten]) => ({ jahr: Number(jahr), daten }));
     const { zaehler, ...einst } = d.einstellungen; // Zähler leben in den Daten selbst
@@ -334,7 +383,10 @@
     return z;
   }
   const schluessel = (t, r) => String(r[PK[t] || 'id']);
-  function schnappschuss(z) { const s = {}; Object.entries(z).forEach(([t, liste]) => { s[t] = new Map(liste.map((r) => [schluessel(t, r), JSON.stringify(r)])); }); return s; }
+  // Schnappschuss je Tabelle: Schlüssel → Zeile (Kopie), damit beim Speichern nur geänderte Felder übertragen werden
+  function schnappschuss(z) { const s = {}; Object.entries(z).forEach(([t, liste]) => { s[t] = new Map(liste.map((r) => [schluessel(t, r), JSON.parse(JSON.stringify(r))])); }); return s; }
+  const gleich = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  function feldDiff(alt, neu) { const df = {}; Object.keys(neu).forEach((k) => { if (!gleich(alt[k], neu[k])) df[k] = neu[k]; }); return df; }
 
   async function verbinden(opt = {}) {
     if (!SB) return d;
@@ -362,7 +414,7 @@
         hol('gebuehren').catch(() => []), hol('hafen_einstellungen').catch(() => [])]);
       const ids = boote.map((b) => b.id).join(',');
       const [bel, aw] = ids ? await Promise.all([hol('belegungen', '*', '&boot_id=in.(' + ids + ')'), hol('abwesenheiten', '*', '&boot_id=in.(' + ids + ')')]) : [[], []];
-      return fertig(true, { mg, bank, boote, bel, aw, gaeste: [], warte: [], kran: [], ad: [], re, sl: [], an: [], lp, landp, sais, geb, einst }, ich);
+      return fertig(true, { mg, bank, boote, bel, aw, gaeste: [], warte: [], kran: [], ad: [], re, sl: [], an: [], lp, landp, sais, geb, einst, auf: [] }, ich);
     }
     const daten = await Promise.all([
       hol('mitglieder', SP.mitglieder.concat(['sepa']).join(','), '&order=nachname,vorname'),
@@ -374,14 +426,15 @@
       db.finanz || !personal ? hol('hafen_rechnungen', '*', '&order=nr') : leer(),
       db.finanz ? hol('sepa_laeufe') : leer(), db.finanz ? hol('antraege', '*', '&order=eingang') : leer(),
       hol('liegeplaetze', '*', '&order=id'), hol('landplaetze', '*', '&order=id'), hol('saisons'),
-      hol('gebuehren').catch(() => []), hol('hafen_einstellungen').catch(() => [])
+      hol('gebuehren').catch(() => []), hol('hafen_einstellungen').catch(() => []),
+      personal ? hol('aufgaben', '*', '&order=erstellt.desc').catch(() => []) : leer()
     ]);
-    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst] = daten;
-    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst }, null);
+    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf] = daten;
+    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf }, null);
   }
   async function fertig(mitgliedsbereich, x, ich) {
     const personal = !mitgliedsbereich;
-    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst } = x;
+    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf } = x;
     const bankVon = new Map(bank.map((b) => [b.mitglied_id, b]));
     const zahl = (o, felder) => { felder.forEach((f) => { if (o[f] != null) o[f] = Number(o[f]); }); return o; };
     d = {
@@ -389,13 +442,14 @@
       einstellungen: { ...STANDARD_EINSTELLUNGEN, ...((einst[0] && einst[0].daten) || {}) },
       gebuehren: geb.length ? Object.fromEntries(geb.map((g) => [g.jahr, g.daten])) : { 2024: { ...GEBUEHREN_2024 } },
       saisons: sais,
-      liegeplaetze: lp.map((p) => zahl(p, ['max_laenge', 'max_breite', 'sonderpreis'])), landplaetze: landp,
+      liegeplaetze: lp.map((p) => zahl(p, ['max_laenge', 'max_breite', 'tiefe', 'sonderpreis'])), landplaetze: landp,
       mitglieder: mg.map((m) => { const b = bankVon.get(m.id) || {}; return { ...m, mandat_ref: m.mandatsreferenz || '', iban: b.iban || '', bic: b.bic || '', kontoinhaber: b.kontoinhaber || '', mandat_datum: b.mandat_datum || '' }; }),
       boote: boote.map((b) => zahl(b, ['laenge', 'breite', 'tiefgang', 'gewicht_t'])),
       belegungen: bel.map((b) => zahl(b, ['flaeche_m2'])), abwesenheiten: aw,
-      gaeste: gaeste.map((g) => zahl(g, ['laenge', 'breite', 'betrag'])), warteliste: warte.map((w) => zahl(w, ['boot_laenge', 'boot_breite'])),
+      gaeste: gaeste.map((g) => zahl(g, ['laenge', 'breite', 'tiefgang', 'betrag'])), warteliste: warte.map((w) => zahl(w, ['boot_laenge', 'boot_breite'])),
       kran, arbeitsdienst: ad.map((a) => zahl(a, ['stunden'])),
-      rechnungen: re.map((r) => zahl(r, ['summe'])), sepa_laeufe: sl.map((x) => zahl(x, ['summe'])), antraege: an,
+      rechnungen: re.map((r) => zahl({ ...r, zahlungen: r.zahlungen || [] }, ['summe'])), sepa_laeufe: sl.map((x) => zahl(x, ['summe'])), antraege: an,
+      aufgaben: auf || [], dokumente: [], aenderungen: [],
       zaehler: { quittung: 0 }
     };
     d.mitglieder.forEach((m) => { delete m.mandatsreferenz; delete m.sepa; delete m.aktiv; });
@@ -408,7 +462,7 @@
     }
     // Was diese Person zurückschreiben darf (der Rest ist für sie nur lesbar)
     db.schreibbar = new Set(personal
-      ? ['mitglieder', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'liegeplaetze', 'landplaetze', 'saisons']
+      ? ['mitglieder', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben']
         .concat(db.finanz ? ['mitglieder_bank', 'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'gebuehren', 'hafen_einstellungen'] : [])
       : ['abwesenheiten']);
     db.schnapp = schnappschuss(zeilen());
@@ -419,25 +473,103 @@
   function dbSichern() {
     const job = async () => {
       const jetzt = zeilen(); const neuS = schnappschuss(jetzt);
-      for (const t of REIHE) {
-        if (!db.schreibbar.has(t)) continue;
-        const alt = db.schnapp[t] || new Map(); const geaendert = jetzt[t].filter((r) => alt.get(schluessel(t, r)) !== JSON.stringify(r));
-        if (geaendert.length) {
-          await SB.req('/rest/v1/' + t + '?on_conflict=' + (PK[t] || 'id'), { method: 'POST', body: geaendert, prefer: 'resolution=merge-duplicates,return=minimal' });
-          geaendert.forEach((r) => alt.set(schluessel(t, r), JSON.stringify(r)));
-        }
-      }
+      // 1. Gelöschtes zuerst (Kinder vor Eltern) – so kann ein Platz im selben Schritt neu vergeben werden
       for (const t of REIHE.slice().reverse()) {
         if (!db.schreibbar.has(t) || ['mitglieder', 'hafen_rechnungen', 'hafen_einstellungen', 'gebuehren'].includes(t)) continue;  // diese werden nie gelöscht
         const alt = db.schnapp[t] || new Map(); const weg = [...alt.keys()].filter((k) => !neuS[t].has(k));
         if (weg.length) { await SB.req('/rest/v1/' + t + '?' + (PK[t] || 'id') + '=in.(' + weg.join(',') + ')', { method: 'DELETE' }); weg.forEach((k) => alt.delete(k)); }
       }
+      // 2. Neues komplett, Geändertes nur mit den geänderten Feldern (wer gleichzeitig andere Felder ändert, wird nicht überschrieben)
+      for (const t of REIHE) {
+        if (!db.schreibbar.has(t)) continue;
+        const alt = db.schnapp[t] || (db.schnapp[t] = new Map()); const pk = PK[t] || 'id';
+        const neu = jetzt[t].filter((r) => !alt.has(schluessel(t, r)));
+        if (neu.length) {
+          await SB.req('/rest/v1/' + t + '?on_conflict=' + pk, { method: 'POST', body: neu, prefer: 'resolution=merge-duplicates,return=minimal' });
+          neu.forEach((r) => alt.set(schluessel(t, r), JSON.parse(JSON.stringify(r))));
+        }
+        const gruppen = new Map();   // gleiche Änderung an vielen Zeilen (z. B. SEPA-Lauf) in einem Aufruf
+        jetzt[t].forEach((r) => { const k = schluessel(t, r); const o = alt.get(k); if (!o || neu.includes(r)) return;
+          const df = feldDiff(o, r); if (!Object.keys(df).length) return;
+          const g = JSON.stringify(df); if (!gruppen.has(g)) gruppen.set(g, { df, keys: [], rows: [] }); gruppen.get(g).keys.push(k); gruppen.get(g).rows.push(r); });
+        for (const { df, keys, rows } of gruppen.values()) {
+          for (let i = 0; i < keys.length; i += 100) {
+            const teil = keys.slice(i, i + 100);
+            await SB.req('/rest/v1/' + t + '?' + pk + '=in.(' + teil.join(',') + ')', { method: 'PATCH', body: df, prefer: 'return=minimal' });
+          }
+          rows.forEach((r) => alt.set(schluessel(t, r), JSON.parse(JSON.stringify(r))));
+        }
+      }
     };
     const lauf = schlange.then(job);
-    schlange = lauf.catch(() => {});   // nächste Speicherung läuft trotzdem; Fehlgeschlagenes wird dabei erneut versucht
+    schlange = lauf.catch(() => {});
     return lauf.catch((e) => { if (db.onFehler) { db.onFehler(e); return false; } throw e; });
   }
+  // Nach einem abgelehnten Speichern (oder um Änderungen anderer zu sehen) den Stand neu aus der Datenbank holen
+  async function neuLaden() { await schlange; return verbinden({ bereich: db.bereich === 'mitglied' ? 'mitglied' : undefined }); }
+
+  /* ------------------------------------------------------------ Dokumente und Änderungsverlauf */
+  const dok = {
+    async liste(filter) {   // filter: { boot_id } | { mitglied_id } | { aufgabe_id }
+      const [k, v] = Object.entries(filter)[0];
+      if (!SB) return (d.dokumente || []).filter((x) => x[k] === v).map(({ inhalt, ...rest }) => rest);
+      return SB.req('/rest/v1/dokumente?select=id,mitglied_id,boot_id,aufgabe_id,art,name,typ,groesse,hochgeladen,von&' + k + '=eq.' + v + '&order=hochgeladen.desc');
+    },
+    async inhalt(id) {
+      if (!SB) return d.dokumente.find((y) => y.id === id);
+      const r = await SB.req('/rest/v1/dokumente?select=*&id=eq.' + id); return r[0];
+    },
+    async hochladen(x, wer) {   // Funktionsträger
+      const z = { id: uid('D'), hochgeladen: new Date().toISOString(), von: wer || '', ...x };
+      if (!SB) { d.dokumente.push(z); await sichern(); return z.id; }
+      await SB.req('/rest/v1/dokumente', { method: 'POST', body: [z], prefer: 'return=minimal' }); return z.id;
+    },
+    async loeschen(id) {
+      if (!SB) { d.dokumente = d.dokumente.filter((x) => x.id !== id); return sichern(); }
+      return SB.req('/rest/v1/dokumente?id=eq.' + id, { method: 'DELETE' });
+    }
+  };
+  async function verlauf(opt = {}) {
+    if (!SB) { let l = (d.aenderungen || []).slice().reverse(); if (opt.tabelle) l = l.filter((x) => x.tabelle === opt.tabelle); if (opt.datensatz) l = l.filter((x) => x.datensatz === opt.datensatz); return l.slice(0, opt.limit || 300); }
+    return SB.req('/rest/v1/aenderungen?select=*&order=id.desc&limit=' + (opt.limit || 300) + (opt.tabelle ? '&tabelle=eq.' + opt.tabelle : '') + (opt.datensatz ? '&datensatz=eq.' + encodeURIComponent(opt.datensatz) : ''));
+  }
   async function meinDatenAendern(p) { await SB.rpc('mein_daten_aendern', { p }); }
+
+  /* ------------------------------------------------------------ Dateien (Nachweise, Fotos) */
+  const datei = {
+    // Liest eine Datei als Base64; Fotos werden auf höchstens 1600 px verkleinert (spart Platz, iPhone-Fotos inklusive)
+    lesen(file) {
+      return new Promise((ok, fehl) => {
+        if (!file) return fehl(new Error('Bitte eine Datei wählen.'));
+        if (file.type === 'application/pdf') {
+          if (file.size > 4e6) return fehl(new Error('Das PDF ist größer als 4 MB – bitte verkleinern oder ein Foto nehmen.'));
+          const r = new FileReader(); r.onload = () => ok({ name: file.name, typ: 'application/pdf', groesse: file.size, inhalt: String(r.result).split(',')[1] });
+          r.onerror = () => fehl(new Error('Die Datei konnte nicht gelesen werden.')); r.readAsDataURL(file); return;
+        }
+        if (!/^image\//.test(file.type)) return fehl(new Error('Bitte ein PDF oder ein Foto wählen.'));
+        const url = URL.createObjectURL(file); const img = new Image();
+        img.onload = () => {
+          const f = Math.min(1, 1600 / Math.max(img.width, img.height)); const c = document.createElement('canvas');
+          c.width = Math.round(img.width * f); c.height = Math.round(img.height * f); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+          const inhalt = c.toDataURL('image/jpeg', 0.82).split(',')[1];
+          ok({ name: file.name.replace(/\.[^.]+$/, '') + '.jpg', typ: 'image/jpeg', groesse: Math.round(inhalt.length * 0.75), inhalt });
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); fehl(new Error('Das Bild konnte nicht gelesen werden – bitte als JPG oder PDF.')); };
+        img.src = url;
+      });
+    },
+    // Öffnet ein gespeichertes Dokument in einem neuen Tab (Fenster sofort öffnen, sonst blockt der Browser)
+    oeffnen(id) {
+      const w = window.open('', '_blank');
+      return dok.inhalt(id).then((x) => {
+        if (!x) throw new Error('Dokument nicht gefunden.');
+        const bin = atob(x.inhalt); const a = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+        const url = URL.createObjectURL(new Blob([a], { type: x.typ }));
+        if (w) w.location.href = url; else location.href = url;
+        setTimeout(() => URL.revokeObjectURL(url), 120000);
+      }).catch((e) => { if (w) w.close(); throw e; });
+    }
+  };
 
   /* ------------------------------------------------------------ Abfragen */
   const H = {
@@ -487,6 +619,16 @@
       if (boot.gewicht_t > 10) probleme.push('Gewicht ' + H.zahl(boot.gewicht_t, 1) + ' t > 10 t');
       return probleme;
     },
+    // Rechnungen: gezahlt, Rest und Status (Teilzahlung, Rücklastschrift)
+    gezahlt: (r) => Math.round((r.zahlungen || []).reduce((s, z) => s + (z.art === 'ruecklastschrift' ? -1 : 1) * Number(z.betrag || 0), 0) * 100) / 100,
+    rest(r) { if (r.storniert_am || r.bezahlt_am) return 0; return Math.max(0, Math.round((Number(r.summe) - Q.gezahlt(r)) * 100) / 100); },
+    rstatus(r, heute) {
+      if (r.storniert_am) return 'storniert'; const z = r.zahlungen || []; const letzte = z[z.length - 1];
+      if (r.bezahlt_am) return 'bezahlt';
+      if (letzte && letzte.art === 'ruecklastschrift') return 'ruecklastschrift';
+      if (Q.gezahlt(r) > 0) return 'teilbezahlt';
+      return r.faellig < heute ? 'ueberfaellig' : 'offen';
+    },
     versicherungsStatus(boot, heute) {
       if (!boot.vers_bis) return 'fehlt';
       if (boot.vers_bis < heute) return 'abgelaufen';
@@ -496,7 +638,7 @@
   };
 
   window.HAFEN = { laden, sichern, zuruecksetzen, get d() { return d; }, H, Q, STANDARD_EINSTELLUNGEN, GEBUEHREN_2024, demoIban,
-    modus: SB ? 'supabase' : 'demo', verbinden, db, meinDatenAendern,
+    modus: SB ? 'supabase' : 'demo', verbinden, neuLaden, db, meinDatenAendern, dok, datei, verlauf, wer: '',
     // Laufende Saison: ab dem Auslagern gilt das neue Jahr, davor (Januar–April) noch das Winterlager des Vorjahres.
     // ?saison=2027 in der Adresse wählt eine andere.
     aktuelleSaison() {

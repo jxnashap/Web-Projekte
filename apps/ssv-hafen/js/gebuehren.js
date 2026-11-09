@@ -48,6 +48,9 @@
         pos(m.id, P('Vereinsbeitrag ' + saison + ' (' + A[m.art] + ')', 1, 'Jahr', b.verein));
         if (b.verband) pos(m.id, P('Verbandsbeitrag ' + saison + ' (wird an den Segler-Verband weitergegeben)', 1, 'Jahr', b.verband));
         if (m.art === 'probe') pos(m.id, P('Eintrittsgeld Probemitglied (je Probejahr)', 1, 'Jahr', gb.eintrittsgeld_probe != null ? gb.eintrittsgeld_probe : 130));
+        // Fehlstunden Arbeitsdienst des Vorjahres – nur, wenn der Vorstand einen Satz beschlossen hat
+        const satz = Number(e.arbeitsdienst_satz || 0);
+        if (satz > 0 && e.arbeitsdienst_bestaetigt) { const a = arbeitsdienst(d, saison - 1, m); if (a.pflicht && a.erfasst && a.fehl > 0) pos(m.id, P('Arbeitsdienst ' + (saison - 1) + ': nicht geleistete Stunden', a.fehl, 'Std.', satz)); }
       });
     }
 
@@ -114,7 +117,7 @@
         faellig: window.HAFEN.H.tag(faellig), positionen: x.positionen.map(({ kran_id, ...p }) => p), summe: x.summe,
         empfaenger: { nr: m.nr, vorname: m.vorname, nachname: m.nachname, strasse: m.strasse, plz: m.plz, ort: m.ort, email: m.email, art: m.art },
         sepa: !!(m.iban && m.mandat_ref && m.mandat_datum), mandat_ref: m.mandat_ref || '', mandat_datum: m.mandat_datum || '',
-        bezahlt_am: null, storniert_am: null, sepa_lauf: null
+        bezahlt_am: null, storniert_am: null, sepa_lauf: null, zahlungen: []
       };
       x.positionen.forEach((p) => { if (p.kran_id) { const k = d.kran.find((kk) => kk.id === p.kran_id); if (k) k.abgerechnet = re.nr; } });
       d.rechnungen.push(re); neu.push(re);
@@ -128,5 +131,22 @@
     d.kran.forEach((k) => { if (k.abgerechnet === re.nr) k.abgerechnet = ''; });
   }
 
-  window.HAFEN_GEBUEHREN = { vorschau, saisonAbrechnen, stornieren, gebuehrenFuer, saisonDaten, flaeche };
+  /* Arbeitsdienst eines Mitglieds in einem Jahr – Regeln aus den Einstellungen:
+   * Soll je Jahr für ausübende und Probemitglieder, Befreiung je Mitglied oder ab einem Alter,
+   * auf Wunsch zählen die Fehlstunden des Vorjahres mit. */
+  function arbeitsdienst(d, jahr, m) {
+    const e = d.einstellungen, H = window.HAFEN.H, Q = window.HAFEN.Q;
+    const soll = Number(e.arbeitsdienst_soll || 0), abAlter = Number(e.arbeitsdienst_befreit_ab || 0);
+    const pflichtIm = (j) => (m.art === 'ausuebend' || m.art === 'probe') && (!m.eintritt || m.eintritt <= j + '-12-31') && (!m.austritt || m.austritt > j + '-01-01');
+    const befreitIm = (j) => m.arbeitsdienst_befreit ? m.arbeitsdienst_befreit : (abAlter && Q.alterAm(m, j + '-01-01') >= abAlter ? 'ab ' + abAlter + ' Jahren' : '');
+    const istIm = (j) => (d.arbeitsdienst || []).filter((a) => a.mitglied_id === m.id && String(a.datum).startsWith(String(j))).reduce((s, a) => s + Number(a.stunden || 0), 0);
+    const erfasstIm = (j) => (d.arbeitsdienst || []).some((a) => String(a.datum).startsWith(String(j)));
+    const fehlIm = (j) => (pflichtIm(j) && !befreitIm(j) && erfasstIm(j)) ? Math.max(0, soll - istIm(j)) : 0;
+    const vorjahr = e.arbeitsdienst_vorjahr ? fehlIm(jahr - 1) : 0;
+    const befreit = befreitIm(jahr), pflicht = pflichtIm(jahr), ist = istIm(jahr);
+    const sollJ = pflicht && !befreit ? soll : 0;
+    return { pflicht, befreit, soll: sollJ, ist, vorjahr, fehl: Math.max(0, sollJ - ist) + vorjahr, erfasst: erfasstIm(jahr) };
+  }
+
+  window.HAFEN_GEBUEHREN = { arbeitsdienst, vorschau, saisonAbrechnen, stornieren, gebuehrenFuer, saisonDaten, flaeche };
 })();

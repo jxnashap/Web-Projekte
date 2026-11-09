@@ -7,6 +7,10 @@
   const ziel = document.getElementById('blaetter');
   const titel = (t) => { document.getElementById('titel').textContent = t; document.title = t; };
   const STANDER = '<svg class="stander"><use href="#stander"/></svg>';
+  // Steuerhinweis laut Einstellungen (Hafen-Rechnungen und Quittungen; Mitgliedsbeiträge ohne)
+  const steuer = (betrag) => e.steuer_hinweis === 'kleinunternehmer' ? 'Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.'
+    : e.steuer_hinweis === 'ust19' ? 'Im Betrag von ' + H.geld(betrag) + ' sind 19 % Umsatzsteuer (' + H.geld(Math.round((betrag - betrag / 1.19) * 100) / 100) + ') enthalten.'
+    : e.steuer_hinweis === 'frei' ? (e.steuer_text || '') : '';
   const kopf = '<div class="r-kopf">' + STANDER + '<div class="r-verein"><strong>' + esc(e.verein_name) + '</strong>' + esc(e.verein_strasse) + '<br>' + esc(e.verein_ort) + '<br>' + esc(e.verein_email) + '</div></div>';
 
   function rechnung(r) {
@@ -32,9 +36,9 @@
       '</tbody><tfoot><tr><td colspan="3">Zusammen</td><td class="r">' + H.geld(r.summe) + '</td></tr></tfoot></table>' +
       '<div class="r-zahlung">' + zahlung + '<p>Kommt dir etwas komisch vor? Dann sprich ' + esc(e.kassenwart_name || 'den Kassenwart') + ' einfach am Steg oder in der Messe an – oder schreib kurz an ' + esc(e.verein_email) + '.</p></div>' +
       '<p style="margin-top:7mm">' + esc(e.fusstext) + '<br><br>Dein Kassenwart ' + esc(e.kassenwart_name) + '<br><span style="color:#555">für den ' + esc(e.verein_name) + '</span></p>' +
-      '<p style="margin-top:4mm;font-size:7.5pt;color:#777">Gebühren laut Gebührenordnung des Vereins, alle Preise inkl. der gültigen MwSt. [PLATZHALTER: Steuerausweis mit Steuerberater klären]</p>' +
+      '<p style="margin-top:4mm;font-size:7.5pt;color:#777">' + (beitrag ? 'Beiträge laut Beitragsordnung des Vereins.' : 'Gebühren laut Gebührenordnung des Vereins. ' + esc(steuer(r.summe))) + '</p>' +
       '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort) + '</span><span>' +
-      (r.sepa ? 'Gläubiger-ID ' + esc(e.glaeubiger_id) + ' · Mandatsreferenz ' + esc(r.mandat_ref) + ' · ' : '') + 'Steuer-Nr. ' + esc(e.steuernummer) + '</span></div></section>';
+      (r.sepa ? 'Gläubiger-ID ' + esc(e.glaeubiger_id) + ' · Mandatsreferenz ' + esc(r.mandat_ref) + ' · ' : '') + (e.steuernummer ? 'Steuer-Nr. ' + esc(e.steuernummer) : '') + '</span></div></section>';
   }
 
   function quittung(g) {
@@ -43,12 +47,12 @@
       '<table class="r-tab"><tbody><tr><td>Boot</td><td>„' + esc(g.bootsname) + '“ · ' + H.zahl(g.laenge, 1) + ' m</td></tr><tr><td>Skipper</td><td>' + esc(g.skipper) + (g.herkunft ? ', ' + esc(g.herkunft) : '') + '</td></tr>' +
       '<tr><td>Liegeplatz</td><td>' + esc(g.platz_id ? (Q.platz(g.platz_id).box === 'L' ? 'Längsseits ' : 'Platz ') + Q.platz(g.platz_id).nr : '') + '</td></tr><tr><td>Zeitraum</td><td>ab ' + H.datum(g.ankunft) + ', ' + g.naechte + ' × ' + H.geld(gb.gast_nacht) + '</td></tr></tbody>' +
       '<tfoot><tr><td>Betrag</td><td class="r">' + H.geld(g.betrag) + '</td></tr></tfoot></table>' +
-      '<p>' + (g.zahlung === 'bar' ? 'Betrag bar dankend erhalten.' : 'Zahlung per Überweisung.') + ' Inkl. der gültigen MwSt. Gute Fahrt und willkommen zurück!</p>' +
+      '<p>' + (g.bezahlt_am ? (g.zahlung === 'bar' ? 'Betrag bar dankend erhalten am ' : g.zahlung === 'karte' ? 'Betrag per Karte erhalten am ' : 'Zahlung eingegangen am ') + H.datum(g.bezahlt_am) + '.' : '<strong>Noch nicht bezahlt.</strong>') + ' ' + esc(steuer(g.betrag)) + ' Gute Fahrt und willkommen zurück!</p>' +
       '<p style="margin-top:10mm;border-top:1px solid #999;width:60mm;padding-top:1mm;font-size:8pt;color:#555">' + esc(e.hafenmeister_name) + ', Hafenmeister · ' + H.datum(g.ankunft) + '</p></section>';
   }
 
   function belegungsplan() {
-    const saison = 2026;
+    const saison = HF.aktuelleSaison();
     const bel = Q.belegungen(saison, 'winter').slice().sort((a, b) => a.platz_id.localeCompare(b.platz_id));
     return '<section class="blatt quer">' + kopf + '<h1 style="margin-top:5mm">Belegungsplan Winterlager ' + saison + '/' + String(saison + 1).slice(2) + '</h1>' +
       '<p style="font-size:9pt;color:#555">Reihenfolge beim Ein- und Auslagern nach Belegungsplan und Rangiermöglichkeiten. Boote über 10 t werden nicht gekrant (Hafenbetriebsordnung 3.1.4).</p>' +
@@ -61,7 +65,7 @@
   function plakat() {
     const url = new URL('gast.html', location.href).href;
     const qr = qrcode(0, 'M'); qr.addData(url, 'Byte'); qr.make();
-    const gb = window.HAFEN_GEBUEHREN.gebuehrenFuer(d, 2026);
+    const gb = window.HAFEN_GEBUEHREN.gebuehrenFuer(d, HF.aktuelleSaison());
     return '<section class="blatt plakat">' + STANDER.replace('class="stander"', 'class="stander" style="width:40mm;height:32mm;color:#0E1B45"') +
       '<h1>Moin und willkommen!</h1><p class="unter">Gastlieger beim Schwartauer Segler-Verein – hier kurz anmelden:</p>' +
       '<div class="qr">' + qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }) + '</div>' +
