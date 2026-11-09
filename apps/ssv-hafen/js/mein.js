@@ -12,7 +12,8 @@
   const sd = G.saisonDaten(d, SAISON);
 
   function toast(t) { const el = $('#toast'); el.textContent = t; el.className = 'toast zeigen'; clearTimeout(toast.t); toast.t = setTimeout(() => { el.className = 'toast'; }, 3000); }
-  function modal(html) { const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte" role="dialog" aria-modal="true">' + html + '</div></div>'; const el = m.firstChild; el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-zu]')) m.innerHTML = ''; }); return el; }
+  function modal(html) { const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte" role="dialog" aria-modal="true" aria-labelledby="modal-titel">' + html + '</div></div>'; const el = m.firstChild; const t = el.querySelector('h2'); if (t) t.id = 'modal-titel'; el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-zu]')) m.innerHTML = ''; }); return el; }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#modal').innerHTML = ''; });
 
   const DBM = HF.modus === 'supabase';   // Vereinsdatenbank: angemeldetes Mitglied, keine Auswahl
   const sel = $('#wer');

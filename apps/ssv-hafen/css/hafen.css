@@ -3,7 +3,7 @@
 @font-face { font-family: "Playfair Display"; font-weight: 400 900; font-display: swap; src: url("../fonts/PlayfairDisplay.woff2") format("woff2"); }
 :root {
   --navy: #0E1B45; --navy-2: #16295F; --navy-3: #1c3987; --rot: #B8232B; --rot-2: #96191f; --signal: #E4473B;
-  --paper: #F4F1EA; --sand: #E9E4D8; --ink: #1C2440; --muted: #5E6478; --muted-2: #8E93A3;
+  --paper: #F4F1EA; --sand: #E9E4D8; --ink: #1C2440; --muted: #5E6478; --muted-2: #656A7E;
   --line: rgba(28,36,64,.13); --ok: #1d8a5a; --gruen: #2fa36b; --gast: #d99a1c; --warn: #c7811b; --lila: #7b5ea7;
   --schatten: 0 1px 2px rgba(14,27,69,.06), 0 10px 30px -14px rgba(14,27,69,.22);
 }
@@ -21,13 +21,13 @@ a { color: var(--navy-3); }
 .btn:hover { background: #fafafa; }
 .btn.primaer { background: var(--rot); color: #fff; box-shadow: none; } .btn.primaer:hover { background: var(--rot-2); }
 .btn.dunkel { background: var(--navy); color: #fff; box-shadow: none; }
-.btn.gruen { background: var(--gruen); color: #fff; box-shadow: none; }
+.btn.gruen { background: #1d7d50; color: #fff; box-shadow: none; }
 .btn.klein { padding: 6px 10px; font-size: 12.5px; border-radius: 8px; }
 .btn.gefahr { color: var(--rot); }
 .btn.aktiv { background: var(--navy); color: #fff; box-shadow: none; }
 .btn:disabled { opacity: .45; cursor: default; }
 .feld { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
-.feld input, .feld select, .feld textarea { font-size: 15px; font-weight: 400; color: var(--ink); padding: 9px 11px; border: 1px solid rgba(14,27,69,.22); border-radius: 9px; background: #fff; min-width: 0; width: 100%; }
+.feld input, .feld select, .feld textarea { font-size: 15px; font-weight: 400; color: var(--ink); padding: 9px 11px; border: 1px solid #8A8FA3; border-radius: 9px; background: #fff; min-width: 0; width: 100%; }
 .feld input:focus, .feld select:focus, .feld textarea:focus { outline: 2px solid var(--navy-3); outline-offset: -1px; border-color: transparent; }
 .feld small { font-weight: 400; color: var(--muted-2); }
 .feld.check { flex-direction: row; align-items: center; gap: 8px; color: var(--ink); font-weight: 500; font-size: 14px; }
@@ -55,7 +55,7 @@ a { color: var(--navy-3); }
 .nav button, .nav a { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 0; background: none; color: rgba(255,255,255,.76); padding: 9px 12px; border-radius: 9px; font-weight: 500; font-size: 14px; cursor: pointer; text-decoration: none; }
 .nav button:hover, .nav a:hover { background: rgba(255,255,255,.07); color: #fff; }
 .nav button.aktiv { background: rgba(255,255,255,.13); color: #fff; box-shadow: inset 3px 0 0 var(--signal); }
-.nav .zahl { margin-left: auto; background: var(--signal); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; }
+.nav .zahl { margin-left: auto; background: var(--rot); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; }
 .nav-unten { margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.1); }
 .rolle-chip { margin: 0 8px 10px; font-size: 12px; background: rgba(255,255,255,.08); border-radius: 8px; padding: 7px 10px; }
 .main { padding: 26px 30px 70px; min-width: 0; }
@@ -81,15 +81,15 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .tab tfoot td { font-weight: 700; border-top: 2px solid var(--line); }
 .tab tr.blass td { color: var(--muted-2); }
 .tag { display: inline-block; font-size: 11.5px; font-weight: 650; padding: 2px 8px; border-radius: 99px; background: rgba(14,27,69,.07); color: var(--navy); white-space: nowrap; }
-.tag.ok { background: rgba(29,138,90,.12); color: var(--ok); }
-.tag.gruen { background: rgba(47,163,107,.15); color: #1d7d50; }
+.tag.ok { background: rgba(29,138,90,.12); color: #166b46; }
+.tag.gruen { background: rgba(47,163,107,.15); color: #186b45; }
 .tag.warn { background: rgba(199,129,27,.15); color: #93600f; }
 .tag.gold { background: rgba(176,141,87,.16); color: #7a5a26; }
 .tag.rot { background: rgba(184,35,43,.1); color: var(--rot); }
 .tag.gast { background: rgba(217,154,28,.16); color: #8a5e05; }
-.tag.lila { background: rgba(123,94,167,.14); color: var(--lila); }
+.tag.lila { background: rgba(123,94,167,.14); color: #6a4f96; }
 .filter { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; margin-bottom: 12px; }
-.suche { padding: 9px 12px; border: 1px solid rgba(14,27,69,.22); border-radius: 9px; min-width: 220px; }
+.suche { padding: 9px 12px; border: 1px solid #8A8FA3; border-radius: 9px; min-width: 220px; }
 .hinweis { background: rgba(28,57,135,.07); border-radius: 11px; padding: 10px 13px; color: var(--muted); font-size: 13.5px; margin: 0 0 12px; }
 .hinweis.warn { background: rgba(199,129,27,.12); color: #6d4a0e; }
 .hinweis.ok { background: rgba(29,138,90,.1); color: #1b5e3f; }
@@ -101,7 +101,7 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .plan-box { background: #fff; border-radius: 16px; box-shadow: var(--schatten); overflow: hidden; position: relative; }
 .plan-leiste { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .plan-leiste .trenn { width: 1px; height: 24px; background: var(--line); margin: 0 4px; }
-.plan-leiste input[type=date] { padding: 6px 8px; border: 1px solid rgba(14,27,69,.22); border-radius: 8px; font-size: 13px; }
+.plan-leiste input[type=date] { padding: 6px 8px; border: 1px solid #8A8FA3; border-radius: 8px; font-size: 13px; }
 .plan-flaeche { aspect-ratio: 1000 / 640; }
 .plan-flaeche svg { width: 100%; height: 100%; display: block; touch-action: manipulation; }
 .legende { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 10px 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
@@ -182,3 +182,12 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   body { background: #fff; }
   .panel { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
 }
+
+/* Barrierefreiheit (Gesamt-Check): Fehlerhinweise, Tastatur, Sprunglink, weniger Bewegung */
+.hinweis.fehler { background: rgba(184,35,43,.08); color: #8f1b22; }
+tr.klickbar:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px; }
+.tab td.nw { white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 8px; z-index: 100; background: #fff; color: var(--navy); padding: 8px 12px; border-radius: 8px; font-weight: 600; }
+.skip:focus { left: 8px; }
+.nav button { padding: 7px 12px; } .nav-gruppe { padding: 8px 12px 2px; opacity: .6; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }

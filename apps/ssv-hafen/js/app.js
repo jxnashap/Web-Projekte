@@ -38,13 +38,31 @@
   HF.db.onFehler = (e) => toast('Nicht gespeichert: ' + e.message, 'fehler');
   function speichern(meldung) { const p = HF.sichern(); if (meldung) toast(meldung); return p; }
   function toast(t, art) { const el = $('#toast'); el.textContent = t; el.className = 'toast zeigen' + (art ? ' ' + art : ''); clearTimeout(toast.t); toast.t = setTimeout(() => { el.className = 'toast'; }, 3200); }
+  let vorModal = null;
   function modal(html, breit) {
-    const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte' + (breit ? ' breit' : '') + '" role="dialog" aria-modal="true">' + html + '</div></div>';
+    vorModal = document.activeElement;
+    const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte' + (breit ? ' breit' : '') + '" role="dialog" aria-modal="true" aria-labelledby="modal-titel">' + html + '</div></div>';
     const el = m.firstChild; el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-zu]')) zu(); });
+    const t = el.querySelector('h2'); if (t) t.id = 'modal-titel';
     const f = el.querySelector('input:not([type=hidden]),select,textarea'); if (f) setTimeout(() => f.focus(), 30);
     return el;
   }
-  function zu() { $('#modal').innerHTML = ''; }
+  function zu() { $('#modal').innerHTML = ''; if (vorModal && vorModal.isConnected) vorModal.focus(); }
+  // Tastatur: Escape schließt Dialoge; klickbare Tabellenzeilen per Tab erreichbar und mit Enter/Leertaste zu öffnen
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('#modal').firstChild) return zu();
+    const z = e.target.closest && e.target.closest('tr.klickbar');
+    if (z && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); z.click(); }
+  });
+  new MutationObserver(() => {
+    document.querySelectorAll('#main tr.klickbar:not([tabindex])').forEach((z) => { z.tabIndex = 0; z.setAttribute('role', 'button'); });
+    document.querySelectorAll('#main input:not([aria-label]):not([id])').forEach((i) => {
+      if (i.closest('label')) return;
+      const zeile = i.closest('tr'); const sp = i.closest('td'); const kopf = sp && i.closest('table').querySelector('thead th:nth-child(' + (sp.cellIndex + 1) + ')');
+      const name = i.placeholder || ((zeile && zeile.cells[0] ? zeile.cells[0].textContent : '') + (kopf ? ' ' + kopf.textContent : ''));
+      if (name) i.setAttribute('aria-label', name.trim());
+    });
+  }).observe(document.getElementById('main'), { childList: true, subtree: true });
   function kopf(titel, unter, aktionen) { return '<div class="kopf"><div><h1>' + titel + '</h1>' + (unter ? '<p>' + unter + '</p>' : '') + '</div><div class="aktionen">' + (aktionen || '') + '</div></div>'; }
   const DEMO = DB ? '' : '<div class="demo-band"><strong>Demo:</strong> Alle Personen, Boote und Bankdaten sind erfunden. Die Zuordnung der Brücken und die Box-Maße sind Annahmen, bis der Verein sie bestätigt.</div>';
   const iban = (s) => bankSichtbar() ? esc(String(s || '').replace(/(.{4})/g, '$1 ').trim()) : (s ? '•••• ' + esc(String(s).slice(-4)) : '');
@@ -96,7 +114,7 @@
       '<div class="karten">' +
       '<div class="kz"><small>Liegeplätze belegt</small><strong>' + ((st.belegt || 0) + (st.unterwegs || 0) + (st.saisongast || 0)) + ' / ' + d.liegeplaetze.length + '</strong><span>' + (st.frei || 0) + ' frei · ' + (st.gesperrt || 0) + ' gesperrt</span></div>' +
       '<div class="kz"><small>Eigner unterwegs</small><strong style="color:var(--gruen)">' + (st.unterwegs || 0) + '</strong><span>grünes Schild am ' + H.kurz(tagX) + '</span></div>' +
-      '<div class="kz"><small>Gastlieger</small><strong style="color:var(--gast)">' + (st.gast || 0) + '</strong><span>am ' + H.kurz(tagX) + ' · ' + anfragen.length + ' Anfragen</span></div>' +
+      '<div class="kz"><small>Gastlieger</small><strong style="color:#8a5e05">' + (st.gast || 0) + '</strong><span>am ' + H.kurz(tagX) + ' · ' + anfragen.length + ' Anfragen</span></div>' +
       '<div class="kz"><small>Winterlager</small><strong>' + Q.belegungen(SAISON, 'winter').length + '</strong><span>Boote an Land</span></div>' +
       '<div class="kz"><small>Warteliste</small><strong>' + warte + '</strong><span>Mitglieder warten</span></div>' +
       (darf('abrechnung') ? '<div class="kz"><small>Offene Rechnungen</small><strong>' + H.geld(offeneRe.reduce((s, r) => s + r.summe, 0)) + '</strong><span>' + offeneRe.length + ' Rechnungen</span></div>' : '') +
@@ -174,7 +192,7 @@
       '<p><span class="tag ' + ({ belegt: '', unterwegs: 'gruen', gast: 'gast', saisongast: 'lila', frei: 'ok', gesperrt: 'rot' })[Q.statusWasser(p, SAISON, tagX)] + '">' + esc(status) + '</span></p>' +
       (p.gesperrt ? '<p class="hinweis warn">' + esc(p.notiz || 'Gesperrt') + '</p>' : '') +
       (b ? '<dl><dt>Boot</dt><dd>' + bootTxt(b) + '</dd><dt>Maße</dt><dd>' + masse(b) + ' · Tiefgang ' + H.zahl(b.tiefgang) + ' m</dd><dt>Gewicht</dt><dd>' + H.zahl(b.gewicht_t, 1) + ' t' + (b.gewicht_t > 10 ? ' <span class="tag rot">über 10 t</span>' : '') + '</dd>' +
-        '<dt>Versicherung</dt><dd>' + versTag(b) + '</dd><dt>Eigner</dt><dd>' + esc(Q.name(m)) + ' <span class="tag">' + H.ART[m.art] + '</span></dd><dt>Telefon</dt><dd><a href="tel:' + esc(m.tel.replace(/\s/g, '')) + '">' + esc(m.tel) + '</a></dd></dl>' +
+        '<dt>Versicherung</dt><dd>' + versTag(b) + '</dd><dt>Eigner</dt><dd>' + esc(Q.name(m)) + ' <span class="tag">' + H.ART[m.art] + '</span></dd><dt>Telefon</dt><dd><a href="tel:' + esc((m.tel || '').replace(/\s/g, '')) + '">' + esc(m.tel) + '</a></dd></dl>' +
         (probleme.length ? '<p class="hinweis warn" style="margin-top:10px">Passt nicht: ' + probleme.map(esc).join(', ') + '</p>' : '') : '<p class="leer">Kein Dauerlieger in dieser Saison.</p>') +
       (gast ? '<div class="abschnitt"><h3>Gastlieger</h3><dl><dt>Boot</dt><dd>„' + esc(gast.bootsname) + '“ · ' + H.zahl(gast.laenge, 1) + ' m</dd><dt>Skipper</dt><dd>' + esc(gast.skipper) + (gast.herkunft ? ' · ' + esc(gast.herkunft) : '') + '</dd><dt>Zeitraum</dt><dd>' + H.kurz(gast.ankunft) + ', ' + gast.naechte + ' Nacht' + (gast.naechte > 1 ? 'e' : '') + '</dd><dt>Bezahlt</dt><dd>' + (gast.zahlung === 'offen' ? '<span class="tag warn">offen</span>' : esc(gast.zahlung)) + '</dd></dl></div>' : '') +
       (kommende.length ? '<div class="abschnitt"><h3>Abwesenheiten (grünes Schild)</h3><dl>' + kommende.map((a) => '<dt>' + H.kurz(a.von) + '–' + H.kurz(a.bis) + '</dt><dd>' + esc(a.notiz || '') + (a === aw ? ' <span class="tag gruen">jetzt</span>' : '') + '</dd>').join('') + '</dl></div>' : '') +
@@ -280,7 +298,7 @@
       const f = $('#such').value.toLowerCase(), af = $('#artf').value;
       $('#tb').innerHTML = d.mitglieder.slice().sort((a, b) => a.nachname.localeCompare(b.nachname, 'de')).filter((m) => (!f || (m.nr + ' ' + Q.name(m) + ' ' + m.ort).toLowerCase().includes(f)) && (!af || m.art === af)).map((m) =>
         '<tr class="klickbar' + (m.austritt && m.austritt <= heute ? ' blass' : '') + '" data-m="' + m.id + '"><td>' + esc(m.nr) + '</td><td><strong>' + esc(m.nachname) + '</strong>, ' + esc(m.vorname) + (m.austritt && m.austritt <= heute ? ' <span class="tag">ausgetreten</span>' : '') + '</td><td><span class="tag">' + (H.ART[m.art] || esc(m.art)) + '</span></td>' +
-        '<td>' + Q.booteVon(m.id).map((b) => esc(b.name)).join(', ') + '</td><td>' + esc(m.tel) + '</td><td>' + esc(m.kfz || '') + '</td>' +
+        '<td>' + Q.booteVon(m.id).map((b) => esc(b.name)).join(', ') + '</td><td class="nw">' + esc(m.tel || '') + '</td><td class="nw">' + esc(m.kfz || '') + '</td>' +
         '<td>' + (m.iban && m.mandat_ref ? '<span class="tag ok">Mandat ' + esc(m.mandat_ref) + '</span>' : '<span class="tag warn">kein Mandat</span>') + '</td></tr>').join('');
     };
     render(); $('#such').addEventListener('input', render); $('#artf').addEventListener('change', render);
@@ -839,7 +857,7 @@
       '<div class="marke"><svg class="stander"><use href="#stander"/></svg><div><strong>Hafen-Manager</strong><span>SSV · Teerhofinsel</span></div></div>' +
       '<div class="rolle-chip">Angemeldet als <strong>' + ROLLEN[rolle].name + '</strong></div>' +
       TABS.map(([gruppe, ts]) => { const sichtbar = ts.filter(([t]) => darf(t)); return sichtbar.length ? '<div class="nav-gruppe">' + gruppe + '</div>' + sichtbar.map(([t, n]) =>
-        '<button data-tab="' + t + '" class="' + (t === tab ? 'aktiv' : '') + '">' + n + (t === 'gaeste' && anfragen ? '<span class="zahl">' + anfragen + '</span>' : '') + (t === 'antraege' && neueAntraege ? '<span class="zahl">' + neueAntraege + '</span>' : '') + '</button>').join('') : ''; }).join('') +
+        '<button data-tab="' + t + '" class="' + (t === tab ? 'aktiv' : '') + '"' + (t === tab ? ' aria-current="page"' : '') + '>' + n + (t === 'gaeste' && anfragen ? '<span class="zahl">' + anfragen + '</span>' : '') + (t === 'antraege' && neueAntraege ? '<span class="zahl">' + neueAntraege + '</span>' : '') + '</button>').join('') : ''; }).join('') +
       '<div class="nav-unten"><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">' + (DB ? 'Abmelden' : 'Rolle wechseln') + '</button></div></div>';
   }
   function zeige(t) {

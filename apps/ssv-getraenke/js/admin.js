@@ -17,8 +17,9 @@
   }
   function modal(html) {
     const root = $('#modal-root');
-    root.innerHTML = '<div class="a-modal"><div class="a-modal-card" role="dialog" aria-modal="true">' + html + '</div></div>';
-    const el = root.firstChild;
+    root.innerHTML = '<div class="a-modal"><div class="a-modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-titel">' + html + '</div></div>';
+    const el = root.firstChild; const t = el.querySelector('h2'); if (t) t.id = 'modal-titel';
+    if (!modal.esc) { modal.esc = true; document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#modal-root').firstChild) zu(); }); }
     el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-zu]')) zu(); });
     const erstes = el.querySelector('input,select,textarea'); if (erstes) setTimeout(() => erstes.focus(), 30);
     return el;

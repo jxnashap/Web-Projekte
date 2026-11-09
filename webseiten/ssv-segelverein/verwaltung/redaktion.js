@@ -80,8 +80,10 @@
   /* ============================================================== Helfer */
   function toast(t, art) { const el = $('#toast'); el.textContent = t; el.className = 'toast zeigen' + (art ? ' ' + art : ''); clearTimeout(toast.t); toast.t = setTimeout(() => { el.className = 'toast'; }, 3000); }
   function modal(html) {
-    const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte" role="dialog" aria-modal="true">' + html + '</div></div>';
+    const m = $('#modal'); m.innerHTML = '<div class="modal"><div class="modal-karte" role="dialog" aria-modal="true" aria-labelledby="modal-titel">' + html + '</div></div>';
     const el = m.firstChild; el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-zu]')) zu(); });
+    const t = el.querySelector('h2'); if (t) t.id = 'modal-titel';
+    if (!modal.esc) { modal.esc = true; document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#modal').firstChild) zu(); }); }
     return el;
   }
   function zu() { $('#modal').innerHTML = ''; }

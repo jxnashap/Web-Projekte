@@ -32,7 +32,7 @@
     <svg class="stander"><use href="#stander"/></svg>
     <h1 data-t="titel">Moin und willkommen!</h1>
     <p data-t="unter">Schwartauer Segler-Verein · Teerhofinsel, Lübeck</p>
-    <div class="sprache"><button data-lang="de" class="aktiv">Deutsch</button><button data-lang="en">English</button><button data-lang="da">Dansk</button></div>
+    <div class="sprache"><button data-lang="de" class="aktiv" aria-pressed="true">Deutsch</button><button data-lang="en" aria-pressed="false">English</button><button data-lang="da" aria-pressed="false">Dansk</button></div>
   </div>
   <div class="karte" id="karte">
     <p class="preis" id="preis"></p>
@@ -72,7 +72,7 @@
   };
   let lang = 'de';
   const setze = () => { document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = T[lang][el.dataset.t]; }); document.getElementById('preis').textContent = H.geld(gb.gast_nacht) + ' ' + T[lang].nacht; document.documentElement.lang = lang; };
-  document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => { lang = b.dataset.lang; document.querySelectorAll('[data-lang]').forEach((x) => x.classList.toggle('aktiv', x === b)); setze(); }));
+  document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => { lang = b.dataset.lang; document.querySelectorAll('[data-lang]').forEach((x) => { x.classList.toggle('aktiv', x === b); x.setAttribute('aria-pressed', String(x === b)); }); setze(); }));
   const f = document.getElementById('f'); f.ankunft.value = H.tag(new Date()); setze();
   f.addEventListener('submit', async (ev) => {
     ev.preventDefault(); const x = Object.fromEntries(new FormData(f));

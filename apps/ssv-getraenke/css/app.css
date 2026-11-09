@@ -1,17 +1,19 @@
+/* Vereinsschriften (liegen im Hafen-Manager; fehlen sie, greift die Systemschrift) */
+@font-face { font-family: "Playfair Display"; font-weight: 400 900; font-display: swap; src: url("../../ssv-hafen/fonts/PlayfairDisplay.woff2") format("woff2"); }
 /* SSV Getränkekasse – Gestaltung
    Farben aus dem Vereinsstander: Marineblau, Signalrot, Weiß. */
 :root {
   --navy: #0e1b45;
   --navy-2: #132a6b;
   --navy-3: #1c3987;
-  --rot: #d3252c;
-  --rot-2: #b01d23;
+  --rot: #B8232B;
+  --rot-2: #96191f;
   --weiss: #ffffff;
   --sand: #f5f1e8;
   --sand-2: #ebe4d4;
   --ink: #0d1530;
   --ink-2: #4a5272;
-  --ink-3: #8a90a8;
+  --ink-3: #656A7E;
   --linie: rgba(14, 27, 69, .12);
   --ok: #1d8a5a;
   --warn: #c7811b;
@@ -19,6 +21,7 @@
   --schatten: 0 1px 2px rgba(13,21,48,.06), 0 8px 24px rgba(13,21,48,.08);
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -31,7 +34,7 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -.01em; margin: 0
 .k-btn { display: inline-flex; align-items: center; justify-content: center; gap: .5em; border: 0; border-radius: 14px;
   padding: 14px 22px; font-weight: 600; font-size: 17px; text-decoration: none; transition: transform .12s, background .2s, opacity .2s; }
 .k-btn:active { transform: scale(.97); }
-.k-btn-primary { background: var(--rot); color: #fff; box-shadow: 0 6px 18px rgba(211,37,44,.28); }
+.k-btn-primary { background: var(--rot); color: #fff; box-shadow: 0 6px 18px rgba(184,35,43,.28); }
 .k-btn-primary:hover { background: var(--rot-2); }
 .k-btn-primary:disabled { background: #c9cbd6; box-shadow: none; color: #fff; cursor: default; }
 .k-btn-ghost { background: rgba(14,27,69,.06); color: var(--navy); }
@@ -98,7 +101,7 @@ body.kiosk { min-height: 100vh; min-height: 100dvh; display: flex; flex-directio
 .k-keypad .k-key-text { font-size: 17px; font-weight: 600; background: transparent; box-shadow: none; color: var(--ink-2); }
 .k-keypad.warten { opacity: .5; pointer-events: none; }
 .k-demo-hinweis { margin-top: 22px; font-size: 14px; color: var(--ink-3); }
-.k-neu { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 700; color: var(--ok); background: rgba(29,138,90,.1); border-radius: 99px; padding: 2px 9px; }
+.k-neu { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 700; color: #166b46; background: rgba(29,138,90,.1); white-space: nowrap; border-radius: 99px; padding: 2px 9px; }
 .k-schritt { margin: 0 0 4px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ok); }
 .k-nr { height: 64px; margin: 18px auto 20px; max-width: 260px; border-bottom: 3px solid var(--navy); display: grid; place-items: center; font-size: 38px; font-weight: 600; letter-spacing: .12em; color: var(--navy); font-variant-numeric: tabular-nums; }
 .k-nr.wackeln { animation: wackeln .42s; border-color: var(--rot); }
@@ -232,12 +235,12 @@ table.a-tab { width: 100%; border-collapse: collapse; font-size: 14px; }
 .a-tab tr.storniert td { color: var(--ink-3); text-decoration: line-through; }
 .a-tab tfoot td { font-weight: 700; border-top: 2px solid var(--linie); }
 .a-tag { display: inline-block; font-size: 12px; font-weight: 650; padding: 3px 9px; border-radius: 99px; background: rgba(14,27,69,.07); color: var(--navy); white-space: nowrap; }
-.a-tag.ok { background: rgba(29,138,90,.12); color: var(--ok); }
-.a-tag.warn { background: rgba(199,129,27,.14); color: var(--warn); }
+.a-tag.ok { background: rgba(29,138,90,.12); color: #166b46; }
+.a-tag.warn { background: rgba(199,129,27,.14); color: #8a5a0c; }
 .a-tag.rot { background: rgba(211,37,44,.1); color: var(--rot); }
 .a-filter { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 16px; }
 .a-feld { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
-.a-feld input, .a-feld select, .a-feld textarea { font: inherit; font-size: 15px; font-weight: 400; color: var(--ink); padding: 10px 12px; border: 1px solid rgba(14,27,69,.2); border-radius: 10px; background: #fff; min-width: 0; }
+.a-feld input, .a-feld select, .a-feld textarea { font: inherit; font-size: 15px; font-weight: 400; color: var(--ink); padding: 10px 12px; border: 1px solid #8A8FA3; border-radius: 10px; background: #fff; min-width: 0; }
 .a-feld input:focus, .a-feld select:focus, .a-feld textarea:focus { outline: 2px solid var(--navy-3); outline-offset: -1px; border-color: transparent; }
 .a-feld.check { flex-direction: row; align-items: center; gap: 8px; font-weight: 500; color: var(--ink); }
 .a-feld.check input { width: 18px; height: 18px; }
@@ -254,7 +257,7 @@ table.a-tab { width: 100%; border-collapse: collapse; font-size: 14px; }
 .a-balken span:first-child { width: 150px; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .a-balken i { display: block; height: 12px; border-radius: 6px; background: var(--navy-3); min-width: 3px; }
 .a-balken b { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-2); }
-.a-suche { padding: 10px 12px; border: 1px solid rgba(14,27,69,.2); border-radius: 10px; font: inherit; min-width: 240px; }
+.a-suche { padding: 10px 12px; border: 1px solid #8A8FA3; border-radius: 10px; font: inherit; min-width: 240px; }
 .a-mobil-nav { display: none; }
 
 @media (max-width: 900px) {
@@ -306,7 +309,7 @@ body.rechnung-seite { background: #e9e6df; }
 .r-gruss { margin-top: 7mm; }
 .r-gruss span { color: #555; }
 .r-steuer { margin-top: 5mm; font-size: 7.5pt; color: #777; }
-.r-fuss { position: absolute; left: 22mm; right: 18mm; bottom: 10mm; border-top: 1px solid #ddd; padding-top: 2.5mm; font-size: 6.5pt; color: #888; display: flex; justify-content: space-between; gap: 6mm; }
+.r-fuss { position: absolute; left: 22mm; right: 18mm; bottom: 10mm; border-top: 1px solid #ddd; padding-top: 2.5mm; font-size: 7pt; color: #666; display: flex; justify-content: space-between; gap: 6mm; }
 .r-anhang h2 { font-size: 12pt; color: var(--navy); margin: 10mm 0 2mm; }
 .r-anhang .r-tab { font-size: 8.5pt; }
 .r-storno { position: absolute; top: 90mm; left: 0; right: 0; text-align: center; font-size: 60pt; font-weight: 800; color: rgba(211,37,44,.18); transform: rotate(-18deg); pointer-events: none; }
@@ -322,3 +325,7 @@ body.rechnung-seite { background: #e9e6df; }
   .r-blatt:last-child { page-break-after: auto; }
 }
 @media screen and (max-width: 840px) { .r-blatt { transform-origin: top left; zoom: .5; } }
+
+/* Gesamt-Check: Verwaltung und Rechnungen mit derselben Überschrift-Schrift wie Website und Hafen-Manager */
+.a-kopf h1, .a-panel h2, .r-blatt h1, .a-login h1 { font-family: var(--font-serif); font-weight: 500; letter-spacing: 0; }
+.a-modal-karte h2 { font-family: var(--font-serif); font-weight: 500; }

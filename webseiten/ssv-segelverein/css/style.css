@@ -19,7 +19,7 @@
   --sand-hell: #E6D8BC;  /* Tauwerk-Sand: kleine Beschriftungen auf dunkel */
   --ink: #1C2440;        /* Fließtext dunkel */
   --muted: #5E6478;      /* Sekundärtext */
-  --muted-2: #8E93A3;    /* noch leiser */
+  --muted-2: #656A7E;    /* noch leiser */
   --line: rgba(28, 36, 64, 0.14);
   --line-soft: rgba(28, 36, 64, 0.08);
   --line-gold: rgba(184, 35, 43, 0.45);
@@ -280,11 +280,11 @@ body.nav-open { overflow: hidden; }
 .btn svg { width: 15px; height: 15px; transition: transform 0.4s var(--ease); }
 .btn:hover svg { transform: translateX(4px); }
 .btn-solid { background: var(--night); color: var(--paper); }
-.btn-solid:hover { background: var(--gold); color: var(--night); }
+.btn-solid:hover { background: var(--gold); color: var(--paper); }
 .btn-line { background: transparent; border-color: var(--line); color: var(--night); }
 .btn-line:hover { border-color: var(--night); color: var(--night); }
 .dark .btn-solid { background: var(--paper); color: var(--night); }
-.dark .btn-solid:hover { background: var(--gold); color: var(--night); }
+.dark .btn-solid:hover { background: var(--gold); color: var(--paper); }
 .dark .btn-line { border-color: rgba(244,241,234,0.32); color: var(--paper); }
 .dark .btn-line:hover { border-color: var(--gold-2); color: var(--gold-2); }
 
@@ -568,7 +568,7 @@ body.nav-open { overflow: hidden; }
 .hero-cine .hero-sub { color: rgba(244,241,234,0.85); }
 .hero-cine .trust-row span { color: rgba(244,241,234,0.75); }
 .hero-cine .btn-solid { background: var(--paper); color: var(--night); }
-.hero-cine .btn-solid:hover { background: var(--gold); color: var(--night); }
+.hero-cine .btn-solid:hover { background: var(--gold); color: var(--paper); }
 .hero-cine .btn-line { border-color: rgba(244,241,234,0.35); color: var(--paper); }
 .hero-cine .btn-line:hover { border-color: var(--gold-2); color: var(--gold-2); }
 .hero-cine .wire-frame {
@@ -1013,3 +1013,6 @@ body.cine .site-header:not(.solid) .brand-sub, body.nav-open .brand-sub,
 .karte-merken input { accent-color: var(--gold-2); }
 @media (max-width: 520px) { .karte-wrap { aspect-ratio: 3 / 4; } .karte-titel { margin-top: 110px; } }
 .karte-titel { line-height: 1.2; }
+
+/* Gesamt-Check: Fokusring auf dunklem Grund sichtbar */
+.dark :focus-visible, .site-footer :focus-visible, .hero-cine :focus-visible, .nav-overlay :focus-visible { outline-color: var(--paper); }

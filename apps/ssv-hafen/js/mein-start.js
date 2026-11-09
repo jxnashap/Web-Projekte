@@ -13,6 +13,7 @@
   const zurueck = location.origin + location.pathname;
   const rahmen = (inhalt) => '<div class="panel login-karte">' + inhalt + '</div>';
 
+  let letzteMail = '';
   function ansicht(art, meldung, warn) {
     const titel = { login: 'Anmelden', neu: 'Konto anlegen', vergessen: 'Passwort vergessen', setzen: 'Neues Passwort' }[art];
     const info = {
@@ -23,15 +24,15 @@
     }[art];
     main.innerHTML = rahmen('<h1 style="font-size:26px;margin:0 0 6px">' + titel + '</h1><p style="color:var(--muted);margin:0 0 14px">' + info + '</p>' +
       '<form id="af" class="form" style="grid-template-columns:1fr">' +
-      (art !== 'setzen' ? '<label class="feld">E-Mail<input name="email" type="email" autocomplete="username" required></label>' : '') +
+      (art !== 'setzen' ? '<label class="feld">E-Mail<input name="email" type="email" autocomplete="username" required value="' + esc(letzteMail) + '"></label>' : '') +
       (art !== 'vergessen' ? '<label class="feld">Passwort<input name="pw" type="password" minlength="' + (art === 'login' ? 1 : 8) + '" autocomplete="' + (art === 'login' ? 'current-password' : 'new-password') + '" required></label>' : '') +
       '<button class="btn primaer" type="submit">' + { login: 'Anmelden', neu: 'Konto anlegen', vergessen: 'Link schicken', setzen: 'Passwort speichern' }[art] + '</button></form>' +
-      (meldung ? '<p class="hinweis' + (warn ? ' warn' : ' ok') + '" style="margin-top:12px">' + esc(meldung) + '</p>' : '') +
+      (meldung ? '<p class="hinweis' + (warn ? ' fehler' : ' ok') + '" role="alert" style="margin-top:12px">' + esc(meldung) + '</p>' : '') +
       '<p class="login-links">' + (art === 'login' ? '<a href="#" data-a="neu">Noch kein Konto? Konto anlegen</a> · <a href="#" data-a="vergessen">Passwort vergessen?</a>' : '<a href="#" data-a="login">Zur Anmeldung</a>') + '</p>');
     main.querySelectorAll('[data-a]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); ansicht(a.dataset.a); }));
     const f = main.querySelector('#af');
     f.addEventListener('submit', async (e) => {
-      e.preventDefault(); const b = f.querySelector('button'); b.disabled = true;
+      e.preventDefault(); const b = f.querySelector('button'); b.disabled = true; if (f.email) letzteMail = f.email.value;
       try {
         if (art === 'login') { await SB.anmelden(f.email.value, f.pw.value); return laden(); }
         if (art === 'neu') { const r = await SB.registrieren(f.email.value, f.pw.value, zurueck); return r.sofort ? laden() : ansicht('login', 'Fast geschafft: Bitte bestätige die E-Mail, die wir dir gerade geschickt haben. Danach kannst du dich hier anmelden.'); }
@@ -39,7 +40,7 @@
         if (art === 'setzen') { await SB.passwortSetzen(f.pw.value); return laden(); }
       } catch (err) { ansicht(art, err.message, true); }
     });
-    const erstes = f.querySelector('input'); if (erstes) erstes.focus();
+    const erstes = f.querySelector(letzteMail && f.pw ? '[name=pw]' : 'input'); if (erstes) erstes.focus();
   }
 
   async function laden() {

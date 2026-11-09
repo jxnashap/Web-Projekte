@@ -14,17 +14,17 @@
   const fuss = '<p style="margin:16px 0 0;font-size:13px"><a href="mein-ssv.html">Mitglied? Zu „Mein SSV“ →</a></p>';
   login.hidden = false;
 
-  function formular(fehler) {
+  function formular(fehler, email) {
     box.innerHTML = kopf + '<form id="lf" class="form" style="grid-template-columns:1fr;margin-top:16px">' +
-      '<label class="feld">E-Mail<input name="email" type="email" autocomplete="username" required></label>' +
+      '<label class="feld">E-Mail<input name="email" type="email" autocomplete="username" required value="' + esc(email || '') + '"></label>' +
       '<label class="feld">Passwort<input name="pw" type="password" autocomplete="current-password" required></label>' +
       '<button class="btn primaer" type="submit">Anmelden</button></form>' +
-      '<p class="hinweis' + (fehler ? ' warn' : '') + '" id="lf-info" style="margin-top:12px">' + esc(fehler || 'Zugang für Vorstand, Kassenwart, Brückenwartin und Hafenmeister. Konten vergibt der Vorstand.') + '</p>' + fuss;
+      '<p class="hinweis' + (fehler ? ' fehler' : '') + '" id="lf-info" role="alert" style="margin-top:12px">' + esc(fehler || 'Zugang für Vorstand, Kassenwart, Brückenwartin und Hafenmeister. Konten vergibt der Vorstand.') + '</p>' + fuss;
     box.querySelector('#lf').addEventListener('submit', async (e) => {
       e.preventDefault(); const f = e.target; const knopf = f.querySelector('button'); knopf.disabled = true; knopf.textContent = 'Anmelden …';
-      try { await SB.anmelden(f.email.value, f.pw.value); await weiter(); } catch (err) { formular(err.message); }
+      try { await SB.anmelden(f.email.value, f.pw.value); await weiter(); } catch (err) { formular(err.message, f.email.value); }
     });
-    box.querySelector('input').focus();
+    box.querySelector(email ? '[name=pw]' : 'input').focus();
   }
   async function weiter() {
     box.innerHTML = kopf + '<p style="margin-top:18px">Daten werden geladen …</p>';

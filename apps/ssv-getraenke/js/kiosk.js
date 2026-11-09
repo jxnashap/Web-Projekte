@@ -72,7 +72,7 @@
     $('#namen').innerHTML = liste.map((m) =>
       '<button role="listitem" class="k-name" data-id="' + m.id + '"><span class="k-ini">' + H.esc(m.vorname.charAt(0) + m.nachname.charAt(0)) + '</span>' +
       '<span><strong>' + H.esc(m.nachname) + '</strong>' + H.esc(m.vorname) +
-      (m.hat_pin === false && zustand.optionen.pin_selbst_festlegen ? '<br><span class="k-neu">Erstes Mal? Code festlegen</span>' : '') + '</span></button>').join('');
+      (m.hat_pin === false && zustand.optionen.pin_selbst_festlegen ? '<br><span class="k-neu">Neu – Code festlegen</span>' : '') + '</span></button>').join('');
     $('#namen-leer').hidden = liste.length > 0;
   }
   $('#suche').addEventListener('input', (e) => { zustand.filter = e.target.value; zustand.buchstabe = ''; renderNamen(); });
