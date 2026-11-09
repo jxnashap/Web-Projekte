@@ -794,10 +794,10 @@ html:not(.js) .hero-bg img { animation: none; }
    ============================================================ */
 
 /* Stander als Logo im Header */
-.stander-svg { width: 52px; height: 42px; display: block; transition: width .45s var(--ease), height .45s var(--ease); }
+.stander-svg { width: 58px; height: 29px; display: block; transition: width .45s var(--ease), height .45s var(--ease); }
 .stander-svg .st-mast { fill: var(--night); transition: fill .45s var(--ease); }
 .stander-svg .st-kante { stroke: transparent; }
-.site-header.solid .stander-svg { width: 38px; height: 31px; }
+.site-header.solid .stander-svg { width: 44px; height: 22px; }
 body.cine .site-header:not(.solid) .stander-svg .st-mast,
 body.nav-open .stander-svg .st-mast,
 .footer-lockup .stander-svg .st-mast { fill: var(--paper); }
@@ -806,8 +806,8 @@ body.nav-open .stander-svg .st-kante,
 .footer-lockup .stander-svg .st-kante { stroke: rgba(244,241,234,.55); }
 .brand-word { font-weight: 600; letter-spacing: .38em; text-indent: .38em; }
 .footer-lockup { display: inline-flex; align-items: center; gap: 14px; color: var(--paper); }
-.footer-lockup .stander-svg { width: 44px; height: 36px; }
-@media (max-width: 760px) { .stander-svg { width: 42px; height: 34px; } }
+.footer-lockup .stander-svg { width: 52px; height: 26px; }
+@media (max-width: 760px) { .stander-svg { width: 48px; height: 24px; } }
 
 /* Kompassrose im Start-Hero */
 .kompass-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; }

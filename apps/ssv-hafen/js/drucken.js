@@ -66,7 +66,7 @@
     const url = new URL('gast.html', location.href).href;
     const qr = qrcode(0, 'M'); qr.addData(url, 'Byte'); qr.make();
     const gb = window.HAFEN_GEBUEHREN.gebuehrenFuer(d, HF.aktuelleSaison());
-    return '<section class="blatt plakat">' + STANDER.replace('class="stander"', 'class="stander" style="width:40mm;height:32mm;color:#0E1B45"') +
+    return '<section class="blatt plakat">' + STANDER.replace('class="stander"', 'class="stander" style="width:56mm;height:28mm;color:#0E1B45"') +
       '<h1>Moin und willkommen!</h1><p class="unter">Gastlieger beim Schwartauer Segler-Verein – hier kurz anmelden:</p>' +
       '<div class="qr">' + qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }) + '</div>' +
       '<p class="preis">' + H.geld(gb.gast_nacht) + ' pro Nacht</p><p>Grüne Schilder = freier Platz · Hafenmeister ' + esc(e.hafenmeister_name) + ' · ' + esc(e.hafenmeister_tel) + '</p>' +

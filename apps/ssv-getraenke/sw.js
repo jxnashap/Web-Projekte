@@ -1,7 +1,7 @@
 /* SSV Getränkekasse – Service Worker
  * Hält die Oberfläche offline verfügbar (App startet auch bei wackligem WLAN).
  * Daten werden NIE gecacht – Buchungen gehen immer live an die Datenbank. */
-const CACHE = 'ssv-kasse-v5';
+const CACHE = 'ssv-kasse-v6';
 const DATEIEN = ['./', 'index.html', 'kassenwart.html', 'drucken.html', 'css/app.css', 'js/config.js', 'js/store.js',
   'js/kiosk.js', 'js/admin.js', 'js/drucken.js', 'icons/icon.svg', 'manifest.webmanifest'];
 
