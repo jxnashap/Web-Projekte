@@ -170,6 +170,13 @@
     rechnungenZeigen();
     if (KASSE) kasseZeigen(m, rechnungenZeigen);
     pushStand().catch(() => {});
+    // Schnellknopf am Handy: in der Saison „Platz frei melden“, sonst „Stunden melden“ (nur wenn passend)
+    let sk = $('#schnell'); const aktion = wasser && inSaison && !awAktuell ? ['Platz frei melden', 'schild'] : ad && !ad.befreit ? ['Stunden melden', 'stunden'] : null;
+    if (!aktion) { if (sk) sk.remove(); } else {
+      if (!sk) { sk = document.createElement('button'); sk.id = 'schnell'; sk.className = 'schnell'; sk.type = 'button'; document.body.appendChild(sk); }
+      sk.textContent = aktion[0]; sk.onclick = () => { if (aktion[1] === 'stunden') return stundenDialog('');
+        const el = document.querySelector('details.sek[data-sek=schild]'); if (el) { el.open = true; AUF.schild = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); const v = $('#awf [name=bis]'); if (v) setTimeout(() => v.focus(), 400); } };
+    }
     // Unterlagen, die der Verein für mich hinterlegt hat (Verträge, Nachweise)
     HF.dok.liste({ mitglied_id: mid }).then((l) => { const box = $('#meine-dok'); if (!box || !l.length) return;
       box.innerHTML = '<h3 style="margin:16px 0 6px;font-size:15px">Meine Unterlagen</h3><table class="tab"><tbody>' + l.map((x) => '<tr><td>' + esc(x.name) + '<br><small style="color:var(--muted)">' + new Date(x.hochgeladen).toLocaleDateString('de-DE') + '</small></td><td class="r"><button class="btn klein" data-dok="' + x.id + '">Ansehen</button></td></tr>').join('') + '</tbody></table>';

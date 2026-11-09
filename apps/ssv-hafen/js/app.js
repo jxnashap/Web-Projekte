@@ -296,9 +296,11 @@
   }
 
   /* ============================================================ Liegeplätze */
+  let masseModus = false;
   V.plaetze = (main) => {
+    if (masseModus && darf('belegung')) return masseTabelle(main);
     const tagX = planStand.datum;
-    main.innerHTML = kopf('Liegeplätze', d.liegeplaetze.length + ' Wasserplätze · ' + d.landplaetze.length + ' Landplätze', '<button class="btn" id="csv">CSV</button>') +
+    main.innerHTML = kopf('Liegeplätze', d.liegeplaetze.length + ' Wasserplätze · ' + d.landplaetze.length + ' Landplätze', '<button class="btn" id="csv">CSV</button>' + (darf('belegung') ? '<button class="btn primaer" id="masse-alle">Maße bearbeiten</button>' : '')) +
       (planAnnahme() ? '<p class="hinweis warn">Boxmaße und Brückenzuordnung sind noch <strong>Annahmen</strong>. ' + (darf('belegung') ? 'Bitte die echten Maße (und wenn bekannt die Wassertiefe) über „Maße“ eintragen und danach unter Einstellungen bestätigen.' : 'Der Vorstand bzw. die Brückenwartin tragen die echten Maße ein.') + '</p>' : '') +
       '<div class="filter"><input class="suche" id="such" placeholder="Platz, Boot oder Eigner …"><select class="suche" id="br" style="min-width:0"><option value="">Alle Brücken</option>' + Object.entries(H.BRUECKE).map(([k, v]) => '<option value="' + k + '">' + v + '</option>').join('') + '</select></div>' +
       '<div class="panel"><table class="tab"><thead><tr><th>Platz</th><th>Brücke</th><th>Box</th><th class="r">max. L × B</th><th class="r">Tiefe</th><th>Boot</th><th>Eigner</th><th>Status ' + (tagX === heute ? 'heute' : H.kurz(tagX) + ' (' + stichtagText(tagX) + ')') + '</th>' + (darf('belegung') ? '<th></th>' : '') + '</tr></thead><tbody id="tb"></tbody></table></div>';
@@ -314,12 +316,55 @@
       }).join('');
     };
     render(); $('#such').addEventListener('input', render); $('#br').addEventListener('change', render);
+    const ma = $('#masse-alle'); if (ma) ma.addEventListener('click', () => { masseModus = true; zeige('plaetze'); });
     $('#tb').addEventListener('click', (e) => { const m = e.target.closest('[data-masse]'); if (m) { e.stopPropagation(); return platzForm(Q.platz(m.dataset.masse)); } const r = e.target.closest('[data-p]'); if (r) { planStand.markiere = r.dataset.p; zeige('plan'); } });
     $('#csv').addEventListener('click', () => download('liegeplaetze.csv', csv([['Platz', 'Brücke', 'Box', 'max. Länge', 'max. Breite', 'Strom', 'Boot', 'Eigner', 'Mitgliedsart']].concat(d.liegeplaetze.map((p) => {
       const bel = Q.belegungPlatz(SAISON, 'sommer', p.id); const b = bel && Q.boot(bel.boot_id); const m = b && Q.mitglied(b.eigner_id);
       return [p.nr, H.BRUECKE[p.bruecke], p.box, H.zahl(p.max_laenge, 1), H.zahl(p.max_breite, 1), p.strom ? 'ja' : 'nein', b ? b.name : '', m ? Q.name(m) : '', m ? H.ART[m.art] : ''];
     }))), 'text/csv'));
   };
+
+  /* Alle Plätze in einer Tabelle durchtippen (Tab/Enter springt weiter); Vorlage je Box füllt viele auf einmal */
+  function masseTabelle(main) {
+    const zahlFeld = (p, k, step) => '<input class="masse" type="number" inputmode="decimal" step="' + step + '" min="0" data-id="' + p.id + '" data-k="' + k + '" value="' + (p[k] == null ? '' : p[k]) + '" aria-label="' + esc(platzName(p.id)) + ' ' + ({ max_laenge: 'Länge', max_breite: 'Breite', tiefe: 'Wassertiefe' })[k] + '">';
+    main.innerHTML = kopf('Liegeplätze – Maße bearbeiten', 'Werte eintippen, mit Tab oder Enter weiter. Geänderte Felder werden gelb markiert; gespeichert wird mit einem Klick.',
+      '<button class="btn" id="m-abbr">Abbrechen</button><button class="btn primaer" id="m-ok">Speichern</button>') +
+      '<div class="panel"><h2>Vorlage je Box</h2><div class="filter" style="align-items:flex-end"><label class="feld">Box<select id="v-box"><option>I</option><option>II</option><option>III</option></select></label>' +
+      '<label class="feld">Länge (m)<input id="v-l" type="number" step="0.01" inputmode="decimal" style="width:100px"></label><label class="feld">Breite (m)<input id="v-b" type="number" step="0.01" inputmode="decimal" style="width:100px"></label>' +
+      '<label class="feld">Wassertiefe (m)<input id="v-t" type="number" step="0.1" inputmode="decimal" style="width:100px"></label><button class="btn" id="v-los">Für alle Plätze dieser Box eintragen</button></div>' +
+      '<p class="hinweis" style="margin:8px 0 0">Leere Felder der Vorlage bleiben unverändert. Danach einzelne Plätze in der Tabelle anpassen.</p></div>' +
+      '<div class="panel"><table class="tab masse-tab"><thead><tr><th>Platz</th><th>Brücke</th><th>Box</th><th class="r">Länge (m)</th><th class="r">Breite (m)</th><th class="r">Tiefe (m)</th><th>Strom</th></tr></thead><tbody>' +
+      d.liegeplaetze.map((p) => '<tr><td><strong>' + esc(p.nr) + '</strong></td><td>' + H.BRUECKE[p.bruecke] + '</td>' +
+        '<td><select class="masse" data-id="' + p.id + '" data-k="box" aria-label="' + esc(platzName(p.id)) + ' Box">' + ['I', 'II', 'III', 'L'].map((b) => '<option' + (p.box === b ? ' selected' : '') + '>' + b + '</option>').join('') + '</select></td>' +
+        '<td class="r">' + zahlFeld(p, 'max_laenge', '0.01') + '</td><td class="r">' + zahlFeld(p, 'max_breite', '0.01') + '</td><td class="r">' + zahlFeld(p, 'tiefe', '0.1') + '</td>' +
+        '<td><input type="checkbox" class="masse" data-id="' + p.id + '" data-k="strom"' + (p.strom ? ' checked' : '') + ' aria-label="' + esc(platzName(p.id)) + ' Strom"></td></tr>').join('') + '</tbody></table></div>' +
+      '<div class="aktionen" style="justify-content:flex-end"><button class="btn primaer" id="m-ok2">Speichern</button></div>';
+    const felder = [...main.querySelectorAll('.masse')];
+    const markieren = (el) => { const p = Q.platz(el.dataset.id); const alt = el.dataset.k === 'strom' ? !!p.strom : el.dataset.k === 'box' ? p.box : (p[el.dataset.k] == null ? '' : String(p[el.dataset.k]));
+      const neu = el.type === 'checkbox' ? el.checked : el.value; el.classList.toggle('geaendert', String(neu) !== String(alt)); };
+    felder.forEach((el) => el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', () => markieren(el)));
+    // Enter springt wie Tab ins nächste Feld derselben Spalte
+    main.querySelector('.masse-tab').addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return; e.preventDefault();
+      const gleich = felder.filter((x) => x.dataset.k === e.target.dataset.k); const n = gleich[gleich.indexOf(e.target) + 1]; if (n) { n.focus(); n.select && n.select(); }
+    });
+    $('#v-los').addEventListener('click', () => {
+      const box = $('#v-box').value; const w = { max_laenge: $('#v-l').value, max_breite: $('#v-b').value, tiefe: $('#v-t').value }; let n = 0;
+      felder.filter((el) => w[el.dataset.k] !== undefined && w[el.dataset.k] !== '' && main.querySelector('select.masse[data-id="' + el.dataset.id + '"]').value === box).forEach((el) => { el.value = w[el.dataset.k]; markieren(el); n++; });
+      toast(n ? 'Vorlage in ' + Math.round(n / Object.values(w).filter(Boolean).length) + ' Plätze eingetragen – bitte prüfen und speichern.' : 'Bitte mindestens einen Wert eintragen.');
+    });
+    const ende = () => { masseModus = false; zeige('plaetze'); };
+    $('#m-abbr').addEventListener('click', () => { if (main.querySelector('.geaendert') && !confirm('Änderungen verwerfen?')) return; ende(); });
+    const sichern = () => {
+      const geaendert = felder.filter((el) => el.classList.contains('geaendert'));
+      if (!geaendert.length) return ende();
+      for (const el of geaendert) { if (['max_laenge', 'max_breite'].includes(el.dataset.k) && !(Number(el.value) > 0)) { el.focus(); return toast(platzName(el.dataset.id) + ': bitte eine Zahl über 0 eintragen.', 'fehler'); } }
+      geaendert.forEach((el) => { const p = Q.platz(el.dataset.id); const k = el.dataset.k;
+        p[k] = k === 'strom' ? el.checked : k === 'box' ? el.value : (el.value === '' ? null : Number(el.value)); });
+      speichern(new Set(geaendert.map((el) => el.dataset.id)).size + ' Plätze gespeichert.'); ende();
+    };
+    $('#m-ok').addEventListener('click', sichern); $('#m-ok2').addEventListener('click', sichern);
+  }
 
   function platzForm(p) {
     const el = modal('<h2>' + esc(platzName(p.id)) + ' – Maße</h2><p class="hinweis">Diese Werte nutzt die Platzempfehlung für Gäste und die Warteliste. Wassertiefe leer lassen, wenn sie nicht bekannt ist.</p><form id="f" class="form">' +
@@ -1270,7 +1315,7 @@
     const neueAntraege = (d.antraege || []).filter((a) => a.status === 'neu').length;
     const aktName = (TABS.flatMap(([, ts]) => ts).find(([t]) => t === tab) || [, ''])[1];
     const zahlen = (darf('gaeste') ? anfragen : 0) + (darf('antraege') ? neueAntraege : 0);   // nur, was diese Rolle bearbeiten kann
-    $('#nav').classList.remove('offen');
+    $('#nav').classList.remove('offen'); document.body.classList.remove('nav-auf');
     $('#nav').innerHTML = '<div class="nav-leiste"><svg class="stander"><use href="#stander"/></svg><strong>' + aktName + '</strong>' +
       '<button id="navauf" aria-expanded="false" aria-controls="nav-inhalt">Menü' + (zahlen ? '<span class="zahl">' + zahlen + '</span>' : '') + '</button></div><div class="nav-inhalt" id="nav-inhalt">' +
       '<div class="marke"><svg class="stander"><use href="#stander"/></svg><div><strong>Hafen-Manager</strong><span>SSV · Teerhofinsel</span></div></div>' +
@@ -1280,18 +1325,29 @@
         '<button data-tab="' + t + '" class="' + (t === tab ? 'aktiv' : '') + '"' + (t === tab ? ' aria-current="page"' : '') + '>' + n + (t === 'gaeste' && anfragen ? '<span class="zahl">' + anfragen + '</span>' : '') + (t === 'antraege' && neueAntraege ? '<span class="zahl">' + neueAntraege + '</span>' : '') + '</button>').join('') : ''; }).join('') +
       '<div class="nav-unten"><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">' + (DB ? 'Abmelden' : 'Rolle wechseln') + '</button></div></div>';
   }
+  const SCHNELL = {
+    hafenmeister: ['+ Gast einweisen', () => gastForm({})],
+    brueckenwart: ['+ Stunden erfassen', () => { zeige('arbeitsdienst'); $('#neu').click(); }],
+    vorstand: ['+ Mitteilung', () => { zeige('mitteilungen'); $('#neu').click(); }]
+  };
+  function schnellknopf() {
+    let k = $('#schnell'); const s = rolle && SCHNELL[rolle];
+    if (!s || (tab === 'plaetze' && masseModus)) { if (k) k.remove(); return; }
+    if (!k) { k = document.createElement('button'); k.id = 'schnell'; k.className = 'schnell'; k.type = 'button'; document.body.appendChild(k); k.addEventListener('click', () => SCHNELL[rolle] && SCHNELL[rolle][1]()); }
+    k.textContent = s[0];
+  }
   function zeige(t, ruhig) {
     if (!darf(t)) t = 'uebersicht';
-    const y = window.scrollY; tab = t; nav(); V[t]($('#main')); window.scrollTo(0, ruhig ? y : 0);
+    const y = window.scrollY; tab = t; nav(); V[t]($('#main')); window.scrollTo(0, ruhig ? y : 0); schnellknopf();
     try { history.replaceState(null, '', '#' + t); } catch (e) { /* egal */ }
   }
   document.addEventListener('click', (e) => {
     const auf = e.target.closest('#navauf');
-    if (auf) { const nv = $('#nav'); const o = nv.classList.toggle('offen'); auf.setAttribute('aria-expanded', o); return; }
+    if (auf) { const nv = $('#nav'); const o = nv.classList.toggle('offen'); auf.setAttribute('aria-expanded', o); document.body.classList.toggle('nav-auf', o); return; }
     const n = e.target.closest('#nav [data-tab]'); if (n) return zeige(n.dataset.tab);
     const g = e.target.closest('[data-gehe]'); if (g && darf(g.dataset.gehe)) return zeige(g.dataset.gehe);
     if (e.target.closest('#abmelden') && DB) { try { sessionStorage.removeItem('ssv-hafen-rolle'); } catch (x) { /* egal */ } window.SSV_SB.abmelden().then(() => location.reload()); return; }
-    if (e.target.closest('#abmelden')) { rolle = null; try { sessionStorage.removeItem('ssv-hafen-rolle'); } catch (x) { /* egal */ } start(); }
+    if (e.target.closest('#abmelden')) { rolle = null; masseModus = false; try { sessionStorage.removeItem('ssv-hafen-rolle'); } catch (x) { /* egal */ } schnellknopf(); start(); }
   });
   document.addEventListener('change', (e) => {
     if (e.target.id !== 'saison-wahl') return;
