@@ -249,3 +249,46 @@ table.todo td:first-child { width: 1%; white-space: nowrap; }
   .main { padding-bottom: 88px; }
   .masse-tab input.masse { width: 70px; font-size: 16px; }
 }
+
+/* Navigation in Bereichen + Reiter (Feedback: weniger überladen, klarer abgetrennt) */
+.nav-bereiche { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+.nav-bereiche button { padding: 11px 12px; font-size: 14.5px; }
+.nav-icon { width: 20px; height: 20px; flex: none; opacity: .85; }
+.nav-bereiche button.aktiv .nav-icon { opacity: 1; }
+.reiter { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: -6px 0 22px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.reiter-titel { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; color: var(--muted-2); }
+.reiter-liste { display: flex; gap: 4px; background: rgba(14,27,69,.06); padding: 4px; border-radius: 12px; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+.reiter-liste::-webkit-scrollbar { display: none; }
+.reiter-liste button { flex: none; border: 0; background: transparent; color: var(--navy); font: inherit; font-size: 13.5px; font-weight: 600; padding: 8px 14px; border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; white-space: nowrap; }
+.reiter-liste button:hover { background: rgba(255,255,255,.7); }
+.reiter-liste button.aktiv { background: #fff; box-shadow: 0 1px 3px rgba(14,27,69,.18); }
+.reiter-liste .zahl { background: var(--rot); color: #fff; font-size: 11px; font-weight: 700; padding: 0 6px; border-radius: 99px; line-height: 18px; }
+/* Abschnitte klarer trennen */
+.main > .panel, .main > .zwei, .main > details.panel { margin-bottom: 20px; }
+.panel > h2:first-child { padding-bottom: 10px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+.kopf h1 { letter-spacing: -.01em; }
+@media (max-width: 860px) {
+  .reiter { margin: 0 -12px 16px; padding: 0 12px 12px; gap: 6px; }
+  .reiter-titel { display: none; }
+  .reiter-liste { width: 100%; }
+  .reiter-liste button { min-height: 40px; }
+  .nav-bereiche button { padding: 13px 12px; font-size: 16px; }
+}
+
+@media (max-width: 860px) {
+  /* Kopf-Knöpfe am Handy: kompakte Zeile zum Wischen statt mehrerer Reihen */
+  .kopf .aktionen { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -12px; padding: 2px 12px 4px; width: calc(100% + 24px); }
+  .kopf .aktionen::-webkit-scrollbar { display: none; }
+  .kopf .aktionen .btn { flex: none; padding: 9px 13px; font-size: 13.5px; }
+  body.schnell-doppelt .kopf .aktionen .btn.primaer { display: none; }
+  .kopf p { font-size: 14px; }
+}
+/* Handy: Aktions-Listen ohne Spaltenkopf (Anmeldungen, Bestätigen …) als gestapelte Karten statt gequetschter Spalten */
+@media (max-width: 860px) {
+  .panel table.tab:not(:has(thead)) tbody, .panel table.tab:not(:has(thead)) tr { display: block; }
+  .panel table.tab:not(:has(thead)) tr { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .panel table.tab:not(:has(thead)) tr:last-child { border-bottom: 0; }
+  .panel table.tab:not(:has(thead)) td { display: block; padding: 0; border: 0; position: static; box-shadow: none; background: none; }
+  .panel table.tab:not(:has(thead)) td:first-child { flex: 1 1 100%; }
+  .panel table.tab:not(:has(thead)) td.r { margin-left: auto; text-align: right; }
+}

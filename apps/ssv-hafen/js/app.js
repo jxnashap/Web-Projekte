@@ -16,12 +16,28 @@
     hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'abwesenheiten', 'lagern', 'aufgaben', 'arbeitsdienst', 'mitteilungen'], bank: false },
     kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'mitteilungen', 'einstellungen', 'verlauf'], bank: true }
   };
-  const TABS = [
-    ['Hafen', [['uebersicht', 'Übersicht'], ['plan', 'Hafenplan'], ['plaetze', 'Liegeplätze'], ['boote', 'Boote']]],
-    ['Mitglieder', [['eigner', 'Mitglieder & Eigner'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
-    ['Betrieb', [['belegung', 'Belegung'], ['abwesenheiten', 'Abwesenheiten'], ['gaeste', 'Gastlieger'], ['warteliste', 'Warteliste'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['arbeitsdienst', 'Arbeitsdienst'], ['mitteilungen', 'Mitteilungen']]],
-    ['Finanzen', [['abrechnung', 'Abrechnung & Lastschrift'], ['gebuehren', 'Gebührenordnung'], ['einstellungen', 'Einstellungen'], ['verlauf', 'Änderungsverlauf']]]
+  // Sieben Bereiche statt neunzehn Menüpunkte; innerhalb eines Bereichs wechseln Reiter oben auf der Seite
+  const ICON = {
+    uebersicht: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    hafen: '<circle cx="12" cy="5" r="2"/><path d="M12 7v14M5 13a7 7 0 0 0 14 0M8 10h8"/>',
+    gaeste: '<path d="M12 3v13M12 4l6 10h-6M11 7l-5 7h5M4 17h16l-2 3H6z"/>',
+    mitglieder: '<circle cx="9" cy="7" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1M16 3.5a4 4 0 0 1 0 7.5M22 21v-1a6 6 0 0 0-4-5.6"/>',
+    betrieb: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
+    finanzen: '<path d="M18 7a7 7 0 1 0 0 10M4 10h10M4 14h10"/>',
+    verwaltung: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'
+  };
+  const BEREICHE = [
+    ['uebersicht', 'Übersicht', [['uebersicht', 'Übersicht']]],
+    ['hafen', 'Hafen', [['plan', 'Hafenplan'], ['plaetze', 'Liegeplätze'], ['belegung', 'Belegung'], ['warteliste', 'Warteliste']]],
+    ['gaeste', 'Gäste & Schild', [['gaeste', 'Gastlieger'], ['abwesenheiten', 'Grünes Schild']]],
+    ['mitglieder', 'Mitglieder & Boote', [['eigner', 'Mitglieder'], ['boote', 'Boote'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
+    ['betrieb', 'Betrieb', [['arbeitsdienst', 'Arbeitsdienst'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen']]],
+    ['finanzen', 'Finanzen', [['abrechnung', 'Abrechnung & Lastschrift'], ['gebuehren', 'Gebührenordnung']]],
+    ['verwaltung', 'Verwaltung', [['einstellungen', 'Einstellungen'], ['verlauf', 'Änderungsverlauf']]]
   ];
+  const TABS = BEREICHE.map(([, n, ts]) => [n, ts]);
+  const bereichVon = (t) => (BEREICHE.find(([, , ts]) => ts.some(([x]) => x === t)) || BEREICHE[0])[0];
+  const zuletzt = {};   // zuletzt geöffneter Reiter je Bereich
   let rolle = null, tab = 'uebersicht';
   const darf = (t) => rolle && (ROLLEN[rolle].tabs === '*' || ROLLEN[rolle].tabs.includes(t));
   const bankSichtbar = () => rolle && ROLLEN[rolle].bank;
@@ -1310,45 +1326,64 @@
   }
 
   /* ============================================================ Navigation */
+  function zahlenJe() {
+    const z = { gaeste: d.gaeste.filter((g) => g.status === 'angemeldet').length, antraege: (d.antraege || []).filter((a) => a.status === 'neu').length,
+      arbeitsdienst: d.arbeitsdienst.filter((a) => a.status === 'eingereicht').length };
+    Object.keys(z).forEach((t) => { if (!darf(t)) z[t] = 0; }); return z;
+  }
   function nav() {
-    const anfragen = d.gaeste.filter((g) => g.status === 'angemeldet').length;
-    const neueAntraege = (d.antraege || []).filter((a) => a.status === 'neu').length;
-    const aktName = (TABS.flatMap(([, ts]) => ts).find(([t]) => t === tab) || [, ''])[1];
-    const zahlen = (darf('gaeste') ? anfragen : 0) + (darf('antraege') ? neueAntraege : 0);   // nur, was diese Rolle bearbeiten kann
+    const z = zahlenJe(); const aktB = bereichVon(tab);
+    const sichtbar = BEREICHE.map(([id, n, ts]) => [id, n, ts.filter(([t]) => darf(t))]).filter(([, , ts]) => ts.length);
+    const summe = (ts) => ts.reduce((s, [t]) => s + (z[t] || 0), 0);
+    const gesamt = sichtbar.reduce((s, [, , ts]) => s + summe(ts), 0);
+    const aktName = (sichtbar.find(([id]) => id === aktB) || [, 'Übersicht'])[1];
     $('#nav').classList.remove('offen'); document.body.classList.remove('nav-auf');
     $('#nav').innerHTML = '<div class="nav-leiste"><svg class="stander"><use href="#stander"/></svg><strong>' + aktName + '</strong>' +
-      '<button id="navauf" aria-expanded="false" aria-controls="nav-inhalt">Menü' + (zahlen ? '<span class="zahl">' + zahlen + '</span>' : '') + '</button></div><div class="nav-inhalt" id="nav-inhalt">' +
+      '<button id="navauf" aria-expanded="false" aria-controls="nav-inhalt">Menü' + (gesamt ? '<span class="zahl">' + gesamt + '</span>' : '') + '</button></div><div class="nav-inhalt" id="nav-inhalt">' +
       '<div class="marke"><svg class="stander"><use href="#stander"/></svg><div><strong>Hafen-Manager</strong><span>SSV · Teerhofinsel</span></div></div>' +
       '<div class="rolle-chip">Angemeldet als <strong>' + ROLLEN[rolle].name + '</strong><label class="saison-wahl">Saison <select id="saison-wahl">' +
         [SAISON - 1, SAISON, SAISON + 1].map((j) => '<option' + (j === SAISON ? ' selected' : '') + '>' + j + '</option>').join('') + '</select></label></div>' +
-      TABS.map(([gruppe, ts]) => { const sichtbar = ts.filter(([t]) => darf(t)); return sichtbar.length ? '<div class="nav-gruppe">' + gruppe + '</div>' + sichtbar.map(([t, n]) =>
-        '<button data-tab="' + t + '" class="' + (t === tab ? 'aktiv' : '') + '"' + (t === tab ? ' aria-current="page"' : '') + '>' + n + (t === 'gaeste' && anfragen ? '<span class="zahl">' + anfragen + '</span>' : '') + (t === 'antraege' && neueAntraege ? '<span class="zahl">' + neueAntraege + '</span>' : '') + '</button>').join('') : ''; }).join('') +
+      '<div class="nav-bereiche">' + sichtbar.map(([id, n, ts]) => { const ziel = zuletzt[id] && darf(zuletzt[id]) ? zuletzt[id] : ts[0][0]; const s = summe(ts);
+        return '<button data-tab="' + ziel + '" data-bereich="' + id + '" data-tabs="' + ts.map(([t]) => t).join(' ') + '" class="' + (id === aktB ? 'aktiv' : '') + '"' + (id === aktB ? ' aria-current="page"' : '') + '>' +
+          '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[id] + '</svg><span>' + n + '</span>' + (s ? '<span class="zahl">' + s + '</span>' : '') + '</button>'; }).join('') + '</div>' +
       '<div class="nav-unten"><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">' + (DB ? 'Abmelden' : 'Rolle wechseln') + '</button></div></div>';
   }
+  // Reiter des aktuellen Bereichs über dem Seiteninhalt
+  function unterNav() {
+    const b = BEREICHE.find(([id]) => id === bereichVon(tab)); const ts = b[2].filter(([t]) => darf(t)); if (ts.length < 2) return '';
+    const z = zahlenJe();
+    return '<nav class="reiter" aria-label="' + b[1] + '"><span class="reiter-titel">' + b[1] + '</span><div class="reiter-liste">' + ts.map(([t, n]) => '<button data-tab="' + t + '" class="' + (t === tab ? 'aktiv' : '') + '"' + (t === tab ? ' aria-current="page"' : '') + '>' + n + (z[t] ? '<span class="zahl">' + z[t] + '</span>' : '') + '</button>').join('') + '</div></nav>';
+  }
   const SCHNELL = {
-    hafenmeister: ['+ Gast einweisen', () => gastForm({})],
-    brueckenwart: ['+ Stunden erfassen', () => { zeige('arbeitsdienst'); $('#neu').click(); }],
-    vorstand: ['+ Mitteilung', () => { zeige('mitteilungen'); $('#neu').click(); }]
+    hafenmeister: ['+ Gast einweisen', () => gastForm({}), 'gaeste'],
+    brueckenwart: ['+ Stunden erfassen', () => { zeige('arbeitsdienst'); $('#neu').click(); }, 'arbeitsdienst'],
+    vorstand: ['+ Mitteilung', () => { zeige('mitteilungen'); $('#neu').click(); }, 'mitteilungen']
   };
   function schnellknopf() {
     let k = $('#schnell'); const s = rolle && SCHNELL[rolle];
+    document.body.classList.toggle('schnell-doppelt', !!(s && s[2] === tab));   // Hauptknopf oben nicht doppelt zeigen
     if (!s || (tab === 'plaetze' && masseModus)) { if (k) k.remove(); return; }
     if (!k) { k = document.createElement('button'); k.id = 'schnell'; k.className = 'schnell'; k.type = 'button'; document.body.appendChild(k); k.addEventListener('click', () => SCHNELL[rolle] && SCHNELL[rolle][1]()); }
     k.textContent = s[0];
   }
   function zeige(t, ruhig) {
     if (!darf(t)) t = 'uebersicht';
-    const y = window.scrollY; tab = t; nav(); V[t]($('#main')); window.scrollTo(0, ruhig ? y : 0); schnellknopf();
-    try { history.replaceState(null, '', '#' + t); } catch (e) { /* egal */ }
+    const y = window.scrollY; const vorher = tab; tab = t; zuletzt[bereichVon(t)] = t; nav(); V[t]($('#main'));
+    const r = unterNav(); if (r) $('#main').insertAdjacentHTML('afterbegin', r);
+    window.scrollTo(0, ruhig ? y : 0); schnellknopf();
+    // neuer Bereich/Reiter → eigener Verlaufseintrag, damit die Zurück-Taste funktioniert
+    try { if (location.hash.slice(1) !== t) history[!ruhig && vorher && vorher !== t ? 'pushState' : 'replaceState'](null, '', '#' + t); } catch (e) { /* egal */ }
   }
   document.addEventListener('click', (e) => {
     const auf = e.target.closest('#navauf');
     if (auf) { const nv = $('#nav'); const o = nv.classList.toggle('offen'); auf.setAttribute('aria-expanded', o); document.body.classList.toggle('nav-auf', o); return; }
-    const n = e.target.closest('#nav [data-tab]'); if (n) return zeige(n.dataset.tab);
+    const n = e.target.closest('#nav [data-tab], .reiter [data-tab]'); if (n) return zeige(n.dataset.tab);
     const g = e.target.closest('[data-gehe]'); if (g && darf(g.dataset.gehe)) return zeige(g.dataset.gehe);
     if (e.target.closest('#abmelden') && DB) { try { sessionStorage.removeItem('ssv-hafen-rolle'); } catch (x) { /* egal */ } window.SSV_SB.abmelden().then(() => location.reload()); return; }
     if (e.target.closest('#abmelden')) { rolle = null; masseModus = false; try { sessionStorage.removeItem('ssv-hafen-rolle'); } catch (x) { /* egal */ } schnellknopf(); start(); }
   });
+  // Zurück-Taste des Browsers und Links mit #bereich
+  window.addEventListener('hashchange', () => { const t = location.hash.slice(1); if (rolle && V[t] && t !== tab && !$('#modal').firstChild) zeige(t); });
   document.addEventListener('change', (e) => {
     if (e.target.id !== 'saison-wahl') return;
     const u = new URL(location.href); u.searchParams.set('saison', e.target.value); location.href = u.toString();

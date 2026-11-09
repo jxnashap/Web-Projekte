@@ -91,7 +91,7 @@
 </div><div><img class="bild" src="kasse.png" alt="Getränkekasse"><p class="bildtext">Startbildschirm der Kasse, oben eine Mitteilung des Vereins</p></div></div>
 
 <h2>Für Funktionsträger: der Hafen-Manager</h2>
-<p>Anmeldung mit eigenem Konto (vergibt der Vorstand). Nach 30 Minuten ohne Eingabe wird automatisch abgemeldet. Die <strong>Übersicht</strong> sortiert alles in <span class="tag">Heute wichtig</span> (Konflikte, Ankünfte, dringende Schäden, Rücklastschriften), <span class="tag">Anstehend</span> (Abrechnungen, Nachweise, Stunden bestätigen) und <span class="tag">Einrichtung abschließen</span>.</p>
+<p>Anmeldung mit eigenem Konto (vergibt der Vorstand). Nach 30 Minuten ohne Eingabe wird automatisch abgemeldet. Die <strong>Übersicht</strong> sortiert alles in <span class="tag">Heute wichtig</span> (Konflikte, Ankünfte, dringende Schäden, Rücklastschriften), <span class="tag">Anstehend</span> (Abrechnungen, Nachweise, Stunden bestätigen) und <span class="tag">Einrichtung abschließen</span>. Das Menü hat sieben Bereiche – <strong>Übersicht, Hafen, Gäste &amp; Schild, Mitglieder &amp; Boote, Betrieb, Finanzen, Verwaltung</strong>; innerhalb eines Bereichs wechseln die Reiter oben auf der Seite. Jeder sieht nur, was zu seiner Rolle gehört.</p>
 <img class="bild" src="uebersicht.png" alt="Übersicht im Hafen-Manager" style="margin:2mm 0 1mm;height:58mm;object-fit:cover;object-position:top">
 <p class="bildtext">Übersicht des Hafen-Managers (Vorstand, Demo-Daten)</p>
 
@@ -108,10 +108,10 @@
 
 <h3>Wichtige Abläufe in Kürze</h3>
 <ul>
-  <li><strong>Gast einweisen:</strong> Gastlieger → „+ Gast einweisen“ → Maße, Ankunft, Nächte → passenden Platz wählen. Passt ein Platz nicht mehr (z. B. Eigner früher zurück), nennt das Programm den Grund und die Übersicht zeigt den Konflikt.</li>
-  <li><strong>Abrechnung:</strong> Abrechnung → Periode wählen → Vorschau prüfen → „Rechnungen erstellen“ → „SEPA-Datei erzeugen“ und im Online-Banking hochladen. Zahlungen über „Zahlung“ je Rechnung.</li>
-  <li><strong>Arbeitseinsatz:</strong> Arbeitsdienst → „+ Arbeitseinsatz“ → QR-Plakat drucken und am Tag aushängen → gemeldete Stunden oben bestätigen.</li>
-  <li><strong>Mitteilung:</strong> Mitteilungen → „+ Mitteilung“ → Empfänger, Dauer, „wichtig“ → veröffentlichen (Mein SSV und Kasse).</li>
+  <li><strong>Gast einweisen:</strong> Gäste &amp; Schild → „+ Gast einweisen“ → Maße, Ankunft, Nächte → passenden Platz wählen. Passt ein Platz nicht mehr (z. B. Eigner früher zurück), nennt das Programm den Grund und die Übersicht zeigt den Konflikt.</li>
+  <li><strong>Abrechnung:</strong> Finanzen → Periode wählen → Vorschau prüfen → „Rechnungen erstellen“ → „SEPA-Datei erzeugen“ und im Online-Banking hochladen. Zahlungen über „Zahlung“ je Rechnung.</li>
+  <li><strong>Arbeitseinsatz:</strong> Betrieb → Arbeitsdienst → „+ Arbeitseinsatz“ → QR-Plakat drucken und am Tag aushängen → gemeldete Stunden oben bestätigen.</li>
+  <li><strong>Mitteilung:</strong> Betrieb → Mitteilungen → „+ Mitteilung“ → Empfänger, Dauer, „wichtig“ → veröffentlichen (Mein SSV und Kasse).</li>
 </ul>
 
 <h2>Sicherheit und Datenschutz</h2>
@@ -120,7 +120,7 @@
   <li>Doppelte Platzvergaben verhindert die Datenbank – auch wenn zwei Personen gleichzeitig arbeiten.</li>
   <li><strong>Änderungsverlauf:</strong> wer hat wann was geändert (Bankdaten nur gekürzt), 3 Jahre.</li>
   <li><strong>Löschfristen</strong> sind eingebaut (abgelehnte Anträge, Gästedaten, Ausgetretene); Rechnungen bleiben 10 Jahre (Abgabenordnung).</li>
-  <li>Datensicherung zum Herunterladen unter Einstellungen; für tägliche Sicherungen den Supabase-Pro-Tarif nutzen.</li>
+  <li>Datensicherung zum Herunterladen unter Verwaltung → Einstellungen; für tägliche Sicherungen den Supabase-Pro-Tarif nutzen.</li>
 </ul>
 
 <h2>Vor dem Start noch zu erledigen</h2>
@@ -129,7 +129,7 @@
     <li>Mitglieder-Export aus easyVerein importieren (Hafen-Manager → Mitglieder &amp; Eigner → „Mitglieder importieren (CSV)“).</li>
     <li>Vereinspostfach (SMTP) eintragen, damit Bestätigungs- und Passwort-Mails an alle Mitglieder gehen.</li>
     <li>Zugänge für die Funktionsträger anlegen.</li>
-    <li>Einstellungen: Steuerhinweis (mit Steuerberater), Vereinskonto und Gläubiger-ID, Arbeitsdienst-Regeln, Saisontermine.</li>
+    <li>Verwaltung → Einstellungen: Steuerhinweis (mit Steuerberater), Vereinskonto und Gläubiger-ID, Arbeitsdienst-Regeln, Saisontermine.</li>
     <li>Echte Boxmaße und Wassertiefen eintragen (Liegeplätze → „Maße bearbeiten“), echte Getränkepreise.</li>
     <li>Impressum und Datenschutz vervollständigen, Auftragsverarbeitungsverträge mit Vercel und Supabase abschließen.</li>
     <li>Kurzer Test mit 4–5 Mitgliedern (Aufgabenblatt in der Demo), danach Domain verbinden und freischalten.</li>
