@@ -113,8 +113,8 @@
       if (g) { gruende.push('am ' + H.kurz(t) + ' schon an „' + g.bootsname + '“ vergeben'); break; }
       if (Q.belegungPlatz(Number(t.slice(0, 4)), 'sommer', p.id)) {
         if (Q.abwesendAm(p.id, t)) { art = 'unterwegs'; continue; }
-        const aw = Q.abwesendAm(p.id, von);
-        gruende.push(aw ? 'Aufenthalt überschreitet die Freigabe (Eigner zurück am ' + H.datum(aw.bis) + ')' : 'am ' + H.kurz(t) + ' liegt hier der Dauerlieger (kein grünes Schild)');
+        const aw = Q.abwesendAm(p.id, von); const zurueck = !aw && d.abwesenheiten.find((a) => a.platz_id === p.id && a.bis === tagVor(t, 1));
+        gruende.push(aw ? 'Aufenthalt überschreitet die Freigabe (Eigner zurück am ' + H.datum(aw.bis) + ')' : zurueck ? 'der Eigner ist zurück (grünes Schild endete am ' + H.datum(zurueck.bis) + ')' : 'am ' + H.kurz(t) + ' liegt hier der Dauerlieger (kein grünes Schild)');
         break;
       }
     }
@@ -142,19 +142,36 @@
     const wasserVergeben = Q.belegungen(SAISON, 'sommer').filter((b) => b.platz_typ === 'wasser').length;
     const naechste = (d.saisons || []).find((x) => x.jahr === SAISON + 1);
     const e = d.einstellungen;
-    const todo = [];
-    if (anfragen.length) todo.push(['gaeste', anfragen.length + ' Gast-Anmeldung' + (anfragen.length > 1 ? 'en' : '') + ' per QR-Code warten auf einen Platz', 'gast']);
-    if (winterOffen.length && darf('abrechnung')) todo.push(['abrechnung', 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) + ' ist noch nicht abgerechnet (' + winterOffen.length + ' Mitglieder, ' + H.geld(winterOffen.reduce((s, x) => s + x.summe, 0)) + ')', 'warn']);
-    if (sepaOffen.length && darf('abrechnung')) todo.push(['abrechnung', sepaOffen.length + ' Rechnungen warten auf die Lastschrift-Datei für die Bank', 'warn']);
-    if (rueck.length && darf('abrechnung')) todo.push(['abrechnung', rueck.length + ' Rücklastschrift' + (rueck.length > 1 ? 'en' : '') + ' – Mitglied ansprechen oder erneut einziehen', 'rot']);
-    if (!e.steuer_hinweis && darf('einstellungen')) todo.push(['einstellungen', 'Steuerhinweis für Rechnungen festlegen (mit Steuerberater klären)', 'warn']);
-    if (nachweise.length && darf('boote')) todo.push(['boote', nachweise.length + ' Versicherungsnachweis' + (nachweise.length > 1 ? 'e' : '') + ' eingereicht – bitte prüfen', 'gast']);
-    if (versProbleme.length) todo.push(['boote', versProbleme.length + ' Boote: Versicherung abgelaufen, fehlt oder läuft in 30 Tagen ab', 'rot']);
-    if (zuSchwer.length) todo.push(['boote', zuSchwer.length + ' Boot über 10 t – laut Hafenbetriebsordnung nicht zulässig', 'rot']);
-    const dringend = schaeden.filter((t) => t.prioritaet === 'hoch');
-    if (schaeden.length && darf('aufgaben')) todo.push(['aufgaben', schaeden.length + ' offene Schäden/Wartungen' + (dringend.length ? ', davon ' + dringend.length + ' dringend' : ''), dringend.length ? 'rot' : 'warn']);
-    if (!e.arbeitsdienst_bestaetigt && rolle === 'vorstand') todo.push(['einstellungen', 'Regeln für den Arbeitsdienst festlegen (Soll, Befreiungen, Übertrag)', 'warn']);
-    if (planAnnahme() && darf('belegung')) todo.push(['plaetze', 'Boxmaße und Brückenzuordnung sind noch Annahmen – echte Maße eintragen', 'warn']);
+    // Drei Gruppen: Heute wichtig (Tagesgeschäft), Anstehend, Einrichtung abschließen
+    const heuteL = [], anst = [], einr = [];
+    const add = (liste, tab, txt, art, extra) => liste.push({ tab, txt, art, extra: extra || '' });
+    // Konflikte: Gäste, deren Platz nicht mehr passt (z. B. Eigner früher zurück)
+    const konflikte = d.gaeste.filter((g) => g.platz_id && !['storniert', 'abgereist'].includes(g.status) && abreise(g) > heute).map((g) => {
+      const ab = g.ankunft > heute ? g.ankunft : heute; const rest = Math.round((new Date(abreise(g) + 'T12:00:00') - new Date(ab + 'T12:00:00')) / 864e5);
+      const p = Q.platz(g.platz_id); const pr = p ? platzPruefen(p, ab, rest, g.laenge, g.breite, g.tiefgang, g.id) : { ok: false, gruende: ['Platz unbekannt'] };
+      return pr.ok ? null : { g, grund: pr.gruende[0] };
+    }).filter(Boolean);
+    const ankuenfte = d.gaeste.filter((g) => g.ankunft === heute && g.status !== 'storniert');
+    if (darf('gaeste')) konflikte.forEach(({ g, grund }) => add(heuteL, 'gaeste', 'Konflikt ' + platzName(g.platz_id) + ': Gast „' + esc(g.bootsname) + '“ – ' + esc(grund), 'rot', 'data-gast="' + g.id + '"'));
+    if (anfragen.length) add(heuteL, 'gaeste', anfragen.length + ' Gast-Anmeldung' + (anfragen.length > 1 ? 'en' : '') + ' per QR-Code warten auf einen Platz', 'gast');
+    if (ankuenfte.length && darf('gaeste')) add(heuteL, 'gaeste', ankuenfte.length + (ankuenfte.length === 1 ? ' Gast kommt' : ' Gäste kommen') + ' heute an: ' + ankuenfte.map((g) => '„' + esc(g.bootsname) + '“').join(', '), 'gast');
+    const dringend = schaeden.filter((t) => t.prioritaet === 'hoch' || (t.faellig && t.faellig < heute));
+    if (dringend.length && darf('aufgaben')) add(heuteL, 'aufgaben', dringend.length + (dringend.length === 1 ? ' dringender oder überfälliger Schaden' : ' dringende oder überfällige Schäden/Wartungen') + ': ' + dringend.slice(0, 2).map((t) => esc(t.titel)).join(', '), 'rot');
+    if (rueck.length && darf('abrechnung')) add(heuteL, 'abrechnung', rueck.length + ' Rücklastschrift' + (rueck.length > 1 ? 'en' : '') + ' – Mitglied ansprechen oder erneut einziehen', 'rot');
+    const neueAntraege = (d.antraege || []).filter((a) => a.status === 'neu');
+    if (neueAntraege.length && darf('antraege')) add(anst, 'antraege', neueAntraege.length + ' Aufnahmeantr' + (neueAntraege.length > 1 ? 'äge warten' : 'ag wartet') + ' auf den Vorstand', 'warn');
+    if (winterOffen.length && darf('abrechnung')) add(anst, 'abrechnung', 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) + ' abrechnen (' + winterOffen.length + ' Mitglieder, ' + H.geld(winterOffen.reduce((s, x) => s + x.summe, 0)) + ')', 'warn');
+    if (sepaOffen.length && darf('abrechnung')) add(anst, 'abrechnung', sepaOffen.length + ' Rechnungen warten auf die Lastschrift-Datei für die Bank', 'warn');
+    if (nachweise.length && darf('boote')) add(anst, 'boote', nachweise.length + ' Versicherungsnachweis' + (nachweise.length > 1 ? 'e' : '') + ' prüfen', 'gast');
+    if (versProbleme.length && darf('boote')) add(anst, 'boote', versProbleme.length + ' Boote: Versicherung abgelaufen, fehlt oder läuft in 30 Tagen ab', 'warn');
+    if (zuSchwer.length && darf('boote')) add(anst, 'boote', zuSchwer.length + ' Boot über 10 t – laut Hafenbetriebsordnung nicht zulässig', 'warn');
+    const normal = schaeden.filter((t) => !dringend.includes(t));
+    if (normal.length && darf('aufgaben')) add(anst, 'aufgaben', normal.length + ' offene Schäden/Wartungen', 'warn');
+    if (!e.steuer_hinweis && darf('einstellungen')) add(einr, 'einstellungen', 'Steuerhinweis für Rechnungen festlegen (mit dem Steuerberater klären)', 'warn');
+    if (darf('einstellungen') && !(SEPA.ibanGueltig(e.iban) && SEPA.glaeubigerGueltig(e.glaeubiger_id))) add(einr, 'einstellungen', 'Vereinskonto und Gläubiger-ID für die Lastschrift eintragen', 'warn');
+    if (!e.arbeitsdienst_bestaetigt && rolle === 'vorstand') add(einr, 'einstellungen', 'Regeln für den Arbeitsdienst beschließen (Soll, Befreiungen, Übertrag, Ersatz)', 'warn');
+    if (planAnnahme() && darf('belegung')) add(einr, 'plaetze', 'Boxmaße, Brücken und Wassertiefen eintragen und bestätigen', 'warn');
+    if (!naechste && darf('einstellungen')) add(einr, 'einstellungen', 'Saisontermine ' + (SAISON + 1) + ' (Auslagern/Einlagern) eintragen', 'warn');
     const warte = d.warteliste.filter((w) => w.status === 'wartend').length;
     const yy = String(SAISON + 1).slice(2);
     const karten = imSommer
@@ -165,13 +182,18 @@
       : '<div class="kz"><small>Winterlager ' + SAISON + '/' + yy + '</small><strong>' + Q.belegungen(SAISON, 'winter').length + '</strong><span>Boote an Land</span></div>' +
         '<div class="kz"><small>Wasserplätze Sommer ' + SAISON + '</small><strong>' + wasserVergeben + ' / ' + d.liegeplaetze.length + '</strong><span>vergeben (Saison beendet)</span></div>' +
         '<div class="kz"><small>Nächstes Auslagern</small><strong style="font-size:20px">' + (naechste ? H.datum(naechste.auslagern) : 'Termin offen') + '</strong><span>' + (naechste ? 'Saison ' + (SAISON + 1) : 'noch nicht eingetragen') + '</span></div>';
+    const handy = window.matchMedia('(max-width: 860px)').matches;
+    const zeilen = (l) => '<table class="tab todo"><tbody>' + l.map((x) => '<tr class="klickbar" data-gehe="' + x.tab + '" ' + x.extra + '><td><span class="tag ' + x.art + '">' + (x.art === 'rot' ? 'wichtig' : x.art === 'gast' ? (x.tab === 'boote' ? 'prüfen' : 'Gäste') : 'offen') + '</span></td><td>' + x.txt + '</td><td class="r">' + (darf(x.tab) ? '→' : '') + '</td></tr>').join('') + '</tbody></table>';
+    const gruppe = (titel, l, offen, leer) => !l.length && !leer ? '' : '<details class="panel todo-gruppe"' + (offen ? ' open' : '') + '><summary><h2>' + titel + '</h2><span class="tag' + (l.length ? '' : ' ok') + '">' + l.length + '</span></summary>' + (l.length ? zeilen(l) : '<p class="leer">' + leer + '</p>') + '</details>';
     main.innerHTML = kopf('Moin, ' + ROLLEN[rolle].name + '!', 'Stand heute, ' + H.datum(heute) + ' · ' + (imSommer ? 'Sommer ' + SAISON + ' – die Boote sind im Wasser' : 'Winterpause seit ' + H.datum(sd.einlagern) + ' (Winterlager ' + SAISON + '/' + yy + ')'),
       darf('plan') ? '<button class="btn dunkel" data-gehe="plan">Hafenplan öffnen</button>' : '') + DEMO +
+      gruppe('Heute wichtig', heuteL, true, 'Heute ist nichts Dringendes.') +
+      gruppe('Anstehend', anst, !handy) +
+      gruppe('Einrichtung abschließen', einr, !handy && heuteL.length + anst.length < 6) +
       '<div class="karten">' + karten +
       '<div class="kz"><small>Warteliste</small><strong>' + warte + '</strong><span>Mitglieder warten</span></div>' +
-      (darf('abrechnung') ? '<div class="kz"><small>Offene Rechnungen</small><strong>' + H.geld(offeneRe.reduce((s, r) => s + Q.rest(r), 0)) + '</strong><span>' + offeneRe.length + ' Rechnungen</span></div>' : '') +
-      '</div><div class="panel"><h2>Zu tun</h2>' + (todo.length ? '<table class="tab"><tbody>' + todo.map(([t, txt, art]) =>
-        '<tr class="klickbar" data-gehe="' + t + '"><td><span class="tag ' + art + '">' + (art === 'rot' ? 'wichtig' : art === 'gast' ? (t === 'boote' ? 'prüfen' : 'Gäste') : 'offen') + '</span></td><td>' + txt + '</td><td class="r">' + (darf(t) ? '→' : '') + '</td></tr>').join('') + '</tbody></table>' : '<p class="leer">Alles erledigt.</p>') + '</div>';
+      (darf('abrechnung') ? '<div class="kz"><small>Offene Rechnungen</small><strong>' + H.geld(offeneRe.reduce((s, r) => s + Q.rest(r), 0)) + '</strong><span>' + offeneRe.length + ' Rechnungen</span></div>' : '') + '</div>';
+    main.querySelectorAll('[data-gast]').forEach((z) => z.addEventListener('click', (ev) => { ev.stopPropagation(); gastForm(d.gaeste.find((g) => g.id === z.dataset.gast)); }, true));
   };
 
   /* ============================================================ Hafenplan */
@@ -715,9 +737,13 @@
       liste.map((a) => { const b = Q.boot(a.boot_id); const m = b && Q.mitglied(b.eigner_id); const jetzt = a.von <= heute && a.bis >= heute;
         return '<tr' + (a.bis < heute && !jetzt ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(platzName(a.platz_id)) + '</td><td>' + (b ? esc(b.name) : '') + '</td><td>' + esc(Q.name(m)) + '</td><td>' + esc(a.notiz || '') + '</td>' +
           '<td>' + (jetzt ? '<span class="tag gruen">unterwegs (heute)</span>' : a.von > heute ? '<span class="tag">geplant</span>' : a.bis < heute ? '<span class="tag">vorbei</span>' : '') + ' <small style="color:var(--muted)">' + esc(a.gemeldet || '') + '</small></td>' +
-          '<td class="r"><button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button></td></tr>'; }).join('') + '</tbody></table></div>';
+          '<td class="r nw">' + (jetzt && a.von < heute ? '<button class="btn klein" data-zurueck="' + a.id + '">Früher zurück</button> ' : '') + '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button></td></tr>'; }).join('') + '</tbody></table></div>';
     $('#neu').addEventListener('click', () => abwesenheitForm({}));
     main.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => { if (!confirm('Abwesenheit löschen? Der Platz ist dann nicht mehr grün.')) return; d.abwesenheiten = d.abwesenheiten.filter((a) => a.id !== b.dataset.weg); speichern('Gelöscht.'); zeige(tab); }));
+    main.querySelectorAll('[data-zurueck]').forEach((b) => b.addEventListener('click', () => {
+      const a = d.abwesenheiten.find((x) => x.id === b.dataset.zurueck); if (!confirm('Eigner ist heute zurück? Das grüne Schild endet gestern.')) return;
+      a.bis = tagVor(heute, 1); a.notiz = ((a.notiz || '') + ' (früher zurück)').trim(); speichern('Eingetragen – Konflikte mit Gästen stehen in der Übersicht.'); zeige(tab);
+    }));
   };
   function abwesenheitForm(a) {
     const el = modal('<h2>Abwesenheit eintragen</h2><p class="hinweis ok">Der Platz wird für diesen Zeitraum im Hafenplan grün und kann an Gäste vergeben werden.</p><form id="f" class="form">' +
@@ -1030,6 +1056,8 @@
       f('arbeitsdienst_befreit_ab', 'Befreit ab Alter (0 = keine Grenze)', 'number') + f('arbeitsdienst_satz', 'Ersatzzahlung je Fehlstunde in € (0 = keine)', 'number', ' step="0.5"') +
       '<label class="feld check voll"><input type="checkbox" name="arbeitsdienst_vorjahr"' + (e.arbeitsdienst_vorjahr ? ' checked' : '') + '> Fehlstunden des Vorjahres zählen mit</label>' +
       '<label class="feld check voll"><input type="checkbox" name="arbeitsdienst_bestaetigt"' + (e.arbeitsdienst_bestaetigt ? ' checked' : '') + '> Diese Regeln hat der Vorstand beschlossen (erst dann wird eine Ersatzzahlung berechnet)</label>' +
+      '<h3 class="voll" style="margin:14px 0 0">Saisontermine</h3>' + [SAISON, SAISON + 1].map((j) => { const s = (d.saisons || []).find((x) => x.jahr === j) || {};
+        return '<label class="feld">Auslagern ' + j + '<input type="date" name="aus_' + j + '" value="' + esc(s.auslagern || '') + '"></label><label class="feld">Einlagern ' + j + '<input type="date" name="ein_' + j + '" value="' + esc(s.einlagern || '') + '"></label>'; }).join('') +
       '<h3 class="voll" style="margin:14px 0 0">Hafenplan</h3>' +
       '<label class="feld check voll"><input type="checkbox" name="plan_bestaetigt"' + (e.plan_bestaetigt ? ' checked' : '') + '> Brückenzuordnung und Boxmaße unter „Liegeplätze“ sind geprüft und stimmen</label></form></div>' +
       (darf('verlauf') ? '<div class="panel"><h2>Datensicherung</h2><p class="hinweis">' + (DB ? 'Die Vereinsdatenbank wird beim Anbieter gesichert (Tarif prüfen: tägliche Sicherung). Zusätzlich kannst du hier jederzeit eine Kopie aller Hafen- und Mitgliederdaten herunterladen – z. B. einmal im Monat, sicher aufbewahren (enthält Bankdaten).' : 'In der Demo liegen die Daten nur in diesem Browser.') + '</p><button class="btn" id="sicherung">Datensicherung herunterladen</button></div>' : '') +
@@ -1038,6 +1066,11 @@
       const x = Object.fromEntries(new FormData($('#f'))); ['stromumlage_ueber_hafen', 'arbeitsdienst_vorjahr', 'arbeitsdienst_bestaetigt', 'plan_bestaetigt'].forEach((k) => { x[k] = !!x[k]; });
       ['zahlungsziel_tage', 'arbeitsdienst_soll', 'arbeitsdienst_mahnung_ab', 'arbeitsdienst_befreit_ab', 'arbeitsdienst_satz'].forEach((k) => { x[k] = Number(String(x[k]).replace(',', '.')) || 0; });
       if (x.steuer_hinweis === 'frei' && !x.steuer_text.trim()) return toast('Bitte den eigenen Steuerhinweis eintragen.', 'fehler');
+      for (const j of [SAISON, SAISON + 1]) {
+        const aus = x['aus_' + j], ein = x['ein_' + j]; delete x['aus_' + j]; delete x['ein_' + j];
+        if (!aus && !ein) continue; if (!aus || !ein || ein <= aus) return toast('Saison ' + j + ': bitte Auslagern und Einlagern eintragen (Einlagern nach dem Auslagern).', 'fehler');
+        const s = d.saisons.find((y) => y.jahr === j); if (s) Object.assign(s, { auslagern: aus, einlagern: ein }); else d.saisons.push({ jahr: j, auslagern: aus, einlagern: ein });
+      }
       if (x.iban && !SEPA.ibanGueltig(x.iban)) return toast('IBAN des Vereins ist ungültig.', 'fehler');
       if (x.glaeubiger_id && !SEPA.glaeubigerGueltig(x.glaeubiger_id)) return toast('Gläubiger-ID hat ein ungültiges Format.', 'fehler');
       Object.assign(e, x); speichern('Gespeichert.');

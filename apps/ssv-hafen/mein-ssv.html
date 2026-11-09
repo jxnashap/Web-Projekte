@@ -43,15 +43,25 @@
   .login-links a { color: var(--navy); }
   .mein-fuss { text-align: center; font-size: 13px; color: var(--muted); padding: 0 16px 40px; } .mein-fuss a { color: var(--navy); display: inline-block; padding: 10px 4px; }
   table.rechn td { vertical-align: middle; }
+  .erkl { display: inline-block; font-size: 12.5px; margin-top: 3px; color: var(--muted); } .erkl.warn { color: #8a5e05; font-weight: 600; } .erkl.rot { color: var(--rot); font-weight: 600; }
+  .blick { grid-template-columns: 1.3fr 1fr 1fr; }
+  #k-offen span { white-space: normal; }
+  @media (max-width: 600px) {
+    .blick { grid-template-columns: 1fr 1fr; }
+    .blick button:first-child { grid-column: 1 / -1; }
+    .blick button:nth-child(2):last-child { grid-column: 1 / -1; }
+    .blick span { white-space: normal; }
+  }
   @media (max-width: 860px) {
     .mein-kopf { padding: 12px 16px; gap: 10px; }
-    .mein-kopf h1 { font-size: 20px; } .mein-kopf .stander { width: 36px; height: 30px; }
+    .mein-kopf h1 { font-size: 20px; } .mein-kopf .stander { width: 44px; height: 22px; }
     .mein-kopf select { margin-left: 0; width: 100%; }
     .mein { padding: 12px 12px 48px; }
     .mein .kopf { margin-bottom: 12px; } .mein .kopf h1 { font-size: 25px; }
     .mein-raster { display: flex; flex-direction: column; gap: 0; }
     .mein-raster > div { display: contents; }
-    .sek[data-sek=rechnungen] { order: 1; } .sek[data-sek=schild] { order: 2; } .sek[data-sek=kasse] { order: 3; } .sek[data-sek=boot] { order: 4; } .sek[data-sek=warteliste] { order: 5; } .sek[data-sek=daten] { order: 6; }
+    .sek[data-sek=rechnungen] { order: 1; } .sek[data-sek=schild] { order: 2; } .sek[data-sek=kasse] { order: 3; } .sek[data-sek=termine] { order: 4; } .sek[data-sek=boot] { order: 5; }
+    .sek[data-sek=arbeitsdienst] { order: 6; } .sek[data-sek=warteliste] { order: 7; } .sek[data-sek=daten] { order: 8; } .sek[data-sek=schaden] { order: 9; }
     .panel.sek { padding: 14px 16px; margin-bottom: 10px; }
     .panel.sek h2 { font-size: 17px; }
     .blick { gap: 8px; margin-bottom: 12px; }

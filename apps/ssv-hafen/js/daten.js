@@ -459,6 +459,7 @@
     if (!personal) {
       db.mitgliedId = ich;
       db.warteplatz = await SB.rpc('mein_wartelistenplatz').catch(() => null);
+      d.arbeitsdienst = ((await SB.rpc('mein_arbeitsdienst').catch(() => [])) || []).map((a) => ({ ...a, stunden: Number(a.stunden) }));
     }
     // Was diese Person zurückschreiben darf (der Rest ist für sie nur lesbar)
     db.schreibbar = new Set(personal

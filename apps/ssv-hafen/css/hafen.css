@@ -226,3 +226,11 @@ table.verlauf td { vertical-align: top; }
 .detail dl { grid-template-columns: auto minmax(0, 1fr); }
 .detail dd { min-width: 0; overflow-wrap: anywhere; }
 .detail dd .tag, .hinweis .tag { white-space: normal; }
+/* Übersicht: Heute wichtig / Anstehend / Einrichtung */
+details.todo-gruppe > summary { list-style: none; display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 32px; }
+details.todo-gruppe > summary::-webkit-details-marker { display: none; }
+details.todo-gruppe > summary h2 { margin: 0; }
+details.todo-gruppe > summary::after { content: ''; margin-left: auto; width: 8px; height: 8px; border-right: 2px solid var(--muted-2); border-bottom: 2px solid var(--muted-2); transform: rotate(45deg); transition: transform .2s; }
+details.todo-gruppe[open] > summary::after { transform: rotate(-135deg); }
+details.todo-gruppe[open] > summary { margin-bottom: 8px; }
+table.todo td:first-child { width: 1%; white-space: nowrap; }

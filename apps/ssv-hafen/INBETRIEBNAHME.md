@@ -7,7 +7,7 @@ freigibt.
 
 ## 1 · Datenbank-Nachträge einspielen (einmalig, in dieser Reihenfolge)
 
-Bereits eingespielt: 01, 02. Neu: 03.
+Bereits eingespielt: 01, 02, 03. Neu: 04.
 
 Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inhalt einfügen → **Run**:
 
@@ -25,6 +25,9 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    (Freigabe des Eigners, Boxmaße, Tiefgang), Änderungsverlauf, Versicherungsnachweise und Dokumente,
    Zahlungen je Rechnung (Teilzahlung, Rücklastschrift), Schäden & Wartung, Arbeitsdienst-Befreiung.
    **Erst diesen Nachtrag einspielen, dann die neue Version in Vercel freischalten** – die Oberfläche braucht die neuen Spalten.
+
+4. `apps/ssv-hafen/supabase/nachtrag-04.sql` – Mein SSV: „Früher zurück“ (mit Hinweis, wenn noch ein Gast auf
+   dem Platz liegt) und der eigene Arbeitsdienst-Stundenstand.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 
@@ -99,7 +102,7 @@ mit der E-Mail-Adresse, die im Mitgliederstamm steht. Voraussetzung: eigenes SMT
   (mit der Beitragsrechnung des Folgejahres). Einzelne Befreiungen beim Mitglied eintragen.
 - **Liegeplätze → Maße**: echte Boxmaße, Brücke und – wenn bekannt – Wassertiefe je Platz; danach unter
   Einstellungen „Boxmaße geprüft“ anhaken. Bis dahin kennzeichnet der Hafen-Manager die Platzempfehlung als Annahme.
-- **Saisontermine** (Auslagern/Einlagern) für das nächste Jahr in der Tabelle `saisons` eintragen.
+- **Einstellungen → Saisontermine**: Auslagern/Einlagern für dieses und das nächste Jahr (erscheinen in „Mein SSV“ unter Termine).
 
 ## 6b · Datensicherung
 

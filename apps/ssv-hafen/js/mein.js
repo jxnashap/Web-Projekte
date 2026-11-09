@@ -64,6 +64,22 @@
     const wasser = sommer && sommer.platz_typ === 'wasser';
     const inSaison = inSaisonF();   // grünes Schild nur, solange die Boote im Wasser sind
 
+    // Persönliche Termine (nur, was kommt)
+    const termine = [];
+    d.rechnungen.filter((r) => r.mitglied_id === mid && Q.rest(r) > 0 && r.faellig >= heute).forEach((r) => termine.push([r.faellig, r.sepa ? 'Lastschrift-Einzug ' + H.geld(Q.rest(r)) : 'Überweisung fällig ' + H.geld(Q.rest(r)), (r.periode === 'beitrag' ? 'Beitrag ' + r.saison : H.periodeText(r)) + ' · ' + r.nr]));
+    if (awAktuell) termine.push([awAktuell.bis, 'Rückkehr gemeldet', 'grünes Schild endet']);
+    if (b && sd.einlagern >= heute) termine.push([sd.einlagern, 'Einlagern', 'Gemeinschaftsarbeit nach Belegungsplan']);
+    if (b && auslagernNeu && auslagernNeu >= heute) termine.push([auslagernNeu, 'Auslagern', 'Gemeinschaftsarbeit nach Belegungsplan']);
+    if (b && b.vers_bis && b.vers_bis >= heute) termine.push([b.vers_bis, 'Versicherung läuft ab', 'vorher neuen Nachweis hochladen']);
+    termine.sort((x, y) => x[0].localeCompare(y[0])); termine.splice(5);
+    // Arbeitsdienst: eigener Stundenstand nach den Regeln des Vereins
+    const ad = G.arbeitsdienst && (m.art === 'ausuebend' || m.art === 'probe') ? G.arbeitsdienst(d, SAISON, m) : null;
+    const meineStunden = (d.arbeitsdienst || []).filter((a) => a.mitglied_id === mid && String(a.datum).startsWith(String(SAISON))).sort((x, y) => y.datum.localeCompare(x.datum));
+    const adInhalt = ad ? (ad.befreit ? '<p style="margin:0">Du bist vom Arbeitsdienst befreit (' + esc(ad.befreit) + ').</p>'
+      : '<div class="kasse-zahlen"><div><small>geleistet</small><strong>' + H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' Std.</strong></div><div><small>noch offen</small><strong>' + H.zahl(ad.fehl, ad.fehl % 1 ? 1 : 0) + ' Std.</strong></div></div>' +
+        (meineStunden.length ? '<table class="tab"><tbody>' + meineStunden.map((a) => '<tr><td class="nw">' + H.datum(a.datum) + '</td><td>' + esc(a.taetigkeit || 'Arbeitseinsatz') + '</td><td class="r">' + H.zahl(a.stunden, a.stunden % 1 ? 1 : 0) + ' Std.</td></tr>').join('') + '</tbody></table>' : '<p class="leer">Noch keine Stunden erfasst.</p>') +
+        '<p class="hinweis" style="margin-top:10px">Soll: ' + ad.soll + ' Stunden im Jahr' + (ad.vorjahr ? ' (dazu ' + ad.vorjahr + ' aus dem Vorjahr)' : '') + '. Die Stunden trägt der Verein nach jedem Arbeitseinsatz ein.' + (d.einstellungen.arbeitsdienst_bestaetigt ? '' : ' Die genauen Regeln legt der Vorstand noch fest.') + '</p>') : '';
+
     const bootInhalt = b ? '<div class="detail" style="box-shadow:none;padding:0;position:static"><dl>' +
         '<dt>Typ</dt><dd>' + esc(b.typ) + '</dd><dt>Maße</dt><dd>' + H.zahl(b.laenge) + ' × ' + H.zahl(b.breite) + ' m · Tiefgang ' + H.zahl(b.tiefgang) + ' m · ' + H.zahl(b.gewicht_t, 1) + ' t</dd>' +
         '<dt>Jetzt</dt><dd><strong>' + ortJetzt + '</strong></dd>' +
@@ -72,17 +88,18 @@
         '<dt>Versicherung</dt><dd>' + esc(b.versicherung || '–') + (b.vers_bis ? ', bis ' + H.datum(b.vers_bis) : '') + '<br><span class="tag ' + nw[1] + '">' + nw[0] + '</span></dd><dt>Kfz</dt><dd>' + esc(m.kfz || '–') + '</dd></dl></div>' +
         (platzS && !platzS.bez ? '<div id="miniplan" class="plan-flaeche mini-plan"></div><p style="font-size:12px;color:var(--muted);margin:4px 0 0">' + (inSaisonF() ? 'Hafenplan heute' : 'Dein Sommerplatz ' + SAISON + ' (Saison beendet)') + '</p>' : '') +
         '<div class="aktionen" style="margin-top:12px"><button class="btn primaer" id="nachweis">Versicherungsnachweis hochladen</button><button class="btn" id="daten">Daten aktualisieren</button></div>' : '';
-    const schildInhalt = wasser && !inSaison ? '<p style="margin:0">Das grüne Schild gibt es, solange die Boote im Wasser sind – wieder ab dem Auslagern' + (auslagernNeu ? ' am ' + H.datum(auslagernNeu) : '') + '. ' + (platzW ? 'Dein Boot steht gerade im Winterlager (' + esc(platzW.bez) + ').' : 'Im Winter ' + SAISON + '/' + yy + ' hast du bei uns keinen Landplatz gebucht.') + '</p>' : wasser ? '<p style="margin-top:0;color:var(--muted)">Unterwegs? Dann wird dein Platz grün und der Hafenmeister kann ihn an Gäste geben. Bitte trotzdem das Schild am Steg drehen.</p>' +
+    const awTabelle = aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : a.bis >= heute ? '<button class="btn klein" data-weg="' + a.id + '">Früher zurück</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '';
+    const schildInhalt = wasser && !inSaison ? '<p style="margin:0">Das grüne Schild gibt es, solange die Boote im Wasser sind – wieder ab dem Auslagern' + (auslagernNeu ? ' am ' + H.datum(auslagernNeu) : '') + '. ' + (platzW ? 'Dein Boot steht gerade im Winterlager (' + esc(platzW.bez) + ').' : 'Im Winter ' + SAISON + '/' + yy + ' hast du bei uns keinen Landplatz gebucht.') + '</p>' + (aw.some((a) => a.bis >= heute) ? awTabelle.replace(/<tr class="blass">.*?<\/tr>/g, '') : '') : wasser ? '<p style="margin-top:0;color:var(--muted)">Unterwegs? Dann wird dein Platz grün und der Hafenmeister kann ihn an Gäste geben. Bitte trotzdem das Schild am Steg drehen.</p>' +
         '<form id="awf" class="form"><label class="feld">ab<input type="date" name="von" required value="' + heute + '"></label><label class="feld">zurück am<input type="date" name="bis" required></label><label class="feld voll">Ziel (optional)<input name="notiz" placeholder="z. B. Dänische Südsee"></label></form>' +
         '<div class="aktionen" style="margin-top:10px"><button class="btn gruen" id="awok">Abwesenheit melden</button></div>' +
-        (aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') : '';
+        awTabelle : '';
 
     $('#main').innerHTML = (DBM ? '' : '<div class="demo-band"><strong>Demo</strong> – erfundene Daten. Im Echtbetrieb meldest du dich mit deinem eigenen Zugang an.</div>') +
       '<div class="kopf"><div><h1>Moin ' + esc(m.vorname) + '!</h1><p>' + H.ART[m.art] + ' · Mitgliedsnr. ' + esc(m.nr) + '</p></div></div>' +
       (vs !== 'ok' && b ? '<p class="hinweis warn">Deine Bootsversicherung ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'ist noch nicht hinterlegt' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte unter „Mein Boot“ einen neuen Nachweis hochladen.</p>' : '') +
-      '<div class="blick">' + kachel('rechnungen', 'Offen', '…', 'Rechnungen', 'k-offen') +
+      '<div class="blick">' + kachel('rechnungen', 'Rechnungen', '…', 'wird geladen …', 'k-offen') +
         (b && !inSaison && platzW ? kachel('boot', 'Winterlager', esc(platzW.bez), SAISON + '/' + yy) : platzS ? kachel(wasser ? 'schild' : 'boot', 'Liegeplatz', platzText, !inSaison ? 'Sommer ' + SAISON + ' (beendet)' : awAktuell ? 'grün bis ' + H.kurz(awAktuell.bis) : (platzS.bez ? 'an Land' : H.BRUECKE[platzS.bruecke])) : meinW >= 0 ? kachel('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), 'seit ' + H.datum(warte[meinW].datum)) : kachel('rechnungen', 'Mitglied seit', m.eintritt ? m.eintritt.slice(0, 4) : '–', H.ART[m.art])) +
-        (KASSE ? kachel('kasse', 'Getränke', '…', new Date().toLocaleDateString('de-DE', { month: 'long' }), 'k-getraenke') : '') + '</div>' +
+        (KASSE ? kachel('kasse', 'Verbrauch ' + new Date().toLocaleDateString('de-DE', { month: 'long' }), '…', 'Getränke · noch nicht abgerechnet', 'k-getraenke') : '') + '</div>' +
       '<div class="mein-raster"><div>' +
       (b ? sektion('boot', 'Mein Boot', '„' + esc(b.name) + '“' + (platzText ? ' · ' + platzText : ''), bootInhalt) : '') +
       (meinW >= 0 ? sektion('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), '<p style="margin:0">Du stehst auf <strong>Platz ' + (meinW + 1) + '</strong> der Warteliste (seit ' + H.datum(warte[meinW].datum) + ').</p>') : '') +
@@ -95,6 +112,8 @@
       '</div><div>' +
       (wasser ? sektion('schild', 'Grünes Schild', awAktuell ? 'unterwegs ' + H.kurz(awAktuell.von) + '–' + H.kurz(awAktuell.bis) : 'Platz frei melden', schildInhalt, 'gruen-box') : '') +
       sektion('rechnungen', 'Meine Rechnungen', '', '<div id="rechnungen"></div><p class="hinweis" style="margin-top:12px">Mit Lastschriftmandat wird alles eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p>', '', true) +
+      (termine.length ? sektion('termine', 'Meine Termine', esc(termine[0][1]) + ' ' + H.kurz(termine[0][0]), '<table class="tab"><tbody>' + termine.map(([t, txt, zus]) => '<tr><td class="nw">' + H.datum(t) + '</td><td>' + esc(txt) + (zus ? '<br><small style="color:var(--muted)">' + esc(zus) + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>') : '') +
+      (ad ? sektion('arbeitsdienst', 'Arbeitsdienst ' + SAISON, ad.befreit ? 'befreit' : H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' von ' + ad.soll + ' Std.', adInhalt) : '') +
       sektion('schaden', 'Schaden melden', 'Steg, Strom, Kran …', '<p style="margin-top:0">Etwas kaputt im Hafen? Kurz melden – die Funktionsträger sehen es sofort und kümmern sich.</p><div class="aktionen"><button class="btn" id="schaden">Schaden melden</button></div>') +
       '</div></div>';
 
@@ -108,27 +127,34 @@
     // Rechnungen: Hafen und Beitrag sofort, Getränke sobald die Kasse geantwortet hat
     const hafenPosten = res.map((r) => ({ art: r.periode === 'beitrag' ? 'Beitrag' : 'Hafen', nr: r.nr, datum: r.datum || '', text: r.periode === 'beitrag' ? String(r.saison) : H.periodeText(r),
       summe: Q.rest(r) || r.summe, rest: Q.rest(r), stand: Q.rstatus(r, heute), bezahlt_am: Q.rest(r) === 0 ? (r.bezahlt_am || heute) : null, sepa: r.sepa, faellig: r.faellig, href: 'drucken.html?art=rechnungen&ids=' + r.id + (DBM ? '&mein=1' : '') }));
-    let alleZeigen = false;
+    let bezahlteZeigen = false;
+    const erklaerung = (r) => r.stand === 'ruecklastschrift' ? ['Lastschrift zurückgekommen – bitte überweisen', 'rot'] : r.stand === 'teilbezahlt' ? ['teilweise bezahlt – Rest ' + (r.sepa ? 'wird eingezogen' : 'bitte überweisen'), 'warn']
+      : r.sepa ? [(r.faellig >= heute ? 'Einzug am ' + H.kurz(r.faellig) : 'wird eingezogen') + ' – du musst nichts tun', ''] : ['bitte überweisen bis ' + H.kurz(r.faellig), 'warn'];
     const rechnungenZeigen = (getraenke) => {
       const alle = hafenPosten.concat(getraenke || []).sort((x, y) => (y.datum || '').localeCompare(x.datum || '') || y.nr.localeCompare(x.nr));
-      const offen = alle.filter((r) => !r.bezahlt_am);
+      const offen = alle.filter((r) => !r.bezahlt_am); const bezahlt = alle.filter((r) => r.bezahlt_am);
       const summeOffen = offen.reduce((s2, r) => s2 + Math.round(r.summe * 100), 0) / 100;
-      const ko = $('#k-offen'); if (ko) { ko.querySelector('strong').textContent = summeOffen ? H.geld(summeOffen) : 'nichts'; ko.querySelector('span').textContent = offen.length ? offen.length + (offen.length === 1 ? ' Rechnung' : ' Rechnungen') : 'alles bezahlt'; }
-      $('#info-rechnungen').textContent = offen.length ? H.geld(summeOffen) + ' offen' : alle.length + ' bezahlt';
-      const GRENZE = 4; const liste = alleZeigen ? alle : alle.slice(0, GRENZE);
-      $('#rechnungen').innerHTML = alle.length ? '<table class="tab rechn"><tbody>' + liste.map((r) => '<tr><td><span class="tag' + (r.art === 'Hafen' ? '' : r.art === 'Beitrag' ? ' gruen' : ' gold') + '">' + r.art + '</span> ' + esc(r.text) +
-        '<br><small style="color:var(--muted)">' + esc(r.nr) + '</small></td><td class="r"><strong>' + H.geld(r.summe) + '</strong><br>' +
-        (r.bezahlt_am ? '<span class="tag ok">bezahlt</span>' : r.stand === 'ruecklastschrift' ? '<span class="tag rot">Lastschrift zurück – bitte überweisen</span>' : r.stand === 'teilbezahlt' ? '<span class="tag warn">Rest offen</span>' : r.sepa ? '<span class="tag">Einzug ' + H.kurz(r.faellig) + '</span>' : '<span class="tag warn">offen</span>') +
-        '</td><td class="r"><a class="btn klein" href="' + r.href + '" target="_blank">PDF</a></td></tr>').join('') + '</tbody></table>' +
-        (alle.length > GRENZE ? '<button class="btn klein" id="rmehr" style="margin-top:10px">' + (alleZeigen ? 'Weniger anzeigen' : 'Alle ' + alle.length + ' Rechnungen anzeigen') + '</button>' : '')
-        : '<p class="leer">Noch keine Rechnungen.</p>';
-      const mehr = $('#rmehr'); if (mehr) mehr.addEventListener('click', () => { alleZeigen = !alleZeigen; rechnungenZeigen(getraenke); });
+      const ko = $('#k-offen');
+      if (ko) {
+        const naechste = offen.slice().sort((x, y) => (x.faellig || '').localeCompare(y.faellig || ''))[0];
+        ko.querySelector('small').textContent = offen.length > 1 ? offen.length + ' offene Rechnungen' : offen.length ? 'Rechnung' : 'Rechnungen';
+        ko.querySelector('strong').textContent = offen.length ? H.geld(summeOffen) : 'alles bezahlt';
+        ko.querySelector('span').textContent = naechste ? erklaerung(naechste)[0] : 'nichts offen – danke!';
+      }
+      $('#info-rechnungen').textContent = offen.length ? H.geld(summeOffen) + ' offen' : 'alles bezahlt';
+      const zeile = (r) => '<tr><td><span class="tag' + (r.art === 'Hafen' ? '' : r.art === 'Beitrag' ? ' gruen' : ' gold') + '">' + r.art + '</span> ' + esc(r.text) +
+        '<br><small style="color:var(--muted)">' + esc(r.nr) + '</small>' + (!r.bezahlt_am ? '<br><span class="erkl ' + erklaerung(r)[1] + '">' + erklaerung(r)[0] + '</span>' : '') + '</td><td class="r"><strong>' + H.geld(r.summe) + '</strong>' +
+        (r.bezahlt_am ? '<br><span class="tag ok">bezahlt</span>' : '') + '</td><td class="r"><a class="btn klein" href="' + r.href + '" target="_blank">PDF</a></td></tr>';
+      $('#rechnungen').innerHTML = (offen.length ? '<table class="tab rechn"><tbody>' + offen.map(zeile).join('') + '</tbody></table>' : '<p class="leer" style="margin:0">Keine offenen Rechnungen – alles bezahlt.</p>') +
+        (bezahlt.length ? '<button class="btn klein" id="rmehr" style="margin-top:12px">' + (bezahlteZeigen ? 'Bezahlte Rechnungen ausblenden' : 'Bezahlte Rechnungen ansehen (' + bezahlt.length + ')') + '</button>' +
+          (bezahlteZeigen ? '<table class="tab rechn" style="margin-top:8px"><tbody>' + bezahlt.map(zeile).join('') + '</tbody></table>' : '') : '');
+      const mehr = $('#rmehr'); if (mehr) mehr.addEventListener('click', () => { bezahlteZeigen = !bezahlteZeigen; rechnungenZeigen(getraenke); });
     };
     rechnungenZeigen();
     if (KASSE) kasseZeigen(m, rechnungenZeigen);
 
     if (platzS && !platzS.bez && $('#miniplan')) {
-      const svg = PLAN.zeichnen($('#miniplan'), { modus: 'sommer', saison: SAISON, datum: heute >= sd.auslagern && heute < sd.einlagern ? heute : '2026-08-15', ansicht: platzS.bruecke === 'laengs' ? 'gesamt' : platzS.bruecke, markiere: platzS.id });
+      const svg = PLAN.zeichnen($('#miniplan'), { modus: 'sommer', saison: SAISON, datum: heute >= sd.auslagern && heute < sd.einlagern ? heute : (DBM ? H.tag(new Date(new Date(sd.einlagern + 'T12:00:00').getTime() - 864e5)) : '2026-08-15'), ansicht: platzS.bruecke === 'laengs' ? 'gesamt' : platzS.bruecke, markiere: platzS.id });
       svg.style.pointerEvents = 'none';
     }
     const awok = $('#awok'); if (awok) awok.addEventListener('click', () => {
@@ -137,7 +163,7 @@
       d.abwesenheiten.push({ id: H.uid('AW'), boot_id: b.id, platz_id: sommer.platz_id, von: x.von, bis: x.bis, notiz: x.notiz, gemeldet: 'Mitglied (Mein SSV)' });
       HF.sichern().then(() => toast('Gemeldet – gute Fahrt!'), (e) => toast('Nicht gespeichert: ' + e.message)); zeigen();
     });
-    document.querySelectorAll('[data-weg]').forEach((btn) => btn.addEventListener('click', () => { d.abwesenheiten = d.abwesenheiten.filter((a) => a.id !== btn.dataset.weg); HF.sichern().catch((e) => toast('Nicht gelöscht: ' + e.message)); zeigen(); }));
+    document.querySelectorAll('[data-weg]').forEach((btn) => btn.addEventListener('click', () => abwesenheitBeenden(aw.find((a) => a.id === btn.dataset.weg))));
     $('#meine-daten').addEventListener('click', () => {
       const el = modal('<h2>Meine Daten ändern</h2><form id="mf" class="form">' +
         '<label class="feld voll">Straße und Hausnummer<input name="strasse" autocomplete="street-address" value="' + esc(m.strasse || '') + '"></label>' +
@@ -168,6 +194,34 @@
       });
     });
   }
+  /* Früher zurück (oder geplante Abwesenheit löschen): ab heute ist der Platz wieder belegt.
+   * Liegt dort noch ein Gast, wird der Hafenmeister gebraucht – das sagen wir deutlich. */
+  async function abwesenheitBeenden(a) {
+    if (!a) return;
+    const laufend = a.von <= heute;
+    if (!confirm(laufend ? 'Bist du wieder da? Ab heute ist dein Platz wieder belegt und wird nicht mehr an Gäste vergeben.' : 'Geplante Abwesenheit löschen?')) return;
+    let gaeste = [];
+    try {
+      if (DBM) {
+        const r = await window.SSV_SB.rpc('meine_abwesenheit_beenden', { p_id: a.id });
+        gaeste = (r && r.gaeste) || [];
+        if (laufend && a.von < heute) a.bis = H.tag(new Date(Date.now() - 864e5)); else d.abwesenheiten = d.abwesenheiten.filter((x) => x !== a);
+      } else {
+        const abr = (g) => H.tag(new Date(new Date(g.ankunft + 'T12:00:00').getTime() + g.naechte * 864e5));
+        gaeste = d.gaeste.filter((g) => g.platz_id === a.platz_id && g.status !== 'storniert' && g.status !== 'abgereist' && abr(g) > heute && g.ankunft <= a.bis).map((g) => ({ bootsname: g.bootsname, bis: abr(g) }));
+        if (laufend && a.von < heute) a.bis = H.tag(new Date(Date.now() - 864e5)); else d.abwesenheiten = d.abwesenheiten.filter((x) => x !== a);
+        await HF.sichern();
+      }
+    } catch (e) { return toast('Nicht gespeichert: ' + e.message); }
+    zeigen();
+    if (gaeste.length) {
+      const e = d.einstellungen;
+      modal('<h2>Willkommen zurück!</h2><p class="hinweis warn">Auf deinem Platz ist noch ein Gast eingeplant: ' + gaeste.map((g) => '„' + esc(g.bootsname) + '“ bis ' + H.datum(g.bis)).join(', ') +
+        '. Bitte kurz beim Hafenmeister melden, damit er den Gast umlegt.</p><div class="modal-fuss"><button class="btn" data-zu>Schließen</button>' +
+        (e.hafenmeister_tel ? '<a class="btn primaer" href="tel:' + esc(String(e.hafenmeister_tel).replace(/\s/g, '')) + '">Hafenmeister anrufen</a>' : '') + '</div>');
+    } else toast(laufend ? 'Willkommen zurück – dein Platz ist wieder belegt.' : 'Gelöscht.');
+  }
+
   /* ---------------------------------------------------------- Versicherungsnachweis und Schadensmeldung */
   document.addEventListener('click', (e) => {
     if (e.target.closest('#nachweis')) nachweisDialog();
@@ -222,10 +276,11 @@
     if (!u || mid !== m.id || !box) return; // inzwischen anderes Mitglied gewählt
     rechnungenZeigen(u.rechnungen.map((r) => ({ art: 'Getränke', nr: r.nr, datum: r.datum, text: monatText(r.von), summe: r.summe, bezahlt_am: r.bezahlt_am, sepa: r.sepa, faellig: r.faellig,
       href: KASSE_PFAD + 'drucken.html?art=rechnung&ids=' + r.id + '&mein=' + encodeURIComponent(m.id) })));
-    const kg = $('#k-getraenke'); if (kg) kg.querySelector('strong').textContent = H.geld(u.monat_summe);
-    $('#info-kasse').textContent = (u.hat_pin ? '' : 'Code fehlt · ') + H.geld(u.monat_summe) + ' diesen Monat';
+    const kg = $('#k-getraenke'); if (kg) { kg.querySelector('strong').textContent = H.geld(u.monat_summe); kg.querySelector('span').textContent = 'Getränke · noch nicht abgerechnet'; }
+    $('#info-kasse').textContent = (u.hat_pin ? '' : 'Code fehlt · ') + H.geld(u.monat_summe) + ' im ' + new Date().toLocaleDateString('de-DE', { month: 'long' });
     const bs = u.buchungen.slice(0, 5);
-    box.innerHTML = '<div class="kasse-zahlen"><div><small>Diesen Monat</small><strong>' + H.geld(u.monat_summe) + '</strong></div><div><small>noch nicht abgerechnet</small><strong>' + H.geld(u.offen_summe) + '</strong></div></div>' +
+    box.innerHTML = '<div class="kasse-zahlen"><div><small>Verbrauch ' + new Date().toLocaleDateString('de-DE', { month: 'long' }) + '</small><strong>' + H.geld(u.monat_summe) + '</strong></div><div><small>insgesamt noch nicht abgerechnet</small><strong>' + H.geld(u.offen_summe) + '</strong></div></div>' +
+      '<p style="margin:0 0 10px;font-size:13px;color:var(--muted)">Der Verbrauch wird am Monatsende abgerechnet und erscheint dann unter „Meine Rechnungen“.</p>' +
       (u.gesperrt_bis ? '<p class="hinweis warn">Dein Code wurde nach 5 Fehlversuchen kurz gesperrt. Mit einem neuen Code bist du sofort wieder frei.</p>' : '') +
       '<p style="margin:0 0 10px">' + (u.hat_pin
         ? 'Dein Code fürs iPad ist festgelegt. Vergessen? Leg einfach einen neuen fest.'
