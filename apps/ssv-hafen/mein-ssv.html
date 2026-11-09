@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0E1B45">
+<title>Mein SSV · Schwartauer Segler-Verein</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/hafen.css">
+<style>
+  .mein-kopf { background: var(--navy); color: #fff; padding: 18px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .mein-kopf h1 { color: #fff; font-size: 24px; } .mein-kopf p { margin: 2px 0 0; opacity: .7; font-size: 13px; }
+  .mein-kopf select { margin-left: auto; padding: 8px 10px; border-radius: 9px; border: 0; max-width: 100%; color: var(--ink); background: #fff; }
+  .mein { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+  .mein-raster { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
+  .gruen-box { border: 2px solid var(--gruen); }
+  @media (max-width: 860px) { .mein-raster { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="sc"><path d="M14 8H118L94 33L118 58H14Z"/></clipPath>
+  <symbol id="stander" viewBox="0 0 124 100"><rect x="6" y="2" width="5" height="96" rx="2.5" fill="currentColor" opacity=".7"/><path d="M14 8H118L94 33L118 58H14Z" fill="#132a6b"/><g clip-path="url(#sc)"><path d="M14 8L104 58M14 58L104 8" stroke="#fff" stroke-width="15"/><path d="M14 8L104 58M14 58L104 8" stroke="#d3252c" stroke-width="9"/></g><path d="M14 8H118L94 33L118 58H14Z" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2"/></symbol></defs></svg>
+<header class="mein-kopf">
+  <svg class="stander"><use href="#stander"/></svg>
+  <div><h1>Mein SSV</h1><p>Mitgliederbereich · Demo</p></div>
+  <select id="wer" aria-label="Als Mitglied ansehen (Demo)"></select>
+</header>
+<main class="mein" id="main"></main>
+<div id="modal"></div>
+<div class="toast" id="toast"></div>
+<script src="js/daten.js"></script>
+<script src="js/gebuehren.js"></script>
+<script src="js/plan.js"></script>
+<script src="js/mein.js"></script>
+</body>
+</html>

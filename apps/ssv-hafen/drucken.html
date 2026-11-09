@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>SSV Hafen-Manager · Drucken</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/hafen.css">
+<style>
+  body { background: #e9e6df; }
+  .leiste { position: sticky; top: 0; z-index: 5; background: var(--navy); color: #fff; padding: 11px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .blatt { width: 210mm; min-height: 297mm; margin: 18px auto; background: #fff; padding: 18mm 18mm 22mm 22mm; box-shadow: 0 4px 30px rgba(0,0,0,.15); font-size: 10pt; line-height: 1.45; color: #111; position: relative; }
+  .blatt.quer { width: 297mm; min-height: 210mm; padding: 14mm; }
+  .blatt.klein { width: 148mm; min-height: 105mm; padding: 10mm 12mm; }
+  .r-kopf { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--navy); padding-bottom: 4mm; }
+  .r-kopf .stander { width: 22mm; height: 18mm; color: var(--navy); }
+  .r-verein { text-align: right; font-size: 9pt; color: #444; } .r-verein strong { display: block; font-size: 13pt; color: var(--navy); }
+  .r-absender { font-size: 7.5pt; color: #666; text-decoration: underline; margin: 9mm 0 2mm; }
+  .r-adresse { min-height: 26mm; font-size: 10.5pt; }
+  .r-meta { display: grid; grid-template-columns: auto auto; gap: 1mm 6mm; justify-content: end; margin: -24mm 0 8mm; font-size: 9.5pt; } .r-meta span { color: #555; }
+  .blatt h1 { font-size: 17pt; margin: 0 0 4mm; }
+  .r-tab { width: 100%; border-collapse: collapse; margin: 4mm 0; }
+  .r-tab th { text-align: left; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .06em; color: #555; border-bottom: 1px solid #333; padding: 2mm 1.5mm; }
+  .r-tab td { padding: 1.8mm 1.5mm; border-bottom: 1px solid #ddd; vertical-align: top; }
+  .r-tab .r { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .r-tab tfoot td { border-bottom: 0; border-top: 2px solid #111; font-weight: 700; font-size: 11pt; }
+  .r-zahlung { margin-top: 5mm; padding: 4mm 5mm; background: #f6f4ef; border-left: 2px solid var(--rot); border-radius: 0 3mm 3mm 0; } .r-zahlung p { margin: 0 0 2mm; } .r-zahlung p:last-child { margin: 0; color: #555; }
+  .r-fuss { position: absolute; left: 22mm; right: 18mm; bottom: 10mm; border-top: 1px solid #ddd; padding-top: 2.5mm; font-size: 6.5pt; color: #888; display: flex; justify-content: space-between; gap: 6mm; }
+  .r-storno { position: absolute; top: 90mm; left: 0; right: 0; text-align: center; font-size: 60pt; font-weight: 800; color: rgba(184,35,43,.18); transform: rotate(-18deg); }
+  .plakat { text-align: center; padding-top: 22mm; }
+  .plakat h1 { font-size: 34pt; margin: 6mm 0 2mm; } .plakat .unter { font-size: 15pt; color: #444; }
+  .plakat .qr svg { width: 95mm; height: 95mm; margin: 10mm auto 6mm; display: block; }
+  .plakat .preis { font-size: 20pt; font-family: "Playfair Display", serif; color: var(--navy); }
+  .plakat .sprachen { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; text-align: left; margin: 12mm 6mm 0; font-size: 10.5pt; color: #333; }
+  @media print { @page { margin: 0; } body { background: #fff; } .leiste { display: none; } .blatt { margin: 0; box-shadow: none; page-break-after: always; } .blatt:last-child { page-break-after: auto; } }
+  @media screen and (max-width: 840px) { .blatt { zoom: .5; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="sc"><path d="M14 8H118L94 33L118 58H14Z"/></clipPath>
+  <symbol id="stander" viewBox="0 0 124 100"><rect x="6" y="2" width="5" height="96" rx="2.5" fill="currentColor" opacity=".7"/><path d="M14 8H118L94 33L118 58H14Z" fill="#132a6b"/><g clip-path="url(#sc)"><path d="M14 8L104 58M14 58L104 8" stroke="#fff" stroke-width="15"/><path d="M14 8L104 58M14 58L104 8" stroke="#d3252c" stroke-width="9"/></g></symbol></defs></svg>
+<div class="leiste"><strong id="titel">Drucken</strong><button class="btn primaer" onclick="window.print()">Drucken / als PDF sichern</button></div>
+<div id="blaetter"></div>
+<script src="js/daten.js"></script>
+<script src="js/gebuehren.js"></script>
+<script src="js/qrcode.js"></script>
+<script src="js/qrcode_UTF8.js"></script>
+<script src="js/drucken.js"></script>
+</body>
+</html>

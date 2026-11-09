@@ -23,6 +23,12 @@ Repo für alle Website-Projekte. Struktur:
   Abrechnung, A4-Rechnungen im persönlichen Ton mit Lastschrift-Ankündigung, SEPA-/CSV-Export). Demo-Modus (localStorage);
   Datenbankschema `supabase/schema.sql` lokal getestet, **nichts deployt** – auf
   Wunsch des Nutzers keine Verknüpfung mit bestehenden Supabase-/Vercel-Projekten.
+- `apps/ssv-hafen/` – Hafen-Manager für den SSV (Prototyp, Demo-Modus): SVG-Hafenplan nach
+  Luftbild (Ost 1–24, West 25–70, Schwimm 71–79, L1/L2 – Zuordnung = Annahme), Belegung
+  Sommer/Winter, grünes Schild, Gastlieger + QR-Anmeldung, Warteliste, Kran, Arbeitsdienst,
+  Abrechnung nach Gebührenordnung 2024, SEPA-XML pain.008.001.08 (XSD-geprüft), „Mein SSV“.
+  Recherche/Annahmen: `RECHERCHE.md`, `PLAN.md`. Später: neue, eigene Supabase-/Vercel-
+  Projekte nur für den SSV (Zugangsdaten liefert der Nutzer).
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
