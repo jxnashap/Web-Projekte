@@ -74,6 +74,17 @@
       '<p><strong>Dansk:</strong> Velkommen! Scan koden for at tilmelde dig. Grønne skilte = ledig plads. ' + H.geld(gb.gast_nacht) + ' pr. nat.</p></div></section>';
   }
 
+  function einsatzPlakat(x) {
+    const code = ((d.arbeitseinsatz_codes || []).find((c) => c.einsatz_id === x.id) || {}).code || '';
+    const url = new URL('mein-ssv.html?einsatz=' + encodeURIComponent(code), location.href).href;
+    const qr = qrcode(0, 'M'); qr.addData(url, 'Byte'); qr.make();
+    return '<section class="blatt plakat">' + STANDER.replace('class="stander"', 'class="stander" style="width:56mm;height:28mm;color:#0E1B45"') +
+      '<h1>Arbeitseinsatz</h1><p class="unter"><strong>' + esc(x.titel) + '</strong><br>' + H.datum(x.datum) + (x.beginn ? ' · ' + esc(x.beginn) + (x.ende ? '–' + esc(x.ende) : '') + ' Uhr' : '') + '</p>' +
+      '<div class="qr">' + qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }) + '</div>' +
+      '<p class="preis">Scannen · in „Mein SSV“ anmelden · Stunden eintragen</p><p>Kein Handy dabei? Einfach beim Vorstand melden. Code für die Eingabe von Hand: <strong>' + esc(code) + '</strong></p>' +
+      (x.notiz ? '<p>' + esc(x.notiz) + '</p>' : '') + '<p style="font-size:10pt;color:#555">Danke fürs Mitmachen! Der Verein bestätigt die Stunden, danach erscheinen sie in „Mein SSV“.</p></section>';
+  }
+
   const art = q.get('art');
   if (art === 'rechnungen') {
     const ids = (q.get('ids') || '').split(','); const liste = d.rechnungen.filter((r) => ids.includes(r.id)).sort((a, b) => a.nr.localeCompare(b.nr));
@@ -82,4 +93,5 @@
     const g = d.gaeste.find((x) => x.id === q.get('id')); titel('Quittung ' + (g ? g.quittung_nr : '')); ziel.innerHTML = g ? quittung(g) : '';
   } else if (art === 'belegungsplan') { titel('Belegungsplan Winterlager'); ziel.innerHTML = belegungsplan(); }
   else if (art === 'plakat') { titel('QR-Plakat Gastlieger'); ziel.innerHTML = plakat(); }
+  else if (art === 'einsatz') { const x = (d.arbeitseinsaetze || []).find((y) => y.id === q.get('id')); titel('QR-Plakat Arbeitseinsatz'); ziel.innerHTML = x ? einsatzPlakat(x) : ''; }
 })();

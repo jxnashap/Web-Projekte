@@ -234,3 +234,4 @@ details.todo-gruppe > summary::after { content: ''; margin-left: auto; width: 8p
 details.todo-gruppe[open] > summary::after { transform: rotate(-135deg); }
 details.todo-gruppe[open] > summary { margin-bottom: 8px; }
 table.todo td:first-child { width: 1%; white-space: nowrap; }
+.bootsfoto img { display: block; width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 10px; }

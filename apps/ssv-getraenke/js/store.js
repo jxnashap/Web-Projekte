@@ -227,6 +227,10 @@
       return { ok: true, vorname: m.vorname, nachname: m.nachname, alter: this._alter(m), ...this._summen(mid) };
     }
     async kasseBuchenNach(mid, pin, posten) { return this.kasseBuchen(mid, pin, posten); }
+    async kasseMitteilungen() {   // Demo: Mitteilungen aus dem Hafen-Manager (gleicher Browser)
+      const H = window.HAFEN; if (!H || !H.laden) return []; const heute = new Date().toISOString().slice(0, 10);
+      return (H.laden().mitteilungen || []).filter((x) => x.zielgruppe === 'alle' && (!x.gueltig_bis || x.gueltig_bis >= heute)).sort((a, b) => (b.wichtig ? 1 : 0) - (a.wichtig ? 1 : 0)).slice(0, 3);
+    }
     async kasseBuchen(mid, pin, posten) {
       const f = this._pruefen(mid, pin); if (f) return f;
       const summe = this._buchen(mid, posten, 'kasse');
@@ -433,6 +437,7 @@
     async kasseProdukte() { return (await this._rpc('kasse_produkte', { p_token: this._tok }, false)).map(this._zahlen); }
     async kasseLogin(mid, pin) { return this._zahlenSumme(await this._rpc('kasse_login', { p_token: this._tok, p_mitglied: mid, p_pin: pin }, false)); }
     async kasseBuchen(mid, pin, posten) { return this._zahlenSumme(await this._rpc('kasse_buchen', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p_posten: posten }, false)); }
+    async kasseMitteilungen() { try { return await this._rpc('kasse_mitteilungen', { p_token: this._tok }, false); } catch (e) { if (e.offline) throw e; return []; } }
     // Buchen mit Kennung und Zeit (auch nachträglich, nach einem Netzausfall) – dieselbe Kennung wird nur einmal verbucht
     async kasseBuchenNach(mid, pin, posten, zeit, ref) {
       try { return this._zahlenSumme(await this._rpc('kasse_buchen_nach', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p_posten: posten, p_zeit: zeit, p_ref: ref }, false)); }

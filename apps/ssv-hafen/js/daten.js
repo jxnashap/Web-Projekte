@@ -43,6 +43,7 @@
     steuer_hinweis: '',                 // '' = noch nicht festgelegt · 'kleinunternehmer' · 'ust19' · 'frei'
     steuer_text: '',
     plan_bestaetigt: false,             // Boxmaße und Brückenzuordnung vom Verein bestätigt?
+    push_aktiv: false,                  // Push-Benachrichtigungen in „Mein SSV“ anbieten (nach dem ersten Test einschalten)
     flaeche_aufschlag_m: 0,
     fusstext: 'Danke, dass du dabei bist – und allzeit gute Fahrt!'
   };
@@ -226,6 +227,15 @@
       { id: uid('T'), titel: 'Kran: jährliche Prüfung (UVV)', beschreibung: 'Prüfung durch Sachkundigen vor dem Auslagern.', ort: 'Kran', platz_id: '', boot_id: null, art: 'wartung', prioritaet: 'normal', status: 'offen', verantwortlich: 'Vorstand', faellig: '2027-03-15', erstellt: '2026-10-25T09:00:00', erstellt_von: 'Vorstand', erledigt_am: '', notiz: '' }
     ];
 
+    // Arbeitseinsätze (heute einer zum Ausprobieren des QR-Check-ins) und eine Mitteilung
+    const heuteD = tag(new Date());
+    const arbeitseinsaetze = [
+      { id: uid('E'), datum: heuteD, titel: 'Winterarbeitsdienst: Steg und Gelände', beginn: '09:00', ende: '13:00', stunden: 4, notiz: 'Treffpunkt Messe', erstellt_von: 'Vorstand' },
+      { id: uid('E'), datum: '2027-03-20', titel: 'Frühjahrsputz vor dem Auslagern', beginn: '09:00', ende: '14:00', stunden: 5, notiz: '', erstellt_von: 'Vorstand' }
+    ];
+    const arbeitseinsatz_codes = [{ einsatz_id: arbeitseinsaetze[0].id, code: 'STEG26' }, { einsatz_id: arbeitseinsaetze[1].id, code: 'PUTZ27' }];
+    const mitteilungen = [{ id: uid('N'), titel: 'Wintertreffen am 28.11. in der Messe', text: 'Ab 18 Uhr – Rückblick auf die Saison, Grünkohl und Planung für 2027. Bitte bis 25.11. anmelden.', wichtig: false, zielgruppe: 'alle', gueltig_bis: '2026-11-28', erstellt: '2026-11-05T10:00:00', erstellt_von: 'Vorstand', push_gesendet: null }];
+
     // Warteliste (Anspruch laut Satzung § 10 I)
     const warteliste = [];
     [['probe', 7.9, 2.8, 'II', '2025-03-14'], ['ausuebend', 9.6, 3.3, 'I', '2025-06-02'], ['probe', 6.4, 2.4, 'III', '2025-09-21'], ['ausuebend', 8.2, 2.9, 'II', '2026-02-11'], ['foerdernd', 7.0, 2.5, 'II', '2026-05-30']]
@@ -245,6 +255,9 @@
       for (let i = 0; i < n; i++) arbeitsdienst.push({ id: uid('AD'), mitglied_id: m.id, datum: wahl(['2026-04-11', '2026-04-12', '2026-05-16', '2026-09-12', '2026-10-24', '2026-10-25']),
         stunden: wahl([3, 4, 5, 6, 8]), taetigkeit: wahl(['Auslagern', 'Einlagern', 'Steg-Wartung', 'Gartenarbeit', 'Malerarbeiten', 'Jugendtraining']) });
     });
+
+    // Zwei vom Mitglied gemeldete Einsätze warten auf Bestätigung
+    arbeitsdienst.slice(0, 2).forEach((a, i) => { arbeitsdienst.push({ id: uid('AD'), mitglied_id: a.mitglied_id, datum: '2026-10-2' + (5 + i), stunden: 3, taetigkeit: i ? 'Hecke geschnitten' : 'Kranbahn gefegt', status: 'eingereicht', einsatz_id: null, gemeldet: '2026-10-2' + (5 + i) + 'T18:00:00', geprueft_von: '' }); });
 
     // Mitglieder ohne Boot: Ausübende, Partner, Jugend, Auszubildende, Fördernde
     [['ausuebend', 10], ['partner', 4], ['jugend', 8], ['jugend_geschwister', 2], ['ausbildung', 3], ['foerdernd', 5]].forEach(([art, n]) => {
@@ -281,7 +294,7 @@
     return { version: 2, antraege, einstellungen: { ...STANDARD_EINSTELLUNGEN, glaeubiger_id: 'DE98ZZZ09999999999', iban: demoIban('23050101', 1234567), bic: 'NOLADE21SPL', bank: 'Demo-Sparkasse [PLATZHALTER]' },
       gebuehren: { 2026: { ...GEBUEHREN_2024 } }, saisons: [{ jahr: 2026, auslagern: '2026-04-11', einlagern: '2026-10-24' }],
       liegeplaetze: lp, landplaetze: landplaetze(), mitglieder, boote, belegungen, abwesenheiten, gaeste, warteliste, kran, arbeitsdienst, rechnungen: [], sepa_laeufe: [], zaehler: { quittung: 42 },
-      aufgaben, dokumente: [], aenderungen: [] };
+      aufgaben, dokumente: [], aenderungen: [], arbeitseinsaetze, arbeitseinsatz_codes, mitteilungen };
   }
 
   /* ------------------------------------------------------------ Speicher */
@@ -299,7 +312,7 @@
       sichern();
     }
     if (!d.antraege) d.antraege = [];
-    ['aufgaben', 'dokumente', 'aenderungen'].forEach((k) => { if (!d[k]) d[k] = []; });
+    ['aufgaben', 'dokumente', 'aenderungen', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'mitteilungen'].forEach((k) => { if (!d[k]) d[k] = []; });
     d.einstellungen = { ...STANDARD_EINSTELLUNGEN, ...d.einstellungen };
     d.rechnungen.forEach((r) => { if (!r.zahlungen) r.zahlungen = []; });
     if (!demoSchnapp) demoSchnapp = schnappschuss(zeilen(true));
@@ -307,7 +320,7 @@
   }
   // Demo: Änderungsverlauf wie in der Datenbank mitschreiben (wer, wann, was)
   let demoSchnapp = null;
-  const TAB_DEMO = ['mitglieder', 'mitglieder_bank', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'gebuehren', 'hafen_einstellungen', 'aufgaben'];
+  const TAB_DEMO = ['mitglieder', 'mitglieder_bank', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'mitteilungen', 'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'gebuehren', 'hafen_einstellungen', 'aufgaben'];
   function demoVerlauf() {
     const neu = schnappschuss(zeilen(true));
     if (demoSchnapp) {
@@ -348,7 +361,10 @@
     gaeste: ['id', 'bootsname', 'skipper', 'herkunft', 'tel', 'email', 'laenge', 'breite', 'tiefgang', 'ankunft', 'naechte', 'platz_id', 'betrag', 'zahlung', 'bezahlt_am', 'quittung_nr', 'status', 'quelle', 'erstellt'],
     warteliste: ['id', 'mitglied_id', 'datum', 'boot_laenge', 'boot_breite', 'wunsch_box', 'notiz', 'status'],
     kran: ['id', 'boot_id', 'datum', 'art', 'minuten', 'notiz', 'abgerechnet'],
-    arbeitsdienst: ['id', 'mitglied_id', 'datum', 'stunden', 'taetigkeit'],
+    arbeitsdienst: ['id', 'mitglied_id', 'datum', 'stunden', 'taetigkeit', 'status', 'einsatz_id', 'gemeldet', 'geprueft_von'],
+    arbeitseinsaetze: ['id', 'datum', 'titel', 'beginn', 'ende', 'stunden', 'notiz', 'erstellt_von'],
+    arbeitseinsatz_codes: ['einsatz_id', 'code'],
+    mitteilungen: ['id', 'titel', 'text', 'wichtig', 'zielgruppe', 'gueltig_bis', 'erstellt', 'erstellt_von', 'push_gesendet'],
     hafen_rechnungen: ['id', 'nr', 'mitglied_id', 'datum', 'saison', 'periode', 'faellig', 'positionen', 'summe', 'empfaenger', 'sepa', 'mandat_ref', 'mandat_datum', 'bezahlt_am', 'storniert_am', 'sepa_lauf', 'zahlungen'],
     sepa_laeufe: ['id', 'datum', 'faellig', 'anzahl', 'summe'],
     antraege: ['id', 'eingang', 'status', 'art', 'vorname', 'nachname', 'geburtsdatum', 'geschlecht', 'strasse', 'plz', 'ort', 'email', 'tel', 'erziehungsberechtigt', 'boot', 'warteliste',
@@ -360,10 +376,10 @@
     gebuehren: ['jahr', 'daten'],
     hafen_einstellungen: ['id', 'daten']
   };
-  const PK = { mitglieder_bank: 'mitglied_id', saisons: 'jahr', gebuehren: 'jahr' };
+  const PK = { mitglieder_bank: 'mitglied_id', saisons: 'jahr', gebuehren: 'jahr', arbeitseinsatz_codes: 'einsatz_id' };
   // Reihenfolge: erst Eltern, dann Kinder (beim Löschen umgekehrt)
-  const REIHE = ['mitglieder', 'mitglieder_bank', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst',
-    'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'gebuehren', 'hafen_einstellungen', 'aufgaben'];
+  const REIHE = ['mitglieder', 'mitglieder_bank', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'arbeitsdienst',
+    'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'gebuehren', 'hafen_einstellungen', 'aufgaben', 'mitteilungen'];
   const db = { rollen: [], bereich: null, finanz: false, schnapp: {}, schreibbar: new Set(), warteplatz: null, mitgliedId: null, onFehler: null };
 
   // Datenbankzeile ← → Oberflächen-Objekt
@@ -375,7 +391,7 @@
     z.mitglieder = d.mitglieder.map((m) => pick({ ...m, mandatsreferenz: m.mandat_ref, aktiv: !(m.austritt && m.austritt <= heute) }, SP.mitglieder));
     if (finanz) z.mitglieder.forEach((r, i) => { const m = d.mitglieder[i]; r.sepa = !!(m.iban && m.mandat_ref && m.mandat_datum); });
     z.mitglieder_bank = finanz ? d.mitglieder.filter((m) => m.iban || m.kontoinhaber || m.bic || m.mandat_datum).map((m) => pick({ ...m, mitglied_id: m.id }, SP.mitglieder_bank)) : [];
-    ['boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben'].forEach((t) => { z[t] = (d[t] || []).map((o) => pick(o, SP[t])); });
+    ['boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'mitteilungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben'].forEach((t) => { z[t] = (d[t] || []).map((o) => pick(o, SP[t])); });
     z.hafen_rechnungen = d.rechnungen.map((o) => pick(o, SP.hafen_rechnungen));
     z.gebuehren = Object.entries(d.gebuehren || {}).map(([jahr, daten]) => ({ jahr: Number(jahr), daten }));
     const { zaehler, ...einst } = d.einstellungen; // Zähler leben in den Daten selbst
@@ -414,7 +430,9 @@
         hol('gebuehren').catch(() => []), hol('hafen_einstellungen').catch(() => [])]);
       const ids = boote.map((b) => b.id).join(',');
       const [bel, aw] = ids ? await Promise.all([hol('belegungen', '*', '&boot_id=in.(' + ids + ')'), hol('abwesenheiten', '*', '&boot_id=in.(' + ids + ')')]) : [[], []];
-      return fertig(true, { mg, bank, boote, bel, aw, gaeste: [], warte: [], kran: [], ad: [], re, sl: [], an: [], lp, landp, sais, geb, einst, auf: [] }, ich);
+      const gestern = tag(new Date(Date.now() - 864e5));
+      const [eins, mitt] = await Promise.all([hol('arbeitseinsaetze', 'id,datum,titel,beginn,ende,stunden,notiz', '&datum=gte.' + gestern + '&order=datum').catch(() => []), hol('mitteilungen', '*', '&order=erstellt.desc').catch(() => [])]);
+      return fertig(true, { mg, bank, boote, bel, aw, gaeste: [], warte: [], kran: [], ad: [], re, sl: [], an: [], lp, landp, sais, geb, einst, auf: [], eins, codes: [], mitt }, ich);
     }
     const daten = await Promise.all([
       hol('mitglieder', SP.mitglieder.concat(['sepa']).join(','), '&order=nachname,vorname'),
@@ -427,14 +445,17 @@
       db.finanz ? hol('sepa_laeufe') : leer(), db.finanz ? hol('antraege', '*', '&order=eingang') : leer(),
       hol('liegeplaetze', '*', '&order=id'), hol('landplaetze', '*', '&order=id'), hol('saisons'),
       hol('gebuehren').catch(() => []), hol('hafen_einstellungen').catch(() => []),
-      personal ? hol('aufgaben', '*', '&order=erstellt.desc').catch(() => []) : leer()
+      personal ? hol('aufgaben', '*', '&order=erstellt.desc').catch(() => []) : leer(),
+      personal ? hol('arbeitseinsaetze', '*', '&order=datum.desc').catch(() => []) : leer(),
+      personal ? hol('arbeitseinsatz_codes').catch(() => []) : leer(),
+      personal ? hol('mitteilungen', '*', '&order=erstellt.desc').catch(() => []) : leer()
     ]);
-    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf] = daten;
-    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf }, null);
+    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt] = daten;
+    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt }, null);
   }
   async function fertig(mitgliedsbereich, x, ich) {
     const personal = !mitgliedsbereich;
-    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf } = x;
+    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt } = x;
     const bankVon = new Map(bank.map((b) => [b.mitglied_id, b]));
     const zahl = (o, felder) => { felder.forEach((f) => { if (o[f] != null) o[f] = Number(o[f]); }); return o; };
     d = {
@@ -450,6 +471,7 @@
       kran, arbeitsdienst: ad.map((a) => zahl(a, ['stunden'])),
       rechnungen: re.map((r) => zahl({ ...r, zahlungen: r.zahlungen || [] }, ['summe'])), sepa_laeufe: sl.map((x) => zahl(x, ['summe'])), antraege: an,
       aufgaben: auf || [], dokumente: [], aenderungen: [],
+      arbeitseinsaetze: (eins || []).map((e) => zahl(e, ['stunden'])), arbeitseinsatz_codes: codes || [], mitteilungen: mitt || [],
       zaehler: { quittung: 0 }
     };
     d.mitglieder.forEach((m) => { delete m.mandatsreferenz; delete m.sepa; delete m.aktiv; });
@@ -463,7 +485,7 @@
     }
     // Was diese Person zurückschreiben darf (der Rest ist für sie nur lesbar)
     db.schreibbar = new Set(personal
-      ? ['mitglieder', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben']
+      ? ['mitglieder', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'mitteilungen', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben']
         .concat(db.finanz ? ['mitglieder_bank', 'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'gebuehren', 'hafen_einstellungen'] : [])
       : ['abwesenheiten']);
     db.schnapp = schnappschuss(zeilen());

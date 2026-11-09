@@ -12,14 +12,14 @@
   /* ------------------------------------------------------------ Rollen */
   const ROLLEN = {
     vorstand: { name: 'Vorstand', tabs: '*', bank: true },
-    brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'warteliste', 'lagern', 'aufgaben'], bank: false },
-    hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'abwesenheiten', 'lagern', 'aufgaben'], bank: false },
-    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'einstellungen', 'verlauf'], bank: true }
+    brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'warteliste', 'lagern', 'aufgaben', 'arbeitsdienst', 'mitteilungen'], bank: false },
+    hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'abwesenheiten', 'lagern', 'aufgaben', 'arbeitsdienst', 'mitteilungen'], bank: false },
+    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'mitteilungen', 'einstellungen', 'verlauf'], bank: true }
   };
   const TABS = [
     ['Hafen', [['uebersicht', 'Übersicht'], ['plan', 'Hafenplan'], ['plaetze', 'Liegeplätze'], ['boote', 'Boote']]],
     ['Mitglieder', [['eigner', 'Mitglieder & Eigner'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
-    ['Betrieb', [['belegung', 'Belegung'], ['abwesenheiten', 'Abwesenheiten'], ['gaeste', 'Gastlieger'], ['warteliste', 'Warteliste'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['arbeitsdienst', 'Arbeitsdienst']]],
+    ['Betrieb', [['belegung', 'Belegung'], ['abwesenheiten', 'Abwesenheiten'], ['gaeste', 'Gastlieger'], ['warteliste', 'Warteliste'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['arbeitsdienst', 'Arbeitsdienst'], ['mitteilungen', 'Mitteilungen']]],
     ['Finanzen', [['abrechnung', 'Abrechnung & Lastschrift'], ['gebuehren', 'Gebührenordnung'], ['einstellungen', 'Einstellungen'], ['verlauf', 'Änderungsverlauf']]]
   ];
   let rolle = null, tab = 'uebersicht';
@@ -158,6 +158,9 @@
     const dringend = schaeden.filter((t) => t.prioritaet === 'hoch' || (t.faellig && t.faellig < heute));
     if (dringend.length && darf('aufgaben')) add(heuteL, 'aufgaben', dringend.length + (dringend.length === 1 ? ' dringender oder überfälliger Schaden' : ' dringende oder überfällige Schäden/Wartungen') + ': ' + dringend.slice(0, 2).map((t) => esc(t.titel)).join(', '), 'rot');
     if (rueck.length && darf('abrechnung')) add(heuteL, 'abrechnung', rueck.length + ' Rücklastschrift' + (rueck.length > 1 ? 'en' : '') + ' – Mitglied ansprechen oder erneut einziehen', 'rot');
+    (d.arbeitseinsaetze || []).filter((x) => x.datum === heute).forEach((x) => { if (darf('arbeitsdienst')) add(heuteL, 'arbeitsdienst', 'Heute Arbeitseinsatz „' + esc(x.titel) + '“ – QR-Plakat aushängen', 'gast'); });
+    const gemeldetAD = d.arbeitsdienst.filter((a) => a.status === 'eingereicht');
+    if (gemeldetAD.length && darf('arbeitsdienst')) add(anst, 'arbeitsdienst', gemeldetAD.length + ' gemeldete Arbeitsstunden bestätigen', 'gast');
     const neueAntraege = (d.antraege || []).filter((a) => a.status === 'neu');
     if (neueAntraege.length && darf('antraege')) add(anst, 'antraege', neueAntraege.length + ' Aufnahmeantr' + (neueAntraege.length > 1 ? 'äge warten' : 'ag wartet') + ' auf den Vorstand', 'warn');
     if (winterOffen.length && darf('abrechnung')) add(anst, 'abrechnung', 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) + ' abrechnen (' + winterOffen.length + ' Mitglieder, ' + H.geld(winterOffen.reduce((s, x) => s + x.summe, 0)) + ')', 'warn');
@@ -213,7 +216,7 @@
       '</div><div class="plan-flaeche" id="plan"></div><div class="legende">' + legende + '</div></div><aside class="detail" id="detail"></aside></div>' +
       '<p class="hinweis" style="margin-top:12px">Schematischer Plan nach Luftbild. ' + (planAnnahme() ? 'Zuordnung, Nummerierung und Boxmaße sind eine <strong>Annahme</strong>, bis der Verein sie unter „Liegeplätze“ bestätigt – die Platzempfehlung für Gäste ist bis dahin nur eine Orientierung. ' : '') + 'Tippe auf einen Platz für Details; mit „Ost / West / Schwimm“ zoomst du heran und siehst die Platznummern.</p>';
     const zh = $('#zu-heute'); if (zh) zh.addEventListener('click', () => { if (imSommer) planStand.datum = heute; else { planStand.modus = 'winter'; planStand.ansicht = 'land'; } planStand.markiere = null; zeige('plan'); });
-    const svg = PLAN.zeichnen($('#plan'), { modus: planStand.modus, saison: SAISON, datum: planStand.datum, ansicht: planStand.ansicht, markiere: planStand.markiere, onKlick: (id) => { planStand.markiere = id; detail(id); markieren(id); } });
+    const svg = PLAN.zeichnen($('#plan'), { namen: true, modus: planStand.modus, saison: SAISON, datum: planStand.datum, ansicht: planStand.ansicht, markiere: planStand.markiere, onKlick: (id) => { planStand.markiere = id; detail(id); markieren(id); } });
     function markieren(id) { svg.querySelectorAll('.markiert').forEach((x) => x.classList.remove('markiert')); const g = svg.querySelector('[data-platz="' + id + '"]'); if (g) g.classList.add('markiert'); }
     main.querySelectorAll('[data-ansicht]').forEach((b) => b.addEventListener('click', () => {
       planStand.ansicht = b.dataset.ansicht; PLAN.zoomen(svg, planStand.ansicht);
@@ -272,7 +275,7 @@
       (p.gesperrt ? '<p class="hinweis warn">' + esc(p.notiz || 'Gesperrt') + '</p>' : '') +
       (b ? '<dl><dt>Boot</dt><dd>' + bootTxt(b) + '</dd><dt>Maße</dt><dd>' + masse(b) + ' · Tiefgang ' + H.zahl(b.tiefgang) + ' m</dd><dt>Gewicht</dt><dd>' + H.zahl(b.gewicht_t, 1) + ' t' + (b.gewicht_t > 10 ? ' <span class="tag rot">über 10 t</span>' : '') + '</dd>' +
         '<dt>Versicherung</dt><dd>' + versTag(b) + '</dd><dt>Eigner</dt><dd>' + esc(Q.name(m)) + ' <span class="tag">' + H.ART[m.art] + '</span></dd><dt>Telefon</dt><dd><a href="tel:' + esc((m.tel || '').replace(/\s/g, '')) + '">' + esc(m.tel) + '</a></dd></dl>' +
-        (probleme.length ? '<p class="hinweis warn" style="margin-top:10px">Passt nicht: ' + probleme.map(esc).join(', ') + '</p>' : '') : '<p class="leer">Kein Dauerlieger in dieser Saison.</p>') +
+        (probleme.length ? '<p class="hinweis warn" style="margin-top:10px">Passt nicht: ' + probleme.map(esc).join(', ') + '</p>' : '') + '<div class="bootsfoto" id="bootsfoto"></div>' : '<p class="leer">Kein Dauerlieger in dieser Saison.</p>') +
       (gast ? '<div class="abschnitt"><h3>Gastlieger</h3><dl><dt>Boot</dt><dd>„' + esc(gast.bootsname) + '“ · ' + H.zahl(gast.laenge, 1) + ' m</dd><dt>Skipper</dt><dd>' + esc(gast.skipper) + (gast.herkunft ? ' · ' + esc(gast.herkunft) : '') + '</dd><dt>Zeitraum</dt><dd>' + H.kurz(gast.ankunft) + ', ' + gast.naechte + ' Nacht' + (gast.naechte > 1 ? 'e' : '') + '</dd><dt>Zahlung</dt><dd>' + zahlungText(gast) + '</dd></dl></div>' : '') +
       (kommende.length ? '<div class="abschnitt"><h3>Abwesenheiten (grünes Schild)</h3><dl>' + kommende.map((a) => '<dt>' + H.kurz(a.von) + '–' + H.kurz(a.bis) + '</dt><dd>' + esc(a.notiz || '') + (a === aw ? ' <span class="tag gruen">jetzt</span>' : '') + '</dd>').join('') + '</dl></div>' : '') +
       '<div class="aktionen">' +
@@ -288,6 +291,7 @@
       if (!p.gesperrt) { const grund = prompt('Grund der Sperre (z. B. Dalben defekt):', ''); if (grund === null) return; p.notiz = grund; }
       p.gesperrt = !p.gesperrt; speichern(p.gesperrt ? 'Platz gesperrt.' : 'Sperre aufgehoben.'); zeige('plan');
     });
+    if (b) HF.dok.liste({ boot_id: b.id }).then((l) => { const foto = l.find((x) => x.art === 'foto'); if (!foto) return; return HF.dok.inhalt(foto.id).then((x) => { const box = $('#bootsfoto'); if (box && x) box.innerHTML = '<img alt="Foto von „' + esc(b.name) + '“" src="data:' + x.typ + ';base64,' + x.inhalt + '">'; }); }).catch(() => {});
     if (window.matchMedia('(max-width: 1200px)').matches) { const dt = document.querySelector('.detail'); if (dt) dt.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   }
 
@@ -369,7 +373,7 @@
       '<label class="feld">Versichert bis<input name="vers_bis" type="date" value="' + esc(b.vers_bis || '') + '"></label>' +
       '<label class="feld voll">Notiz<input name="notiz" value="' + esc(b.notiz || '') + '"></label></form>' +
       (neu ? '<p class="hinweis">Den Versicherungsnachweis kannst du nach dem Speichern hochladen.</p>' : '<div class="abschnitt nachweis"><h3>Versicherungsnachweis</h3><p id="nw-stand"></p><div id="nw-liste"><p class="leer">Wird geladen …</p></div>' +
-        '<div class="aktionen"><label class="btn">Nachweis hochladen<input type="file" id="nw-datei" accept="application/pdf,image/*" hidden></label>' +
+        '<div class="aktionen"><label class="btn">Nachweis hochladen<input type="file" id="nw-datei" accept="application/pdf,image/*" hidden></label><label class="btn">Bootsfoto<input type="file" id="foto-datei" accept="image/*" hidden></label>' +
         '<button class="btn gruen" id="nw-ok"' + (b.vers_status === 'geprueft' ? ' hidden' : '') + '>Als geprüft markieren</button>' + (verlaufErlaubt() ? '<button class="btn" id="b-verlauf">Verlauf</button>' : '') + '</div></div>') +
       '<div class="modal-fuss">' + (neu ? '' : '<button class="btn gefahr links" id="weg">Abmelden</button>') + '<button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>');
     $('#ok', el).addEventListener('click', () => {
@@ -392,6 +396,10 @@
       });
       $('#nw-datei', el).addEventListener('change', async (e) => {
         try { const x = await HF.datei.lesen(e.target.files[0]); await HF.dok.hochladen({ ...x, boot_id: b.id, mitglied_id: b.eigner_id, art: 'versicherung' }, ROLLEN[rolle].name); toast('Nachweis gespeichert.'); liste(); }
+        catch (x) { toast(x.message, 'fehler'); } e.target.value = '';
+      });
+      $('#foto-datei', el).addEventListener('change', async (e) => {
+        try { const x = await HF.datei.lesen(e.target.files[0]); await HF.dok.hochladen({ ...x, boot_id: b.id, mitglied_id: b.eigner_id, art: 'foto', name: 'Foto ' + b.name + '.jpg' }, ROLLEN[rolle].name); toast('Foto gespeichert – erscheint im Hafenplan.'); liste(); }
         catch (x) { toast(x.message, 'fehler'); } e.target.value = '';
       });
       $('#nw-ok', el).addEventListener('click', () => { Object.assign(b, { vers_status: 'geprueft', vers_geprueft_am: heute, vers_geprueft_von: ROLLEN[rolle].name }); speichern('Nachweis als geprüft vermerkt.'); stand(); $('#nw-ok', el).hidden = true; });
@@ -907,17 +915,55 @@
       '<li><strong>Aufforderung:</strong> ' + (mahn ? 'ab ' + mahn + ' Fehlstunden schriftlich.' : 'keine automatische Aufforderung.') + '</li>' +
       '<li><strong>Ersatzzahlung:</strong> ' + (satz ? H.geld(satz) + ' je Fehlstunde – wird mit der Beitragsrechnung des Folgejahres berechnet.' : 'keine.') + '</li></ul>' +
       (!e.arbeitsdienst_bestaetigt ? '<p class="hinweis warn">Diese Regeln sind noch <strong>Beispielwerte</strong> und nicht vom Vorstand beschlossen – deshalb wird auch nichts berechnet. ' + (darf('einstellungen') ? '<a href="#" data-gehe="einstellungen">Unter Einstellungen festlegen →</a>' : '') + '</p>' : '') + '</div>';
-    main.innerHTML = kopf('Arbeitsdienst ' + SAISON, liste.length + ' Mitglieder arbeitspflichtig · Stunden erfassen nach jedem Arbeitseinsatz.', '<button class="btn primaer" id="neu">+ Stunden erfassen</button>') + regeln +
-      '<div class="panel"><table class="tab"><thead><tr><th>Mitglied</th><th class="r">geleistet</th><th class="r">Soll</th>' + (e.arbeitsdienst_vorjahr ? '<th class="r">Rest Vorjahr</th>' : '') + '<th class="r">Fehlstunden</th>' + (satz ? '<th class="r">Ersatz</th>' : '') + '<th>Stand</th></tr></thead><tbody>' +
+    const offen = d.arbeitsdienst.filter((a) => a.status === 'eingereicht').sort((x, y) => x.datum.localeCompare(y.datum));
+    const einsaetze = (d.arbeitseinsaetze || []).slice().sort((x, y) => y.datum.localeCompare(x.datum));
+    const codeVon = (id) => ((d.arbeitseinsatz_codes || []).find((c) => c.einsatz_id === id) || {}).code || '';
+    main.innerHTML = kopf('Arbeitsdienst ' + SAISON, liste.length + ' Mitglieder arbeitspflichtig · Mitglieder melden Stunden per QR-Code am Einsatztag oder in „Mein SSV“, der Verein bestätigt.', '<button class="btn" id="einsatz-neu">+ Arbeitseinsatz</button><button class="btn primaer" id="neu">+ Stunden erfassen</button>') +
+      (offen.length ? '<div class="panel" style="border:2px solid var(--gast)"><h2>Gemeldete Stunden bestätigen (' + offen.length + ')</h2><table class="tab"><tbody>' + offen.map((a) => { const m = Q.mitglied(a.mitglied_id); const ein = a.einsatz_id && einsaetze.find((x) => x.id === a.einsatz_id);
+        return '<tr><td><strong>' + esc(Q.name(m)) + '</strong><br><small style="color:var(--muted)">' + H.datum(a.datum) + ' · ' + esc(a.taetigkeit || '') + (ein ? ' · per QR beim Einsatz' : ' · selbst gemeldet') + '</small></td>' +
+          '<td class="r nw"><input class="suche std" type="number" step="0.5" min="0.5" max="12" value="' + a.stunden + '" aria-label="Stunden" style="width:76px;min-width:0"> Std.</td>' +
+          '<td class="r nw"><button class="btn klein gruen" data-ok="' + a.id + '">Bestätigen</button> <button class="btn klein gefahr" data-ab="' + a.id + '">Ablehnen</button></td></tr>'; }).join('') + '</tbody></table></div>' : '') +
+      regeln +
+      '<div class="panel"><h2>Arbeitseinsätze</h2>' + (einsaetze.length ? '<table class="tab"><tbody>' + einsaetze.map((x) => { const n = d.arbeitsdienst.filter((a) => a.einsatz_id === x.id && a.status !== 'abgelehnt').length;
+        return '<tr' + (x.datum < heute ? ' class="blass"' : '') + '><td class="nw"><strong>' + H.datum(x.datum) + '</strong>' + (x.datum === heute ? ' <span class="tag gruen">heute</span>' : '') + '<br><small style="color:var(--muted)">' + esc([x.beginn, x.ende].filter(Boolean).join('–')) + '</small></td><td>' + esc(x.titel) + '<br><small style="color:var(--muted)">' + H.zahl(x.stunden, x.stunden % 1 ? 1 : 0) + ' Std. · Code ' + esc(codeVon(x.id)) + ' · ' + n + ' Check-in' + (n === 1 ? '' : 's') + '</small></td>' +
+          '<td class="r nw"><button class="btn klein" data-plakat="' + x.id + '">QR-Plakat</button> <button class="btn klein gefahr" data-einsatz-weg="' + x.id + '">Löschen</button></td></tr>'; }).join('') + '</tbody></table>' : '<p class="leer">Noch keine Arbeitseinsätze geplant.</p>') +
+      '<p class="hinweis" style="margin-top:10px">Am Einsatztag das QR-Plakat aushängen: Mitglieder scannen, melden sich in „Mein SSV“ an und tragen ihre Stunden ein. Der Code gilt nur am Einsatztag; bestätigt wird hier oben.</p></div>' +
+      '<div class="panel"><h2>Stundenstand</h2><table class="tab"><thead><tr><th>Mitglied</th><th class="r">bestätigt</th><th class="r">Soll</th>' + (e.arbeitsdienst_vorjahr ? '<th class="r">Rest Vorjahr</th>' : '') + '<th class="r">Fehlstunden</th>' + (satz ? '<th class="r">Ersatz</th>' : '') + '<th>Stand</th></tr></thead><tbody>' +
       liste.sort((x, y) => y.a.fehl - x.a.fehl || x.m.nachname.localeCompare(y.m.nachname, 'de')).map(({ m, a }) =>
-        '<tr class="klickbar" data-m="' + m.id + '"><td>' + esc(Q.name(m)) + '</td><td class="r">' + H.zahl(a.ist, a.ist % 1 ? 1 : 0) + ' Std.</td><td class="r">' + (a.befreit ? '–' : a.soll) + '</td>' + (e.arbeitsdienst_vorjahr ? '<td class="r">' + (a.vorjahr || '–') + '</td>' : '') +
+        '<tr class="klickbar" data-m="' + m.id + '"><td>' + esc(Q.name(m)) + '</td><td class="r">' + H.zahl(a.ist, a.ist % 1 ? 1 : 0) + ' Std.' + (a.gemeldet ? '<br><small style="color:var(--muted)">+' + H.zahl(a.gemeldet, a.gemeldet % 1 ? 1 : 0) + ' gemeldet</small>' : '') + '</td><td class="r">' + (a.befreit ? '–' : a.soll) + '</td>' + (e.arbeitsdienst_vorjahr ? '<td class="r">' + (a.vorjahr || '–') + '</td>' : '') +
         '<td class="r">' + (a.befreit ? '–' : H.zahl(a.fehl, a.fehl % 1 ? 1 : 0)) + '</td>' + (satz ? '<td class="r">' + (a.fehl && !a.befreit ? H.geld(a.fehl * satz) : '') + '</td>' : '') +
         '<td>' + (a.befreit ? '<span class="tag">befreit: ' + esc(a.befreit) + '</span>' : mahn && a.fehl >= mahn ? '<span class="tag rot">Aufforderung</span>' : a.fehl > 0 ? '<span class="tag warn">offen</span>' : '<span class="tag ok">erfüllt</span>') + '</td></tr>').join('') + '</tbody></table>' +
       '<p class="hinweis" style="margin-top:10px">Befreiung je Mitglied: in der Zeile tippen und unter „Arbeitsdienst befreit“ den Grund eintragen.</p></div>';
+    main.querySelectorAll('[data-ok],[data-ab]').forEach((bt) => bt.addEventListener('click', () => {
+      const a = d.arbeitsdienst.find((x) => x.id === (bt.dataset.ok || bt.dataset.ab)); const std = Number(bt.closest('tr').querySelector('input.std').value);
+      if (bt.dataset.ok && !(std > 0 && std <= 12)) return toast('Bitte 0,5 bis 12 Stunden.', 'fehler');
+      Object.assign(a, { status: bt.dataset.ok ? 'bestaetigt' : 'abgelehnt', stunden: bt.dataset.ok ? std : a.stunden, geprueft_von: ROLLEN[rolle].name });
+      speichern(bt.dataset.ok ? 'Bestätigt.' : 'Abgelehnt.'); zeige(tab);
+    }));
+    main.querySelectorAll('[data-plakat]').forEach((bt) => bt.addEventListener('click', () => oeffnen('drucken.html?art=einsatz&id=' + bt.dataset.plakat)));
+    main.querySelectorAll('[data-einsatz-weg]').forEach((bt) => bt.addEventListener('click', () => {
+      if (!confirm('Arbeitseinsatz löschen? Bereits gemeldete Stunden bleiben erhalten.')) return;
+      d.arbeitsdienst.forEach((a) => { if (a.einsatz_id === bt.dataset.einsatzWeg) a.einsatz_id = null; });
+      d.arbeitseinsatz_codes = d.arbeitseinsatz_codes.filter((c) => c.einsatz_id !== bt.dataset.einsatzWeg); d.arbeitseinsaetze = d.arbeitseinsaetze.filter((x) => x.id !== bt.dataset.einsatzWeg);
+      speichern('Gelöscht.'); zeige(tab);
+    }));
+    $('#einsatz-neu').addEventListener('click', () => {
+      const el = modal('<h2>Arbeitseinsatz planen</h2><form id="f" class="form"><label class="feld voll">Was?<input name="titel" required maxlength="100" placeholder="z. B. Winterarbeitsdienst: Steg und Gelände"></label>' +
+        '<label class="feld">Datum<input name="datum" type="date" required value="' + heute + '"></label><label class="feld">Stunden (Vorschlag)<input name="stunden" type="number" step="0.5" min="0.5" max="12" required value="4"></label>' +
+        '<label class="feld">Beginn<input name="beginn" type="time" value="09:00"></label><label class="feld">Ende<input name="ende" type="time" value="13:00"></label><label class="feld voll">Hinweis<input name="notiz" placeholder="z. B. Treffpunkt Messe, Arbeitshandschuhe mitbringen"></label></form>' +
+        '<p class="hinweis">Mitglieder sehen den Termin in „Mein SSV“. Zum Check-in gibt es ein QR-Plakat mit Code, der nur am Einsatztag gilt.</p><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Anlegen</button></div>');
+      $('#ok', el).addEventListener('click', () => {
+        const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm));
+        const id = H.uid('E'); const zeichen = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code = ''; const zz = crypto.getRandomValues(new Uint32Array(6)); zz.forEach((n) => { code += zeichen[n % zeichen.length]; });
+        d.arbeitseinsaetze.push({ id, datum: x.datum, titel: x.titel, beginn: x.beginn, ende: x.ende, stunden: Number(x.stunden), notiz: x.notiz, erstellt_von: ROLLEN[rolle].name });
+        d.arbeitseinsatz_codes.push({ einsatz_id: id, code });
+        speichern('Arbeitseinsatz angelegt – QR-Plakat drucken und am Einsatztag aushängen.'); zu(); zeige(tab);
+      });
+    });
     main.querySelectorAll('[data-m]').forEach((r) => r.addEventListener('click', () => mitgliedForm(Q.mitglied(r.dataset.m))));
     $('#neu').addEventListener('click', () => {
       const el = modal('<h2>Arbeitsstunden</h2><form id="f" class="form"><label class="feld voll">Mitglied<select name="mitglied_id" required>' + mOpt(null, (m) => m.art === 'ausuebend' || m.art === 'probe') + '</select></label><label class="feld">Datum<input name="datum" type="date" required value="' + heute + '"></label><label class="feld">Stunden<input name="stunden" type="number" step="0.5" min="0.5" required value="4"></label><label class="feld voll">Tätigkeit<input name="taetigkeit" placeholder="z. B. Einlagern, Steg-Wartung"></label></form><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Erfassen</button></div>');
-      $('#ok', el).addEventListener('click', () => { const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); d.arbeitsdienst.push({ id: H.uid('AD'), ...x, stunden: Number(x.stunden) }); speichern('Erfasst.'); zu(); zeige(tab); });
+      $('#ok', el).addEventListener('click', () => { const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); d.arbeitsdienst.push({ id: H.uid('AD'), ...x, stunden: Number(x.stunden), status: 'bestaetigt', einsatz_id: null, gemeldet: null, geprueft_von: ROLLEN[rolle].name }); speichern('Erfasst.'); zu(); zeige(tab); });
     });
   };
 
@@ -1077,12 +1123,13 @@
       '<label class="feld check voll"><input type="checkbox" name="arbeitsdienst_bestaetigt"' + (e.arbeitsdienst_bestaetigt ? ' checked' : '') + '> Diese Regeln hat der Vorstand beschlossen (erst dann wird eine Ersatzzahlung berechnet)</label>' +
       '<h3 class="voll" style="margin:14px 0 0">Saisontermine</h3>' + [SAISON, SAISON + 1].map((j) => { const s = (d.saisons || []).find((x) => x.jahr === j) || {};
         return '<label class="feld">Auslagern ' + j + '<input type="date" name="aus_' + j + '" value="' + esc(s.auslagern || '') + '"></label><label class="feld">Einlagern ' + j + '<input type="date" name="ein_' + j + '" value="' + esc(s.einlagern || '') + '"></label>'; }).join('') +
+      (DB ? '<h3 class="voll" style="margin:14px 0 0">Push-Benachrichtigungen</h3><label class="feld check voll"><input type="checkbox" name="push_aktiv"' + (e.push_aktiv ? ' checked' : '') + '> In „Mein SSV“ anbieten, Mitteilungen auch als Push aufs Handy zu bekommen (iPhone: nur wenn „Mein SSV“ zum Home-Bildschirm hinzugefügt ist)</label>' : '') +
       '<h3 class="voll" style="margin:14px 0 0">Hafenplan</h3>' +
       '<label class="feld check voll"><input type="checkbox" name="plan_bestaetigt"' + (e.plan_bestaetigt ? ' checked' : '') + '> Brückenzuordnung und Boxmaße unter „Liegeplätze“ sind geprüft und stimmen</label></form></div>' +
       (darf('verlauf') ? '<div class="panel"><h2>Datensicherung</h2><p class="hinweis">' + (DB ? 'Die Vereinsdatenbank wird beim Anbieter gesichert (Tarif prüfen: tägliche Sicherung). Zusätzlich kannst du hier jederzeit eine Kopie aller Hafen- und Mitgliederdaten herunterladen – z. B. einmal im Monat, sicher aufbewahren (enthält Bankdaten).' : 'In der Demo liegen die Daten nur in diesem Browser.') + '</p><button class="btn" id="sicherung">Datensicherung herunterladen</button></div>' : '') +
       (DB ? '' : '<div class="panel"><h2>Demo</h2><p class="hinweis">Setzt alle Daten auf die erfundenen Beispieldaten zurück.</p><button class="btn gefahr" id="reset">Demo zurücksetzen</button></div>');
     $('#ok').addEventListener('click', () => {
-      const x = Object.fromEntries(new FormData($('#f'))); ['stromumlage_ueber_hafen', 'arbeitsdienst_vorjahr', 'arbeitsdienst_bestaetigt', 'plan_bestaetigt'].forEach((k) => { x[k] = !!x[k]; });
+      const x = Object.fromEntries(new FormData($('#f'))); ['stromumlage_ueber_hafen', 'arbeitsdienst_vorjahr', 'arbeitsdienst_bestaetigt', 'plan_bestaetigt'].concat(DB ? ['push_aktiv'] : []).forEach((k) => { x[k] = !!x[k]; });
       ['zahlungsziel_tage', 'arbeitsdienst_soll', 'arbeitsdienst_mahnung_ab', 'arbeitsdienst_befreit_ab', 'arbeitsdienst_satz'].forEach((k) => { x[k] = Number(String(x[k]).replace(',', '.')) || 0; });
       if (x.steuer_hinweis === 'frei' && !x.steuer_text.trim()) return toast('Bitte den eigenen Steuerhinweis eintragen.', 'fehler');
       for (const j of [SAISON, SAISON + 1]) {
@@ -1151,10 +1198,42 @@
     const w = $('#weg', el); if (w) w.addEventListener('click', () => { if (!confirm('Eintrag endgültig löschen?')) return; d.aufgaben = d.aufgaben.filter((y) => y.id !== t.id); speichern('Gelöscht.'); zu(); zeige('aufgaben'); });
   }
 
+  /* ============================================================ Mitteilungen */
+  const ZIEL = { alle: 'alle Mitglieder', bootseigner: 'Bootseigner', liegeplatz: 'Wasserlieger (Steg)' };
+  V.mitteilungen = (main) => {
+    const l = (d.mitteilungen || []).slice().sort((a, b) => String(b.erstellt).localeCompare(String(a.erstellt)));
+    const aktuell = (x) => !x.gueltig_bis || x.gueltig_bis >= heute;
+    const push = DB && d.einstellungen.push_aktiv;
+    main.innerHTML = kopf('Mitteilungen', 'Kurze Nachrichten an die Mitglieder – erscheinen in „Mein SSV“ ganz oben' + (push ? ', auf Wunsch als Push aufs Handy' : '') + '. Wichtige Mitteilungen an alle zeigt auch die Getränkekasse.', '<button class="btn primaer" id="neu">+ Mitteilung</button>') +
+      '<div class="panel"><table class="tab"><tbody>' + (l.map((x) => '<tr' + (aktuell(x) ? '' : ' class="blass"') + '><td>' + (x.wichtig ? '<span class="tag rot">wichtig</span> ' : '') + '<strong>' + esc(x.titel) + '</strong><br><small style="color:var(--muted)">' + esc(x.text || '') + '</small></td>' +
+        '<td><small>' + esc(ZIEL[x.zielgruppe] || x.zielgruppe) + '<br>' + (x.gueltig_bis ? 'bis ' + H.datum(x.gueltig_bis) : 'ohne Ende') + (x.push_gesendet ? '<br>Push gesendet' : '') + '</small></td><td class="r nw"><small style="color:var(--muted)">' + new Date(x.erstellt).toLocaleDateString('de-DE') + ' · ' + esc(x.erstellt_von || '') + '</small><br><button class="btn klein gefahr" data-weg="' + x.id + '">Löschen</button></td></tr>').join('') || '<tr><td class="leer">Noch keine Mitteilungen.</td></tr>') + '</tbody></table></div>' +
+      (DB ? '' : '<p class="hinweis">In der Demo erscheinen Mitteilungen in „Mein SSV“ und an der Kasse dieses Browsers. Push-Nachrichten aufs Handy gibt es nur mit der Vereinsdatenbank.</p>');
+    main.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => { if (!confirm('Mitteilung löschen?')) return; d.mitteilungen = d.mitteilungen.filter((x) => x.id !== b.dataset.weg); speichern('Gelöscht.'); zeige(tab); }));
+    $('#neu').addEventListener('click', () => {
+      const bis = H.tag(new Date(Date.now() + 3 * 864e5));
+      const el = modal('<h2>Mitteilung an die Mitglieder</h2><form id="f" class="form"><label class="feld voll">Titel<input name="titel" required maxlength="90" placeholder="z. B. Sturmwarnung: Boote zusätzlich sichern!"></label>' +
+        '<label class="feld voll">Text<textarea name="text" rows="3" maxlength="600" placeholder="Was ist zu tun? Bis wann?"></textarea></label>' +
+        '<label class="feld">An<select name="zielgruppe">' + Object.entries(ZIEL).map(([k, v]) => '<option value="' + k + '">' + v + '</option>').join('') + '</select></label><label class="feld">Anzeigen bis<input name="gueltig_bis" type="date" value="' + bis + '"></label>' +
+        '<label class="feld check voll"><input type="checkbox" name="wichtig"> wichtig (rot hervorgehoben, z. B. Sturmwarnung)</label>' +
+        (push ? '<label class="feld check voll"><input type="checkbox" name="push" checked> zusätzlich als Push-Nachricht aufs Handy senden (an alle, die das in „Mein SSV“ eingeschaltet haben)</label>' : '') +
+        '</form><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Veröffentlichen</button></div>');
+      $('#ok', el).addEventListener('click', async () => {
+        const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm));
+        const m = { id: H.uid('N'), titel: x.titel, text: x.text, wichtig: !!x.wichtig, zielgruppe: x.zielgruppe, gueltig_bis: x.gueltig_bis || null, erstellt: new Date().toISOString(), erstellt_von: ROLLEN[rolle].name, push_gesendet: null };
+        d.mitteilungen.push(m); zu(); const ok = await speichern('Mitteilung veröffentlicht.');
+        if (x.push && ok !== false) {
+          try { const r = await window.SSV_SB.req('/functions/v1/push', { method: 'POST', body: { aktion: 'senden', mitteilung_id: m.id } }); toast('Push gesendet an ' + (r.gesendet || 0) + ' Gerät' + (r.gesendet === 1 ? '' : 'e') + '.'); m.push_gesendet = new Date().toISOString(); }
+          catch (er) { toast('Push nicht gesendet: ' + er.message, 'fehler', 6000); }
+        }
+        zeige('mitteilungen');
+      });
+    });
+  };
+
   /* ============================================================ Änderungsverlauf */
   const verlaufErlaubt = () => darf('verlauf');
   const BEREICH = { mitglieder: 'Mitglied', mitglieder_bank: 'Bankdaten', boote: 'Boot', belegungen: 'Belegung', abwesenheiten: 'Abwesenheit', gaeste: 'Gastlieger', warteliste: 'Warteliste', kran: 'Kran', arbeitsdienst: 'Arbeitsdienst',
-    hafen_rechnungen: 'Rechnung', sepa_laeufe: 'Lastschrift-Lauf', antraege: 'Aufnahmeantrag', liegeplaetze: 'Liegeplatz', gebuehren: 'Gebühren', hafen_einstellungen: 'Einstellungen', funktionen: 'Zugang/Rolle', aufgaben: 'Schaden/Wartung', dokumente: 'Dokument' };
+    hafen_rechnungen: 'Rechnung', sepa_laeufe: 'Lastschrift-Lauf', arbeitseinsaetze: 'Arbeitseinsatz', mitteilungen: 'Mitteilung', antraege: 'Aufnahmeantrag', liegeplaetze: 'Liegeplatz', gebuehren: 'Gebühren', hafen_einstellungen: 'Einstellungen', funktionen: 'Zugang/Rolle', aufgaben: 'Schaden/Wartung', dokumente: 'Dokument' };
   const AKTION = { neu: ['neu', 'ok'], geaendert: ['geändert', ''], geloescht: ['gelöscht', 'rot'] };
   const wertText = (v) => v == null || v === '' ? '–' : typeof v === 'object' ? JSON.stringify(v).slice(0, 60) : String(v);
   const aenderungText = (x) => {

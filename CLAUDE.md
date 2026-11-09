@@ -39,7 +39,7 @@ Repo für alle Website-Projekte. Struktur:
   **Echtbetrieb-Konten (nur SSV, getrennt von allen anderen Projekten):**
   Supabase Org „SSV Manager“, Projekt `jprpgadcycaawxlyozkm` (Frankfurt) – Schema aus
   `apps/ssv-hafen/supabase/ssv-komplett.sql` eingespielt (Kasse + Website + Hafen/Mitglieder, RLS je Rolle).
-  Bestehende DB nachziehen mit `nachtrag-01…05.sql` (05 = Kasse ohne Netz, `kasse_buchen_nach` mit Kennung) (Anleitung `apps/ssv-hafen/INBETRIEBNAHME.md`; 03 = Doppelvergabe-Schutz,
+  Bestehende DB nachziehen mit `nachtrag-01…06.sql` (05 = Kasse ohne Netz, `kasse_buchen_nach` mit Kennung; 06 = Arbeitseinsätze/QR, Mitteilungen, Push-Tabellen); Edge Function `push` (Quelle `apps/ssv-hafen/supabase/functions/push`) ist deployt (Anleitung `apps/ssv-hafen/INBETRIEBNAHME.md`; 03 = Doppelvergabe-Schutz,
   Gast-Prüfung per Trigger, Änderungsverlauf `aenderungen`, `dokumente`, `aufgaben`, Zahlungen je Rechnung);
   Speichern im DB-Modus: erst löschen, dann neue Zeilen einfügen, Geändertes nur feldweise per PATCH (kein Überschreiben fremder Änderungen);
   `ssv-komplett.sql` wird aus schema.sql + website.sql + hafen.sql erzeugt – nie von Hand ändern.

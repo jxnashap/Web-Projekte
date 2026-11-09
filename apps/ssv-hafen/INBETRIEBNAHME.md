@@ -7,7 +7,7 @@ freigibt.
 
 ## 1 · Datenbank-Nachträge einspielen (einmalig, in dieser Reihenfolge)
 
-Bereits eingespielt: 01, 02, 03, 04. Neu: 05.
+Bereits eingespielt: 01–04. Neu: 05 und 06.
 
 Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inhalt einfügen → **Run**:
 
@@ -30,6 +30,8 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    dem Platz liegt) und der eigene Arbeitsdienst-Stundenstand.
 5. `apps/ssv-hafen/supabase/nachtrag-05.sql` – Getränkekasse ohne Netz: Buchungen werden auf dem iPad gemerkt und
    nachgetragen; jede Buchung zählt nur einmal. Nicht verbuchbare (z. B. Code falsch) zeigt das iPad oben rechts an.
+6. `apps/ssv-hafen/supabase/nachtrag-06.sql` – Arbeitseinsätze mit QR-Check-in (Stunden „eingereicht“ → vom Verein
+   „bestätigt“), Mitteilungen an Mitglieder (Mein SSV, Kassen-iPad), Tabellen für Push-Benachrichtigungen.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 
@@ -105,6 +107,16 @@ mit der E-Mail-Adresse, die im Mitgliederstamm steht. Voraussetzung: eigenes SMT
 - **Liegeplätze → Maße**: echte Boxmaße, Brücke und – wenn bekannt – Wassertiefe je Platz; danach unter
   Einstellungen „Boxmaße geprüft“ anhaken. Bis dahin kennzeichnet der Hafen-Manager die Platzempfehlung als Annahme.
 - **Einstellungen → Saisontermine**: Auslagern/Einlagern für dieses und das nächste Jahr (erscheinen in „Mein SSV“ unter Termine).
+
+## 6a2 · Push-Benachrichtigungen (optional)
+
+Die Server-Funktion `push` ist im Supabase-Projekt bereitgestellt (Quelle: `apps/ssv-hafen/supabase/functions/push`).
+Sie legt beim ersten Aufruf ihr Schlüsselpaar selbst an – es gibt keine Geheimnisse einzutragen.
+1. Nach Nachtrag 06: Hafen-Manager → Einstellungen → „Push-Benachrichtigungen anbieten“ anhaken.
+2. Selbst testen: „Mein SSV“ auf dem Handy öffnen (iPhone: erst *Teilen → Zum Home-Bildschirm*, dann von dort öffnen)
+   → Meine Daten → „Benachrichtigungen einschalten“. Dann im Hafen-Manager → Mitteilungen eine Test-Mitteilung mit
+   „als Push senden“ veröffentlichen.
+3. Klappt etwas nicht: Supabase → Edge Functions → push → Logs.
 
 ## 6b · Datensicherung
 

@@ -7,6 +7,10 @@
 <meta name="theme-color" content="#0E1B45">
 <title>Mein SSV · Schwartauer Segler-Verein</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="manifest" href="mein.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mein SSV">
 <link rel="stylesheet" href="css/hafen.css">
 <style>
   .mein-kopf { background: var(--navy); color: #fff; padding: 18px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
@@ -43,6 +47,9 @@
   .login-links a { color: var(--navy); }
   .mein-fuss { text-align: center; font-size: 13px; color: var(--muted); padding: 0 16px 40px; } .mein-fuss a { color: var(--navy); display: inline-block; padding: 10px 4px; }
   table.rechn td { vertical-align: middle; }
+  .mitteilung { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; background: #fff; border-left: 4px solid var(--navy); border-radius: 12px; padding: 12px 14px; margin: 0 0 12px; box-shadow: var(--schatten); }
+  .mitteilung.wichtig { border-left-color: var(--rot); background: #fff5f5; }
+  .mitteilung p { margin: 4px 0; font-size: 14px; } .mitteilung small { color: var(--muted); font-size: 12px; } .mitteilung .btn { flex: none; }
   .erkl { display: inline-block; font-size: 12.5px; margin-top: 3px; color: var(--muted); } .erkl.warn { color: #8a5e05; font-weight: 600; } .erkl.rot { color: var(--rot); font-weight: 600; }
   .blick { grid-template-columns: 1.3fr 1fr 1fr; }
   #k-offen span { white-space: normal; }

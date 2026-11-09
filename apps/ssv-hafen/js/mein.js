@@ -41,6 +41,15 @@
   const kachel = (ziel, titel, wert, unter, id) => '<button type="button" data-ziel="' + ziel + '"' + (id ? ' id="' + id + '"' : '') + '><small>' + titel + '</small><strong>' + wert + '</strong><span>' + unter + '</span></button>';
 
   const inSaisonF = () => heute >= sd.auslagern && heute < sd.einlagern;
+  // Mitteilungen des Vereins (z. B. Sturmwarnung) – ausblendbar, wichtige bleiben bis zum Ablauf rot
+  const WEG = 'ssv-mitteilung-weg'; const ausgeblendet = () => { try { return JSON.parse(localStorage.getItem(WEG)) || []; } catch (e) { return []; } };
+  function mitteilungenHtml(eigner, lieger) {
+    const l = (d.mitteilungen || []).filter((x) => (!x.gueltig_bis || x.gueltig_bis >= heute) && (x.zielgruppe === 'alle' || (x.zielgruppe === 'bootseigner' && eigner) || (x.zielgruppe === 'liegeplatz' && lieger)) && !ausgeblendet().includes(x.id))
+      .sort((x, y) => (y.wichtig ? 1 : 0) - (x.wichtig ? 1 : 0) || String(y.erstellt).localeCompare(String(x.erstellt)));
+    return l.map((x) => '<div class="mitteilung' + (x.wichtig ? ' wichtig' : '') + '" role="' + (x.wichtig ? 'alert' : 'status') + '"><div><strong>' + (x.wichtig ? '⚠ ' : '') + esc(x.titel) + '</strong>' + (x.text ? '<p>' + esc(x.text) + '</p>' : '') +
+      '<small>' + new Date(x.erstellt).toLocaleDateString('de-DE') + (x.erstellt_von ? ' · ' + esc(x.erstellt_von) : '') + '</small></div><button class="btn klein" data-mweg="' + x.id + '" aria-label="Mitteilung ausblenden">Gelesen</button></div>').join('');
+  }
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-mweg]'); if (!b) return; try { localStorage.setItem(WEG, JSON.stringify(ausgeblendet().concat([b.dataset.mweg]).slice(-50))); } catch (x) { /* egal */ } b.closest('.mitteilung').remove(); });
   function zeigen() {
     const m = Q.mitglied(mid); const boote = Q.booteVon(mid);
     const b = boote[0]; const sommer = b && Q.belegungBoot(SAISON, 'sommer', b.id); const winter = b && Q.belegungBoot(SAISON, 'winter', b.id);
@@ -69,16 +78,22 @@
     d.rechnungen.filter((r) => r.mitglied_id === mid && Q.rest(r) > 0 && r.faellig >= heute).forEach((r) => termine.push([r.faellig, r.sepa ? 'Lastschrift-Einzug ' + H.geld(Q.rest(r)) : 'Überweisung fällig ' + H.geld(Q.rest(r)), (r.periode === 'beitrag' ? 'Beitrag ' + r.saison : H.periodeText(r)) + ' · ' + r.nr]));
     if (awAktuell) termine.push([awAktuell.bis, 'Rückkehr gemeldet', 'grünes Schild endet']);
     if (b && sd.einlagern >= heute) termine.push([sd.einlagern, 'Einlagern', 'Gemeinschaftsarbeit nach Belegungsplan']);
+    (d.arbeitseinsaetze || []).filter((x) => x.datum >= heute).forEach((x) => termine.push([x.datum, 'Arbeitseinsatz: ' + x.titel, [x.beginn && x.beginn + (x.ende ? '–' + x.ende : '') + ' Uhr', x.notiz].filter(Boolean).join(' · ')]));
     if (b && auslagernNeu && auslagernNeu >= heute) termine.push([auslagernNeu, 'Auslagern', 'Gemeinschaftsarbeit nach Belegungsplan']);
     if (b && b.vers_bis && b.vers_bis >= heute) termine.push([b.vers_bis, 'Versicherung läuft ab', 'vorher neuen Nachweis hochladen']);
     termine.sort((x, y) => x[0].localeCompare(y[0])); termine.splice(5);
     // Arbeitsdienst: eigener Stundenstand nach den Regeln des Vereins
     const ad = G.arbeitsdienst && (m.art === 'ausuebend' || m.art === 'probe') ? G.arbeitsdienst(d, SAISON, m) : null;
     const meineStunden = (d.arbeitsdienst || []).filter((a) => a.mitglied_id === mid && String(a.datum).startsWith(String(SAISON))).sort((x, y) => y.datum.localeCompare(x.datum));
+    const kommend = (d.arbeitseinsaetze || []).filter((x) => x.datum >= heute).sort((x, y) => x.datum.localeCompare(y.datum));
+    const STAND = { eingereicht: ['wird geprüft', 'gast'], abgelehnt: ['nicht anerkannt', 'rot'] };
     const adInhalt = ad ? (ad.befreit ? '<p style="margin:0">Du bist vom Arbeitsdienst befreit (' + esc(ad.befreit) + ').</p>'
-      : '<div class="kasse-zahlen"><div><small>geleistet</small><strong>' + H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' Std.</strong></div><div><small>noch offen</small><strong>' + H.zahl(ad.fehl, ad.fehl % 1 ? 1 : 0) + ' Std.</strong></div></div>' +
-        (meineStunden.length ? '<table class="tab"><tbody>' + meineStunden.map((a) => '<tr><td class="nw">' + H.datum(a.datum) + '</td><td>' + esc(a.taetigkeit || 'Arbeitseinsatz') + '</td><td class="r">' + H.zahl(a.stunden, a.stunden % 1 ? 1 : 0) + ' Std.</td></tr>').join('') + '</tbody></table>' : '<p class="leer">Noch keine Stunden erfasst.</p>') +
-        '<p class="hinweis" style="margin-top:10px">Soll: ' + ad.soll + ' Stunden im Jahr' + (ad.vorjahr ? ' (dazu ' + ad.vorjahr + ' aus dem Vorjahr)' : '') + '. Die Stunden trägt der Verein nach jedem Arbeitseinsatz ein.' + (d.einstellungen.arbeitsdienst_bestaetigt ? '' : ' Die genauen Regeln legt der Vorstand noch fest.') + '</p>') : '';
+      : '<div class="kasse-zahlen"><div><small>bestätigt</small><strong>' + H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' Std.</strong></div><div><small>noch offen</small><strong>' + H.zahl(ad.fehl, ad.fehl % 1 ? 1 : 0) + ' Std.</strong></div></div>' +
+        (ad.gemeldet ? '<p style="margin:0 0 8px;font-size:13px;color:var(--muted)">Dazu ' + H.zahl(ad.gemeldet, ad.gemeldet % 1 ? 1 : 0) + ' Std. gemeldet – der Verein bestätigt sie noch.</p>' : '') +
+        (meineStunden.length ? '<table class="tab"><tbody>' + meineStunden.map((a) => '<tr><td class="nw">' + H.datum(a.datum) + '</td><td>' + esc(a.taetigkeit || 'Arbeitseinsatz') + (STAND[a.status] ? ' <span class="tag ' + STAND[a.status][1] + '">' + STAND[a.status][0] + '</span>' : '') + '</td><td class="r">' + H.zahl(a.stunden, a.stunden % 1 ? 1 : 0) + ' Std.</td></tr>').join('') + '</tbody></table>' : '<p class="leer">Noch keine Stunden erfasst.</p>') +
+        '<div class="aktionen" style="margin-top:10px"><button class="btn" id="ad-melden">Stunden melden</button></div>' +
+        (kommend.length ? '<h3 style="margin:14px 0 6px;font-size:15px">Nächste Arbeitseinsätze</h3><table class="tab"><tbody>' + kommend.slice(0, 3).map((x) => '<tr><td class="nw">' + H.datum(x.datum) + '</td><td>' + esc(x.titel) + (x.beginn ? '<br><small style="color:var(--muted)">' + esc(x.beginn) + (x.ende ? '–' + esc(x.ende) : '') + ' Uhr' + (x.notiz ? ' · ' + esc(x.notiz) : '') + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') +
+        '<p class="hinweis" style="margin-top:10px">Soll: ' + ad.soll + ' Stunden im Jahr' + (ad.vorjahr ? ' (dazu ' + ad.vorjahr + ' aus dem Vorjahr)' : '') + '. Beim Arbeitseinsatz einfach den QR-Code am Vereinsheim scannen – oder hier Stunden melden; der Verein bestätigt sie.' + (d.einstellungen.arbeitsdienst_bestaetigt ? '' : ' Die genauen Regeln legt der Vorstand noch fest.') + '</p>') : '';
 
     const bootInhalt = b ? '<div class="detail" style="box-shadow:none;padding:0;position:static"><dl>' +
         '<dt>Typ</dt><dd>' + esc(b.typ) + '</dd><dt>Maße</dt><dd>' + H.zahl(b.laenge) + ' × ' + H.zahl(b.breite) + ' m · Tiefgang ' + H.zahl(b.tiefgang) + ' m · ' + H.zahl(b.gewicht_t, 1) + ' t</dd>' +
@@ -96,6 +111,7 @@
 
     $('#main').innerHTML = (DBM ? '' : '<div class="demo-band"><strong>Demo</strong> – erfundene Daten. Im Echtbetrieb meldest du dich mit deinem eigenen Zugang an.</div>') +
       '<div class="kopf"><div><h1>Moin ' + esc(m.vorname) + '!</h1><p>' + H.ART[m.art] + ' · Mitgliedsnr. ' + esc(m.nr) + '</p></div></div>' +
+      mitteilungenHtml(!!b, !!wasser) +
       (vs !== 'ok' && b ? '<p class="hinweis warn">Deine Bootsversicherung ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'ist noch nicht hinterlegt' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte unter „Mein Boot“ einen neuen Nachweis hochladen.</p>' : '') +
       '<div class="blick">' + kachel('rechnungen', 'Rechnungen', '…', 'wird geladen …', 'k-offen') +
         (b && !inSaison && platzW ? kachel('boot', 'Winterlager', esc(platzW.bez), SAISON + '/' + yy) : platzS ? kachel(wasser ? 'schild' : 'boot', 'Liegeplatz', platzText, !inSaison ? 'Sommer ' + SAISON + ' (beendet)' : awAktuell ? 'grün bis ' + H.kurz(awAktuell.bis) : (platzS.bez ? 'an Land' : H.BRUECKE[platzS.bruecke])) : meinW >= 0 ? kachel('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), 'seit ' + H.datum(warte[meinW].datum)) : kachel('rechnungen', 'Mitglied seit', m.eintritt ? m.eintritt.slice(0, 4) : '–', H.ART[m.art])) +
@@ -108,6 +124,7 @@
         '<dt>Anschrift</dt><dd>' + esc(m.strasse || '–') + '<br>' + esc(((m.plz || '') + ' ' + (m.ort || '')).trim()) + '</dd><dt>Telefon</dt><dd>' + esc(m.tel || '–') + '</dd><dt>E-Mail</dt><dd>' + esc(m.email || '–') + '</dd>' +
         '<dt>Lastschrift</dt><dd>' + (m.iban ? 'Konto •••• ' + esc(String(m.iban).slice(-4)) : 'kein Mandat hinterlegt') + '</dd></dl></div>' +
         '<div class="aktionen" style="margin-top:12px"><button class="btn" id="meine-daten">Daten ändern</button></div><div id="meine-dok"></div>' +
+        (DBM && d.einstellungen.push_aktiv ? '<h3 style="margin:16px 0 6px;font-size:15px">Benachrichtigungen</h3><div id="push-box"><p class="leer">…</p></div>' : '') +
         '<p class="hinweis" style="margin-top:12px">Neue Bankverbindung oder Fragen zu Rechnungen? Schreib an <a href="mailto:' + esc(d.einstellungen.verein_email) + '">' + esc(d.einstellungen.verein_email) + '</a> – für ein neues Konto braucht es ein neues Lastschriftmandat.</p>') +
       '</div><div>' +
       (wasser ? sektion('schild', 'Grünes Schild', awAktuell ? 'unterwegs ' + H.kurz(awAktuell.von) + '–' + H.kurz(awAktuell.bis) : 'Platz frei melden', schildInhalt, 'gruen-box') : '') +
@@ -152,6 +169,7 @@
     };
     rechnungenZeigen();
     if (KASSE) kasseZeigen(m, rechnungenZeigen);
+    pushStand().catch(() => {});
     // Unterlagen, die der Verein für mich hinterlegt hat (Verträge, Nachweise)
     HF.dok.liste({ mitglied_id: mid }).then((l) => { const box = $('#meine-dok'); if (!box || !l.length) return;
       box.innerHTML = '<h3 style="margin:16px 0 6px;font-size:15px">Meine Unterlagen</h3><table class="tab"><tbody>' + l.map((x) => '<tr><td>' + esc(x.name) + '<br><small style="color:var(--muted)">' + new Date(x.hochgeladen).toLocaleDateString('de-DE') + '</small></td><td class="r"><button class="btn klein" data-dok="' + x.id + '">Ansehen</button></td></tr>').join('') + '</tbody></table>';
@@ -231,7 +249,76 @@
   document.addEventListener('click', (e) => {
     if (e.target.closest('#nachweis')) nachweisDialog();
     if (e.target.closest('#schaden')) schadenDialog();
+    if (e.target.closest('#ad-melden')) stundenDialog('');
+    if (e.target.closest('#push-an')) pushAn();
+    if (e.target.closest('#push-aus')) pushAus();
   });
+
+  /* Arbeitsstunden melden – per QR-Code am Einsatztag (?einsatz=CODE) oder frei; der Verein bestätigt */
+  function stundenDialog(code) {
+    const m = Q.mitglied(mid); const heuteE = (d.arbeitseinsaetze || []).filter((x) => x.datum === heute || x.datum === H.tag(new Date(Date.now() - 864e5)));
+    const e1 = heuteE[0];
+    const el = modal('<h2>' + (code ? 'Check-in Arbeitseinsatz' : 'Arbeitsstunden melden') + '</h2>' + (code ? '<p>' + (e1 ? '<strong>' + esc(e1.titel) + '</strong> · ' + H.datum(e1.datum) : 'Arbeitseinsatz heute') + ' – danke fürs Mitmachen, ' + esc(m.vorname) + '!</p>' : '<p>Für Arbeit außerhalb eines Einsatztermins, z. B. Rasen mähen oder Steg reparieren.</p>') +
+      '<form id="adf" class="form">' + (code ? '' : '<label class="feld">Datum<input name="datum" type="date" required value="' + heute + '" max="' + heute + '"></label>') +
+      '<label class="feld">Stunden<input name="stunden" type="number" step="0.5" min="0.5" max="12" required inputmode="decimal" value="' + (e1 && code ? e1.stunden : 2) + '"></label>' +
+      '<label class="feld voll">Was hast du gemacht?<input name="taetigkeit" maxlength="120" placeholder="z. B. Steg gestrichen"' + (code ? '' : ' required') + '></label></form><p class="hinweis" id="adf-info" hidden></p>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="adok">Melden</button></div>');
+    $('#adok', el).addEventListener('click', async () => {
+      const fm = $('#adf', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); const info = $('#adf-info', el);
+      try {
+        if (DBM) await window.SSV_SB.rpc('mein_arbeitsdienst_melden', { p: { code, stunden: x.stunden, taetigkeit: x.taetigkeit, datum: x.datum } });
+        else {
+          let einsatz = null;
+          if (code) {
+            const c = (d.arbeitseinsatz_codes || []).find((y) => y.code === code.toUpperCase()); einsatz = c && d.arbeitseinsaetze.find((y) => y.id === c.einsatz_id);
+            if (!einsatz) throw new Error('Der Code passt zu keinem Arbeitseinsatz.');
+            if (einsatz.datum !== heute && einsatz.datum !== H.tag(new Date(Date.now() - 864e5))) throw new Error('Der Check-in geht nur am Tag des Einsatzes.');
+            if (d.arbeitsdienst.some((a) => a.mitglied_id === m.id && a.einsatz_id === einsatz.id && a.status !== 'abgelehnt')) throw new Error('Für diesen Einsatz bist du schon eingetragen.');
+          }
+          const st = Number(String(x.stunden).replace(',', '.')); if (!(st > 0 && st <= 12)) throw new Error('Bitte zwischen 0,5 und 12 Stunden angeben.');
+          d.arbeitsdienst.push({ id: H.uid('AD'), mitglied_id: m.id, datum: einsatz ? einsatz.datum : x.datum, stunden: st, taetigkeit: x.taetigkeit || (einsatz && einsatz.titel) || 'Arbeitseinsatz', status: 'eingereicht', einsatz_id: einsatz ? einsatz.id : null, gemeldet: new Date().toISOString(), geprueft_von: '' });
+          await HF.sichern();
+        }
+        if (DBM) { await HF.neuLaden(); d = HF.d; }
+        $('#modal').innerHTML = ''; toast('Danke! Deine Stunden sind gemeldet – der Verein bestätigt sie.'); AUF.arbeitsdienst = true; zeigen();
+      } catch (er) { info.textContent = er.message; info.className = 'hinweis warn'; info.hidden = false; }
+    });
+  }
+  const einsatzCode = new URLSearchParams(location.search).get('einsatz');
+  if (einsatzCode) { try { history.replaceState(null, '', location.pathname); } catch (e) { /* egal */ } setTimeout(() => stundenDialog(einsatzCode), 300); }
+
+  /* Push-Benachrichtigungen (nur Vereinsdatenbank, wenn der Vorstand sie freigeschaltet hat) */
+  const istIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const istApp = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const b64 = (s) => { const p = '='.repeat((4 - s.length % 4) % 4); const r = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(r, (c) => c.charCodeAt(0)); };
+  async function pushStand() {
+    const box = $('#push-box'); if (!box) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+      box.innerHTML = istIOS && !istApp ? '<p style="margin:0">Auf dem iPhone geht das so: unten auf <strong>Teilen</strong> → <strong>Zum Home-Bildschirm</strong>, dann „Mein SSV“ vom Home-Bildschirm öffnen und hier einschalten.</p>' : '<p style="margin:0">Dieser Browser kann leider keine Benachrichtigungen empfangen.</p>';
+      return;
+    }
+    const reg = await navigator.serviceWorker.getRegistration('./'); const sub = reg && await reg.pushManager.getSubscription();
+    box.innerHTML = sub && Notification.permission === 'granted' ? '<p style="margin:0 0 8px">Auf diesem Gerät eingeschaltet – wichtige Mitteilungen (z. B. Sturmwarnung) kommen direkt aufs Handy.</p><button class="btn klein" id="push-aus">Ausschalten</button>'
+      : Notification.permission === 'denied' ? '<p style="margin:0">Benachrichtigungen sind in den Einstellungen deines Handys für diese Seite gesperrt.</p>'
+        : '<p style="margin:0 0 8px">Wichtige Mitteilungen (z. B. Sturmwarnung) direkt aufs Handy bekommen.</p><button class="btn primaer" id="push-an">Benachrichtigungen einschalten</button>';
+  }
+  async function pushAn() {
+    try {
+      const reg = await navigator.serviceWorker.register('sw-mein.js', { scope: './' }); await navigator.serviceWorker.ready;
+      if (await Notification.requestPermission() !== 'granted') return pushStand();
+      const k = await window.SSV_SB.req('/functions/v1/push', { method: 'POST', body: { aktion: 'schluessel' } });
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(k.public_key) }); const j = sub.toJSON();
+      await window.SSV_SB.req('/rest/v1/push_abos?on_conflict=endpoint', { method: 'POST', body: [{ mitglied_id: mid, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, geraet: (istIOS ? 'iOS' : navigator.platform || '').slice(0, 40) }], prefer: 'resolution=merge-duplicates,return=minimal' });
+      toast('Benachrichtigungen sind eingeschaltet.');
+    } catch (e) { toast('Hat nicht geklappt: ' + e.message); }
+    pushStand();
+  }
+  async function pushAus() {
+    try { const reg = await navigator.serviceWorker.getRegistration('./'); const sub = reg && await reg.pushManager.getSubscription();
+      if (sub) { await window.SSV_SB.req('/rest/v1/push_abos?endpoint=eq.' + encodeURIComponent(sub.endpoint), { method: 'DELETE' }).catch(() => {}); await sub.unsubscribe(); }
+      toast('Benachrichtigungen ausgeschaltet.'); } catch (e) { toast(e.message); }
+    pushStand();
+  }
   function nachweisDialog() {
     const m = Q.mitglied(mid); const b = Q.booteVon(mid)[0]; if (!b) return;
     const el = modal('<h2>Versicherungsnachweis</h2><p>Lade die aktuelle Police oder Bestätigung deiner Versicherung hoch (PDF oder Foto). Der Verein prüft sie und hakt sie ab.</p><form id="nf" class="form">' +

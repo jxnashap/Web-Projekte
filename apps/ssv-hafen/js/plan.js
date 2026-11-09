@@ -100,12 +100,20 @@
     const d = window.HAFEN.d;
     const winter = opts.modus === 'winter';
     const lpById = new Map(d.liegeplaetze.map((p) => [p.nr, p]));
+    const esc = window.HAFEN.H.esc;
+    // Tooltip mit Boot und Eigner – nur, wenn die Verwaltung den Plan zeichnet (opts.namen)
+    const info = (p, status) => {
+      if (!opts.namen) return '';
+      const g = status === 'gast' && Q.gastAm(p.id, opts.datum); const bel = Q.belegungPlatz(opts.saison, 'sommer', p.id); const b = bel && Q.boot(bel.boot_id); const m = b && Q.mitglied(b.eigner_id);
+      const txt = (p.box === 'L' ? 'Längsseits ' : 'Platz ') + p.nr + ' – ' + (g ? 'Gast „' + g.bootsname + '“' : b ? '„' + b.name + '“ · ' + Q.name(m) : (STATUS_TEXT[status] || status)) + (status === 'unterwegs' ? ' (grünes Schild)' : '');
+      return '<title>' + esc(txt) + '</title>';
+    };
 
     const wasserPlaetze = GEO.map((g) => {
       const p = lpById.get(g.nr);
       const status = winter ? (p.gesperrt ? 'gesperrt' : 'leer') : Q.statusWasser(p, opts.saison, opts.datum);
       const mark = opts.markiere === p.id ? ' markiert' : '';
-      return `<g class="lp st-${status}${mark}" data-platz="${p.id}" transform="translate(${g.x.toFixed(1)} ${g.y.toFixed(1)}) rotate(${(g.winkel + 90).toFixed(1)})" tabindex="0" role="button" aria-label="Platz ${p.nr}: ${STATUS_TEXT[status] || status}">
+      return `<g class="lp st-${status}${mark}" data-platz="${p.id}" transform="translate(${g.x.toFixed(1)} ${g.y.toFixed(1)}) rotate(${(g.winkel + 90).toFixed(1)})" tabindex="0" role="button" aria-label="Platz ${p.nr}: ${STATUS_TEXT[status] || status}">${winter ? '' : info(p, status)}
         <rect x="${(-g.tiefe / 2).toFixed(1)}" y="${(-g.breite / 2).toFixed(1)}" width="${g.tiefe}" height="${g.breite.toFixed(1)}" rx="1.5"/>
         ${['belegt', 'unterwegs', 'gast', 'saisongast'].includes(status) && status !== 'unterwegs' ? `<path class="rumpf" d="M${-g.tiefe / 2 + 3} 0 Q ${-g.tiefe / 2 + 6} ${-g.breite / 2 + 1.2}, ${g.tiefe / 2 - 7} ${-g.breite / 2 + 1.4} L ${g.tiefe / 2 - 3} 0 L ${g.tiefe / 2 - 7} ${g.breite / 2 - 1.4} Q ${-g.tiefe / 2 + 6} ${g.breite / 2 - 1.2}, ${-g.tiefe / 2 + 3} 0 Z"/>` : ''}
         <text class="lp-nr" x="${(-g.tiefe / 2 - 4.5).toFixed(1)}" y="1.6" transform="rotate(-90 ${(-g.tiefe / 2 - 4.5).toFixed(1)} 0)" text-anchor="middle">${p.nr}</text>
@@ -116,7 +124,7 @@
       const p = lpById.get(l.nr);
       const status = winter ? 'leer' : Q.statusWasser(p, opts.saison, opts.datum);
       const mark = opts.markiere === p.id ? ' markiert' : '';
-      return `<g class="lp laengs st-${status}${mark}" data-platz="${p.id}" transform="translate(${l.x} ${l.y}) rotate(${l.rot})" tabindex="0" role="button" aria-label="Längsseits ${p.nr}: ${STATUS_TEXT[status] || status}">
+      return `<g class="lp laengs st-${status}${mark}" data-platz="${p.id}" transform="translate(${l.x} ${l.y}) rotate(${l.rot})" tabindex="0" role="button" aria-label="Längsseits ${p.nr}: ${STATUS_TEXT[status] || status}">${winter ? '' : info(p, status)}
         <rect x="${-l.w / 2}" y="-5" width="${l.w}" height="10" rx="2"/>
         ${['belegt', 'gast', 'saisongast'].includes(status) ? `<path class="rumpf" d="M${-l.w / 2 + 2} 0 Q ${-l.w / 2 + 5} -4, ${l.w / 2 - 6} -3.6 L ${l.w / 2 - 2} 0 L ${l.w / 2 - 6} 3.6 Q ${-l.w / 2 + 5} 4, ${-l.w / 2 + 2} 0 Z"/>` : ''}
         <text class="lp-nr" x="0" y="-7.5" text-anchor="middle">${p.nr}</text></g>`;

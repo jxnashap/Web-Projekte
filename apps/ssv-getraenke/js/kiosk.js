@@ -362,12 +362,16 @@
   /* ------------------------------------------------------------- Start */
   function uhr() { $('#uhr').textContent = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); }
   async function datenLaden() {
-    let m, p, o;
-    try { [m, p, o] = await Promise.all([S.kasseMitglieder(), S.kasseProdukte(), S.kasseOptionen()]); if (!ONLINE_ONLY) { schreiben(LS.cache, { m, p, o, zeit: Date.now() }); offline = false; } }
+    let m, p, o, n = [];
+    try { [m, p, o, n] = await Promise.all([S.kasseMitglieder(), S.kasseProdukte(), S.kasseOptionen(), S.kasseMitteilungen ? S.kasseMitteilungen() : []]); if (!ONLINE_ONLY) { schreiben(LS.cache, { m, p, o, n, zeit: Date.now() }); offline = false; } }
     catch (e) {
       const c = lesen(LS.cache, null); if (!e.offline || !c) throw e;
-      ({ m, p, o } = c); offline = true; o = { ...o, pin_selbst_festlegen: false };   // neuer Code braucht Netz
+      ({ m, p, o } = c); n = c.n || []; offline = true; o = { ...o, pin_selbst_festlegen: false };   // neuer Code braucht Netz
     }
+    // Mitteilungen des Vereins (z. B. Sturmwarnung) über der Namensliste
+    const mb = $('#k-mitteilung'); const heuteK = new Date().toISOString().slice(0, 10); n = (n || []).filter((x) => !x.gueltig_bis || x.gueltig_bis >= heuteK);
+    mb.hidden = !n.length; mb.className = 'k-mitteilung' + (n.some((x) => x.wichtig) ? ' wichtig' : '');
+    mb.innerHTML = n.map((x) => '<div><strong>' + (x.wichtig ? '⚠ ' : '') + H.esc(x.titel) + '</strong>' + (x.text ? ' – ' + H.esc(x.text) : '') + '</div>').join('');
     offlineAnzeigen();
     zustand.mitglieder = m; zustand.produkte = p; zustand.optionen = o;
     zustand.einstellungen = { ...zustand.einstellungen, abmelden_sekunden: o.abmelden_sekunden, storno_minuten: o.storno_minuten };

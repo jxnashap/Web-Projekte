@@ -340,3 +340,6 @@ body.rechnung-seite { background: #e9e6df; }
 /* Ohne Netz */
 .k-badge.k-offline { background: #8a5e05; }
 .k-badge.k-problem { border: 0; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: none; min-height: 32px; }
+.k-mitteilung { background: #fff; border-left: 5px solid var(--navy); border-radius: 14px; padding: 12px 16px; margin: 0 0 16px; font-size: 16px; box-shadow: 0 8px 20px -14px rgba(14,27,69,.4); }
+.k-mitteilung.wichtig { border-left-color: var(--rot); background: #fff3f3; }
+.k-mitteilung div + div { margin-top: 6px; }

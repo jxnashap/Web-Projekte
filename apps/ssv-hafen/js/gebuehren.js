@@ -139,13 +139,15 @@
     const soll = Number(e.arbeitsdienst_soll || 0), abAlter = Number(e.arbeitsdienst_befreit_ab || 0);
     const pflichtIm = (j) => (m.art === 'ausuebend' || m.art === 'probe') && (!m.eintritt || m.eintritt <= j + '-12-31') && (!m.austritt || m.austritt > j + '-01-01');
     const befreitIm = (j) => m.arbeitsdienst_befreit ? m.arbeitsdienst_befreit : (abAlter && Q.alterAm(m, j + '-01-01') >= abAlter ? 'ab ' + abAlter + ' Jahren' : '');
-    const istIm = (j) => (d.arbeitsdienst || []).filter((a) => a.mitglied_id === m.id && String(a.datum).startsWith(String(j))).reduce((s, a) => s + Number(a.stunden || 0), 0);
+    const zaehlt = (a) => !a.status || a.status === 'bestaetigt';
+    const istIm = (j) => (d.arbeitsdienst || []).filter((a) => a.mitglied_id === m.id && zaehlt(a) && String(a.datum).startsWith(String(j))).reduce((s, a) => s + Number(a.stunden || 0), 0);
+    const gemeldet = (d.arbeitsdienst || []).filter((a) => a.mitglied_id === m.id && a.status === 'eingereicht' && String(a.datum).startsWith(String(jahr))).reduce((s, a) => s + Number(a.stunden || 0), 0);
     const erfasstIm = (j) => (d.arbeitsdienst || []).some((a) => String(a.datum).startsWith(String(j)));
     const fehlIm = (j) => (pflichtIm(j) && !befreitIm(j) && erfasstIm(j)) ? Math.max(0, soll - istIm(j)) : 0;
     const vorjahr = e.arbeitsdienst_vorjahr ? fehlIm(jahr - 1) : 0;
     const befreit = befreitIm(jahr), pflicht = pflichtIm(jahr), ist = istIm(jahr);
     const sollJ = pflicht && !befreit ? soll : 0;
-    return { pflicht, befreit, soll: sollJ, ist, vorjahr, fehl: Math.max(0, sollJ - ist) + vorjahr, erfasst: erfasstIm(jahr) };
+    return { pflicht, befreit, soll: sollJ, ist, gemeldet, vorjahr, fehl: Math.max(0, sollJ - ist) + vorjahr, erfasst: erfasstIm(jahr) };
   }
 
   window.HAFEN_GEBUEHREN = { arbeitsdienst, vorschau, saisonAbrechnen, stornieren, gebuehrenFuer, saisonDaten, flaeche };
