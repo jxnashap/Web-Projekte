@@ -7,7 +7,7 @@ freigibt.
 
 ## 1 · Datenbank-Nachträge einspielen (einmalig, in dieser Reihenfolge)
 
-Bereits eingespielt: 01, 02, 03. Neu: 04.
+Bereits eingespielt: 01, 02, 03, 04. Neu: 05.
 
 Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inhalt einfügen → **Run**:
 
@@ -28,6 +28,8 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
 
 4. `apps/ssv-hafen/supabase/nachtrag-04.sql` – Mein SSV: „Früher zurück“ (mit Hinweis, wenn noch ein Gast auf
    dem Platz liegt) und der eigene Arbeitsdienst-Stundenstand.
+5. `apps/ssv-hafen/supabase/nachtrag-05.sql` – Getränkekasse ohne Netz: Buchungen werden auf dem iPad gemerkt und
+   nachgetragen; jede Buchung zählt nur einmal. Nicht verbuchbare (z. B. Code falsch) zeigt das iPad oben rechts an.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 

@@ -107,7 +107,7 @@
       sektion('daten', 'Meine Daten', esc(m.ort || ''), '<div class="detail" style="box-shadow:none;padding:0;position:static"><dl>' +
         '<dt>Anschrift</dt><dd>' + esc(m.strasse || '–') + '<br>' + esc(((m.plz || '') + ' ' + (m.ort || '')).trim()) + '</dd><dt>Telefon</dt><dd>' + esc(m.tel || '–') + '</dd><dt>E-Mail</dt><dd>' + esc(m.email || '–') + '</dd>' +
         '<dt>Lastschrift</dt><dd>' + (m.iban ? 'Konto •••• ' + esc(String(m.iban).slice(-4)) : 'kein Mandat hinterlegt') + '</dd></dl></div>' +
-        '<div class="aktionen" style="margin-top:12px"><button class="btn" id="meine-daten">Daten ändern</button></div>' +
+        '<div class="aktionen" style="margin-top:12px"><button class="btn" id="meine-daten">Daten ändern</button></div><div id="meine-dok"></div>' +
         '<p class="hinweis" style="margin-top:12px">Neue Bankverbindung oder Fragen zu Rechnungen? Schreib an <a href="mailto:' + esc(d.einstellungen.verein_email) + '">' + esc(d.einstellungen.verein_email) + '</a> – für ein neues Konto braucht es ein neues Lastschriftmandat.</p>') +
       '</div><div>' +
       (wasser ? sektion('schild', 'Grünes Schild', awAktuell ? 'unterwegs ' + H.kurz(awAktuell.von) + '–' + H.kurz(awAktuell.bis) : 'Platz frei melden', schildInhalt, 'gruen-box') : '') +
@@ -152,6 +152,11 @@
     };
     rechnungenZeigen();
     if (KASSE) kasseZeigen(m, rechnungenZeigen);
+    // Unterlagen, die der Verein für mich hinterlegt hat (Verträge, Nachweise)
+    HF.dok.liste({ mitglied_id: mid }).then((l) => { const box = $('#meine-dok'); if (!box || !l.length) return;
+      box.innerHTML = '<h3 style="margin:16px 0 6px;font-size:15px">Meine Unterlagen</h3><table class="tab"><tbody>' + l.map((x) => '<tr><td>' + esc(x.name) + '<br><small style="color:var(--muted)">' + new Date(x.hochgeladen).toLocaleDateString('de-DE') + '</small></td><td class="r"><button class="btn klein" data-dok="' + x.id + '">Ansehen</button></td></tr>').join('') + '</tbody></table>';
+      box.addEventListener('click', (e) => { const a = e.target.closest('[data-dok]'); if (a) HF.datei.oeffnen(a.dataset.dok).catch((x) => toast(x.message)); });
+    }).catch(() => {});
 
     if (platzS && !platzS.bez && $('#miniplan')) {
       const svg = PLAN.zeichnen($('#miniplan'), { modus: 'sommer', saison: SAISON, datum: heute >= sd.auslagern && heute < sd.einlagern ? heute : (DBM ? H.tag(new Date(new Date(sd.einlagern + 'T12:00:00').getTime() - 864e5)) : '2026-08-15'), ansicht: platzS.bruecke === 'laengs' ? 'gesamt' : platzS.bruecke, markiere: platzS.id });

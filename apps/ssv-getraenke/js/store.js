@@ -226,6 +226,7 @@
       const m = this._m(mid);
       return { ok: true, vorname: m.vorname, nachname: m.nachname, alter: this._alter(m), ...this._summen(mid) };
     }
+    async kasseBuchenNach(mid, pin, posten) { return this.kasseBuchen(mid, pin, posten); }
     async kasseBuchen(mid, pin, posten) {
       const f = this._pruefen(mid, pin); if (f) return f;
       const summe = this._buchen(mid, posten, 'kasse');
@@ -418,7 +419,7 @@
       if (prefer) h.Prefer = prefer;
       let r;
       try { r = await fetch(this.url + pfad, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) }); }
-      catch (e) { throw new Error('Keine Verbindung zum Server – bitte WLAN prüfen und erneut versuchen.'); }
+      catch (e) { throw Object.assign(new Error('Keine Verbindung zum Server – bitte WLAN prüfen und erneut versuchen.'), { offline: true }); }
       const t = await r.text(); const j = t ? JSON.parse(t) : null;
       if (!r.ok) throw new Error((j && (j.message || j.msg || j.error_description)) || ('Fehler ' + r.status));
       return j;
@@ -432,6 +433,11 @@
     async kasseProdukte() { return (await this._rpc('kasse_produkte', { p_token: this._tok }, false)).map(this._zahlen); }
     async kasseLogin(mid, pin) { return this._zahlenSumme(await this._rpc('kasse_login', { p_token: this._tok, p_mitglied: mid, p_pin: pin }, false)); }
     async kasseBuchen(mid, pin, posten) { return this._zahlenSumme(await this._rpc('kasse_buchen', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p_posten: posten }, false)); }
+    // Buchen mit Kennung und Zeit (auch nachträglich, nach einem Netzausfall) – dieselbe Kennung wird nur einmal verbucht
+    async kasseBuchenNach(mid, pin, posten, zeit, ref) {
+      try { return this._zahlenSumme(await this._rpc('kasse_buchen_nach', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p_posten: posten, p_zeit: zeit, p_ref: ref }, false)); }
+      catch (e) { if (!e.offline && /kasse_buchen_nach|function|Funktion/i.test(e.message) && !/unplausibel|Kennung/.test(e.message)) return this.kasseBuchen(mid, pin, posten); throw e; }   // Datenbank noch ohne Nachtrag 05
+    }
     async kasseVerlauf(mid, pin) {
       const r = await this._rpc('kasse_verlauf', { p_token: this._tok, p_mitglied: mid, p_pin: pin }, false);
       if (r.buchungen) r.buchungen = r.buchungen.map(this._zahlen); return r;

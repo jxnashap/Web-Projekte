@@ -38,9 +38,12 @@ def main():
         konfig(os.path.join(ziel, 'ssv-hafen/js/config.js'), 'SSV_HAFEN_KONFIG', modus, url, key)
         start = start.replace('Vorschau: Website, Getränkekasse und Hafen-Manager (Demo)', 'Website, Getränkekasse und Hafen-Manager – mit Vereinsdatenbank')
         start = re.sub(r'<code>[^<]*</code>', '', start)
+        start = re.sub(r'\s*<a class="karte test".*?</a>', '', start, flags=re.S)
         start = re.sub(r'<p class="hinweis">.*?</p>', '<p class="hinweis">Anmeldung mit dem persönlichen Konto. Konten für Vorstand, Kassenwart, Brückenwartin, '
                        'Hafenmeister und Redaktion vergibt der Vorstand; Mitglieder legen ihr Konto in „Mein SSV“ selbst an.</p>', start, flags=re.S)
     open(os.path.join(ziel, 'index.html'), 'w', encoding='utf-8').write(start)
+    if modus == 'demo':   # Aufgabenblatt für den Test mit Mitgliedern – nur in der Demo
+        shutil.copy(os.path.join(REPO, 'apps/ssv-hafen/tools/testen.html'), os.path.join(ziel, 'testen.html'))
     # Vercel: Suchmaschinen aussperren (Vorschau), Grund-Sicherheitskopfzeilen
     json.dump({'headers': [{'source': '/(.*)', 'headers': [
         {'key': 'X-Robots-Tag', 'value': 'noindex, nofollow'},

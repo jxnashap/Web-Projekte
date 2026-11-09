@@ -337,3 +337,6 @@ body.rechnung-seite { background: #e9e6df; }
 .a-modal-card { max-height: calc(100vh - 28px); max-height: calc(100dvh - 28px); overscroll-behavior: contain; }
 @media (max-width: 860px) { input, select, textarea { font-size: 16px !important; } .a-login form { padding: 22px; } }
 @media (pointer: coarse) { .a-btn.klein { min-height: 44px; } }
+/* Ohne Netz */
+.k-badge.k-offline { background: #8a5e05; }
+.k-badge.k-problem { border: 0; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: none; min-height: 32px; }

@@ -440,8 +440,9 @@
       '<label class="feld">Arbeitsdienst befreit<input name="arbeitsdienst_befreit" value="' + esc(m.arbeitsdienst_befreit || '') + '" placeholder="Grund, z. B. Vorstandsamt"><small>leer = nicht befreit</small></label>' +
       (bank ? '<label class="feld voll">IBAN<input name="iban" value="' + esc(m.iban || '') + '" placeholder="DE…"></label><label class="feld">BIC (optional)<input name="bic" value="' + esc(m.bic || '') + '"></label><label class="feld">Kontoinhaber<input name="kontoinhaber" value="' + esc(m.kontoinhaber || '') + '"></label>' +
         '<label class="feld">Mandatsreferenz<input name="mandat_ref" value="' + esc(m.mandat_ref || '') + '"></label><label class="feld">Mandat unterschrieben am<input name="mandat_datum" type="date" value="' + esc(m.mandat_datum || '') + '"></label>' : '<p class="hinweis voll">Bankdaten: ' + (m.iban ? iban(m.iban) : 'keine') + ' – nur Kassenwart und Vorstand können sie ändern.</p>') +
-      '</form><div class="modal-fuss">' + (!neu && verlaufErlaubt() ? '<button class="btn links" id="m-verlauf">Verlauf</button>' : '') + '<button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>');
+      '</form>' + (neu ? '' : '<div class="abschnitt"><h3>Dokumente und Verträge</h3><div id="m-dok"></div></div>') + '<div class="modal-fuss">' + (!neu && verlaufErlaubt() ? '<button class="btn links" id="m-verlauf">Verlauf</button>' : '') + '<button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>');
     const mv = $('#m-verlauf', el); if (mv) mv.addEventListener('click', () => verlaufDialog('mitglieder', m.id, Q.name(m)));
+    if (!neu) dokumenteBereich($('#m-dok', el), { mitglied_id: m.id });
     $('#ok', el).addEventListener('click', () => {
       const f = $('#f', el); if (!f.reportValidity()) return;
       const x = Object.fromEntries(new FormData(f));
@@ -450,6 +451,24 @@
       if (neu) d.mitglieder.push({ id: H.uid('M'), notiz: '', ...x, nr: x.nr || Q.naechsteNr() }); else Object.assign(m, x);
       speichern('Gespeichert.'); zu(); zeige(tab);
     });
+  }
+
+  // Dokumente beim Mitglied (Liegeplatzvertrag, Mandat, Schriftverkehr …) – sieht auch das Mitglied in „Mein SSV“
+  function dokumenteBereich(box, bezug) {
+    const ART = { vertrag: 'Vertrag', versicherung: 'Versicherung', foto: 'Foto', sonstiges: 'Sonstiges' };
+    const liste = () => HF.dok.liste(bezug).then((l) => {
+      box.innerHTML = (l.length ? '<table class="tab"><tbody>' + l.map((x) => '<tr><td><span class="tag">' + (ART[x.art] || x.art) + '</span> ' + esc(x.name) + '<br><small style="color:var(--muted)">' + new Date(x.hochgeladen).toLocaleDateString('de-DE') + ' · ' + esc(x.von || '') + '</small></td><td class="r nw"><button class="btn klein" type="button" data-dok="' + x.id + '">Ansehen</button> <button class="btn klein gefahr" type="button" data-dok-weg="' + x.id + '">Löschen</button></td></tr>').join('') + '</tbody></table>' : '<p class="leer">Noch keine Dokumente.</p>') +
+        '<div class="aktionen" style="margin-top:8px"><select class="suche" id="dok-art" style="min-width:0"><option value="vertrag">Vertrag</option><option value="sonstiges">Sonstiges</option></select><label class="btn">Dokument hochladen<input type="file" id="dok-datei" accept="application/pdf,image/*" hidden></label></div>';
+      box.querySelector('#dok-datei').addEventListener('change', async (e) => {
+        try { const x = await HF.datei.lesen(e.target.files[0]); await HF.dok.hochladen({ ...x, ...bezug, art: box.querySelector('#dok-art').value }, ROLLEN[rolle].name); toast('Dokument gespeichert.'); liste(); }
+        catch (er) { toast(er.message, 'fehler'); }
+      });
+    }).catch((e) => { box.innerHTML = '<p class="hinweis warn">' + esc(e.message) + '</p>'; });
+    box.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-dok]'); if (a) return HF.datei.oeffnen(a.dataset.dok).catch((x) => toast(x.message, 'fehler'));
+      const w = e.target.closest('[data-dok-weg]'); if (w && confirm('Dokument löschen?')) HF.dok.loeschen(w.dataset.dokWeg).then(liste, (x) => toast(x.message, 'fehler'));
+    });
+    liste();
   }
 
   /* ============================================================ Mitglieder-Import (CSV) */

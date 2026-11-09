@@ -15,6 +15,39 @@
   };
   let inaktivTimer = null, fertigTimer = null;
 
+  /* ------------------------------------------------- Ohne Netz weiterbuchen
+   * Fällt das WLAN aus, bleibt die Kasse benutzbar: Namen und Getränke kommen aus dem Zwischenspeicher,
+   * Buchungen landen in einer Warteschlange auf dem iPad und werden automatisch nachgetragen.
+   * Der Code wird dabei von der Datenbank geprüft; jede Buchung hat eine Kennung und zählt nur einmal. */
+  const ONLINE_ONLY = S.modus === 'demo';
+  const LS = { cache: 'ssvg-kasse-cache', alter: 'ssvg-kasse-alter', schlange: 'ssvg-kasse-schlange', problem: 'ssvg-kasse-problem' };
+  const lesen = (k, std) => { try { return JSON.parse(localStorage.getItem(k)) || std; } catch (e) { return std; } };
+  const schreiben = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* voll */ } };
+  const neueRef = () => (crypto.randomUUID ? crypto.randomUUID() : 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+  let offline = false;
+  function offlineAnzeigen() {
+    const q = lesen(LS.schlange, []), pr = lesen(LS.problem, []);
+    const b = $('#offline-badge'); b.hidden = !offline && !q.length; b.textContent = offline ? 'Offline' + (q.length ? ' · ' + q.length + ' wartend' : '') : q.length + ' werden nachgetragen';
+    const p = $('#problem-badge'); p.hidden = !pr.length; p.textContent = '⚠ ' + pr.length + ' nicht verbucht';
+  }
+  let synchronisiert = false;
+  async function nachtragen() {
+    if (ONLINE_ONLY || synchronisiert) return; synchronisiert = true;
+    try {
+      let q = lesen(LS.schlange, []);
+      while (q.length) {
+        const x = q[0]; let r;
+        try { r = await S.kasseBuchenNach(x.mid, x.pin, x.posten, x.zeit, x.ref); }
+        catch (e) { if (e.offline) { offline = true; break; } r = { ok: false, fehler: 'fehler', text: e.message }; }
+        offline = false;
+        if (!r.ok) { const pr = lesen(LS.problem, []); pr.push({ ref: x.ref, name: x.name, zeit: x.zeit, text: x.text, grund: r.text || ({ pin: 'Code war falsch', gesperrt: 'Konto gesperrt', mitglied: 'Mitglied nicht aktiv', kein_pin: 'kein Code festgelegt', geraet: 'Kasse nicht eingerichtet' })[r.fehler] || r.fehler }); schreiben(LS.problem, pr); }
+        q = lesen(LS.schlange, []).filter((y) => y.ref !== x.ref); schreiben(LS.schlange, q);
+      }
+    } finally { synchronisiert = false; offlineAnzeigen(); }
+  }
+  window.addEventListener('online', () => { offline = false; nachtragen(); });
+  setInterval(nachtragen, 20e3);
+
   /* ------------------------------------------------------------ Bildschirme */
   function zeige(id) {
     document.querySelectorAll('.k-screen').forEach((s) => { s.hidden = s.id !== id; });
@@ -164,8 +197,17 @@
         else pinFehler('Anmeldung nicht möglich – bitte beim Kassenwart melden');
         return;
       }
-      angemeldet(r);
-    } catch (e) { pinFehler(e.message); }
+      const alter = lesen(LS.alter, {}); alter[zustand.aktiv.id] = r.alter == null ? null : Number(r.alter); schreiben(LS.alter, alter);
+      offline = false; zustand.ohneNetz = false; angemeldet(r);
+    } catch (e) {
+      if (e.offline && !ONLINE_ONLY) {   // ohne Netz: Buchung wird gemerkt, der Code beim Nachtragen geprüft
+        offline = true; offlineAnzeigen(); zustand.ohneNetz = true;
+        const alter = lesen(LS.alter, {}); const a = alter[zustand.aktiv.id];
+        angemeldet({ vorname: zustand.aktiv.vorname, alter: a === undefined ? -1 : a });
+        $('#monat-summe').textContent = '–'; $('#offen-summe').textContent = '–';
+        toast('Gerade kein Internet – du kannst trotzdem buchen. Dein Code wird geprüft, sobald das WLAN wieder da ist.');
+      } else pinFehler(e.message);
+    }
     finally { keypad.classList.remove('warten'); }
   }
   $('#keypad').addEventListener('click', (e) => {
@@ -255,12 +297,19 @@
     zustand.buchtGerade = true; const btn = $('#btn-buchen'); btn.disabled = true; btn.textContent = 'Wird gebucht …';
     try {
       const posten = zustand.bon.map((z) => ({ produkt_id: z.produkt.id, einheit: z.einheit, anzahl: z.anzahl }));
-      const r = await S.kasseBuchen(zustand.aktiv.id, zustand.pin, posten);
+      const eintrag = { ref: neueRef(), mid: zustand.aktiv.id, name: zustand.aktiv.vorname + ' ' + zustand.aktiv.nachname, pin: zustand.pin, posten, zeit: new Date().toISOString(), text: zustand.bon.map(zeilenText).join(', ') };
+      let r;
+      if (zustand.ohneNetz) r = null;
+      else { try { r = await S.kasseBuchenNach(eintrag.mid, eintrag.pin, posten, eintrag.zeit, eintrag.ref); } catch (e) { if (!e.offline || ONLINE_ONLY) throw e; r = null; offline = true; } }
+      if (!r) {   // ohne Netz: merken und später nachtragen
+        schreiben(LS.schlange, lesen(LS.schlange, []).concat([eintrag])); offlineAnzeigen();
+        r = { ok: true, offline: true, summe: zustand.bon.reduce((s, z) => s + zeilenPreis(z), 0) };
+      }
       if (!r.ok) { toast(r.fehler === 'gesperrt' ? 'Konto gesperrt – bitte später erneut.' : 'Buchung nicht möglich – bitte neu anmelden.', 'fehler'); return abmelden(); }
       $('#fertig-titel').textContent = 'Prost, ' + zustand.aktiv.vorname + '!';
       $('#fertig-liste').innerHTML = zustand.bon.map((z) => '<li><span>' + H.esc(z.produkt.emoji || '') + ' ' + H.esc(zeilenText(z)) + '</span><strong>' + H.geld(zeilenPreis(z)) + '</strong></li>').join('');
-      $('#fertig-summen').innerHTML = 'Gebucht: <strong>' + H.geld(r.summe) + '</strong> · Diesen Monat insgesamt: <strong>' + H.geld(r.monat_summe) + '</strong>';
-      setzeSummen(r); zustand.bon = []; renderBon();
+      $('#fertig-summen').innerHTML = r.offline ? 'Gemerkt: <strong>' + H.geld(r.summe) + '</strong> · wird automatisch gebucht, sobald das WLAN wieder da ist.' : 'Gebucht: <strong>' + H.geld(r.summe) + '</strong> · Diesen Monat insgesamt: <strong>' + H.geld(r.monat_summe) + '</strong>';
+      if (!r.offline) setzeSummen(r); zustand.bon = []; renderBon();
       zeige('s-fertig'); starteFertigCountdown();
     } catch (e) {
       toast(e.message, 'fehler');
@@ -288,7 +337,20 @@
       (b.storniert ? '<span class="k-v-tag">storniert</span>' : b.stornierbar ? '<button class="k-btn k-btn-mini" data-storno="' + b.id + '">Rückgängig</button>' : '<span class="k-v-tag">' + (b.abgerechnet || b.rechnung_id ? 'abgerechnet' : '') + '</span>') +
       '</li>').join('') : '<li class="k-leer">Noch keine Buchungen.</li>';
   }
-  $('#btn-verlauf').addEventListener('click', async () => { await renderVerlauf(); sheet('#sheet-verlauf', true); });
+  $('#btn-verlauf').addEventListener('click', async () => {
+    if (zustand.ohneNetz) return toast('Ohne Internet ist der Verlauf nicht verfügbar.', 'fehler');
+    try { await renderVerlauf(); sheet('#sheet-verlauf', true); } catch (e) { toast(e.message, 'fehler'); }
+  });
+  // Nicht verbuchbare Buchungen (z. B. Code beim Nachtragen falsch) – für den Kassenwart
+  $('#problem-badge').addEventListener('click', () => {
+    const pr = lesen(LS.problem, []);
+    $('#problem-liste').innerHTML = pr.map((x, i) => '<li><span class="k-v-zeit">' + H.zeit(x.zeit) + '</span><span class="k-v-text"><strong>' + H.esc(x.name) + '</strong> · ' + H.esc(x.text) + '<br><small>' + H.esc(x.grund) + '</small></span><button class="k-btn k-btn-mini" data-erledigt="' + i + '">Erledigt</button></li>').join('') || '<li class="k-leer">Nichts offen.</li>';
+    sheet('#sheet-problem', true);
+  });
+  $('#problem-liste').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-erledigt]'); if (!b) return;
+    const pr = lesen(LS.problem, []); pr.splice(Number(b.dataset.erledigt), 1); schreiben(LS.problem, pr); offlineAnzeigen(); $('#problem-badge').click();
+  });
   $('#verlauf-liste').addEventListener('click', async (e) => {
     const b = e.target.closest('[data-storno]'); if (!b) return;
     b.disabled = true;
@@ -300,7 +362,13 @@
   /* ------------------------------------------------------------- Start */
   function uhr() { $('#uhr').textContent = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }); }
   async function datenLaden() {
-    const [m, p, o] = await Promise.all([S.kasseMitglieder(), S.kasseProdukte(), S.kasseOptionen()]);
+    let m, p, o;
+    try { [m, p, o] = await Promise.all([S.kasseMitglieder(), S.kasseProdukte(), S.kasseOptionen()]); if (!ONLINE_ONLY) { schreiben(LS.cache, { m, p, o, zeit: Date.now() }); offline = false; } }
+    catch (e) {
+      const c = lesen(LS.cache, null); if (!e.offline || !c) throw e;
+      ({ m, p, o } = c); offline = true; o = { ...o, pin_selbst_festlegen: false };   // neuer Code braucht Netz
+    }
+    offlineAnzeigen();
     zustand.mitglieder = m; zustand.produkte = p; zustand.optionen = o;
     zustand.einstellungen = { ...zustand.einstellungen, abmelden_sekunden: o.abmelden_sekunden, storno_minuten: o.storno_minuten };
   }
@@ -316,7 +384,7 @@
     if (!st.eingerichtet) return zeige('s-setup');
     try { await datenLaden(); }
     catch (e) { if (/eingerichtet/.test(e.message)) return zeige('s-setup'); toast(e.message, 'fehler'); }
-    renderNamen(); zeige('s-wer');
+    renderNamen(); zeige('s-wer'); nachtragen();
     // Liste regelmäßig auffrischen, solange niemand angemeldet ist
     setInterval(async () => {
       if (document.body.dataset.screen !== 's-wer') return;
