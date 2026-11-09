@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>SSV – Kurzanleitung</title>
+<style>
+  @font-face { font-family: 'Playfair'; src: url('file:///home/user/Web-Projekte/apps/ssv-hafen/fonts/PlayfairDisplay.woff2') format('woff2'); }
+  @font-face { font-family: 'Inter'; src: url('file:///home/user/Web-Projekte/apps/ssv-hafen/fonts/Inter.woff2') format('woff2'); }
+  @page { size: A4; margin: 16mm 16mm 16mm 16mm; }
+  :root { --navy: #0E1B45; --rot: #B8232B; --sand: #F4F1EA; --ink: #1C2440; --muted: #5E6478; --linie: #DAD6CC; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Inter', Arial, sans-serif; color: var(--ink); font-size: 9.6pt; line-height: 1.45; }
+  h1, h2, h3 { font-family: 'Playfair', Georgia, serif; font-weight: 400; color: var(--navy); }
+  h1 { font-size: 26pt; margin: 0 0 2mm; line-height: 1.1; }
+  h2 { font-size: 15pt; margin: 6mm 0 2.5mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--rot); break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 4mm 0 1.2mm; break-after: avoid; }
+  p { margin: 0 0 2mm; }
+  ul { margin: 0 0 2mm; padding-left: 4.5mm; } li { margin-bottom: .8mm; }
+  .kopf { display: flex; align-items: center; gap: 6mm; padding-bottom: 5mm; border-bottom: 1px solid var(--linie); margin-bottom: 4mm; }
+  .kopf svg { width: 26mm; height: 13mm; flex: none; }
+  .kopf p { margin: 0; color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .karte { background: var(--sand); border-radius: 3mm; padding: 3mm 4mm; break-inside: avoid; }
+  .karte strong { color: var(--navy); }
+  .karte p { margin: 0; font-size: 9pt; }
+  table { width: 100%; border-collapse: collapse; font-size: 9pt; margin: 1mm 0 2mm; }
+  th { text-align: left; font-size: 7.5pt; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--linie); padding: 1.5mm 2mm; }
+  td { border-bottom: 1px solid var(--linie); padding: 1.6mm 2mm; vertical-align: top; }
+  .bild { border: 1px solid var(--linie); border-radius: 2mm; width: 100%; display: block; }
+  .bildtext { font-size: 8pt; color: var(--muted); margin: 1mm 0 0; }
+  .mit-bild { display: grid; grid-template-columns: 1fr 46mm; gap: 6mm; align-items: start; }
+  .hinweis { background: #fff6d6; border-left: 3px solid #c7811b; padding: 2.5mm 3.5mm; border-radius: 1.5mm; font-size: 9pt; break-inside: avoid; }
+  .tag { display: inline-block; font-size: 7.5pt; font-weight: 700; padding: .3mm 2mm; border-radius: 9px; background: rgba(14,27,69,.08); color: var(--navy); }
+  .seite { break-before: page; }
+  .fuss { margin-top: 6mm; font-size: 8pt; color: var(--muted); border-top: 1px solid var(--linie); padding-top: 2mm; }
+  code { font-family: inherit; font-weight: 600; color: var(--navy); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><clipPath id="sc"><path d="M14 8L118 33L14 58Z"/></clipPath>
+  <symbol id="stander" viewBox="12 6 108 54"><path d="M14 8L118 33L14 58Z" fill="#132a6b"/><g clip-path="url(#sc)"><path d="M14 8L70 58M14 58L70 8" stroke="#fff" stroke-width="8"/><path d="M14 8L70 58M14 58L70 8" stroke="#d3252c" stroke-width="4.5"/></g></symbol></defs></svg>
+
+<div class="kopf"><svg><use href="#stander"/></svg><div>
+  <h1>Website, Mein SSV, Hafen-Manager und Getränkekasse</h1>
+  <p>Kurzanleitung für den Schwartauer Segler-Verein e.V. · Stand November 2026</p>
+</div></div>
+
+<p>Das Programm ersetzt easyVerein und bündelt alles, was der Verein rund um Mitglieder, Hafen und Getränke braucht – auf einer gemeinsamen Vereinsdatenbank (Server in Frankfurt). Jede Person sieht nur, was zu ihrer Aufgabe gehört; Mitglieder sehen nur ihre eigenen Daten.</p>
+
+<div class="grid2">
+  <div class="karte"><strong>Website</strong><p>Vereinsseite mit Terminen, Jugend, Hafen und Galerie. Die Redaktion pflegt Hinweise, Termine und Fotos selbst – ohne Technik.</p></div>
+  <div class="karte"><strong>Mein SSV</strong><p>Persönlicher Bereich für jedes Mitglied: Rechnungen, Liegeplatz, grünes Schild, Arbeitsdienst, Mitteilungen.</p></div>
+  <div class="karte"><strong>Hafen-Manager</strong><p>Verwaltung für Vorstand, Kassenwart, Brückenwartin und Hafenmeister: Mitglieder, Plätze, Gäste, Abrechnung, Lastschrift.</p></div>
+  <div class="karte"><strong>Getränkekasse</strong><p>iPad im Vereinsheim: Name antippen, Code eingeben, buchen. Abrechnung monatlich per Lastschrift.</p></div>
+  <div class="karte"><strong>Gast-Anmeldung</strong><p>QR-Code am Steg – Gäste melden sich in Deutsch, Englisch oder Dänisch an.</p></div>
+  <div class="karte"><strong>Aufnahmeantrag</strong><p>Online mit Lastschriftmandat; der Vorstand nimmt mit einem Klick auf.</p></div>
+</div>
+
+<h2>Für Mitglieder: „Mein SSV“</h2>
+<div class="mit-bild"><div>
+  <h3>Anmelden</h3>
+  <p>Auf der Website oben rechts <strong>„Mein SSV“</strong> antippen. Beim ersten Mal <strong>„Konto anlegen“</strong> – mit der E-Mail-Adresse, die der Verein von dir hat. Passwort vergessen? Über „Passwort vergessen“ neu setzen. Tipp fürs Handy: <em>Teilen → Zum Home-Bildschirm</em>.</p>
+  <h3>Auf einen Blick</h3>
+  <ul>
+    <li><strong>Rechnung:</strong> Betrag und Klartext, z. B. „Einzug am 17.11. – du musst nichts tun“. Bezahlte Rechnungen auf Wunsch über „Bezahlte Rechnungen ansehen“.</li>
+    <li><strong>Liegeplatz / Winterlager</strong> und <strong>Getränke-Verbrauch</strong> des Monats.</li>
+    <li><strong>Mitteilungen</strong> des Vereins stehen ganz oben (wichtige in Rot, z. B. Sturmwarnung).</li>
+  </ul>
+  <h3>Was du selbst erledigen kannst</h3>
+  <ul>
+    <li><strong>Platz frei melden</strong> (grünes Schild) – und „Früher zurück“, wenn du eher wieder da bist.</li>
+    <li><strong>Versicherungsnachweis hochladen</strong> (Foto oder PDF) – der Verein prüft und hakt ab.</li>
+    <li><strong>Arbeitsstunden:</strong> beim Arbeitseinsatz QR-Code am Vereinsheim scannen oder Stunden selbst melden; der Verein bestätigt.</li>
+    <li><strong>Schaden melden</strong>, Anschrift/Telefon ändern, <strong>Getränke-Code</strong> ändern, Unterlagen (z. B. Liegeplatzvertrag) ansehen.</li>
+    <li>Auf Wunsch <strong>Benachrichtigungen aufs Handy</strong> (sobald der Vorstand das freischaltet).</li>
+  </ul>
+  <p>Am Handy führt der große rote Knopf unten rechts direkt zur wichtigsten Aktion.</p>
+</div><div><img class="bild" src="mein.png" alt="Mein SSV am Handy"><p class="bildtext">Mein SSV am Handy (Demo-Daten)</p></div></div>
+
+<h2>Getränkekasse am iPad</h2>
+<div class="grid2"><div>
+  <ol style="padding-left:4.5mm;margin:0 0 2mm">
+    <li>Namen antippen (Suche oder Buchstabe).</li>
+    <li>4-stelligen Code eingeben. <strong>Erstes Mal:</strong> Mitgliedsnummer eingeben und den Code selbst festlegen.</li>
+    <li>Getränke antippen (Stück oder Kasten) → <strong>„Jetzt buchen“</strong>.</li>
+    <li>Fehlbuchung? Unter „Verlauf“ innerhalb von 15 Minuten rückgängig machen.</li>
+  </ol>
+  <p><strong>Ohne WLAN</strong> bucht die Kasse trotzdem weiter und trägt alles nach, sobald das Netz wieder da ist. Lässt sich etwas nicht verbuchen (z. B. Code falsch), steht oben rechts „⚠ nicht verbucht“ – bitte dem Kassenwart melden.</p>
+  <p><strong>Jugendschutz:</strong> Getränke mit Altersgrenze sieht nur, wer alt genug ist.</p>
+  <p><strong>Einrichtung:</strong> Kassenwart öffnet am iPad den Kassenwart-Bereich → Einstellungen → „Dieses Gerät als Kasse einrichten“, dann Zum Home-Bildschirm und Geführten Zugriff aktivieren.</p>
+</div><div><img class="bild" src="kasse.png" alt="Getränkekasse"><p class="bildtext">Startbildschirm der Kasse, oben eine Mitteilung des Vereins</p></div></div>
+
+<h2>Für Funktionsträger: der Hafen-Manager</h2>
+<p>Anmeldung mit eigenem Konto (vergibt der Vorstand). Nach 30 Minuten ohne Eingabe wird automatisch abgemeldet. Die <strong>Übersicht</strong> sortiert alles in <span class="tag">Heute wichtig</span> (Konflikte, Ankünfte, dringende Schäden, Rücklastschriften), <span class="tag">Anstehend</span> (Abrechnungen, Nachweise, Stunden bestätigen) und <span class="tag">Einrichtung abschließen</span>.</p>
+<img class="bild" src="uebersicht.png" alt="Übersicht im Hafen-Manager" style="margin:2mm 0 1mm;height:58mm;object-fit:cover;object-position:top">
+<p class="bildtext">Übersicht des Hafen-Managers (Vorstand, Demo-Daten)</p>
+
+<table>
+  <thead><tr><th style="width:24%">Rolle</th><th>Typische Aufgaben</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Hafenmeister</strong></td><td>Gäste einweisen (Platzvorschlag prüft Freigabe, Maße und Tiefgang), Zahlung und Quittung, Abwesenheiten, Kran, Schäden, Arbeitsstunden bestätigen, Mitteilungen. Schnellknopf am Handy: „+ Gast einweisen“.</td></tr>
+    <tr><td><strong>Brückenwartin</strong></td><td>Belegung Sommer/Winter, Warteliste, Boote und Versicherungsnachweise prüfen, Liegeplatz-Maße (als Tabelle), Ein-/Auslagern, Arbeitsdienst und Arbeitseinsätze mit QR-Plakat.</td></tr>
+    <tr><td><strong>Kassenwart</strong></td><td>Beiträge und Hafengebühren abrechnen, Lastschrift-Datei für die Bank (SEPA), Zahlungen/Teilzahlungen und Rücklastschriften buchen, Mitglieder-Import (CSV aus easyVerein), Verbandsmeldung, Gebührenordnung, Änderungsverlauf.</td></tr>
+    <tr><td><strong>Vorstand</strong></td><td>Alles, dazu Aufnahmeanträge entscheiden, Mitteilungen (z. B. Sturmwarnung), Einstellungen und Regeln, Zugänge.</td></tr>
+    <tr><td><strong>Redaktion</strong></td><td>Website-Inhalte unter <code>/website/verwaltung/</code>.</td></tr>
+  </tbody>
+</table>
+
+<h3>Wichtige Abläufe in Kürze</h3>
+<ul>
+  <li><strong>Gast einweisen:</strong> Gastlieger → „+ Gast einweisen“ → Maße, Ankunft, Nächte → passenden Platz wählen. Passt ein Platz nicht mehr (z. B. Eigner früher zurück), nennt das Programm den Grund und die Übersicht zeigt den Konflikt.</li>
+  <li><strong>Abrechnung:</strong> Abrechnung → Periode wählen → Vorschau prüfen → „Rechnungen erstellen“ → „SEPA-Datei erzeugen“ und im Online-Banking hochladen. Zahlungen über „Zahlung“ je Rechnung.</li>
+  <li><strong>Arbeitseinsatz:</strong> Arbeitsdienst → „+ Arbeitseinsatz“ → QR-Plakat drucken und am Tag aushängen → gemeldete Stunden oben bestätigen.</li>
+  <li><strong>Mitteilung:</strong> Mitteilungen → „+ Mitteilung“ → Empfänger, Dauer, „wichtig“ → veröffentlichen (Mein SSV und Kasse).</li>
+</ul>
+
+<h2>Sicherheit und Datenschutz</h2>
+<ul>
+  <li>Daten liegen in der Vereinsdatenbank bei Supabase in <strong>Frankfurt</strong>; jede Rolle sieht nur ihren Bereich, Mitglieder nur sich selbst.</li>
+  <li>Doppelte Platzvergaben verhindert die Datenbank – auch wenn zwei Personen gleichzeitig arbeiten.</li>
+  <li><strong>Änderungsverlauf:</strong> wer hat wann was geändert (Bankdaten nur gekürzt), 3 Jahre.</li>
+  <li><strong>Löschfristen</strong> sind eingebaut (abgelehnte Anträge, Gästedaten, Ausgetretene); Rechnungen bleiben 10 Jahre (Abgabenordnung).</li>
+  <li>Datensicherung zum Herunterladen unter Einstellungen; für tägliche Sicherungen den Supabase-Pro-Tarif nutzen.</li>
+</ul>
+
+<h2>Vor dem Start noch zu erledigen</h2>
+<div class="hinweis">
+  <ul style="margin:0">
+    <li>Mitglieder-Export aus easyVerein importieren (Hafen-Manager → Mitglieder &amp; Eigner → „Mitglieder importieren (CSV)“).</li>
+    <li>Vereinspostfach (SMTP) eintragen, damit Bestätigungs- und Passwort-Mails an alle Mitglieder gehen.</li>
+    <li>Zugänge für die Funktionsträger anlegen.</li>
+    <li>Einstellungen: Steuerhinweis (mit Steuerberater), Vereinskonto und Gläubiger-ID, Arbeitsdienst-Regeln, Saisontermine.</li>
+    <li>Echte Boxmaße und Wassertiefen eintragen (Liegeplätze → „Maße bearbeiten“), echte Getränkepreise.</li>
+    <li>Impressum und Datenschutz vervollständigen, Auftragsverarbeitungsverträge mit Vercel und Supabase abschließen.</li>
+    <li>Kurzer Test mit 4–5 Mitgliedern (Aufgabenblatt in der Demo), danach Domain verbinden und freischalten.</li>
+  </ul>
+</div>
+
+<h2>Adressen</h2>
+<table>
+  <tbody>
+    <tr><td style="width:30%">Live (mit Vereinsdatenbank)</td><td><code>ssv-live-ssv-manager.vercel.app</code> – noch geschützt, später die Vereinsdomain</td></tr>
+    <tr><td>Mein SSV</td><td><code>…/ssv-hafen/mein-ssv.html</code></td></tr>
+    <tr><td>Hafen-Manager</td><td><code>…/ssv-hafen/</code></td></tr>
+    <tr><td>Getränkekasse / Kassenwart</td><td><code>…/ssv-getraenke/</code> · <code>…/ssv-getraenke/kassenwart.html</code></td></tr>
+    <tr><td>Website-Redaktion</td><td><code>…/website/verwaltung/</code></td></tr>
+  </tbody>
+</table>
+<p class="fuss">Ausführliche technische Anleitung: <code>apps/ssv-hafen/INBETRIEBNAHME.md</code> im Projekt. Bildschirmfotos zeigen erfundene Demo-Daten.</p>
+</body>
+</html>
