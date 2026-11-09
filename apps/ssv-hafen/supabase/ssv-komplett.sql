@@ -1160,3 +1160,9 @@ where id = 1 and daten = '{}'::jsonb;
 -- Erste Rollen vergeben (Konto vorher unter Authentication → Users anlegen):
 --   insert into public.funktionen (user_id, rolle, name)
 --   select id, 'vorstand', 'Vorstand' from auth.users where email = 'vorstand@ssv-net.de';
+
+-- Supabase-Sicherheitshinweis „Function Search Path Mutable“: festen Suchpfad setzen
+alter function public._berlin_tag(timestamptz) set search_path = public;
+alter function public._pin_ok(text) set search_path = public;
+alter function public._iban_ok(text) set search_path = public;
+alter function public._inhalt_gestempelt() set search_path = public;
