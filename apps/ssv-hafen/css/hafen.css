@@ -149,13 +149,29 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .toast.zeigen { transform: translate(-50%, 0); opacity: 1; } .toast.fehler { background: var(--rot); }
 
 @media (max-width: 1200px) { .plan-layout { grid-template-columns: 1fr; } .detail { position: static; } }
+.nav-leiste { display: none; }
+.nav-inhalt { display: contents; }
 @media (max-width: 860px) {
   .shell { grid-template-columns: 1fr; }
-  .nav { position: sticky; top: 0; z-index: 20; height: auto; flex-direction: row; overflow-x: auto; padding: 8px; -webkit-overflow-scrolling: touch; }
-  .marke, .nav-gruppe, .rolle-chip { display: none; }
-  .nav button, .nav a { width: auto; white-space: nowrap; padding: 8px 11px; }
-  .nav-unten { display: flex; margin: 0; padding: 0; border: 0; }
-  .main { padding: 18px 12px 60px; }
+  /* Handy: schmale Leiste mit aktuellem Bereich + „Menü“, die Liste klappt darunter auf */
+  .nav { position: sticky; top: 0; z-index: 30; height: auto; padding: 0; overflow: visible; }
+  .nav-leiste { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+  .nav-leiste .stander { width: 30px; height: 24px; flex: none; }
+  .nav-leiste strong { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nav .nav-leiste button { margin-left: auto; width: auto; background: rgba(255,255,255,.12); color: #fff; padding: 8px 14px; font-weight: 600; }
+  .nav-inhalt { display: none; }
+  .nav.offen .nav-inhalt { display: flex; flex-direction: column; gap: 1px; position: absolute; left: 0; right: 0; top: 100%; background: var(--navy); padding: 4px 12px 16px;
+    max-height: calc(100vh - 54px); overflow: auto; box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+  .nav.offen .nav-inhalt .marke { display: none; }
+  .nav button, .nav a { padding: 11px 12px; font-size: 15px; }
+  .main { padding: 16px 12px 60px; }
+  .kopf h1 { font-size: 24px; }
+  .kopf .aktionen { width: 100%; }
+  .demo-band { font-size: 12px; padding: 7px 10px; }
+  .karten { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kz { padding: 12px 14px; } .kz strong { font-size: 22px; } .kz small { font-size: 10px; letter-spacing: .1em; }
+  .panel { padding: 14px; }
+  .filter { flex-wrap: wrap; } .filter .suche { min-width: 0; flex: 1 1 100%; }
   .form, .form.drei, .zwei { grid-template-columns: 1fr; }
 }
 

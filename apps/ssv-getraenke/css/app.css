@@ -184,7 +184,7 @@ body.kiosk { min-height: 100vh; min-height: 100dvh; display: flex; flex-directio
   .k-top { padding-left: 16px; padding-right: 16px; }
   .k-verlauf li { grid-template-columns: 1fr auto; }
 }
-@media (max-width: 560px) { .k-brand strong { font-size: 14px; } .k-screen h1 { font-size: 28px; } .k-kacheln { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .k-brand strong { font-size: 14px; } .k-brand span { display: none; } .k-top-r { gap: 10px; } .k-uhr { display: none; } .k-screen h1 { font-size: 28px; } .k-kacheln { grid-template-columns: 1fr 1fr; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
 /* =========================================================== VERWALTUNG */
@@ -265,6 +265,21 @@ table.a-tab { width: 100%; border-collapse: collapse; font-size: 14px; }
   .a-nav .a-unten { margin-top: 0; }
   .a-main { padding: 22px 16px 50px; }
   .a-zwei, .a-form { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  /* Handy: eine schmale, wischbare Menüzeile statt eines halben Bildschirms */
+  .a-nav { position: sticky; top: 0; z-index: 20; flex-wrap: nowrap; overflow-x: auto; gap: 2px; padding: 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .a-nav::-webkit-scrollbar { display: none; }
+  .a-nav .k-brand { display: none; }
+  .a-nav button, .a-nav a { white-space: nowrap; padding: 8px 11px; font-size: 14px; gap: 7px; }
+  .a-nav svg { width: 17px; height: 17px; }
+  .a-main { padding: 16px 12px 50px; }
+  .a-kopf h1 { font-size: 24px; }
+  .a-karten { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .a-karte { padding: 12px 14px; border-radius: 14px; }
+  .a-karte small { font-size: 10px; letter-spacing: .08em; }
+  .a-karte strong { font-size: 20px; margin-top: 4px; }
+  .a-karte span { font-size: 12px; }
 }
 
 /* ============================================================ RECHNUNG */

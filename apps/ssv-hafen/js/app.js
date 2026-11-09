@@ -828,11 +828,16 @@
   function nav() {
     const anfragen = d.gaeste.filter((g) => g.status === 'angemeldet').length;
     const neueAntraege = (d.antraege || []).filter((a) => a.status === 'neu').length;
-    $('#nav').innerHTML = '<div class="marke"><svg class="stander"><use href="#stander"/></svg><div><strong>Hafen-Manager</strong><span>SSV · Teerhofinsel</span></div></div>' +
+    const aktName = (TABS.flatMap(([, ts]) => ts).find(([t]) => t === tab) || [, ''])[1];
+    const zahlen = anfragen + neueAntraege;
+    $('#nav').classList.remove('offen');
+    $('#nav').innerHTML = '<div class="nav-leiste"><svg class="stander"><use href="#stander"/></svg><strong>' + aktName + '</strong>' +
+      '<button id="navauf" aria-expanded="false" aria-controls="nav-inhalt">Menü' + (zahlen ? '<span class="zahl">' + zahlen + '</span>' : '') + '</button></div><div class="nav-inhalt" id="nav-inhalt">' +
+      '<div class="marke"><svg class="stander"><use href="#stander"/></svg><div><strong>Hafen-Manager</strong><span>SSV · Teerhofinsel</span></div></div>' +
       '<div class="rolle-chip">Angemeldet als <strong>' + ROLLEN[rolle].name + '</strong></div>' +
       TABS.map(([gruppe, ts]) => { const sichtbar = ts.filter(([t]) => darf(t)); return sichtbar.length ? '<div class="nav-gruppe">' + gruppe + '</div>' + sichtbar.map(([t, n]) =>
         '<button data-tab="' + t + '" class="' + (t === tab ? 'aktiv' : '') + '">' + n + (t === 'gaeste' && anfragen ? '<span class="zahl">' + anfragen + '</span>' : '') + (t === 'antraege' && neueAntraege ? '<span class="zahl">' + neueAntraege + '</span>' : '') + '</button>').join('') : ''; }).join('') +
-      '<div class="nav-unten"><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">Rolle wechseln</button></div>';
+      '<div class="nav-unten"><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">Rolle wechseln</button></div></div>';
   }
   function zeige(t) {
     if (!darf(t)) t = 'uebersicht';
@@ -840,6 +845,8 @@
     try { history.replaceState(null, '', '#' + t); } catch (e) { /* egal */ }
   }
   document.addEventListener('click', (e) => {
+    const auf = e.target.closest('#navauf');
+    if (auf) { const nv = $('#nav'); const o = nv.classList.toggle('offen'); auf.setAttribute('aria-expanded', o); return; }
     const n = e.target.closest('#nav [data-tab]'); if (n) return zeige(n.dataset.tab);
     const g = e.target.closest('[data-gehe]'); if (g && darf(g.dataset.gehe)) return zeige(g.dataset.gehe);
     if (e.target.closest('#abmelden')) { rolle = null; try { sessionStorage.removeItem('ssv-hafen-rolle'); } catch (x) { /* egal */ } start(); }

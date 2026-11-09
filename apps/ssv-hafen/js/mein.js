@@ -24,44 +24,81 @@
   sel.value = mid;
   sel.addEventListener('change', () => { mid = sel.value; try { sessionStorage.setItem('ssv-mein', mid); } catch (e) { /* egal */ } zeigen(); });
 
+  /* Aufklappbare Bereiche: am Handy zu (außer Rechnungen), am Rechner offen; Wahl wird gemerkt */
+  const AUF = {};
+  const istHandy = () => window.matchMedia('(max-width: 860px)').matches;
+  function sektion(key, titel, info, inhalt, klasse, offenAmHandy) {
+    const offen = key in AUF ? AUF[key] : (istHandy() ? !!offenAmHandy : true);
+    return '<details class="panel sek' + (klasse ? ' ' + klasse : '') + '" data-sek="' + key + '"' + (offen ? ' open' : '') + '><summary><h2>' + titel + '</h2>' +
+      '<span class="sek-info" id="info-' + key + '">' + info + '</span></summary><div class="sek-inhalt">' + inhalt + '</div></details>';
+  }
+  const kachel = (ziel, titel, wert, unter, id) => '<button type="button" data-ziel="' + ziel + '"' + (id ? ' id="' + id + '"' : '') + '><small>' + titel + '</small><strong>' + wert + '</strong><span>' + unter + '</span></button>';
+
   function zeigen() {
     const m = Q.mitglied(mid); const boote = Q.booteVon(mid);
     const b = boote[0]; const sommer = b && Q.belegungBoot(SAISON, 'sommer', b.id); const winter = b && Q.belegungBoot(SAISON, 'winter', b.id);
     const platzS = sommer && Q.platz(sommer.platz_id); const platzW = winter && Q.platz(winter.platz_id);
     const aw = d.abwesenheiten.filter((a) => b && a.boot_id === b.id).sort((x, y) => y.von.localeCompare(x.von));
+    const awAktuell = aw.find((a) => a.bis >= heute);
     const res = d.rechnungen.filter((r) => r.mitglied_id === mid && !r.storniert_am);
     const warte = d.warteliste.filter((w) => w.status === 'wartend').sort((x, y) => x.datum.localeCompare(y.datum));
     const meinW = warte.findIndex((w) => w.mitglied_id === mid);
     const vs = b ? Q.versicherungsStatus(b, heute) : 'ok';
-    $('#main').innerHTML = '<div class="demo-band"><strong>Demo:</strong> Im Echtbetrieb meldest du dich mit deinem eigenen Zugang an und siehst nur deine Daten. Alle Daten hier sind erfunden.</div>' +
-      '<div class="kopf"><div><h1>Moin ' + esc(m.vorname) + '!</h1><p>' + H.ART[m.art] + ' · Mitgliedsnr. ' + esc(m.nr) + '</p></div></div>' +
-      (vs !== 'ok' && b ? '<p class="hinweis warn">Dein Versicherungsnachweis ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'fehlt noch' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte aktualisieren – die Hafenbetriebsordnung schreibt ihn vor.</p>' : '') +
-      '<div class="mein-raster"><div>' +
-      (b ? '<div class="panel"><h2>Mein Boot „' + esc(b.name) + '“</h2><div class="detail" style="box-shadow:none;padding:0;position:static"><dl>' +
+    const platzText = platzS ? (platzS.bez ? esc(platzS.bez) : (platzS.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(platzS.nr)) : '';
+    const wasser = sommer && sommer.platz_typ === 'wasser';
+
+    const bootInhalt = b ? '<div class="detail" style="box-shadow:none;padding:0;position:static"><dl>' +
         '<dt>Typ</dt><dd>' + esc(b.typ) + '</dd><dt>Maße</dt><dd>' + H.zahl(b.laenge) + ' × ' + H.zahl(b.breite) + ' m · Tiefgang ' + H.zahl(b.tiefgang) + ' m · ' + H.zahl(b.gewicht_t, 1) + ' t</dd>' +
-        '<dt>Sommer ' + SAISON + '</dt><dd>' + (platzS ? (platzS.bez ? esc(platzS.bez) + ' (an Land)' : (platzS.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(platzS.nr) + ', ' + H.BRUECKE[platzS.bruecke]) : '–') + '</dd>' +
+        '<dt>Sommer ' + SAISON + '</dt><dd>' + (platzS ? (platzS.bez ? esc(platzS.bez) + ' (an Land)' : platzText + ', ' + H.BRUECKE[platzS.bruecke]) : '–') + '</dd>' +
         '<dt>Winter ' + SAISON + '/' + String(SAISON + 1).slice(2) + '</dt><dd>' + (platzW ? esc(platzW.bez) : '–') + '</dd>' +
         '<dt>Versicherung</dt><dd>' + esc(b.versicherung || '–') + ', bis ' + H.datum(b.vers_bis) + '</dd><dt>Kfz</dt><dd>' + esc(m.kfz || '–') + '</dd></dl></div>' +
-        '<div class="aktionen" style="margin-top:12px"><button class="btn" id="daten">Daten aktualisieren</button></div></div>' +
-        (platzS && !platzS.bez ? '<div class="panel" style="padding:0;overflow:hidden"><div id="miniplan" class="plan-flaeche"></div></div>' : '') : '') +
-      (meinW >= 0 ? '<div class="panel"><h2>Warteliste</h2><p>Du stehst auf <strong>Platz ' + (meinW + 1) + '</strong> der Warteliste (seit ' + H.datum(warte[meinW].datum) + ').</p></div>' : '') +
-      (KASSE ? '<div class="panel" id="kasse"><h2>Getränkekasse</h2><p class="leer">Wird geladen …</p></div>' : '') +
-      '</div><div>' +
-      (sommer && sommer.platz_typ === 'wasser' ? '<div class="panel gruen-box"><h2>Grünes Schild</h2><p style="margin-top:0;color:var(--muted)">Unterwegs? Trag es hier ein – dein Platz wird im Hafenplan grün und der Hafenmeister kann ihn solange an Gäste vergeben. Bitte trotzdem das Schild am Steg drehen.</p>' +
+        (platzS && !platzS.bez ? '<div id="miniplan" class="plan-flaeche mini-plan"></div>' : '') +
+        '<div class="aktionen" style="margin-top:12px"><button class="btn" id="daten">Daten aktualisieren</button></div>' : '';
+    const schildInhalt = wasser ? '<p style="margin-top:0;color:var(--muted)">Unterwegs? Dann wird dein Platz grün und der Hafenmeister kann ihn an Gäste geben. Bitte trotzdem das Schild am Steg drehen.</p>' +
         '<form id="awf" class="form"><label class="feld">ab<input type="date" name="von" required value="' + heute + '"></label><label class="feld">zurück am<input type="date" name="bis" required></label><label class="feld voll">Ziel (optional)<input name="notiz" placeholder="z. B. Dänische Südsee"></label></form>' +
         '<div class="aktionen" style="margin-top:10px"><button class="btn gruen" id="awok">Abwesenheit melden</button></div>' +
-        (aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') + '</div>' : '') +
-      '<div class="panel"><h2>Meine Rechnungen</h2><div id="rechnungen"></div>' +
-      '<p class="hinweis" style="margin-top:12px">Beitrag, Hafengeld und Getränke werden per Lastschrift eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p></div></div></div>';
+        (aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') : '';
 
-    // Rechnungen: Hafen sofort, Getränke sobald die Kasse geantwortet hat
-    const hafenPosten = res.map((r) => ({ art: r.periode === 'beitrag' ? 'Beitrag' : 'Hafen', nr: r.nr, datum: r.datum || '', text: r.periode === 'beitrag' ? 'Mitgliedsbeitrag ' + r.saison : H.periodeText(r),
+    $('#main').innerHTML = '<div class="demo-band"><strong>Demo</strong> – erfundene Daten. Im Echtbetrieb meldest du dich mit deinem eigenen Zugang an.</div>' +
+      '<div class="kopf"><div><h1>Moin ' + esc(m.vorname) + '!</h1><p>' + H.ART[m.art] + ' · Mitgliedsnr. ' + esc(m.nr) + '</p></div></div>' +
+      (vs !== 'ok' && b ? '<p class="hinweis warn">Dein Versicherungsnachweis ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'fehlt noch' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte unter „Mein Boot“ aktualisieren.</p>' : '') +
+      '<div class="blick">' + kachel('rechnungen', 'Offen', '…', 'Rechnungen', 'k-offen') +
+        (platzS ? kachel(wasser ? 'schild' : 'boot', 'Liegeplatz', platzText, awAktuell ? 'grün bis ' + H.kurz(awAktuell.bis) : (platzS.bez ? 'an Land' : H.BRUECKE[platzS.bruecke])) : meinW >= 0 ? kachel('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), 'seit ' + H.datum(warte[meinW].datum)) : kachel('rechnungen', 'Mitglied seit', m.eintritt ? m.eintritt.slice(0, 4) : '–', H.ART[m.art])) +
+        (KASSE ? kachel('kasse', 'Getränke', '…', new Date().toLocaleDateString('de-DE', { month: 'long' }), 'k-getraenke') : '') + '</div>' +
+      '<div class="mein-raster"><div>' +
+      (b ? sektion('boot', 'Mein Boot', '„' + esc(b.name) + '“' + (platzText ? ' · ' + platzText : ''), bootInhalt) : '') +
+      (meinW >= 0 ? sektion('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), '<p style="margin:0">Du stehst auf <strong>Platz ' + (meinW + 1) + '</strong> der Warteliste (seit ' + H.datum(warte[meinW].datum) + ').</p>') : '') +
+      (KASSE ? sektion('kasse', 'Getränkekasse', 'wird geladen …', '<div id="kasse"><p class="leer">Wird geladen …</p></div>') : '') +
+      '</div><div>' +
+      (wasser ? sektion('schild', 'Grünes Schild', awAktuell ? 'unterwegs ' + H.kurz(awAktuell.von) + '–' + H.kurz(awAktuell.bis) : 'Platz frei melden', schildInhalt, 'gruen-box') : '') +
+      sektion('rechnungen', 'Meine Rechnungen', '', '<div id="rechnungen"></div><p class="hinweis" style="margin-top:12px">Alles wird per Lastschrift eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p>', '', true) +
+      '</div></div>';
+
+    // Aufklappen merken; Kacheln springen zum Bereich
+    document.querySelectorAll('details.sek').forEach((el) => el.addEventListener('toggle', () => { AUF[el.dataset.sek] = el.open; }));
+    document.querySelectorAll('.blick [data-ziel]').forEach((k) => k.addEventListener('click', () => {
+      const el = document.querySelector('details.sek[data-sek="' + k.dataset.ziel + '"]'); if (!el) return;
+      el.open = true; AUF[el.dataset.sek] = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
+
+    // Rechnungen: Hafen und Beitrag sofort, Getränke sobald die Kasse geantwortet hat
+    const hafenPosten = res.map((r) => ({ art: r.periode === 'beitrag' ? 'Beitrag' : 'Hafen', nr: r.nr, datum: r.datum || '', text: r.periode === 'beitrag' ? String(r.saison) : H.periodeText(r),
       summe: r.summe, bezahlt_am: r.bezahlt_am, sepa: r.sepa, faellig: r.faellig, href: 'drucken.html?art=rechnungen&ids=' + r.id }));
+    let alleZeigen = false;
     const rechnungenZeigen = (getraenke) => {
       const alle = hafenPosten.concat(getraenke || []).sort((x, y) => (y.datum || '').localeCompare(x.datum || '') || y.nr.localeCompare(x.nr));
-      $('#rechnungen').innerHTML = alle.length ? '<table class="tab"><tbody>' + alle.map((r) => '<tr><td><strong style="white-space:nowrap">' + esc(r.nr) + '</strong><br><span class="tag' + (r.art === 'Hafen' ? '' : r.art === 'Beitrag' ? ' gruen' : ' gold') + '">' + r.art + '</span> <small style="color:var(--muted)">' + esc(r.text) + '</small></td><td class="r">' + H.geld(r.summe) + '</td><td>' +
-        (r.bezahlt_am ? '<span class="tag ok">bezahlt</span>' : r.sepa ? '<span class="tag">Lastschrift ' + H.kurz(r.faellig) + '</span>' : '<span class="tag warn">offen</span>') +
-        '</td><td class="r"><a class="btn klein" href="' + r.href + '" target="_blank">PDF</a></td></tr>').join('') + '</tbody></table>' : '<p class="leer">Noch keine Rechnungen.</p>';
+      const offen = alle.filter((r) => !r.bezahlt_am);
+      const summeOffen = offen.reduce((s2, r) => s2 + Math.round(r.summe * 100), 0) / 100;
+      const ko = $('#k-offen'); if (ko) { ko.querySelector('strong').textContent = summeOffen ? H.geld(summeOffen) : 'nichts'; ko.querySelector('span').textContent = offen.length ? offen.length + (offen.length === 1 ? ' Rechnung' : ' Rechnungen') : 'alles bezahlt'; }
+      $('#info-rechnungen').textContent = offen.length ? H.geld(summeOffen) + ' offen' : alle.length + ' bezahlt';
+      const GRENZE = 4; const liste = alleZeigen ? alle : alle.slice(0, GRENZE);
+      $('#rechnungen').innerHTML = alle.length ? '<table class="tab rechn"><tbody>' + liste.map((r) => '<tr><td><span class="tag' + (r.art === 'Hafen' ? '' : r.art === 'Beitrag' ? ' gruen' : ' gold') + '">' + r.art + '</span> ' + esc(r.text) +
+        '<br><small style="color:var(--muted)">' + esc(r.nr) + '</small></td><td class="r"><strong>' + H.geld(r.summe) + '</strong><br>' +
+        (r.bezahlt_am ? '<span class="tag ok">bezahlt</span>' : r.sepa ? '<span class="tag">Einzug ' + H.kurz(r.faellig) + '</span>' : '<span class="tag warn">offen</span>') +
+        '</td><td class="r"><a class="btn klein" href="' + r.href + '" target="_blank">PDF</a></td></tr>').join('') + '</tbody></table>' +
+        (alle.length > GRENZE ? '<button class="btn klein" id="rmehr" style="margin-top:10px">' + (alleZeigen ? 'Weniger anzeigen' : 'Alle ' + alle.length + ' Rechnungen anzeigen') + '</button>' : '')
+        : '<p class="leer">Noch keine Rechnungen.</p>';
+      const mehr = $('#rmehr'); if (mehr) mehr.addEventListener('click', () => { alleZeigen = !alleZeigen; rechnungenZeigen(getraenke); });
     };
     rechnungenZeigen();
     if (KASSE) kasseZeigen(m, rechnungenZeigen);
@@ -88,21 +125,24 @@
   /* ---------------------------------------------------------- Getränkekasse */
   const monatText = (von) => new Date(von + 'T12:00:00').toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
   async function kasseZeigen(m, rechnungenZeigen) {
-    const box = $('#kasse'); let u;
-    try { u = await KASSE.mitgliedUebersicht(m.id); } catch (e) { box.innerHTML = '<h2>Getränkekasse</h2><p class="hinweis warn">' + esc(e.message) + '</p>'; return; }
-    if (!u || mid !== m.id || !$('#kasse')) return; // inzwischen anderes Mitglied gewählt
+    let u;
+    try { u = await KASSE.mitgliedUebersicht(m.id); } catch (e) { const box = $('#kasse'); if (box) box.innerHTML = '<p class="hinweis warn">' + esc(e.message) + '</p>'; return; }
+    const box = $('#kasse');
+    if (!u || mid !== m.id || !box) return; // inzwischen anderes Mitglied gewählt
     rechnungenZeigen(u.rechnungen.map((r) => ({ art: 'Getränke', nr: r.nr, datum: r.datum, text: monatText(r.von), summe: r.summe, bezahlt_am: r.bezahlt_am, sepa: r.sepa, faellig: r.faellig,
       href: KASSE_PFAD + 'drucken.html?art=rechnung&ids=' + r.id + '&mein=' + encodeURIComponent(m.id) })));
-    const bs = u.buchungen.slice(0, 8);
-    box.innerHTML = '<h2>Getränkekasse</h2>' +
-      '<div class="kasse-zahlen"><div><small>Diesen Monat</small><strong>' + H.geld(u.monat_summe) + '</strong></div><div><small>noch nicht abgerechnet</small><strong>' + H.geld(u.offen_summe) + '</strong></div></div>' +
+    const kg = $('#k-getraenke'); if (kg) kg.querySelector('strong').textContent = H.geld(u.monat_summe);
+    $('#info-kasse').textContent = (u.hat_pin ? '' : 'Code fehlt · ') + H.geld(u.monat_summe) + ' diesen Monat';
+    const bs = u.buchungen.slice(0, 5);
+    box.innerHTML = '<div class="kasse-zahlen"><div><small>Diesen Monat</small><strong>' + H.geld(u.monat_summe) + '</strong></div><div><small>noch nicht abgerechnet</small><strong>' + H.geld(u.offen_summe) + '</strong></div></div>' +
       (u.gesperrt_bis ? '<p class="hinweis warn">Dein Code wurde nach 5 Fehlversuchen kurz gesperrt. Mit einem neuen Code bist du sofort wieder frei.</p>' : '') +
       '<p style="margin:0 0 10px">' + (u.hat_pin
-        ? 'Dein 4-stelliger Code für das iPad ist festgelegt. Vergessen? Leg hier einfach einen neuen fest.'
-        : 'Du hast noch keinen Code für das iPad. Leg ihn hier fest – oder beim ersten Mal direkt an der Kasse (dort mit deiner Mitgliedsnummer <strong>' + esc(m.nr) + '</strong>).') + '</p>' +
+        ? 'Dein Code fürs iPad ist festgelegt. Vergessen? Leg einfach einen neuen fest.'
+        : 'Du hast noch keinen Code fürs iPad. Leg ihn hier fest – oder beim ersten Mal an der Kasse mit deiner Mitgliedsnummer <strong>' + esc(m.nr) + '</strong>.') + '</p>' +
       '<div class="aktionen"><button class="btn' + (u.hat_pin ? '' : ' primaer') + '" id="code">' + (u.hat_pin ? 'Code ändern' : 'Code festlegen') + '</button></div>' +
-      (bs.length ? '<table class="tab" style="margin-top:12px"><thead><tr><th>Letzte Buchungen</th><th></th><th class="r">Betrag</th></tr></thead><tbody>' + bs.map((b) =>
-        '<tr' + (b.storniert_am ? ' class="blass"' : '') + '><td>' + new Date(b.zeit).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + '</td><td>' + b.anzahl + ' ' + (b.einheit === 'kasten' ? (b.anzahl === 1 ? 'Kasten' : 'Kästen') : '×') + ' ' + esc(b.produkt_name) + (b.storniert_am ? ' (storniert)' : '') + '</td><td class="r">' + H.geld(b.betrag) + '</td></tr>').join('') + '</tbody></table>' : '<p class="leer" style="margin-top:12px">Noch keine Buchungen.</p>');
+      (bs.length ? '<table class="tab" style="margin-top:12px"><thead><tr><th>Letzte Buchungen</th><th class="r">Betrag</th></tr></thead><tbody>' + bs.map((x) =>
+        '<tr' + (x.storniert_am ? ' class="blass"' : '') + '><td>' + x.anzahl + ' ' + (x.einheit === 'kasten' ? (x.anzahl === 1 ? 'Kasten' : 'Kästen') : '×') + ' ' + esc(x.produkt_name) + (x.storniert_am ? ' (storniert)' : '') +
+        '<br><small style="color:var(--muted)">' + new Date(x.zeit).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' Uhr</small></td><td class="r">' + H.geld(x.betrag) + '</td></tr>').join('') + '</tbody></table>' : '<p class="leer" style="margin-top:12px">Noch keine Buchungen.</p>');
     $('#code').addEventListener('click', () => codeAendern(m, u.hat_pin));
   }
   function codeAendern(m, hatPin) {

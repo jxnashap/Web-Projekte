@@ -20,6 +20,42 @@
   .kasse-zahlen small { display: block; color: var(--muted); font-size: 12px; }
   .kasse-zahlen strong { font-size: 20px; color: var(--navy); }
   .code-feld { font-size: 26px; letter-spacing: .3em; text-align: center; font-variant-numeric: tabular-nums; }
+  .mein-raster > div { min-width: 0; }
+  .detail dd { overflow-wrap: anywhere; }
+  .mini-plan { margin-top: 12px; border-radius: 12px; overflow: hidden; }
+  /* Auf einen Blick */
+  .blick { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 12px; margin: 0 0 16px; }
+  .blick button { text-align: left; background: #fff; border: 0; border-radius: 14px; box-shadow: var(--schatten); padding: 12px 14px; cursor: pointer; font: inherit; color: inherit; min-width: 0; }
+  .blick small { display: block; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); font-weight: 700; }
+  .blick strong { display: block; font-size: 19px; color: var(--navy); margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .blick span { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Aufklappbare Bereiche */
+  details.sek > summary { list-style: none; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  details.sek > summary::-webkit-details-marker { display: none; }
+  details.sek > summary h2 { margin: 0; }
+  details.sek > summary::after { content: ''; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--muted-2); border-bottom: 2px solid var(--muted-2); transform: rotate(45deg); margin: -4px 2px 0 0; transition: transform .2s; }
+  details.sek[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
+  .sek-info { margin-left: auto; font-size: 13px; color: var(--muted); text-align: right; }
+  .sek-inhalt { margin-top: 14px; }
+  .panel.sek { display: block; width: 100%; box-sizing: border-box; }
+  table.rechn td { vertical-align: middle; }
+  @media (max-width: 860px) {
+    .mein-kopf { padding: 12px 16px; gap: 10px; }
+    .mein-kopf h1 { font-size: 20px; } .mein-kopf .stander { width: 36px; height: 30px; }
+    .mein-kopf select { margin-left: 0; width: 100%; }
+    .mein { padding: 12px 12px 48px; }
+    .mein .kopf { margin-bottom: 12px; } .mein .kopf h1 { font-size: 25px; }
+    .mein-raster { display: flex; flex-direction: column; gap: 0; }
+    .mein-raster > div { display: contents; }
+    .sek[data-sek=rechnungen] { order: 1; } .sek[data-sek=schild] { order: 2; } .sek[data-sek=kasse] { order: 3; } .sek[data-sek=boot] { order: 4; } .sek[data-sek=warteliste] { order: 5; }
+    .panel.sek { padding: 14px 16px; margin-bottom: 10px; }
+    .panel.sek h2 { font-size: 17px; }
+    .blick { gap: 8px; margin-bottom: 12px; }
+    .blick button { padding: 10px 11px; }
+    .blick strong { font-size: 16px; }
+    .sek-info { font-size: 12.5px; }
+    .demo-band { font-size: 12px; padding: 7px 10px; margin-bottom: 10px; }
+  }
   @media (max-width: 860px) { .mein-raster { grid-template-columns: 1fr; } }
 </style>
 </head>
