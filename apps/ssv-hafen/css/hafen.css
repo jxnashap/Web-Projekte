@@ -406,3 +406,19 @@ table.todo td:first-child { width: 1%; white-space: nowrap; }
 .pe-mass i { display: block; height: 6px; border: 2px solid #fff; border-top: 0; box-shadow: 0 1px 2px rgba(0,0,0,.6); max-width: 60vw; }
 .steg.steg-schwimm { stroke: #3f7fc4; } .hafenplan.mit-bild .steg.steg-schwimm { stroke: #6fc3ff; }
 .pe-steg.pe-schwimm { stroke: #6fc3ff; }
+/* Arbeitsgruppen: Umschalter, Gesamt-Aufgabenliste, Einkaufsliste, Excel-Zuordnung */
+.ab-modus { display: inline-flex; gap: 4px; background: rgba(14,27,69,.06); padding: 4px; border-radius: 12px; margin: 0 0 18px; flex-wrap: wrap; }
+.ab-modus button { border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 600; color: var(--navy); padding: 8px 14px; border-radius: 9px; cursor: pointer; min-height: 38px; }
+.ab-modus button.aktiv { background: #fff; box-shadow: 0 1px 3px rgba(14,27,69,.18); }
+.zahl-leise { background: rgba(14,27,69,.12); border-radius: 99px; padding: 0 7px; font-size: 12px; margin-left: 4px; }
+.ab-filter { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.ab-filter select, .ab-filter .suche { min-height: 40px; } .ab-filter .suche { flex: 1 1 200px; } .ab-anzahl { color: var(--muted); font-size: 13px; margin-left: auto; }
+.ab-ck { width: 34px; text-align: center; } .ab-ck input { width: 20px; height: 20px; accent-color: #1d8a5a; cursor: pointer; }
+.ab-liste td { vertical-align: top; } .ab-schieb { max-width: 210px; font-size: 13px; padding: 5px 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.ab-kauf { list-style: none; margin: 0; padding: 0; } .ab-kauf li { padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; } .ab-kauf li:last-child { border-bottom: 0; }
+.ab-kauf label { display: inline-flex; gap: 10px; align-items: center; cursor: pointer; } .ab-kauf input { width: 20px; height: 20px; accent-color: #1d8a5a; } .ab-kauf small { color: var(--muted); }
+.ab-kauf li.blass span { text-decoration: line-through; }
+.link-knopf { border: 0; background: none; padding: 0; font: inherit; color: var(--navy); text-decoration: underline; cursor: pointer; font-size: 13px; }
+#imp-text { width: 100%; font: 14px/1.4 ui-monospace, Menlo, monospace; padding: 10px; border: 1px solid #8A8FA3; border-radius: 10px; }
+#imp-vorschau table { margin-top: 8px; font-size: 13px; } #imp-vorschau { max-height: 40vh; overflow-y: auto; }
+@media (max-width: 860px) { .ab-liste thead { display: none; } .ab-schieb { max-width: 150px; } .ab-anzahl { margin-left: 0; } }

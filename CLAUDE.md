@@ -39,6 +39,8 @@ Repo für alle Website-Projekte. Struktur:
   Hafenplan maßstäblich (1000 × 750 Einheiten = 400 × 300 m) aus einem Lageplan-Datensatz (`STANDARD` in `js/plan.js`, eigener Plan des Vereins in
   `einstellungen.lageplan`, Zeichenfenster `js/plan-editor.js`); Luftbild `img/luftbild-dop20.jpg` = amtliches DOP20, Quellenvermerk
   „© GeoBasis-DE/LVermGeo SH/CC BY 4.0“ muss sichtbar bleiben (Details `RECHERCHE.md`).
+  Arbeitsdienst: 12 Arbeitsgruppen laut Vorstand (Vorlage `js/bereiche-vorlage.js`, live eingespielt), Aufgaben je Gruppe mit `pos` (Aktionsliste),
+  `art` aufgabe|besorgen, `erledigt` (Datum) im jsonb `arbeitsbereiche.aufgaben`; Ansicht „Arbeitsgruppen“ mit Gruppen/Aufgabenliste/Einkaufsliste.
   **Alle Druck-/PDF-Seiten im SSV-Briefkopf: Flagge oben links + Vereinsadresse rechts** (`kopf` in `js/drucken.js`, `druckKopf()` in app.js für direkt gedruckte Seiten) – Vorgabe des Nutzers.
   Recherche/Annahmen: `RECHERCHE.md`, `PLAN.md`.
   **Echtbetrieb-Konten (nur SSV, getrennt von allen anderen Projekten):**

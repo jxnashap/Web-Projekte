@@ -98,7 +98,9 @@
       '<div class="mein-bereich"><div class="mein-bereich-kopf"><strong>' + esc(b.name) + '</strong>' + (b.rolle === 'leitung' ? ' <span class="tag ok">du leitest</span>' : '') + '</div>' +
       ((b.leitung || []).length && b.rolle !== 'leitung' ? '<p>Ansprechpartner: ' + b.leitung.map((l) => esc(l.name) + (l.tel ? ' · <a href="tel:' + esc(telLink(l.tel)) + '">' + esc(l.tel) + '</a>' : '')).join(', ') + '</p>' : '') +
       (b.treffpunkt ? '<p><small>' + esc(b.treffpunkt) + '</small></p>' : '') +
-      ((b.aufgaben || []).length ? '<ul>' + b.aufgaben.map((a) => '<li>' + esc(a.titel) + (a.zeitraum ? ' <small>· ' + esc(a.zeitraum) + '</small>' : '') + '</li>').join('') + '</ul>' : '') + '</div>').join('') : '';
+      (() => { const offen = (b.aufgaben || []).filter((a) => a.art !== 'besorgen' && !a.erledigt);   // nur offene Aufgaben, ohne Einkaufsliste
+        return offen.length ? '<p style="margin-top:8px"><strong>Offene Aufgaben</strong></p><ul>' + offen.slice(0, 8).map((a) => '<li>' + esc(a.titel) + (a.zeitraum ? ' <small>· ' + esc(a.zeitraum) + '</small>' : '') + '</li>').join('') +
+          (offen.length > 8 ? '<li><small>und ' + (offen.length - 8) + ' weitere – frag die Leitung</small></li>' : '') + '</ul>' : '<p><small>Gerade keine offenen Aufgaben.</small></p>'; })() + '</div>').join('') : '';
     const adInhalt = ad ? (ad.befreit ? '<p style="margin:0">Du bist vom Arbeitsdienst befreit (' + esc(ad.befreit) + ').</p>'
       : '<div class="kasse-zahlen"><div><small>bestätigt</small><strong>' + H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' Std.</strong></div><div><small>noch offen</small><strong>' + H.zahl(ad.fehl, ad.fehl % 1 ? 1 : 0) + ' Std.</strong></div></div>' +
         (ad.gemeldet ? '<p style="margin:0 0 8px;font-size:13px;color:var(--muted)">Dazu ' + H.zahl(ad.gemeldet, ad.gemeldet % 1 ? 1 : 0) + ' Std. gemeldet – der Verein bestätigt sie noch.</p>' : '') +

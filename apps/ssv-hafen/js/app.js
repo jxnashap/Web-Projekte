@@ -31,7 +31,7 @@
     ['hafen', 'Hafen', [['plan', 'Hafenplan'], ['plaetze', 'Liegeplätze'], ['belegung', 'Belegung'], ['warteliste', 'Warteliste']]],
     ['gaeste', 'Gäste & Schild', [['gaeste', 'Gastlieger'], ['abwesenheiten', 'Grünes Schild']]],
     ['mitglieder', 'Mitglieder & Boote', [['eigner', 'Mitglieder'], ['boote', 'Boote'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
-    ['betrieb', 'Betrieb', [['arbeitsdienst', 'Arbeitsdienst'], ['arbeitsbereiche', 'Arbeitsbereiche'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen']]],
+    ['betrieb', 'Betrieb', [['arbeitsdienst', 'Arbeitsdienst'], ['arbeitsbereiche', 'Arbeitsgruppen'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen']]],
     ['finanzen', 'Finanzen', [['abrechnung', 'Abrechnung & Lastschrift'], ['gebuehren', 'Gebührenordnung']]],
     ['verwaltung', 'Verwaltung', [['einstellungen', 'Einstellungen'], ['verlauf', 'Änderungsverlauf']]]
   ];
@@ -1101,67 +1101,165 @@
   const bereicheVon = (mid) => (d.arbeitsbereich_mitglieder || []).filter((z) => z.mitglied_id === mid).map((z) => ({ z, b: (d.arbeitsbereiche || []).find((x) => x.id === z.bereich_id) })).filter((x) => x.b);
   const bereichOpt = (sel) => '<option value="">– ohne Bereich –</option>' + bereiche().filter((b) => b.aktiv !== false || b.id === sel).map((b) => '<option value="' + b.id + '"' + (b.id === sel ? ' selected' : '') + '>' + esc(b.name) + '</option>').join('');
   const stdBereich = (bid) => d.arbeitsdienst.filter((a) => a.bereich_id === bid && a.status !== 'abgelehnt' && a.status !== 'eingereicht' && String(a.datum).startsWith(String(SAISON))).reduce((s, a) => s + Number(a.stunden || 0), 0);
+  // Aufgaben einer Gruppe: art 'aufgabe' (Standard) oder 'besorgen' (Einkaufsliste); erledigt = Datum oder ''
+  const istBesorgen = (a) => a.art === 'besorgen';
+  const offenZahl = (b) => (b.aufgaben || []).filter((a) => !istBesorgen(a) && !a.erledigt).length;
+  const abStand = { modus: 'gruppen', gruppe: '', status: 'offen', such: '' };
   V.arbeitsbereiche = (main) => {
     const liste = bereiche();
     const pflichtig = d.mitglieder.filter((m) => (m.art === 'ausuebend' || m.art === 'probe') && Q.istMitglied(m, heute));
     const ohne = pflichtig.filter((m) => !bereicheVon(m.id).length && !G.arbeitsdienst(d, SAISON, m).befreit);
-    main.innerHTML = kopf('Arbeitsbereiche', 'Wer kümmert sich um was? Bereiche mit Leitung, Mitgliedern und Aufgaben – je Bereich als PDF zum Aushängen oder Mitgeben.',
-      (liste.length ? '<button class="btn" id="ab-alle">Alle als PDF</button>' : '') + '<button class="btn primaer" id="ab-neu">+ Bereich</button>') +
-      (liste.length ? '<div class="ab-karten">' + liste.map((b) => {
-        const team = teamVon(b.id); const leit = team.filter((z) => z.rolle === 'leitung').map((z) => Q.name(Q.mitglied(z.mitglied_id)));
-        const std = stdBereich(b.id);
-        return '<div class="panel ab-karte' + (b.aktiv === false ? ' blass' : '') + '"><div class="ab-kopf"><h2>' + esc(b.name) + (b.aktiv === false ? ' <span class="tag">ruht</span>' : '') + '</h2>' +
-          '<button class="btn klein" data-ab-pdf="' + b.id + '" title="Bereichsblatt als PDF">PDF</button></div>' +
-          (b.beschreibung ? '<p class="ab-text">' + esc(b.beschreibung) + '</p>' : '') +
-          '<dl class="ab-zahlen"><div><dt>Leitung</dt><dd>' + (leit.length ? esc(leit.join(', ')) : '<span class="tag warn">fehlt</span>') + '</dd></div><div><dt>Mitglieder</dt><dd>' + team.length + '</dd></div>' +
-          '<div><dt>Aufgaben</dt><dd>' + (b.aufgaben || []).length + '</dd></div><div><dt>Stunden ' + SAISON + '</dt><dd>' + H.zahl(std, std % 1 ? 1 : 0) + '</dd></div></dl>' +
-          ((b.aufgaben || []).length ? '<ul class="ab-aufgaben">' + b.aufgaben.slice(0, 4).map((a) => '<li>' + esc(a.titel) + (a.zeitraum ? ' <small>· ' + esc(a.zeitraum) + '</small>' : '') + '</li>').join('') + (b.aufgaben.length > 4 ? '<li class="mehr">+ ' + (b.aufgaben.length - 4) + ' weitere</li>' : '') + '</ul>' : '') +
-          '<div class="aktionen"><button class="btn klein" data-ab-team="' + b.id + '">Mitglieder</button><button class="btn klein" data-ab-edit="' + b.id + '">Bereich & Aufgaben</button></div></div>';
-      }).join('') + '</div>' : '<div class="panel"><p class="leer">Noch keine Arbeitsbereiche. Lege z. B. „Kran“, „Boote fahren“, „Lager“ und „Steg“ an.</p></div>') +
-      '<div class="panel"><h2>Noch ohne Bereich (' + ohne.length + ')</h2>' + (ohne.length ? '<p class="hinweis" style="margin-top:0">Arbeitspflichtige Mitglieder, die noch keinem Bereich zugeordnet sind – antippen, um zuzuordnen.</p><div class="ab-chips">' +
-        ohne.sort((a, b) => a.nachname.localeCompare(b.nachname, 'de')).map((m) => '<button class="chip-btn" data-ab-ohne="' + m.id + '">' + esc(Q.name(m)) + '</button>').join('') + '</div>' : '<p class="leer">Alle arbeitspflichtigen Mitglieder sind einem Bereich zugeordnet.</p>') + '</div>';
-    $('#ab-neu').addEventListener('click', () => bereichForm(null));
-    const alle = $('#ab-alle'); if (alle) alle.addEventListener('click', () => oeffnen('drucken.html?art=bereiche'));
+    const offenGesamt = liste.reduce((s, b) => s + offenZahl(b), 0);
+    const besorgenGesamt = liste.reduce((s, b) => s + (b.aufgaben || []).filter((a) => istBesorgen(a) && !a.erledigt).length, 0);
+    const umschalter = '<div class="ab-modus" role="tablist">' + [['gruppen', 'Gruppen', liste.length], ['liste', 'Aufgabenliste', offenGesamt], ['einkauf', 'Einkaufsliste', besorgenGesamt]].map(([k, n, z]) =>
+      '<button type="button" role="tab" aria-selected="' + (abStand.modus === k) + '" class="' + (abStand.modus === k ? 'aktiv' : '') + '" data-ab-modus="' + k + '">' + n + (z ? ' <span class="zahl-leise">' + z + '</span>' : '') + '</button>').join('') + '</div>';
+    const knoepfe = abStand.modus === 'gruppen' ? (liste.length ? '<button class="btn" id="ab-alle">Alle als PDF</button>' : '') + '<button class="btn" id="ab-import">Zuordnung aus Excel</button><button class="btn primaer" id="ab-neu">+ Gruppe</button>'
+      : abStand.modus === 'liste' ? '<button class="btn" id="ab-druck">Als PDF</button><button class="btn primaer" id="ab-aufgabe">+ Aufgabe</button>'
+      : '<button class="btn" id="ab-druck">Als PDF</button><button class="btn primaer" id="ab-kauf">+ Eintrag</button>';
+    main.innerHTML = kopf('Arbeitsgruppen', 'Wer kümmert sich um was? Gruppen mit Leitung, Mitgliedern und Aufgaben – als Gesamtliste zum Abhaken und je Gruppe als PDF.', knoepfe) + umschalter +
+      (abStand.modus === 'gruppen' ? gruppenHtml(liste, ohne) : abStand.modus === 'liste' ? listeHtml(liste) : einkaufHtml(liste));
+    main.querySelectorAll('[data-ab-modus]').forEach((x) => x.addEventListener('click', () => { abStand.modus = x.dataset.abModus; zeige(tab, true); }));
+    const an = (id, fn) => { const x = $(id); if (x) x.addEventListener('click', fn); };
+    an('#ab-neu', () => bereichForm(null)); an('#ab-import', importForm);
+    an('#ab-alle', () => oeffnen('drucken.html?art=bereiche'));
+    an('#ab-druck', () => oeffnen('drucken.html?art=' + (abStand.modus === 'liste' ? 'aufgabenliste&status=' + abStand.status + (abStand.gruppe ? '&id=' + abStand.gruppe : '') : 'einkauf')));
+    an('#ab-aufgabe', () => neueAufgabe('aufgabe')); an('#ab-kauf', () => neueAufgabe('besorgen'));
     main.querySelectorAll('[data-ab-pdf]').forEach((x) => x.addEventListener('click', () => oeffnen('drucken.html?art=bereiche&id=' + x.dataset.abPdf)));
     main.querySelectorAll('[data-ab-edit]').forEach((x) => x.addEventListener('click', () => bereichForm(d.arbeitsbereiche.find((b) => b.id === x.dataset.abEdit))));
     main.querySelectorAll('[data-ab-team]').forEach((x) => x.addEventListener('click', () => teamForm(d.arbeitsbereiche.find((b) => b.id === x.dataset.abTeam))));
     main.querySelectorAll('[data-ab-ohne]').forEach((x) => x.addEventListener('click', () => zuordnenForm(Q.mitglied(x.dataset.abOhne))));
+    main.querySelectorAll('[data-ab-liste]').forEach((x) => x.addEventListener('click', () => { abStand.modus = 'liste'; abStand.gruppe = x.dataset.abListe; abStand.status = 'offen'; zeige(tab, true); }));
+    // Aufgabenliste: Filter, abhaken, verschieben
+    const fg = $('#ab-f-gruppe'); if (fg) fg.addEventListener('change', () => { abStand.gruppe = fg.value; zeige(tab, true); });
+    const fs = $('#ab-f-status'); if (fs) fs.addEventListener('change', () => { abStand.status = fs.value; zeige(tab, true); });
+    const fq = $('#ab-f-such'); if (fq) fq.addEventListener('input', () => { abStand.such = fq.value; main.querySelectorAll('[data-such]').forEach((r) => { r.hidden = abStand.such && !r.dataset.such.includes(abStand.such.toLowerCase()); }); });
+    main.querySelectorAll('[data-erl]').forEach((c) => c.addEventListener('change', () => {
+      const [bid, i] = c.dataset.erl.split('|'); const a = d.arbeitsbereiche.find((x) => x.id === bid).aufgaben[Number(i)];
+      a.erledigt = c.checked ? heute : ''; speichern(c.checked ? (istBesorgen(a) ? 'Als besorgt abgehakt.' : 'Erledigt – danke!') : 'Wieder offen.'); zeige(tab, true);
+    }));
+    main.querySelectorAll('[data-schieb]').forEach((s) => s.addEventListener('change', () => {
+      const [bid, i] = s.dataset.schieb.split('|'); const von = d.arbeitsbereiche.find((x) => x.id === bid), nach = d.arbeitsbereiche.find((x) => x.id === s.value); if (!nach || von === nach) return;
+      const [a] = von.aufgaben.splice(Number(i), 1); nach.aufgaben = (nach.aufgaben || []).concat([a]); speichern('Nach „' + nach.name + '“ verschoben.'); zeige(tab, true);
+    }));
+    main.querySelectorAll('[data-a-bearb]').forEach((x) => x.addEventListener('click', () => bereichForm(d.arbeitsbereiche.find((b) => b.id === x.dataset.aBearb))));
+    if (fq && abStand.such) fq.dispatchEvent(new Event('input'));
   };
-  // Bereich anlegen/bearbeiten mit Aufgabenliste (Aufgabe · Zeitraum · Richtwert Stunden · Hinweis)
+  function gruppenHtml(liste, ohne) {
+    return (liste.length ? '<div class="ab-karten">' + liste.map((b) => {
+      const team = teamVon(b.id); const leit = team.filter((z) => z.rolle === 'leitung').map((z) => Q.name(Q.mitglied(z.mitglied_id)));
+      const std = stdBereich(b.id); const auf = (b.aufgaben || []).filter((a) => !istBesorgen(a)); const offen = auf.filter((a) => !a.erledigt);
+      const kauf = (b.aufgaben || []).filter((a) => istBesorgen(a) && !a.erledigt).length;
+      return '<div class="panel ab-karte' + (b.aktiv === false ? ' blass' : '') + '"><div class="ab-kopf"><h2>' + esc(b.name) + (b.aktiv === false ? ' <span class="tag">ruht</span>' : '') + '</h2>' +
+        '<button class="btn klein" data-ab-pdf="' + b.id + '" title="Gruppenblatt als PDF">PDF</button></div>' +
+        (b.beschreibung ? '<p class="ab-text">' + esc(b.beschreibung) + '</p>' : '') +
+        '<dl class="ab-zahlen"><div><dt>Leitung</dt><dd>' + (leit.length ? esc(leit.join(', ')) : '<span class="tag warn">fehlt</span>') + '</dd></div><div><dt>Mitglieder</dt><dd>' + team.length + '</dd></div>' +
+        '<div><dt>Aufgaben offen</dt><dd>' + offen.length + (auf.length ? '<small> von ' + auf.length + '</small>' : '') + '</dd></div><div><dt>Stunden ' + SAISON + '</dt><dd>' + H.zahl(std, std % 1 ? 1 : 0) + '</dd></div></dl>' +
+        (offen.length ? '<ul class="ab-aufgaben">' + offen.slice(0, 4).map((a) => '<li>' + esc(a.titel) + (a.zeitraum ? ' <small>· ' + esc(a.zeitraum) + '</small>' : '') + '</li>').join('') +
+          (offen.length > 4 ? '<li class="mehr"><button class="link-knopf" data-ab-liste="' + b.id + '">+ ' + (offen.length - 4) + ' weitere ansehen</button></li>' : '') + '</ul>' : auf.length ? '<p class="ab-text">✓ Alle Aufgaben erledigt.</p>' : '') +
+        (kauf ? '<p class="ab-text">🛒 ' + kauf + ' auf der Einkaufsliste</p>' : '') +
+        '<div class="aktionen"><button class="btn klein" data-ab-team="' + b.id + '">Mitglieder</button><button class="btn klein" data-ab-edit="' + b.id + '">Gruppe & Aufgaben</button></div></div>';
+    }).join('') + '</div>' : '<div class="panel"><p class="leer">Noch keine Arbeitsgruppen. Lege z. B. „Krancrew“, „Brücken & Stege“ an.</p></div>') +
+      '<div class="panel"><h2>Noch ohne Gruppe (' + ohne.length + ')</h2>' + (ohne.length ? '<p class="hinweis" style="margin-top:0">Arbeitspflichtige Mitglieder, die noch keiner Gruppe zugeordnet sind – antippen, um zuzuordnen. Viele auf einmal: „Zuordnung aus Excel“.</p><div class="ab-chips">' +
+        ohne.sort((a, b) => a.nachname.localeCompare(b.nachname, 'de')).map((m) => '<button class="chip-btn" data-ab-ohne="' + m.id + '">' + esc(Q.name(m)) + '</button>').join('') + '</div>' : '<p class="leer">Alle arbeitspflichtigen Mitglieder sind einer Gruppe zugeordnet.</p>') + '</div>';
+  }
+  // Gesamtliste wie die Excel-Aktionsliste: alle Aufgaben aller Gruppen, abhaken, verschieben
+  function listeHtml(liste) {
+    const zeilen = []; liste.forEach((b) => (b.aufgaben || []).forEach((a, i) => { if (istBesorgen(a)) return; if (abStand.gruppe && b.id !== abStand.gruppe) return;
+      if (abStand.status === 'offen' && a.erledigt) return; if (abStand.status === 'erledigt' && !a.erledigt) return; zeilen.push({ b, a, i }); }));
+    const opt = (sel) => liste.map((b) => '<option value="' + b.id + '"' + (b.id === sel ? ' selected' : '') + '>' + esc(b.name) + '</option>').join('');
+    return '<div class="panel"><div class="filter ab-filter"><select id="ab-f-gruppe" aria-label="Gruppe"><option value="">Alle Gruppen</option>' + opt(abStand.gruppe) + '</select>' +
+      '<select id="ab-f-status" aria-label="Stand">' + [['offen', 'offen'], ['erledigt', 'erledigt'], ['alle', 'alle']].map(([k, n]) => '<option value="' + k + '"' + (abStand.status === k ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>' +
+      '<input id="ab-f-such" class="suche" type="search" placeholder="Aufgabe suchen …" value="' + esc(abStand.such) + '" aria-label="Aufgabe suchen"><span class="ab-anzahl">' + zeilen.length + ' Aufgaben</span></div>' +
+      (zeilen.length ? '<table class="tab ab-liste"><thead><tr><th class="ab-ck">✓</th><th>Aufgabe</th><th>Gruppe</th><th>erledigt</th></tr></thead><tbody>' + zeilen.map(({ b, a, i }) =>
+        '<tr data-such="' + esc((a.titel + ' ' + (a.hinweis || '') + ' ' + b.name).toLowerCase()) + '"' + (a.erledigt ? ' class="blass"' : '') + '><td class="ab-ck"><input type="checkbox" data-erl="' + b.id + '|' + i + '"' + (a.erledigt ? ' checked' : '') + ' aria-label="erledigt: ' + esc(a.titel) + '"></td>' +
+        '<td><strong>' + esc(a.titel) + '</strong>' + (a.zeitraum || a.hinweis ? '<br><small style="color:var(--muted)">' + esc([a.zeitraum, a.hinweis].filter(Boolean).join(' · ')) + '</small>' : '') + '</td>' +
+        '<td><select data-schieb="' + b.id + '|' + i + '" aria-label="Gruppe ändern" class="ab-schieb">' + opt(b.id) + '</select></td><td class="nw">' + (a.erledigt ? H.kurz(a.erledigt) : '') + '</td></tr>').join('') + '</tbody></table>'
+        : '<p class="leer">' + (abStand.status === 'offen' ? 'Keine offenen Aufgaben – alles erledigt.' : 'Keine Aufgaben für diese Auswahl.') + '</p>') +
+      '<p class="hinweis" style="margin-top:10px">Abhaken trägt das heutige Datum ein. Über die Gruppe rechts lässt sich eine Aufgabe in eine andere Gruppe verschieben. Bearbeiten, Wann und Richtwert-Stunden: unter „Gruppen“ → „Gruppe & Aufgaben“.</p></div>';
+  }
+  function einkaufHtml(liste) {
+    const gruppen = liste.map((b) => ({ b, k: (b.aufgaben || []).map((a, i) => ({ a, i })).filter((x) => istBesorgen(x.a)) })).filter((x) => x.k.length);
+    return gruppen.length ? '<div class="ab-karten">' + gruppen.map(({ b, k }) => '<div class="panel ab-karte"><h2>' + esc(b.name) + '</h2><ul class="ab-kauf">' + k.map(({ a, i }) =>
+      '<li' + (a.erledigt ? ' class="blass"' : '') + '><label><input type="checkbox" data-erl="' + b.id + '|' + i + '"' + (a.erledigt ? ' checked' : '') + '> <span>' + esc(a.titel) + '</span></label>' + (a.erledigt ? ' <small>besorgt ' + H.kurz(a.erledigt) + '</small>' : '') + '</li>').join('') + '</ul></div>').join('') + '</div>'
+      : '<div class="panel"><p class="leer">Die Einkaufsliste ist leer. Mit „+ Eintrag“ etwas hinzufügen.</p></div>';
+  }
+  // Neue Aufgabe oder neuer Einkaufslisten-Eintrag (Gruppe wählen)
+  function neueAufgabe(art) {
+    const kauf = art === 'besorgen';
+    const el = modal('<h2>' + (kauf ? 'Auf die Einkaufsliste' : 'Neue Aufgabe') + '</h2><form id="f" class="form"><label class="feld voll">' + (kauf ? 'Was wird gebraucht?' : 'Aufgabe') + '<input name="titel" required maxlength="140" placeholder="' + (kauf ? 'z. B. 2 × 10 l Betonfarbe grau' : 'z. B. Rettungsleitern montieren') + '"></label>' +
+      '<label class="feld">Gruppe<select name="gruppe" required>' + bereiche().map((b) => '<option value="' + b.id + '"' + (b.id === abStand.gruppe ? ' selected' : '') + '>' + esc(b.name) + '</option>').join('') + '</select></label>' +
+      (kauf ? '' : '<label class="feld">Wann (optional)<input name="zeitraum" maxlength="40" placeholder="z. B. vor dem Auslagern"></label>') + '<label class="feld voll">Hinweis (optional)<input name="hinweis" maxlength="160"></label></form>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Hinzufügen</button></div>');
+    $('#ok', el).addEventListener('click', () => { const f = $('#f', el); if (!f.reportValidity()) return; const b = d.arbeitsbereiche.find((x) => x.id === f.gruppe.value);
+      b.aufgaben = (b.aufgaben || []).concat([{ titel: f.titel.value.trim(), zeitraum: f.zeitraum ? f.zeitraum.value.trim() : '', stunden: null, hinweis: f.hinweis.value.trim(), pos: null, art, erledigt: '' }]);
+      speichern('Hinzugefügt.'); zu(); zeige(tab, true); });
+  }
+  // Viele Mitglieder auf einmal zuordnen: Zeilen aus Excel einfügen (Name ; Gruppe ; Leitung)
+  function importForm() {
+    const el = modal('<h2>Zuordnung aus Excel</h2><p style="margin-top:0">In Excel die Spalten <strong>Name</strong> und <strong>Gruppe</strong> (optional dritte Spalte „Leitung“) markieren, kopieren und hier einfügen. Name als „Vorname Nachname“, „Nachname, Vorname“ oder Mitgliedsnummer. Gruppe reicht als Anfang des Namens (z. B. „Kran“) oder als Nummer 1–' + bereiche().length + '.</p>' +
+      '<textarea id="imp-text" rows="8" placeholder="Anna Albers&#9;Krancrew&#9;Leitung&#10;Brandt, Dirk&#9;Brücken"></textarea><div id="imp-vorschau"></div>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok" disabled>Übernehmen</button></div>', true);
+    const norm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, ' ').trim();
+    const nachName = new Map(); d.mitglieder.forEach((m) => { [m.vorname + ' ' + m.nachname, m.nachname + ' ' + m.vorname, String(m.nr || '')].forEach((k) => { const n = norm(k); if (n) nachName.set(n, (nachName.get(n) || []).concat([m])); }); });
+    const liste = bereiche(); let treffer = [];
+    const finde = (g) => { const n = norm(g); if (!n) return null; if (/^\d+$/.test(n)) return liste[Number(n) - 1] || null; return liste.find((b) => norm(b.name) === n) || liste.find((b) => norm(b.name).startsWith(n)) || liste.find((b) => norm(b.name).includes(n)) || null; };
+    $('#imp-text', el).addEventListener('input', (e) => {
+      treffer = e.target.value.split(/\r?\n/).map((z) => z.trim()).filter(Boolean).map((z) => { const t = z.split(/\t|;/).map((x) => x.trim()); const ms = nachName.get(norm(t[0])) || [];
+        return { z, m: ms.length === 1 ? ms[0] : null, mehrdeutig: ms.length > 1, b: finde(t[1]), leitung: /leit|chef|obmann/i.test(t[2] || '') }; });
+      const ok = treffer.filter((x) => x.m && x.b); const neu = ok.filter((x) => !(d.arbeitsbereich_mitglieder || []).some((y) => y.mitglied_id === x.m.id && y.bereich_id === x.b.id));
+      $('#imp-vorschau', el).innerHTML = treffer.length ? '<p><strong>' + ok.length + ' von ' + treffer.length + '</strong> Zeilen erkannt' + (ok.length - neu.length ? ', davon ' + (ok.length - neu.length) + ' schon zugeordnet' : '') + '.</p><table class="tab"><tbody>' +
+        treffer.slice(0, 200).map((x) => '<tr><td>' + esc(x.z.replace(/\t/g, ' · ')) + '</td><td>' + (x.m ? '✓ ' + esc(Q.name(x.m)) : '<span class="tag warn">' + (x.mehrdeutig ? 'Name mehrdeutig' : 'Mitglied nicht gefunden') + '</span>') + '</td><td>' + (x.b ? '✓ ' + esc(x.b.name) + (x.leitung ? ' (Leitung)' : '') : '<span class="tag warn">Gruppe?</span>') + '</td></tr>').join('') + '</tbody></table>' : '';
+      $('#ok', el).disabled = !neu.length; $('#ok', el).textContent = neu.length ? neu.length + ' übernehmen' : 'Übernehmen';
+    });
+    $('#ok', el).addEventListener('click', () => {
+      let n = 0; treffer.filter((x) => x.m && x.b).forEach((x) => { const da = d.arbeitsbereich_mitglieder.find((y) => y.mitglied_id === x.m.id && y.bereich_id === x.b.id);
+        if (da) { if (x.leitung) da.rolle = 'leitung'; return; } d.arbeitsbereich_mitglieder.push({ id: H.uid('AM'), bereich_id: x.b.id, mitglied_id: x.m.id, rolle: x.leitung ? 'leitung' : 'mitglied' }); n++; });
+      speichern(n + ' Zuordnungen übernommen.'); zu(); zeige(tab, true);
+    });
+  }
+  // Gruppe anlegen/bearbeiten: Aufgaben (abhaken, Wann, Richtwert, Hinweis) und Einkaufsliste
   function bereichForm(b) {
     const neu = !b; const x0 = b || { name: '', beschreibung: '', treffpunkt: '', aufgaben: [], aktiv: true, sort: (d.arbeitsbereiche || []).length };
-    const zeile = (a) => '<tr><td><input name="a_titel" value="' + esc(a.titel || '') + '" placeholder="z. B. Stege prüfen" aria-label="Aufgabe" maxlength="120"></td><td><input name="a_zeitraum" value="' + esc(a.zeitraum || '') + '" placeholder="z. B. April" aria-label="Zeitraum" maxlength="40"></td>' +
-      '<td><input name="a_stunden" type="number" step="0.5" min="0" max="99" value="' + (a.stunden == null || a.stunden === '' ? '' : a.stunden) + '" aria-label="Richtwert Stunden" style="width:70px"></td><td><input name="a_hinweis" value="' + esc(a.hinweis || '') + '" placeholder="optional" aria-label="Hinweis" maxlength="160"></td>' +
-      '<td class="r"><button type="button" class="btn klein gefahr" data-a-weg title="Aufgabe entfernen" aria-label="Aufgabe entfernen">✕</button></td></tr>';
-    const el = modal('<h2>' + (neu ? 'Neuer Arbeitsbereich' : esc(x0.name)) + '</h2><form id="f" class="form">' +
-      '<label class="feld">Name<input name="name" required maxlength="60" value="' + esc(x0.name) + '" placeholder="z. B. Kran"></label>' +
-      '<label class="feld">Treffpunkt / Hinweise<input name="treffpunkt" maxlength="160" value="' + esc(x0.treffpunkt || '') + '" placeholder="z. B. Kranplatz, nur eingewiesene Kranführer"></label>' +
-      '<label class="feld voll">Worum geht es?<input name="beschreibung" maxlength="240" value="' + esc(x0.beschreibung || '') + '" placeholder="Ein Satz für das Bereichsblatt"></label>' +
-      '<label class="feld check voll"><input type="checkbox" name="aktiv"' + (x0.aktiv !== false ? ' checked' : '') + '> Bereich ist aktiv (ruhende Bereiche erscheinen nicht in „Mein SSV“)</label></form>' +
-      '<h3 style="margin:16px 0 6px">Aufgaben</h3><div class="ab-scroll"><table class="tab ab-auf-tab"><thead><tr><th>Aufgabe</th><th>Wann</th><th>Std.</th><th>Hinweis</th><th></th></tr></thead><tbody id="a-liste">' +
-      (x0.aufgaben || []).map(zeile).join('') + '</tbody></table></div><button type="button" class="btn klein" id="a-neu" style="margin-top:8px">+ Aufgabe</button>' +
-      '<p class="hinweis" style="margin-top:10px">„Std.“ ist ein Richtwert für die Planung. Geleistete Stunden werden wie gewohnt unter Arbeitsdienst erfasst und können dort dem Bereich zugeordnet werden.</p>' +
-      '<div class="modal-fuss">' + (neu ? '' : '<button class="btn gefahr links" id="weg">Bereich löschen</button>') + '<button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>', true);
-    const liste = $('#a-liste', el);
-    $('#a-neu', el).addEventListener('click', () => { liste.insertAdjacentHTML('beforeend', zeile({})); liste.lastElementChild.querySelector('input').focus(); });
-    liste.addEventListener('click', (e) => { const w = e.target.closest('[data-a-weg]'); if (w) w.closest('tr').remove(); });
-    if (neu) $('#a-neu', el).click();
+    const vorher = (x0.aufgaben || []).map((a) => ({ ...a }));   // pos, art usw. bleiben beim Speichern erhalten
+    const zeile = (a, k) => '<tr data-k="' + k + '"><td class="ab-ck"><input type="checkbox" name="a_erl"' + (a.erledigt ? ' checked' : '') + ' aria-label="erledigt"></td><td><input name="a_titel" value="' + esc(a.titel || '') + '" placeholder="z. B. Stege prüfen" aria-label="Aufgabe" maxlength="140"></td><td><input name="a_zeitraum" value="' + esc(a.zeitraum || '') + '" placeholder="z. B. April" aria-label="Zeitraum" maxlength="40"></td>' +
+      '<td><input name="a_stunden" type="number" step="0.5" min="0" max="99" value="' + (a.stunden == null || a.stunden === '' ? '' : a.stunden) + '" aria-label="Richtwert Stunden" style="width:64px"></td><td><input name="a_hinweis" value="' + esc(a.hinweis || '') + '" placeholder="optional" aria-label="Hinweis" maxlength="160"></td>' +
+      '<td class="r"><button type="button" class="btn klein gefahr" data-a-weg title="Entfernen" aria-label="Entfernen">✕</button></td></tr>';
+    const kzeile = (a, k) => '<tr data-k="' + k + '"><td class="ab-ck"><input type="checkbox" name="a_erl"' + (a.erledigt ? ' checked' : '') + ' aria-label="besorgt"></td><td><input name="a_titel" value="' + esc(a.titel || '') + '" placeholder="z. B. Warnwesten" aria-label="Was wird gebraucht" maxlength="140"></td><td><input name="a_hinweis" value="' + esc(a.hinweis || '') + '" placeholder="optional" aria-label="Hinweis" maxlength="160"></td>' +
+      '<td class="r"><button type="button" class="btn klein gefahr" data-a-weg title="Entfernen" aria-label="Entfernen">✕</button></td></tr>';
+    const el = modal('<h2>' + (neu ? 'Neue Arbeitsgruppe' : esc(x0.name)) + '</h2><form id="f" class="form">' +
+      '<label class="feld">Name<input name="name" required maxlength="60" value="' + esc(x0.name) + '" placeholder="z. B. Krancrew"></label>' +
+      '<label class="feld">Treffpunkt / Hinweise<input name="treffpunkt" maxlength="160" value="' + esc(x0.treffpunkt || '') + '" placeholder="z. B. Kran, nur eingewiesene Mitglieder"></label>' +
+      '<label class="feld voll">Worum geht es?<input name="beschreibung" maxlength="240" value="' + esc(x0.beschreibung || '') + '" placeholder="Ein Satz für das Gruppenblatt"></label>' +
+      '<label class="feld check voll"><input type="checkbox" name="aktiv"' + (x0.aktiv !== false ? ' checked' : '') + '> Gruppe ist aktiv (ruhende Gruppen erscheinen nicht in „Mein SSV“)</label></form>' +
+      '<h3 style="margin:16px 0 6px">Aufgaben</h3><div class="ab-scroll"><table class="tab ab-auf-tab"><thead><tr><th class="ab-ck">✓</th><th>Aufgabe</th><th>Wann</th><th>Std.</th><th>Hinweis</th><th></th></tr></thead><tbody id="a-liste">' +
+      vorher.map((a, k) => istBesorgen(a) ? '' : zeile(a, k)).join('') + '</tbody></table></div><button type="button" class="btn klein" id="a-neu" style="margin-top:8px">+ Aufgabe</button>' +
+      '<h3 style="margin:18px 0 6px">Einkaufsliste</h3><div class="ab-scroll"><table class="tab ab-auf-tab"><thead><tr><th class="ab-ck">✓</th><th>Was wird gebraucht?</th><th>Hinweis</th><th></th></tr></thead><tbody id="k-liste">' +
+      vorher.map((a, k) => istBesorgen(a) ? kzeile(a, k) : '').join('') + '</tbody></table></div><button type="button" class="btn klein" id="k-neu" style="margin-top:8px">+ Eintrag</button>' +
+      '<p class="hinweis" style="margin-top:10px">✓ = erledigt bzw. besorgt (das Datum wird gemerkt). „Std.“ ist ein Richtwert für die Planung; geleistete Stunden werden unter Arbeitsdienst erfasst.</p>' +
+      '<div class="modal-fuss">' + (neu ? '' : '<button class="btn gefahr links" id="weg">Gruppe löschen</button>') + '<button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>', true);
+    const liste = $('#a-liste', el), kliste = $('#k-liste', el);
+    $('#a-neu', el).addEventListener('click', () => { liste.insertAdjacentHTML('beforeend', zeile({}, -1)); liste.lastElementChild.querySelector('[name=a_titel]').focus(); });
+    $('#k-neu', el).addEventListener('click', () => { kliste.insertAdjacentHTML('beforeend', kzeile({}, -1)); kliste.lastElementChild.querySelector('[name=a_titel]').focus(); });
+    el.addEventListener('click', (e) => { const w = e.target.closest('[data-a-weg]'); if (w) w.closest('tr').remove(); });
+    if (neu) liste.insertAdjacentHTML('beforeend', zeile({}, -1));   // leere erste Zeile, Cursor bleibt im Namensfeld
     const weg = $('#weg', el);
     if (weg) weg.addEventListener('click', () => {
-      const n = teamVon(b.id).length; if (!confirm('Bereich „' + b.name + '“ löschen?' + (n ? ' Die Zuordnung von ' + n + ' Mitgliedern entfällt.' : '') + ' Erfasste Stunden bleiben erhalten (ohne Bereich).')) return;
+      const n = teamVon(b.id).length; if (!confirm('Gruppe „' + b.name + '“ löschen?' + (n ? ' Die Zuordnung von ' + n + ' Mitgliedern entfällt.' : '') + ' Erfasste Stunden bleiben erhalten (ohne Gruppe).')) return;
       d.arbeitsbereich_mitglieder = d.arbeitsbereich_mitglieder.filter((z) => z.bereich_id !== b.id);
       d.arbeitsdienst.forEach((a) => { if (a.bereich_id === b.id) a.bereich_id = null; }); (d.arbeitseinsaetze || []).forEach((a) => { if (a.bereich_id === b.id) a.bereich_id = null; });
-      d.arbeitsbereiche = d.arbeitsbereiche.filter((x) => x.id !== b.id); speichern('Bereich gelöscht.'); zu(); zeige(tab);
+      d.arbeitsbereiche = d.arbeitsbereiche.filter((x) => x.id !== b.id); speichern('Gruppe gelöscht.'); zu(); zeige(tab);
     });
     $('#ok', el).addEventListener('click', () => {
       const f = $('#f', el); if (!f.reportValidity()) return;
-      const felder = [...liste.querySelectorAll('input')]; if (felder.some((i) => !i.checkValidity())) { const i = felder.find((x) => !x.checkValidity()); i.reportValidity(); return; }
-      const aufgaben = [...liste.querySelectorAll('tr')].map((tr) => { const g = (n) => tr.querySelector('[name="' + n + '"]').value.trim(); const st = H.dez(g('a_stunden'));
-        return { titel: g('a_titel'), zeitraum: g('a_zeitraum'), stunden: isNaN(st) ? null : st, hinweis: g('a_hinweis') }; }).filter((a) => a.titel);
+      const felder = [...el.querySelectorAll('#a-liste input, #k-liste input')]; if (felder.some((i) => !i.checkValidity())) { const i = felder.find((x) => !x.checkValidity()); i.reportValidity(); return; }
+      const lesen = (tr, art) => { const g = (n) => { const i = tr.querySelector('[name="' + n + '"]'); return i ? i.value.trim() : ''; }; const alt = vorher[Number(tr.dataset.k)] || {};
+        const st = H.dez(g('a_stunden')); const erl = tr.querySelector('[name=a_erl]').checked;
+        return { ...alt, titel: g('a_titel'), zeitraum: art === 'besorgen' ? (alt.zeitraum || '') : g('a_zeitraum'), stunden: art === 'besorgen' ? null : (isNaN(st) ? null : st), hinweis: g('a_hinweis'), art, pos: alt.pos || null, erledigt: erl ? (alt.erledigt || heute) : '' }; };
+      const aufgaben = [...liste.querySelectorAll('tr')].map((tr) => lesen(tr, 'aufgabe')).concat([...kliste.querySelectorAll('tr')].map((tr) => lesen(tr, 'besorgen'))).filter((a) => a.titel);
       const name = f.name.value.trim();
-      if ((d.arbeitsbereiche || []).some((x) => x.name.toLowerCase() === name.toLowerCase() && (!b || x.id !== b.id))) return toast('Einen Bereich „' + name + '“ gibt es schon.', 'fehler');
+      if ((d.arbeitsbereiche || []).some((x) => x.name.toLowerCase() === name.toLowerCase() && (!b || x.id !== b.id))) return toast('Eine Gruppe „' + name + '“ gibt es schon.', 'fehler');
       const daten = { name, beschreibung: f.beschreibung.value.trim(), treffpunkt: f.treffpunkt.value.trim(), aufgaben, aktiv: f.aktiv.checked };
-      if (neu) { const nb = { id: H.uid('AB'), sort: x0.sort, ...daten }; d.arbeitsbereiche.push(nb); speichern('Bereich angelegt – jetzt Mitglieder zuordnen.'); zu(); zeige(tab); teamForm(nb); }
+      if (neu) { const nb = { id: H.uid('AB'), sort: x0.sort, ...daten }; d.arbeitsbereiche.push(nb); speichern('Gruppe angelegt – jetzt Mitglieder zuordnen.'); zu(); zeige(tab); teamForm(nb); }
       else { Object.assign(b, daten); speichern('Gespeichert.'); zu(); zeige(tab); }
     });
   }

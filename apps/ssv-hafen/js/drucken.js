@@ -95,18 +95,19 @@
     const std = (mid, nurBereich) => (d.arbeitsdienst || []).filter((a) => a.mitglied_id === mid && a.status !== 'abgelehnt' && a.status !== 'eingereicht' && String(a.datum).startsWith(String(saison)) && (!nurBereich || a.bereich_id === b.id)).reduce((s, a) => s + Number(a.stunden || 0), 0);
     const z1 = (v) => H.zahl(v, v % 1 ? 1 : 0);
     const einsaetze = (d.arbeitseinsaetze || []).filter((x) => x.datum >= heute && (x.bereich_id === b.id || !x.bereich_id)).sort((x, y) => x.datum.localeCompare(y.datum)).slice(0, 5);
-    const aufgaben = b.aufgaben || [];
+    const aufgaben = (b.aufgaben || []).filter((a) => a.art !== 'besorgen'); const kauf = (b.aufgaben || []).filter((a) => a.art === 'besorgen' && !a.erledigt);
     const summe = aufgaben.reduce((s, a) => s + (Number(a.stunden) || 0), 0);
-    return '<section class="blatt bereich">' + kopf +
-      '<p class="b-ober">Arbeitsdienst ' + saison + '</p><h1>Arbeitsbereich ' + esc(b.name) + '</h1>' +
+    return '<section class="blatt bereich mehrseitig">' + kopf +
+      '<p class="b-ober">Arbeitsdienst ' + saison + '</p><h1>' + esc(b.name) + '</h1>' +
       (b.beschreibung ? '<p class="b-lead">' + esc(b.beschreibung) + '</p>' : '') +
       '<div class="b-info"><div><span>Leitung</span>' + (leitung.length ? leitung.map((x) => '<strong>' + esc(Q.name(x.m)) + '</strong>' + (kontakt && x.m.tel ? ' · ' + esc(x.m.tel) : '')).join('<br>') : '<em>noch nicht festgelegt</em>') + '</div>' +
         (b.treffpunkt ? '<div><span>Treffpunkt / Hinweise</span>' + esc(b.treffpunkt) + '</div>' : '') +
         '<div><span>Team</span>' + team.length + ' Mitglieder</div></div>' +
-      '<h2>Aufgaben</h2>' + (aufgaben.length ? '<table class="r-tab b-tab"><thead><tr><th style="width:6mm">Nr.</th><th>Aufgabe</th><th style="width:28mm">Wann</th><th class="r" style="width:10mm">Std.*</th><th style="width:22mm">erledigt am</th><th style="width:16mm">von</th></tr></thead><tbody>' +
-        aufgaben.map((a, i) => '<tr><td>' + (i + 1) + '</td><td><strong>' + esc(a.titel) + '</strong>' + (a.hinweis ? '<br><small>' + esc(a.hinweis) + '</small>' : '') + '</td><td>' + esc(a.zeitraum || '') + '</td><td class="r">' + (a.stunden ? z1(Number(a.stunden)) : '') + '</td><td class="b-feld"></td><td class="b-feld"></td></tr>').join('') +
+      '<h2>Aufgaben</h2>' + (aufgaben.length ? '<table class="r-tab b-tab"><thead><tr><th style="width:6mm">Nr.</th><th>Aufgabe</th><th style="width:28mm">Wann</th><th class="r" style="width:10mm">Std.*</th><th style="width:25mm">erledigt am</th><th style="width:14mm">von</th></tr></thead><tbody>' +
+        aufgaben.map((a, i) => '<tr' + (a.erledigt ? ' class="b-erl"' : '') + '><td>' + (i + 1) + '</td><td><strong>' + esc(a.titel) + '</strong>' + (a.hinweis ? '<br><small>' + esc(a.hinweis) + '</small>' : '') + '</td><td>' + esc(a.zeitraum || '') + '</td><td class="r">' + (a.stunden ? z1(Number(a.stunden)) : '') + '</td><td class="b-feld">' + (a.erledigt ? '✓ ' + H.datum(a.erledigt) : '') + '</td><td class="b-feld"></td></tr>').join('') +
         '</tbody>' + (summe ? '<tfoot><tr><td></td><td colspan="2">Richtwert gesamt</td><td class="r">' + z1(summe) + '</td><td colspan="2"></td></tr></tfoot>' : '') + '</table><p class="b-klein">* Richtwert für die Planung. Geleistete Stunden bitte wie gewohnt melden (QR-Code beim Einsatz oder „Mein SSV“).</p>'
         : '<p class="b-klein">Noch keine Aufgaben eingetragen.</p>') +
+      (kauf.length ? '<h2>Besorgen</h2><ul class="b-kauf">' + kauf.map((a) => '<li><span class="b-box"></span>' + esc(a.titel) + (a.hinweis && !/^Besorgen/.test(a.hinweis) ? ' <small>' + esc(a.hinweis) + '</small>' : '') + '</li>').join('') + '</ul>' : '') +
       '<h2>Team</h2>' + (team.length ? '<table class="r-tab b-tab"><thead><tr><th>Name</th><th>Rolle</th>' + (kontakt ? '<th>Telefon</th><th>E-Mail</th>' : '') + '<th class="r">Std. hier</th><th class="r">Std. gesamt</th></tr></thead><tbody>' +
         team.map(({ z, m }) => { const a = G && G.arbeitsdienst && (m.art === 'ausuebend' || m.art === 'probe') ? G.arbeitsdienst(d, saison, m) : null;
           return '<tr><td>' + esc(Q.name(m)) + '</td><td>' + (z.rolle === 'leitung' ? '<strong>Leitung</strong>' : 'Mitglied') + '</td>' + (kontakt ? '<td>' + esc(m.tel || '') + '</td><td>' + esc(m.email || '') + '</td>' : '') +
@@ -118,13 +119,34 @@
   function bereicheDrucken() {
     const id = q.get('id'); const kontakt = q.get('kontakt') !== '0';
     const liste = (d.arbeitsbereiche || []).filter((b) => id ? b.id === id : b.aktiv !== false).sort((a, b) => (a.sort || 0) - (b.sort || 0) || a.name.localeCompare(b.name, 'de'));
-    titel(liste.length === 1 ? 'Arbeitsbereich ' + liste[0].name : 'Arbeitsbereiche (' + liste.length + ')');
-    ziel.innerHTML = liste.map((b) => bereichBlatt(b, kontakt)).join('') || '<p style="padding:40px;text-align:center">Kein Arbeitsbereich gefunden.</p>';
+    titel(liste.length === 1 ? 'Arbeitsgruppe ' + liste[0].name : 'Arbeitsgruppen (' + liste.length + ')');
+    ziel.innerHTML = liste.map((b) => bereichBlatt(b, kontakt)).join('') || '<p style="padding:40px;text-align:center">Keine Arbeitsgruppe gefunden.</p>';
     // Schalter in der Leiste: mit/ohne Telefon und E-Mail (ohne = zum Aushängen am Schwarzen Brett)
     const l = document.querySelector('.leiste'); if (l && !l.querySelector('#kontakt')) {
       l.insertAdjacentHTML('beforeend', '<label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="kontakt"' + (kontakt ? ' checked' : '') + '> Telefon/E-Mail mitdrucken</label>');
       l.querySelector('#kontakt').addEventListener('change', (ev) => { const u = new URL(location.href); u.searchParams.set('kontakt', ev.target.checked ? '1' : '0'); location.replace(u.href); });
     }
+  }
+
+  // Gesamt-Aufgabenliste aller Gruppen (wie die Excel-Aktionsliste) und Einkaufsliste
+  const gruppenSortiert = () => (d.arbeitsbereiche || []).slice().sort((a, b) => (a.sort || 0) - (b.sort || 0) || a.name.localeCompare(b.name, 'de'));
+  function aufgabenliste() {
+    const id = q.get('id'), status = q.get('status') || 'offen', heute = H.tag(new Date()); let n = 0;
+    const gruppen = gruppenSortiert().filter((b) => id ? b.id === id : true).map((b) => ({ b, a: (b.aufgaben || []).filter((x) => x.art !== 'besorgen' && (status === 'alle' || (status === 'offen' ? !x.erledigt : !!x.erledigt))) })).filter((x) => x.a.length);
+    titel('Aufgabenliste' + (id && gruppen[0] ? ' ' + gruppen[0].b.name : ''));
+    ziel.innerHTML = '<section class="blatt bereich mehrseitig">' + kopf + '<p class="b-ober">Arbeitsdienst ' + HF.aktuelleSaison() + '</p><h1>Aufgabenliste' + (status === 'offen' ? ' – offen' : status === 'erledigt' ? ' – erledigt' : '') + '</h1>' +
+      (gruppen.length ? gruppen.map(({ b, a }) => '<h2>' + esc(b.name) + ' <small class="b-anz">' + a.length + '</small></h2><table class="r-tab b-tab"><thead><tr><th style="width:8mm">Nr.</th><th>Aufgabe</th><th style="width:28mm">Wann</th><th style="width:24mm">erledigt am</th><th style="width:18mm">von</th></tr></thead><tbody>' +
+        a.map((x) => '<tr' + (x.erledigt ? ' class="b-erl"' : '') + '><td>' + (++n) + '</td><td><strong>' + esc(x.titel) + '</strong>' + (x.hinweis ? '<br><small>' + esc(x.hinweis) + '</small>' : '') + '</td><td>' + esc(x.zeitraum || '') + '</td><td class="b-feld">' + (x.erledigt ? '✓ ' + H.datum(x.erledigt) : '') + '</td><td class="b-feld"></td></tr>').join('') + '</tbody></table>').join('')
+        : '<p>Keine Aufgaben für diese Auswahl.</p>') +
+      '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · Aufgabenliste Arbeitsdienst</span><span>Stand ' + H.datum(heute) + '</span></div></section>';
+  }
+  function einkaufsliste() {
+    const heute = H.tag(new Date());
+    const gruppen = gruppenSortiert().map((b) => ({ b, k: (b.aufgaben || []).filter((x) => x.art === 'besorgen' && !x.erledigt) })).filter((x) => x.k.length);
+    titel('Einkaufsliste Arbeitsdienst');
+    ziel.innerHTML = '<section class="blatt bereich mehrseitig">' + kopf + '<p class="b-ober">Arbeitsdienst ' + HF.aktuelleSaison() + '</p><h1>Einkaufsliste</h1>' +
+      (gruppen.length ? gruppen.map(({ b, k }) => '<h2>' + esc(b.name) + '</h2><ul class="b-kauf">' + k.map((a) => '<li><span class="b-box"></span>' + esc(a.titel) + (a.hinweis && !/^Besorgen/.test(a.hinweis) ? ' <small>' + esc(a.hinweis) + '</small>' : '') + '</li>').join('') + '</ul>').join('') : '<p>Die Einkaufsliste ist leer.</p>') +
+      '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · Einkaufsliste Arbeitsdienst</span><span>Stand ' + H.datum(heute) + '</span></div></section>';
   }
 
   const art = q.get('art');
@@ -136,5 +158,7 @@
   } else if (art === 'belegungsplan') { titel('Belegungsplan Winterlager'); ziel.innerHTML = belegungsplan(); }
   else if (art === 'plakat') { titel('QR-Plakat Gastlieger'); ziel.innerHTML = plakat(); }
   else if (art === 'bereiche') bereicheDrucken();
+  else if (art === 'aufgabenliste') aufgabenliste();
+  else if (art === 'einkauf') einkaufsliste();
   else if (art === 'einsatz') { const x = (d.arbeitseinsaetze || []).find((y) => y.id === q.get('id')); titel('QR-Plakat Arbeitseinsatz'); ziel.innerHTML = x ? einsatzPlakat(x) : ''; }
 })();

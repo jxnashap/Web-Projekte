@@ -239,7 +239,7 @@
     ];
     // Arbeitsbereiche: Einsatz „Steg und Gelände“ gehört zum Steg, bestätigte Stunden zum Bereich des Mitglieds
     const bereicheDemo = demoBereiche(mitglieder);
-    arbeitseinsaetze[0].bereich_id = bereicheDemo.arbeitsbereiche[3].id;
+    const steg = bereicheDemo.arbeitsbereiche.find((x) => /Brücken/.test(x.name)); if (steg) arbeitseinsaetze[0].bereich_id = steg.id;   // Einsatz „Steg und Gelände“
     const arbeitseinsatz_codes = [{ einsatz_id: arbeitseinsaetze[0].id, code: 'STEG26' }, { einsatz_id: arbeitseinsaetze[1].id, code: 'PUTZ27' }];
     const mitteilungen = [{ id: uid('N'), titel: 'Wintertreffen am 28.11. in der Messe', text: 'Ab 18 Uhr – Rückblick auf die Saison, Grünkohl und Planung für 2027. Bitte bis 25.11. anmelden.', wichtig: false, zielgruppe: 'alle', gueltig_bis: '2026-11-28', erstellt: '2026-11-05T10:00:00', erstellt_von: 'Vorstand', push_gesendet: null }];
 
@@ -309,28 +309,19 @@
   let d;
   // Toilettencode für Gastlieger (Demo); in der Datenbank eigene Tabelle gast_toilette
   const TOILETTE_DEMO = { code: '2580', regel: 'gemeldet', hinweis: 'WC & Duschen im Vereinsheim – Tastenfeld neben der Tür [PLATZHALTER]' };
-  // Beispiel-Arbeitsbereiche mit typischen Aufgaben eines Vereinshafens (vom Vorstand anzupassen)
+  // Arbeitsgruppen des Vereins (js/bereiche-vorlage.js) – Demo verteilt Beispiel-Mitglieder darauf
   function demoBereiche(mitglieder) {
-    const A = (titel, zeitraum, stunden, hinweis) => ({ titel, zeitraum, stunden, hinweis: hinweis || '' });
-    const b = [
-      { name: 'Kran', beschreibung: 'Kranen beim Aus- und Einlagern, Mastenkran, Pflege der Krananlage.', treffpunkt: 'Kranplatz · Kran bedienen nur eingewiesene Kranführer (Hafenbetriebsordnung 3.1.4)',
-        aufgaben: [A('Kran vor der Saison prüfen lassen (UVV)', 'Februar/März', 2, 'Termin mit dem Sachkundigen abstimmen'), A('Anschlagmittel (Gurte, Schäkel) sichten, Defektes aussortieren', 'vor dem Auslagern', 2),
-          A('Kranen beim Auslagern nach Belegungsplan', 'Auslagern', 6), A('Kranen beim Einlagern nach Belegungsplan', 'Einlagern', 6), A('Mastenkran und Kranbahn säubern und abschmieren', 'nach jedem Krantermin', 2)] },
-      { name: 'Boote fahren', beschreibung: 'Boote mit Trecker und Trailer zwischen Lager und Kran bewegen, Wasserboote verholen.', treffpunkt: 'Treckerschuppen · nur mit Fahrerlaubnis für den Trecker',
-        aufgaben: [A('Trecker und Trailer prüfen (Reifen, Licht, Kupplung)', 'vor dem Auslagern', 2), A('Boote zum Kran rangieren', 'Krantermine', 6),
-          A('Boote nach dem Kranen an ihren Platz verholen', 'nach dem Kranen', 3), A('Arbeitsboot klarmachen und warten', 'Frühjahr und Herbst', 3)] },
-      { name: 'Lager', beschreibung: 'Winterlager an Land: Lagerplätze, Böcke, Pallhölzer und Ordnung auf dem Gelände.', treffpunkt: 'Lagerplatz / Bockschuppen',
-        aufgaben: [A('Lagerplätze nach Belegungsplan abstecken', 'vor dem Einlagern', 3), A('Böcke und Pallhölzer ausgeben und prüfen', 'Einlagern', 4),
-          A('Gelände aufräumen, Wege und Feuerwehrzufahrt freihalten', 'laufend im Winter', 2), A('Böcke einsammeln und einlagern', 'nach dem Auslagern', 3)] },
-      { name: 'Steg', beschreibung: 'Stege, Planken, Rot/Grün-Schilder, Strom- und Wassersäulen.', treffpunkt: 'Messe · Werkzeug im Steg-Schrank',
-        aufgaben: [A('Stege und Planken prüfen, lose Bretter tauschen', 'Frühjahr', 4), A('Rot/Grün-Schilder an allen Plätzen kontrollieren', 'Saisonbeginn', 1, 'fehlende Schilder beim Hafenmeister melden'),
-          A('Strom- und Wassersäulen prüfen', 'April', 2, 'Elektrisches nur mit Elektrofachkraft'), A('Festmacher und Dalbenleinen kontrollieren', 'Saisonmitte', 2), A('Stege winterfest machen', 'Oktober', 3)] }
-    ].map((x, i) => ({ id: uid('AB'), sort: i, aktiv: true, ...x }));
-    const aktive = mitglieder.filter((m) => m.art === 'ausuebend');
-    const zu = []; const teile = [[0, 6], [6, 11], [11, 17], [17, 24]];
-    teile.forEach(([von, bis], i) => aktive.slice(von, bis).forEach((m, k) => zu.push({ id: uid('AM'), bereich_id: b[i].id, mitglied_id: m.id, rolle: k === 0 ? 'leitung' : 'mitglied' })));
-    if (aktive[3]) zu.push({ id: uid('AM'), bereich_id: b[3].id, mitglied_id: aktive[3].id, rolle: 'mitglied' });   // ein Mitglied in zwei Bereichen (Kran + Steg)
-    return { arbeitsbereiche: b, arbeitsbereich_mitglieder: zu };
+    const V = window.SSV_BEREICHE_VORLAGE; if (!V) return { arbeitsbereiche: [], arbeitsbereich_mitglieder: [], bereiche_v: 0 };
+    const b = V.gruppen.map((g, i) => ({ id: uid('AB'), sort: i, aktiv: g.aktiv !== false, name: g.name, beschreibung: g.beschreibung || '', treffpunkt: g.treffpunkt || '',
+      aufgaben: g.aufgaben.map((x) => ({ ...x })) }));
+    // Beispiel: ein paar Aufgaben sind schon erledigt, damit die Liste realistisch aussieht
+    [[0, 1], [6, 4], [10, 2], [11, 5]].forEach(([gi, ai]) => { const x = b[gi] && b[gi].aufgaben[ai]; if (x) x.erledigt = '2026-05-09'; });
+    const aktive = mitglieder.filter((m) => m.art === 'ausuebend' || m.art === 'probe');
+    const zu = []; let n = 0;
+    b.filter((x) => x.aktiv).forEach((x, i) => { const groesse = [7, 6, 4, 3, 4, 4, 6, 4, 4, 2, 6, 5][i] || 3;
+      for (let k = 0; k < groesse && n < aktive.length; k++, n++) zu.push({ id: uid('AM'), bereich_id: x.id, mitglied_id: aktive[n].id, rolle: k === 0 ? 'leitung' : 'mitglied' }); });
+    if (aktive[3] && b[10]) zu.push({ id: uid('AM'), bereich_id: b[10].id, mitglied_id: aktive[3].id, rolle: 'mitglied' });   // ein Mitglied in zwei Gruppen
+    return { arbeitsbereiche: b, arbeitsbereich_mitglieder: zu, bereiche_v: V.version };
   }
 
   function laden() {
@@ -347,7 +338,13 @@
     }
     if (!d.antraege) d.antraege = [];
     ['aufgaben', 'dokumente', 'aenderungen', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'mitteilungen'].forEach((k) => { if (!d[k]) d[k] = []; });
-    if (!d.arbeitsbereiche) { Object.assign(d, demoBereiche(d.mitglieder)); sichern(); }
+    // Demo: Arbeitsgruppen auf die aktuelle Vorlage des Vereins bringen (ersetzt ältere Beispiel-Bereiche)
+    if (!d.arbeitsbereiche || (window.SSV_BEREICHE_VORLAGE && d.bereiche_v !== window.SSV_BEREICHE_VORLAGE.version)) {
+      const alt = new Set((d.arbeitsbereiche || []).map((x) => x.id));
+      Object.assign(d, demoBereiche(d.mitglieder));
+      (d.arbeitsdienst || []).forEach((x) => { if (alt.has(x.bereich_id)) x.bereich_id = null; }); (d.arbeitseinsaetze || []).forEach((x) => { if (alt.has(x.bereich_id)) x.bereich_id = null; });
+      sichern();
+    }
     if (!d.toilette) { d.toilette = { ...TOILETTE_DEMO }; sichern(); }   // ältere Demo-Daten um Beispiel-Bereiche ergänzen
     d.einstellungen = { ...STANDARD_EINSTELLUNGEN, ...d.einstellungen };
     d.rechnungen.forEach((r) => { if (!r.zahlungen) r.zahlungen = []; });
