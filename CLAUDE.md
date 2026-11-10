@@ -23,6 +23,7 @@ Repo für alle Website-Projekte. Struktur:
 - `apps/ssv-getraenke/` – Getränkekasse für den SSV: iPad-Kiosk (Name → PIN → Kacheln →
   Stück/Kasten), Kassenwart-Bereich (Mitglieder, CSV-Import, PIN-Zettel, Preise,
   Abrechnung, A4-Rechnungen im persönlichen Ton mit Lastschrift-Ankündigung, SEPA-/CSV-Export). Demo-Modus (localStorage);
+  Gestaltung wie Hafen-Manager: dezenter Nautik-Stil am Ende von `css/app.css` (nur `@media screen`, Rechnungen `r-…` unberührt);
   Code (4-stellig) legt das Mitglied beim ersten Mal selbst fest (Mitgliedsnummer-Abfrage, abschaltbar),
   ändern in „Mein SSV“; Demo teilt den Mitgliederstamm mit `../ssv-hafen/js/daten.js` (gleiche IDs);
   Datenbankschema `supabase/schema.sql` lokal getestet, **nichts deployt** – auf

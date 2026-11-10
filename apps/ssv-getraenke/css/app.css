@@ -343,3 +343,58 @@ body.rechnung-seite { background: #e9e6df; }
 .k-mitteilung { background: #fff; border-left: 5px solid var(--navy); border-radius: 14px; padding: 12px 16px; margin: 0 0 16px; font-size: 16px; box-shadow: 0 8px 20px -14px rgba(14,27,69,.4); }
 .k-mitteilung.wichtig { border-left-color: var(--rot); background: #fff3f3; }
 .k-mitteilung div + div { margin-top: 6px; }
+
+/* =====================================================================
+   Nautik-Stil (dezent, wie im Hafen-Manager): Gradnetz, Tau-Linien in Messing,
+   Kompassrose, Wellen. Nur Bildschirm – Rechnungen und PIN-Zettel unverändert.
+   ===================================================================== */
+:root {
+  --messing: #A8854D; --messing-hell: #C9AE7C; --see: #2E5A7A; --see-hell: #E7EEF3; --segeltuch: #F5F2EB;
+  --tau: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 5.2 L5 .8 M6 5.2 L10 .8' stroke='%23A8854D' stroke-width='1.5' stroke-linecap='round' opacity='.75'/%3E%3Cpath d='M-.5 4.6 L3 .9 M4.5 4.6 L8 .9' stroke='%23E8D9B8' stroke-width='.7' stroke-linecap='round' opacity='.9'/%3E%3C/svg%3E");
+  --wellen-hell: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='12' viewBox='0 0 80 12'%3E%3Cpath d='M0 6 Q10 1 20 6 T40 6 T60 6 T80 6' fill='none' stroke='white' stroke-opacity='.10' stroke-width='1.2'/%3E%3C/svg%3E");
+  --kompass: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-50 -50 100 100'%3E%3Cg fill='none' stroke='white' stroke-width='.8'%3E%3Ccircle r='46'/%3E%3Ccircle r='38' stroke-dasharray='1 3'/%3E%3Ccircle r='20'/%3E%3C/g%3E%3Cg fill='white'%3E%3Cpath d='M0-44 L5-5 L0 0 L-5-5Z'/%3E%3Cpath d='M0 44 L-5 5 L0 0 L5 5Z' opacity='.5'/%3E%3Cpath d='M44 0 L5 5 L0 0 L5-5Z' opacity='.5'/%3E%3Cpath d='M-44 0 L-5-5 L0 0 L-5 5Z' opacity='.5'/%3E%3C/g%3E%3C/svg%3E");
+}
+@media screen {
+  /* Hintergrund: feines Seekarten-Gradnetz (scrollt mit – auf dem iPad schonender) */
+  body { background-color: var(--segeltuch);
+    background-image: linear-gradient(rgba(46,90,122,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(46,90,122,.045) 1px, transparent 1px),
+      linear-gradient(rgba(46,90,122,.022) 1px, transparent 1px), linear-gradient(90deg, rgba(46,90,122,.022) 1px, transparent 1px);
+    background-size: 160px 160px, 160px 160px, 32px 32px, 32px 32px; }
+
+  /* Kiosk: Kopfleiste mit Wellen, Überschriften mit Tau-Linie */
+  .k-top { background-color: var(--navy); background-image: var(--wellen-hell), linear-gradient(180deg, #0E1B45, #13285c);
+    background-repeat: repeat-x, no-repeat; background-position: 0 100%, 0 0; box-shadow: inset 0 -2px 0 rgba(201,174,124,.35); }
+  .k-wer-kopf h1, .k-auswahl-kopf h1, .k-pin h1, .a-kopf h1, .a-login h1, .a-modal-card h2 { display: inline-block; padding-bottom: 12px; background: var(--tau) repeat-x left bottom / 10px 6px; }
+  .k-screen h1 { font-family: var(--font-serif); font-weight: 500; letter-spacing: 0; }
+  .k-name, .k-bon, .k-center-card, .a-karte, .a-panel { border: 1px solid rgba(14,27,69,.07); }
+  .k-bon { overflow: hidden; }
+  .k-bon::before, .a-karte::before { content: ''; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--messing), var(--messing-hell) 60%, transparent); opacity: .8; pointer-events: none; }
+  .a-karte { position: relative; overflow: hidden; }
+  .k-bon h2, .a-karte small, .a-tab th { color: var(--see); }
+  .k-abc button.aktiv { box-shadow: inset 0 -3px 0 var(--messing-hell); }
+  .k-suche:focus-within { box-shadow: 0 0 0 2px rgba(168,133,77,.45); }
+  .k-ini { box-shadow: inset 0 0 0 2px rgba(255,255,255,.18); }
+  .k-center-card { position: relative; overflow: hidden; border-top: 3px solid var(--messing); }
+
+  /* Kassenwart: Seitenleiste mit Kompassrose und Wellen, Stander in richtiger Größe */
+  .a-nav { background-color: var(--navy); background-image: var(--wellen-hell), var(--wellen-hell), linear-gradient(180deg, #0E1B45 0%, #10204f 70%, #13285c 100%);
+    background-repeat: repeat-x, repeat-x, no-repeat; background-position: 0 calc(100% - 22px), 40px calc(100% - 8px), 0 0; overflow: hidden; }
+  .a-nav::after { content: ''; position: absolute; right: -46px; bottom: 120px; width: 190px; height: 190px; background: var(--kompass) center / contain no-repeat; opacity: .06; pointer-events: none; }
+  .a-nav > * { position: relative; z-index: 1; }
+  .a-nav .k-stander, .a-nav svg.k-stander { width: 52px; height: 26px; }
+  .a-nav button.aktiv { box-shadow: inset 3px 0 0 var(--messing-hell); background: rgba(255,255,255,.1); }
+  .a-panel h2 { padding-bottom: 10px; border-bottom: 1px solid transparent; border-image: linear-gradient(90deg, rgba(168,133,77,.55), rgba(168,133,77,.12) 40%, rgba(14,27,69,.08)) 1; }
+  .a-tab th { border-bottom-color: rgba(46,90,122,.18); }
+  .a-hinweis { background: var(--see-hell); color: #36506a; }
+  .a-modal { background: rgba(10,20,52,.55); }
+  .a-modal-card { border-top: 3px solid var(--navy); }
+
+  /* Kassenwart-Anmeldung: Nachtblau mit Gradnetz, zarter Kompassrose und Wellen */
+  .a-login { position: relative; overflow: hidden; background-color: var(--navy);
+    background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px; }
+  .a-login::before { content: ''; position: absolute; width: min(80vh, 680px); aspect-ratio: 1; right: -12vh; bottom: -18vh; background: var(--kompass) center / contain no-repeat; opacity: .06; pointer-events: none; }
+  .a-login::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: var(--wellen-hell) repeat-x 0 10px, var(--wellen-hell) repeat-x 40px 34px; pointer-events: none; }
+  .a-login form { position: relative; z-index: 1; border-top: 3px solid var(--messing); }
+}
+@media (hover: none) { .a-tab tr:hover td { background: transparent; } }
