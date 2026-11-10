@@ -685,3 +685,17 @@ body.plan-vollbild { overflow: hidden; }
   .gast-kopf::after { opacity: 1; filter: brightness(1.25); }
 }
 @media screen { .modal-x { z-index: 5; } }
+
+/* Kontoauszug abgleichen */
+.ka-ablage { border: 2px dashed var(--line); text-align: left; }
+.ka-ablage.ueber { border-color: var(--navy); background: #f3f6fb; }
+.ka-ziel { font-family: 'Playfair Display', Georgia, serif; font-size: 20px; color: var(--navy); text-align: center; padding: 18px 0 8px; }
+.ka-ziel small { display: block; font-family: Inter, system-ui, sans-serif; font-size: 13px; color: var(--muted); margin-top: 4px; }
+.ka-schritte { margin: 10px 0 0; padding-left: 20px; } .ka-schritte li { margin: 6px 0; }
+.ka-tab td { vertical-align: top; } .ka-cb { width: 28px; } .ka-cb input { width: 18px; height: 18px; }
+.ka-minus strong { color: var(--rot); }
+.ka-wahl { max-width: 340px; width: 100%; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); font: inherit; font-size: 13px; }
+.ka-fuss { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 24px; position: sticky; bottom: 12px; }
+.ka-fuss .btn { box-shadow: var(--schatten); }
+.ka-knopf { cursor: pointer; }
+@media (max-width: 860px) { .ka-tab th:nth-child(4), .ka-tab td:nth-child(4) { display: none; } }

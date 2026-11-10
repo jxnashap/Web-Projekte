@@ -62,6 +62,9 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
 13. `apps/ssv-hafen/supabase/nachtrag-13.sql` – Veranstaltungen mit Zu-/Absage: Tabellen `veranstaltungen` und
    `zusagen`; Mitglieder antworten in „Mein SSV“ über `meine_zusage` (prüft Frist, Begleitpersonen und freie Plätze),
    sehen über `meine_veranstaltungen` nur die Zahl der Zusagen, keine Namen. Pflege im Hafen-Manager unter Betrieb → Veranstaltungen.
+14. `apps/ssv-hafen/supabase/nachtrag-14.sql` – Veranstaltungskosten abrechnen: Rechnungsart `veranstaltung`
+   (Nummern `SSV-V-…`), Spalte `hafen_rechnungen.veranstaltung_id`, Doppelschutz je Mitglied und Veranstaltung.
+   Der Kontoauszug-Abgleich (Finanzen → Kontoauszug) braucht keinen Nachtrag.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 

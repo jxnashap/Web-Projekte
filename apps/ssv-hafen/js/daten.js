@@ -32,7 +32,7 @@
     hafenmeister_tel: '0179 5916979',
     paypal_me: '',                      // PayPal.me-Name des Vereins (leer = Gäste sehen kein PayPal)
     gast_bar_hinweis: '',               // wohin Gäste Bargeld geben (Briefkasten, Kasse …)
-    rechnung_praefix: 'SSV-H',
+    rechnung_praefix: 'SSV-H', veranstaltung_praefix: 'SSV-V',
     beitrag_praefix: 'SSV-B',
     zahlungsziel_tage: 14,
     stromumlage_ueber_hafen: true,
@@ -417,7 +417,7 @@
     mitteilungen: ['id', 'titel', 'text', 'wichtig', 'zielgruppe', 'gueltig_bis', 'erstellt', 'erstellt_von', 'push_gesendet'],
     veranstaltungen: ['id', 'datum', 'beginn', 'ende', 'titel', 'ort', 'text', 'anmeldung_bis', 'max_personen', 'begleitung', 'kosten', 'kosten_hinweis', 'abgesagt', 'erstellt', 'erstellt_von'],
     zusagen: ['id', 'veranstaltung_id', 'mitglied_id', 'antwort', 'personen', 'bemerkung', 'quelle', 'geaendert'],
-    hafen_rechnungen: ['id', 'nr', 'mitglied_id', 'datum', 'saison', 'periode', 'faellig', 'positionen', 'summe', 'empfaenger', 'sepa', 'mandat_ref', 'mandat_datum', 'bezahlt_am', 'storniert_am', 'sepa_lauf', 'zahlungen'],
+    hafen_rechnungen: ['id', 'nr', 'mitglied_id', 'datum', 'saison', 'periode', 'faellig', 'positionen', 'summe', 'empfaenger', 'sepa', 'mandat_ref', 'mandat_datum', 'bezahlt_am', 'storniert_am', 'sepa_lauf', 'zahlungen', 'veranstaltung_id'],
     sepa_laeufe: ['id', 'datum', 'faellig', 'anzahl', 'summe'],
     antraege: ['id', 'eingang', 'status', 'art', 'vorname', 'nachname', 'geburtsdatum', 'geschlecht', 'strasse', 'plz', 'ort', 'email', 'tel', 'erziehungsberechtigt', 'boot', 'warteliste',
       'kontoinhaber', 'iban', 'bic', 'mandat', 'satzung', 'datenschutz', 'nachricht', 'mitglied_id', 'entschieden', 'entschieden_von', 'grund'],
@@ -733,7 +733,7 @@
     ART: { ausuebend: 'ausübend', probe: 'Probemitglied', foerdernd: 'fördernd', partner: 'Ehe-/Lebenspartner', jugend: 'Jugend',
       jugend_geschwister: 'Jugend (Geschwister)', ausbildung: 'in Ausbildung (ab 18)', gast: 'Saison-Gast (kein Mitglied)' },
     GESCHLECHT: { w: 'weiblich', m: 'männlich', d: 'divers' },
-    periodeText: (r) => r.periode === 'beitrag' ? 'Beitrag ' + r.saison : r.periode === 'sommer' ? 'Sommer ' + r.saison : 'Winter ' + r.saison + '/' + String(r.saison + 1).slice(2),
+    periodeText: (r) => r.periode === 'veranstaltung' ? ((r.positionen && r.positionen[0] && r.positionen[0].text) || 'Veranstaltung') : r.periode === 'beitrag' ? 'Beitrag ' + r.saison : r.periode === 'sommer' ? 'Sommer ' + r.saison : 'Winter ' + r.saison + '/' + String(r.saison + 1).slice(2),
     BRUECKE: { ost: 'Ostbrücke', west: 'Westbrücke', schwimm: 'Schwimmbrücke', laengs: 'Längsseits' }
   };
 

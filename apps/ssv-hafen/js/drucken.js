@@ -15,9 +15,10 @@
 
   function rechnung(r) {
     const em = r.empfaenger;
-    const winter = r.periode === 'winter', beitrag = r.periode === 'beitrag';
+    const winter = r.periode === 'winter', beitrag = r.periode === 'beitrag', ver = r.periode === 'veranstaltung';
     const label = H.periodeText(r);
-    const intro = beitrag
+    const intro = ver ? 'schön, dass du dabei ' + (r.positionen[0] && /\d{2}\.\d{2}\.\d{4}$/.test(r.positionen[0].text) && r.positionen[0].text.slice(-10).split('.').reverse().join('-') < r.datum ? 'warst' : 'bist') + '! Hier ist die Rechnung für ' + esc(label) + ':'
+      : beitrag
       ? 'danke, dass du auch ' + r.saison + ' Teil unseres Vereins bist! Mit deinem Beitrag halten wir Hafen, Stege, Jugendarbeit und Vereinsheim in Schuss. Hier ist deine Beitragsrechnung:'
       : winter
         ? 'das Winterlager hat begonnen – hier ist deine Abrechnung für den ' + label + ':'
@@ -29,14 +30,14 @@
     return '<section class="blatt">' + (r.storniert_am ? '<div class="r-storno">STORNIERT</div>' : '') + kopf +
       '<div class="r-absender">' + esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort) + '</div>' +
       '<div class="r-adresse">' + esc(em.vorname + ' ' + em.nachname) + '<br>' + esc(em.strasse || '') + '<br>' + esc(((em.plz || '') + ' ' + (em.ort || '')).trim()) + '</div>' +
-      '<div class="r-meta"><span>Rechnungsnummer</span><strong>' + esc(r.nr) + '</strong><span>Rechnungsdatum</span><span>' + H.datum(r.datum) + '</span><span>Mitgliedsnummer</span><span>' + esc(em.nr) + '</span><span>' + (beitrag ? 'Beitragsjahr' : 'Leistungszeitraum') + '</span><span>' + (beitrag ? r.saison : label) + '</span></div>' +
-      '<h1>' + (beitrag ? 'Dein Mitgliedsbeitrag ' + r.saison : 'Deine Hafenabrechnung') + '</h1><p>Moin ' + esc(em.vorname) + ',</p><p>' + intro + '</p>' +
+      '<div class="r-meta"><span>Rechnungsnummer</span><strong>' + esc(r.nr) + '</strong><span>Rechnungsdatum</span><span>' + H.datum(r.datum) + '</span><span>Mitgliedsnummer</span><span>' + esc(em.nr) + '</span><span>' + (beitrag ? 'Beitragsjahr' : ver ? 'Veranstaltung' : 'Leistungszeitraum') + '</span><span>' + (beitrag ? r.saison : esc(label)) + '</span></div>' +
+      '<h1>' + (beitrag ? 'Dein Mitgliedsbeitrag ' + r.saison : ver ? 'Deine Rechnung' : 'Deine Hafenabrechnung') + '</h1><p>Moin ' + esc(em.vorname) + ',</p><p>' + intro + '</p>' +
       '<table class="r-tab"><thead><tr><th>Leistung</th><th class="r">Menge</th><th class="r">Einzelpreis</th><th class="r">Betrag</th></tr></thead><tbody>' +
       r.positionen.map((p) => '<tr><td>' + esc(p.text) + '</td><td class="r">' + H.zahl(p.menge, p.menge % 1 ? 2 : 0) + ' ' + esc(p.einheit) + '</td><td class="r">' + H.geld(p.einzelpreis) + '</td><td class="r">' + H.geld(p.betrag) + '</td></tr>').join('') +
       '</tbody><tfoot><tr><td colspan="3">Zusammen</td><td class="r">' + H.geld(r.summe) + '</td></tr></tfoot></table>' +
       '<div class="r-zahlung">' + zahlung + '<p>Kommt dir etwas komisch vor? Dann sprich ' + esc(e.kassenwart_name || 'den Kassenwart') + ' einfach am Steg oder in der Messe an – oder schreib kurz an ' + esc(e.verein_email) + '.</p></div>' +
       '<p style="margin-top:7mm">' + esc(e.fusstext) + '<br><br>Dein Kassenwart ' + esc(e.kassenwart_name) + '<br><span style="color:#555">für den ' + esc(e.verein_name) + '</span></p>' +
-      '<p style="margin-top:4mm;font-size:7.5pt;color:#777">' + (beitrag ? 'Beiträge laut Beitragsordnung des Vereins.' : 'Gebühren laut Gebührenordnung des Vereins. ' + esc(steuer(r.summe))) + '</p>' +
+      '<p style="margin-top:4mm;font-size:7.5pt;color:#777">' + (beitrag ? 'Beiträge laut Beitragsordnung des Vereins.' : ver ? 'Kostenbeitrag laut Einladung des Vereins. ' + esc(steuer(r.summe)) : 'Gebühren laut Gebührenordnung des Vereins. ' + esc(steuer(r.summe))) + '</p>' +
       '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort) + '</span><span>' +
       (r.sepa ? 'Gläubiger-ID ' + esc(e.glaeubiger_id) + ' · Mandatsreferenz ' + esc(r.mandat_ref) + ' · ' : '') + (e.steuernummer ? 'Steuer-Nr. ' + esc(e.steuernummer) : '') + '</span></div></section>';
   }

@@ -14,7 +14,7 @@
     vorstand: { name: 'Vorstand', tabs: '*', bank: true },
     brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'warteliste', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen'], bank: false },
     hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'abwesenheiten', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen'], bank: false },
-    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'finanzen', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen', 'einstellungen', 'verlauf'], bank: true }
+    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'finanzen', 'abrechnung', 'kontoauszug', 'gebuehren', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen', 'einstellungen', 'verlauf'], bank: true }
   };
   // Sieben Bereiche statt neunzehn Menüpunkte; innerhalb eines Bereichs wechseln Reiter oben auf der Seite
   const ICON = {
@@ -32,7 +32,7 @@
     ['gaeste', 'Gäste & Schild', [['gaeste', 'Gastlieger'], ['abwesenheiten', 'Grünes Schild']]],
     ['mitglieder', 'Mitglieder & Boote', [['eigner', 'Mitglieder'], ['boote', 'Boote'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
     ['betrieb', 'Betrieb', [['arbeitsdienst', 'Arbeitsdienst'], ['arbeitsbereiche', 'Arbeitsgruppen'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen'], ['veranstaltungen', 'Veranstaltungen']]],
-    ['finanzen', 'Finanzen', [['finanzen', 'Übersicht'], ['abrechnung', 'Abrechnung & Lastschrift'], ['gebuehren', 'Gebührenordnung']]],
+    ['finanzen', 'Finanzen', [['finanzen', 'Übersicht'], ['abrechnung', 'Abrechnung & Lastschrift'], ['kontoauszug', 'Kontoauszug'], ['gebuehren', 'Gebührenordnung']]],
     ['verwaltung', 'Verwaltung', [['einstellungen', 'Einstellungen'], ['verlauf', 'Änderungsverlauf']]]
   ];
   const TABS = BEREICHE.map(([, n, ts]) => [n, ts]);
@@ -190,6 +190,8 @@
     const neueAntraege = (d.antraege || []).filter((a) => a.status === 'neu');
     if (neueAntraege.length && darf('antraege')) add(anst, 'antraege', neueAntraege.length + ' Aufnahmeantr' + (neueAntraege.length > 1 ? 'äge warten' : 'ag wartet') + ' auf den Vorstand', 'warn');
     if (winterOffen.length && darf('abrechnung')) add(anst, 'abrechnung', 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) + ' abrechnen (' + winterOffen.length + ' Mitglieder, ' + H.geld(winterOffen.reduce((s, x) => s + x.summe, 0)) + ')', 'warn');
+    const kaZuletzt = e.kontoauszug_zuletzt; const kaAlt = !kaZuletzt || kaZuletzt < tagVor(heute, 30);
+    if (darf('kontoauszug') && kaAlt && (offeneRe.length || d.sepa_laeufe.length)) add(anst, 'kontoauszug', 'Kontoauszug abgleichen – ' + (kaZuletzt ? 'zuletzt am ' + H.datum(kaZuletzt) : 'noch nie eingelesen') + ' (' + offeneRe.length + ' Rechnungen offen)', 'gast');
     if (sepaOffen.length && darf('abrechnung')) add(anst, 'abrechnung', sepaOffen.length + ' Rechnungen warten auf die Lastschrift-Datei für die Bank', 'warn');
     if (nachweise.length && darf('boote')) add(anst, 'boote', nachweise.length + ' Versicherungsnachweis' + (nachweise.length > 1 ? 'e' : '') + ' prüfen', 'gast');
     if (versProbleme.length && darf('boote')) add(anst, 'boote', versProbleme.length + ' Boote: Versicherung abgelaufen, fehlt oder läuft in 30 Tagen ab', 'warn');
@@ -213,7 +215,7 @@
         '<div class="kz"><small>Nächstes Auslagern</small><strong style="font-size:20px">' + (naechste ? H.datum(naechste.auslagern) : 'Termin offen') + '</strong><span>' + (naechste ? 'Saison ' + (SAISON + 1) : 'noch nicht eingetragen') + '</span></div>';
     const handy = window.matchMedia('(max-width: 860px)').matches;
     // Etikett = Thema (nicht Farbe): Gäste, Arbeitsdienst, Boote …; Farbe zeigt die Dringlichkeit
-    const THEMA = { gaeste: 'Gäste', arbeitsdienst: 'Arbeitsdienst', boote: 'Boote', abrechnung: 'Geld', antraege: 'Anträge', aufgaben: 'Schäden', einstellungen: 'Einrichtung', plaetze: 'Liegeplätze', veranstaltungen: 'Termine' };
+    const THEMA = { gaeste: 'Gäste', arbeitsdienst: 'Arbeitsdienst', boote: 'Boote', abrechnung: 'Geld', antraege: 'Anträge', aufgaben: 'Schäden', einstellungen: 'Einrichtung', plaetze: 'Liegeplätze', veranstaltungen: 'Termine', kontoauszug: 'Geld' };
     const MAX = 5;
     const zeilen = (l) => '<table class="tab todo"><tbody>' + l.map((x, i) => '<tr class="klickbar' + (i >= MAX ? ' todo-mehr' : '') + '" data-gehe="' + x.tab + '" ' + x.extra + (i >= MAX ? ' hidden' : '') + '><td><span class="tag ' + x.art + '">' + (THEMA[x.tab] || 'offen') + '</span></td><td>' + x.txt + '</td><td class="r">' + (darf(x.tab) ? '→' : '') + '</td></tr>').join('') + '</tbody></table>' +
       (l.length > MAX ? '<button class="btn klein todo-weitere" type="button">+ ' + (l.length - MAX) + ' weitere anzeigen</button>' : '');
@@ -1467,7 +1469,7 @@
       return { titel, n: l.length, ber, ein: ber - off, off, kl: kl.length, klSum: kl.reduce((x, r) => x + Q.rest(r), 0), tab }; };
     const gs = d.gaeste.filter((g) => g.status !== 'storniert' && g.ankunft.startsWith(J));
     const gOff = gs.filter((g) => !g.bezahlt_am);
-    const zeilen = [zeile('Mitgliedsbeiträge', re.filter((r) => r.periode === 'beitrag'), 'abrechnung'), zeile('Sommerliegeplätze', re.filter((r) => r.periode === 'sommer'), 'abrechnung'), zeile('Winterlager', re.filter((r) => r.periode === 'winter'), 'abrechnung'),
+    const zeilen = [zeile('Mitgliedsbeiträge', re.filter((r) => r.periode === 'beitrag'), 'abrechnung'), zeile('Sommerliegeplätze', re.filter((r) => r.periode === 'sommer'), 'abrechnung'), zeile('Winterlager', re.filter((r) => r.periode === 'winter'), 'abrechnung'), zeile('Veranstaltungen', re.filter((r) => r.periode === 'veranstaltung'), 'abrechnung'),
       { titel: 'Gastlieger', n: gs.length, ber: gs.reduce((x, g) => x + Number(g.betrag || 0), 0), ein: gs.filter((g) => g.bezahlt_am).reduce((x, g) => x + Number(g.betrag || 0), 0), off: gOff.reduce((x, g) => x + Number(g.betrag || 0), 0),
         kl: gOff.filter((g) => g.zahlung_gemeldet).length, klSum: 0, klText: 'gemeldet, ungeprüft', klArt: 'gast', tab: 'gaeste' }];
     // Eingänge je Monat (Hafen & Beiträge, Gäste); Getränke kommen nach dem Laden dazu
@@ -1583,7 +1585,7 @@
           return '<tr><td><strong>' + esc(l.id) + '</strong></td><td>' + H.datum(l.datum) + '</td><td>' + H.datum(l.faellig || l.datum) + '</td><td class="r">' + l.anzahl + '</td><td class="r">' + H.geld(l.summe) + '</td><td>' + stand + (rueckL ? ' <span class="tag rot">' + rueckL + ' Rücklastschrift' + (rueckL > 1 ? 'en' : '') + '</span>' : '') + '</td>' +
             '<td class="r aktion">' + (offenL.length ? '<button class="btn klein' + ((l.faellig || l.datum) <= heute ? ' primaer' : '') + '" data-gutschrift="' + esc(l.id) + '" title="Sammellastschrift ist auf dem Vereinskonto – alle Posten als bezahlt buchen">Gutschrift ist da</button>' : '') + '</td></tr>'; }).join('') + '</tbody></table>' : '') +
       '<h3 style="margin:18px 0 8px">Rechnungen (' + res.length + ')</h3>' + ketteKopf(res) + '<div class="filter"><input class="suche" id="r-such" placeholder="Name, Mitgliedsnr. oder Rechnungsnr. …" value="' + esc(abrStand.such) + '">' +
-      '<select class="suche" id="r-art" style="min-width:0"><option value="">alle Arten</option><option value="beitrag">Beitrag</option><option value="sommer">Sommer</option><option value="winter">Winter</option></select>' +
+      '<select class="suche" id="r-art" style="min-width:0"><option value="">alle Arten</option><option value="beitrag">Beitrag</option><option value="sommer">Sommer</option><option value="winter">Winter</option><option value="veranstaltung">Veranstaltung</option></select>' +
       '<select class="suche" id="r-jahr" style="min-width:0"><option value="">alle Jahre</option>' + jahre.map((j) => '<option>' + j + '</option>').join('') + '</select>' +
       '<select class="suche" id="r-status" style="min-width:0"><option value="">jeder Stand</option><option value="nicht_bezahlt">noch nicht bezahlt</option>' + Object.entries(RSTATUS).map(([k, [t]]) => '<option value="' + k + '">' + t + '</option>').join('') + '</select></div>' +
       '<p id="r-summe" style="font-size:13px;color:var(--muted);margin:0 0 6px"></p>' +
@@ -1647,13 +1649,13 @@
     });
     $('#sepa').addEventListener('click', () => {
       const ersterEinzug = sepaBereit.map((r) => r.faellig).sort()[0];
-      const nichtZu = [...new Set(sepaBereit.filter((r) => !(e.abrechnung_zugestellt || {})[r.periode + '-' + r.saison]).map((r) => H.periodeText(r)))];
+      const nichtZu = [...new Set(sepaBereit.filter((r) => r.periode !== 'veranstaltung' && !(e.abrechnung_zugestellt || {})[r.periode + '-' + r.saison]).map((r) => H.periodeText(r)))];
       if (!confirm('Lastschrift-Datei für ' + sepaBereit.length + ' Rechnungen erzeugen?\n\nDie Rechnung ist zugleich die Ankündigung des Einzugs (frühester Einzug ' + H.datum(ersterEinzug) + ').' +
         (nichtZu.length ? '\n\nAchtung: Für ' + nichtZu.join(', ') + ' ist noch nicht vermerkt, dass die Rechnungen zugestellt sind (Schritt 3). Haben alle Mitglieder ihre Rechnung bekommen – in „Mein SSV“, per E-Mail oder als Brief?' : '\n\nAlle Rechnungen sind als zugestellt vermerkt.'))) return;
       const ungueltig = [];
       const posten = sepaBereit.map((r) => { const m = Q.mitglied(r.mitglied_id);
         if (!SEPA.ibanGueltig(m.iban)) { ungueltig.push(r.nr); return null; }
-        return { betrag: Q.rest(r), mandat_ref: r.mandat_ref, mandat_datum: r.mandat_datum, name: m.kontoinhaber || Q.name(m), iban: m.iban, bic: m.bic, zweck: (r.periode === 'beitrag' ? 'Mitgliedsbeitrag ' + r.saison + ' ' + r.nr : 'Hafengeld ' + r.nr + ' ' + H.periodeText(r)), e2e: r.nr, re: r }; }).filter(Boolean);
+        return { betrag: Q.rest(r), mandat_ref: r.mandat_ref, mandat_datum: r.mandat_datum, name: m.kontoinhaber || Q.name(m), iban: m.iban, bic: m.bic, zweck: (r.periode === 'beitrag' ? 'Mitgliedsbeitrag ' + r.saison + ' ' + r.nr : r.periode === 'veranstaltung' ? r.nr + ' ' + H.periodeText(r) : 'Hafengeld ' + r.nr + ' ' + H.periodeText(r)), e2e: r.nr, re: r }; }).filter(Boolean);
       if (!posten.length) return toast('Keine gültigen Posten.', 'fehler');
       // je Fälligkeitstag eine Datei, damit der Einzugstermin stimmt
       const nachTag = new Map(); posten.forEach((p) => { const t = p.re.faellig; if (!nachTag.has(t)) nachTag.set(t, []); nachTag.get(t).push(p); });
@@ -1669,6 +1671,129 @@
     });
     $('#csvr').addEventListener('click', () => download('hafen-rechnungen.csv', csv([['Nr', 'Datum', 'Fällig', 'Mitgliedsnr', 'Name', 'Periode', 'Betrag', 'Offen', 'Stand', 'Zahlart', 'SEPA-Datei', 'Bezahlt am', 'Storniert']].concat(res.map((r) => [r.nr, H.datum(r.datum), H.datum(r.faellig), r.empfaenger.nr, r.empfaenger.vorname + ' ' + r.empfaenger.nachname, H.periodeText(r), H.zahl(r.summe), H.zahl(Q.rest(r)), RSTATUS[Q.rstatus(r, heute)][0], r.sepa ? 'Lastschrift' : 'Überweisung', r.sepa_lauf || '', H.datum(r.bezahlt_am), r.storniert_am ? 'ja' : '']))), 'text/csv'));
   };
+  /* ============================================================ Kontoauszug
+   * Umsätze aus dem Online-Banking einlesen (CAMT/XML oder CSV) und Zahlungen zuordnen (js/kontoauszug.js).
+   * Die Datei selbst wird nicht gespeichert – nur, was gebucht wird (mit Umsatz-Schlüssel gegen doppeltes Buchen). */
+  const KA = window.HAFEN_KONTO;
+  const kaStand = { datei: '', umsaetze: null, zu: null, wahl: {}, manuell: {}, gebucht: new Set(), getraenke: [], fehler: '' };
+  const kaKtx = () => ({ rechnungen: d.rechnungen, getraenke: kaStand.getraenke, gaeste: d.gaeste, laeufe: d.sepa_laeufe, mitglieder: d.mitglieder, rest: Q.rest, rstatus: (r) => Q.rstatus(r, heute), heute });
+  const kaZuordnen = () => { kaStand.zu = KA.zuordnen(kaStand.umsaetze, kaKtx()); kaStand.umsaetze.forEach((u, i) => { const z = kaStand.zu[i]; if (!(u.key in kaStand.wahl)) kaStand.wahl[u.key] = z.sicher; }); };
+  async function kaDatei(file) {
+    if (!file) return;
+    try {
+      const buf = await file.arrayBuffer(); let text;
+      try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { text = new TextDecoder('windows-1252').decode(buf); }   // Sparkasse & Co. liefern CSV oft in Windows-1252
+      const l = KA.lesen(text, file.name);
+      const kasse = KASSE(); kaStand.getraenke = kasse ? await kasse.rechnungen().catch(() => []) : [];
+      if (DB) { await HF.neuLaden(); d = HF.d; }   // neuester Stand, bevor zugeordnet wird
+      Object.assign(kaStand, { datei: file.name, umsaetze: l, wahl: {}, manuell: {}, gebucht: new Set(), fehler: '' }); kaZuordnen();
+    } catch (er) { Object.assign(kaStand, { datei: file.name, umsaetze: null, zu: null, fehler: er.message }); }
+    zeige('kontoauszug', true);
+  }
+  // offene Posten für die manuelle Zuordnung (Klärliste)
+  function kaOptionen(u, z) {
+    const vorne = new Set(z.mitglieder || []);
+    const nm = (id) => { const m = Q.mitglied(id); return m ? m.nachname + ', ' + m.vorname : ''; };
+    const hafen = d.rechnungen.filter((r) => Q.rest(r) > 0).sort((a2, b2) => (vorne.has(b2.mitglied_id) - vorne.has(a2.mitglied_id)) || a2.nr.localeCompare(b2.nr));
+    const getr = kaStand.getraenke.filter((r) => !r.bezahlt_am && !r.storniert_am).sort((a2, b2) => (vorne.has(b2.mitglied_id) - vorne.has(a2.mitglied_id)) || a2.nr.localeCompare(b2.nr));
+    const gaeste = d.gaeste.filter((g) => !g.bezahlt_am && g.status !== 'storniert');
+    const sel = kaStand.manuell[u.key] || '';
+    const o = (v, t) => '<option value="' + v + '"' + (v === sel ? ' selected' : '') + '>' + esc(t) + '</option>';
+    return '<select class="ka-wahl" data-ka-man="' + esc(u.key) + '" aria-label="Zuordnung wählen"><option value="">– nicht buchen –</option>' +
+      (hafen.length ? '<optgroup label="Hafen, Beiträge, Veranstaltungen">' + hafen.map((r) => o('hafen:' + r.id, r.nr + ' · ' + nm(r.mitglied_id) + ' · offen ' + H.geld(Q.rest(r)))).join('') + '</optgroup>' : '') +
+      (getr.length ? '<optgroup label="Getränke">' + getr.map((r) => o('getraenke:' + r.id, r.nr + ' · ' + nm(r.mitglied_id) + ' · ' + H.geld(r.summe))).join('') + '</optgroup>' : '') +
+      (gaeste.length ? '<optgroup label="Gastlieger">' + gaeste.map((g) => o('gast:' + g.id, '„' + g.bootsname + '“ · ' + H.datum(g.ankunft) + ' · ' + H.geld(g.betrag))).join('') + '</optgroup>' : '') + '</select>';
+  }
+  const kaManuellZiel = (u, wert) => { const [typ, id] = wert.split(':'); return { art: typ === 'hafen' ? 'rechnung' : typ, sicher: true, text: 'von Hand zugeordnet', ziele: [{ typ, id, betrag: u.betrag }], hinweis: '' }; };
+  V.kontoauszug = (main) => {
+    const e = d.einstellungen; const s = kaStand;
+    const anleitung = '<ol class="ka-schritte"><li>Im Online-Banking die <strong>Umsätze exportieren</strong>: am besten als <strong>CAMT</strong> (XML), sonst als <strong>CSV</strong> – bei der Sparkasse „CSV-CAMT“. Zeitraum: seit dem letzten Abgleich' + (e.kontoauszug_zuletzt ? ' (' + H.datum(e.kontoauszug_zuletzt) + ')' : '') + '.</li>' +
+      '<li>Die Datei hier hineinziehen oder „Datei wählen“.</li><li>Zuordnungen prüfen, Häkchen setzen, <strong>„Buchen“</strong>. Was nicht zuzuordnen ist, steht auf der Klärliste.</li></ol>' +
+      '<p class="hinweis">Erkannt werden Rechnungsnummern im Verwendungszweck (' + esc(e.rechnung_praefix || 'SSV-H') + '-…, ' + esc(e.beitrag_praefix || 'SSV-B') + '-…, ' + esc(e.veranstaltung_praefix || 'SSV-V') + '-…, Getränke SSV-G-…), die Sammellastschriften des Vereins, Rücklastschriften und Gastlieger (Bootsname + Betrag). Die Datei bleibt auf diesem Gerät; gespeichert wird nur, was gebucht wird. Derselbe Auszug kann gefahrlos noch einmal eingelesen werden – schon Gebuchtes wird erkannt.</p>';
+    const knopf = '<label class="btn primaer ka-knopf">Datei wählen …<input type="file" id="ka-datei" accept=".xml,.csv,.txt,.sta" hidden></label>';
+    if (!s.umsaetze) {
+      main.innerHTML = kopf('Kontoauszug abgleichen', 'Zahlungseingänge aus dem Online-Banking automatisch den Rechnungen zuordnen' + (e.kontoauszug_zuletzt ? ' · zuletzt eingelesen am ' + H.datum(e.kontoauszug_zuletzt) : ''), knopf) +
+        (s.fehler ? '<p class="hinweis warn">„' + esc(s.datei) + '“ ließ sich nicht lesen: ' + esc(s.fehler) + '</p>' : '') +
+        '<div class="panel ka-ablage" id="ka-ablage"><div class="ka-ziel">Kontoauszug hierher ziehen<small>CAMT (.xml) oder CSV</small></div>' + anleitung + '</div>';
+    } else {
+      const zeilen = s.umsaetze.map((u, i) => ({ u, z: s.gebucht.has(u.key) ? { art: 'gebucht', text: 'gebucht ✓', ziele: [] } : (s.manuell[u.key] ? kaManuellZiel(u, s.manuell[u.key]) : s.zu[i]), auto: s.zu[i] }));
+      const zug = zeilen.filter((x) => ['rechnung', 'lauf', 'gast', 'getraenke', 'rueck'].includes(x.z.art) && !s.manuell[x.u.key]);
+      const klaer = zeilen.filter((x) => x.auto.art === 'unklar' && !s.gebucht.has(x.u.key));
+      const rest = zeilen.filter((x) => ['ausgabe', 'doppelt', 'gebucht'].includes(x.z.art) && !(x.auto.art === 'unklar' && !s.gebucht.has(x.u.key)));
+      const ein = s.umsaetze.filter((u) => u.betrag > 0); const summeEin = ein.reduce((x, u) => x + u.betrag, 0);
+      const waehlbar = zeilen.filter((x) => x.z.ziele && x.z.ziele.length && !s.gebucht.has(x.u.key));
+      const gewaehlt = waehlbar.filter((x) => s.wahl[x.u.key]);
+      const kurzZweck = (t) => { t = String(t || ''); return t.length > 90 ? t.slice(0, 88) + '…' : t; };
+      const ARTTAG = { rechnung: 'Rechnung', lauf: 'Lastschrift', gast: 'Gast', getraenke: 'Getränke', rueck: 'Rücklastschrift' };
+      const zeile = (x, klaerung) => { const { u, z } = x; const kann = z.ziele && z.ziele.length && !s.gebucht.has(u.key);
+        return '<tr class="' + (s.gebucht.has(u.key) ? 'blass' : '') + '"><td class="ka-cb">' + (kann ? '<input type="checkbox" data-ka-wahl="' + esc(u.key) + '"' + (s.wahl[u.key] ? ' checked' : '') + ' aria-label="buchen">' : '') + '</td>' +
+          '<td class="nw">' + H.datum(u.datum) + '</td><td>' + esc(u.name || '–') + (u.iban ? '<br><small style="color:var(--muted)">•••• ' + esc(u.iban.slice(-4)) + '</small>' : '') + '</td>' +
+          '<td><small>' + esc(kurzZweck(u.zweck)) + '</small></td><td class="r nw' + (u.betrag < 0 ? ' ka-minus' : '') + '"><strong>' + H.geld(u.betrag) + '</strong></td>' +
+          '<td>' + (klaerung ? kaOptionen(u, x.auto) + (x.auto.text && x.auto.text !== 'nicht zugeordnet' ? '<br><small style="color:var(--muted)">' + esc(x.auto.text) + (x.auto.hinweis ? ' – ' + esc(x.auto.hinweis) : '') + '</small>' : '')
+            : (ARTTAG[z.art] ? '<span class="tag ' + (z.art === 'rueck' ? 'rot' : z.sicher ? 'ok' : 'warn') + '">' + ARTTAG[z.art] + (z.sicher ? '' : ' · Vorschlag') + '</span> ' : '') + esc(z.text) + (z.hinweis ? '<br><small style="color:var(--muted)">' + esc(z.hinweis) + '</small>' : '')) + '</td></tr>'; };
+      const tab = (l, klaerung) => '<table class="tab ka-tab"><thead><tr><th></th><th>Datum</th><th>Von / an</th><th>Verwendungszweck</th><th class="r">Betrag</th><th>Zuordnung</th></tr></thead><tbody>' + l.map((x) => zeile(x, klaerung)).join('') + '</tbody></table>';
+      const nSicher = zug.filter((x) => x.z.sicher).length, nVor = zug.length - nSicher;
+      main.innerHTML = kopf('Kontoauszug abgleichen', esc(s.datei) + ' · ' + s.umsaetze.length + ' Umsätze vom ' + H.datum(s.umsaetze[0].datum) + ' bis ' + H.datum(s.umsaetze[s.umsaetze.length - 1].datum), '<button class="btn" id="ka-neu">Andere Datei</button>' + knopf) +
+        '<div class="karten ka-karten"><div class="kz"><small>Eingänge</small><strong>' + H.geld(summeEin) + '</strong><span>' + ein.length + ' Umsätze</span></div>' +
+        '<div class="kz"><small>Zugeordnet</small><strong>' + nSicher + '</strong><span>' + (nVor ? nVor + ' Vorschl' + (nVor === 1 ? 'ag' : 'äge') + ' zum Prüfen' : 'sicher erkannt') + '</span></div>' +
+        '<div class="kz"><small>Klärliste</small><strong' + (klaer.length ? ' style="color:#8a5e05"' : '') + '>' + klaer.length + '</strong><span>' + (klaer.length ? 'von Hand zuordnen oder klären' : 'nichts offen') + '</span></div>' +
+        '<div class="kz"><small>Gebucht</small><strong>' + s.gebucht.size + '</strong><span>' + rest.filter((x) => x.z.art === 'doppelt').length + ' schon früher · ' + rest.filter((x) => x.z.art === 'ausgabe').length + ' Ausgaben</span></div></div>' +
+        (zug.length ? '<div class="panel"><h2>Zugeordnet</h2>' + tab(zug, false) + '</div>' : '') +
+        (klaer.length ? '<div class="panel"><h2>Klärliste</h2><p class="hinweis" style="margin-top:0">Diese Eingänge passen zu keiner Rechnung. Von Hand zuordnen – oder nachfragen (z. B. Spende, falscher Verwendungszweck, doppelt überwiesen).</p>' + tab(klaer, true) + '</div>' : '') +
+        (rest.length ? '<details class="panel"><summary><h2 style="display:inline">Ausgaben und schon Gebuchtes (' + rest.length + ')</h2></summary>' + tab(rest, false) + '</details>' : '') +
+        '<div class="ka-fuss"><button class="btn primaer" id="ka-buchen"' + (gewaehlt.length ? '' : ' disabled') + '>' + (gewaehlt.length ? gewaehlt.length + (gewaehlt.length === 1 ? ' Zahlung' : ' Zahlungen') + ' buchen' : 'Nichts ausgewählt') + '</button>' +
+        (klaer.length ? '<button class="btn" id="ka-csv">Klärliste als CSV</button>' : '') + '</div>';
+      main.querySelectorAll('[data-ka-wahl]').forEach((c) => c.addEventListener('change', () => { s.wahl[c.dataset.kaWahl] = c.checked; zeige('kontoauszug', true); }));
+      main.querySelectorAll('[data-ka-man]').forEach((c) => c.addEventListener('change', () => { if (c.value) { s.manuell[c.dataset.kaMan] = c.value; s.wahl[c.dataset.kaMan] = true; } else { delete s.manuell[c.dataset.kaMan]; s.wahl[c.dataset.kaMan] = false; } zeige('kontoauszug', true); }));
+      $('#ka-neu').addEventListener('click', () => { Object.assign(s, { umsaetze: null, zu: null, datei: '', fehler: '' }); zeige('kontoauszug'); });
+      const kc = $('#ka-csv'); if (kc) kc.addEventListener('click', () => download('klaerliste-' + heute + '.csv', csv([['Datum', 'Name', 'IBAN', 'Verwendungszweck', 'Betrag', 'Hinweis']].concat(klaer.map(({ u, auto }) => [H.datum(u.datum), u.name, u.iban, u.zweck, H.zahl(u.betrag), [auto.text, auto.hinweis].filter(Boolean).join(' – ')]))), 'text/csv'));
+      $('#ka-buchen').addEventListener('click', () => kaBuchen(gewaehlt));
+    }
+    $('#ka-datei').addEventListener('change', (ev) => kaDatei(ev.target.files[0]));
+    const ab = $('#ka-ablage');
+    if (ab) { ['dragenter', 'dragover'].forEach((t) => ab.addEventListener(t, (ev) => { ev.preventDefault(); ab.classList.add('ueber'); }));
+      ab.addEventListener('dragleave', () => ab.classList.remove('ueber')); ab.addEventListener('drop', (ev) => { ev.preventDefault(); ab.classList.remove('ueber'); kaDatei(ev.dataTransfer.files[0]); }); }
+  };
+  let kaLaeuft = false;
+  async function kaBuchen(liste) {
+    if (kaLaeuft || !liste.length) return;
+    const summe = liste.reduce((x, { u }) => x + u.betrag, 0);
+    if (!confirm(liste.length + (liste.length === 1 ? ' Zahlung' : ' Zahlungen') + ' (' + H.geld(summe) + ') buchen?')) return;
+    kaLaeuft = true; const kasse = KASSE(); const fehler = []; let n = 0;
+    try {
+      for (const { u, z } of liste) {
+        try {
+          for (const ziel of z.ziele) {
+            if (ziel.typ === 'hafen') {
+              const r = d.rechnungen.find((x) => x.id === ziel.id); if (!r) continue;
+              if (z.art === 'rueck') {
+                const zs = (r.zahlungen || []).slice(); if (r.bezahlt_am && !zs.length) zs.push({ datum: r.bezahlt_am, betrag: r.summe, art: 'eingang', notiz: 'Lastschrift ' + (r.sepa_lauf || '') });
+                let war = r.bezahlt_am ? r.summe : Q.gezahlt(r);
+                if (!war) { zs.push({ datum: u.datum, betrag: r.summe, art: 'eingang', notiz: 'Lastschrift ' + (r.sepa_lauf || '') + ' (Kontoauszug)', ref: u.key + '#e' }); war = r.summe; }
+                zs.push({ datum: u.datum, betrag: war, art: 'ruecklastschrift', notiz: 'laut Kontoauszug' + (u.rueckGrund ? ' (Grund ' + u.rueckGrund + ')' : '') + (z.hinweis ? ', ' + z.hinweis : ''), ref: u.key });
+                r.zahlungen = zs; r.bezahlt_am = null;
+              } else {
+                r.zahlungen = (r.zahlungen || []).concat([{ datum: u.datum, betrag: ziel.betrag, art: 'eingang', notiz: (z.art === 'lauf' ? 'Lastschrift ' + (r.sepa_lauf || '') : 'Überweisung' + (u.name ? ' ' + u.name : '')) + ' (Kontoauszug)', ref: u.key }]);
+                if (Q.gezahlt(r) >= r.summe - 0.001) r.bezahlt_am = u.datum;
+              }
+            } else if (ziel.typ === 'gast') {
+              const g = d.gaeste.find((x) => x.id === ziel.id); if (!g) continue;
+              g.bezahlt_am = u.datum; if (!g.zahlung || g.zahlung === 'offen') g.zahlung = 'ueberweisung';
+              if (!g.quittung_nr) g.quittung_nr = 'Q-' + g.ankunft.slice(0, 4) + '-' + String(++d.zaehler.quittung).padStart(3, '0');
+            } else if (ziel.typ === 'getraenke') {
+              if (!kasse) throw new Error('Getränkekasse nicht erreichbar');
+              await kasse.rechnungBezahlt(ziel.id, u.datum); const gr = kaStand.getraenke.find((x) => x.id === ziel.id); if (gr) gr.bezahlt_am = u.datum;
+            }
+          }
+          kaStand.gebucht.add(u.key); n++;
+        } catch (er) { fehler.push(H.datum(u.datum) + ' ' + H.geld(u.betrag) + ': ' + er.message); }
+      }
+      d.einstellungen.kontoauszug_zuletzt = heute;
+      const ok = await speichern(); if (ok === false) return;
+      toast(n + (n === 1 ? ' Zahlung' : ' Zahlungen') + ' gebucht.' + (fehler.length ? ' Nicht gebucht: ' + fehler.join('; ') : ''), fehler.length ? 'fehler' : '', fehler.length ? 8000 : 3200);
+    } finally { kaLaeuft = false; zeige('kontoauszug', true); }
+  }
+
   // Zahlungseingang (auch Teilzahlung) und Rücklastschrift je Rechnung
   function zahlungDialog(r) {
     if (!r.zahlungen) r.zahlungen = [];
@@ -1926,7 +2051,7 @@
     main.innerHTML = kopf('Veranstaltungen', 'Einladungen an alle Mitglieder – sie sagen in „Mein SSV“ zu oder ab. Hier steht, wer kommt.', '<button class="btn primaer" id="neu">+ Veranstaltung</button>') +
       '<div class="panel"><h2>Kommende</h2>' + (kommend.length ? tabelle(kommend) : '<p class="leer">Noch keine Veranstaltung geplant.</p>') + '</div>' +
       (vorbei.length ? '<div class="panel"><h2>Vergangene</h2>' + tabelle(vorbei) + '</div>' : '') +
-      '<p class="hinweis">Mitglieder sehen Titel, Zeit, Ort, Kosten und wie viele Plätze noch frei sind – aber nicht, wer sonst kommt. Kosten sind nur ein Hinweis (z. B. „bar vor Ort“); abgerechnet wird darüber nichts.</p>';
+      '<p class="hinweis">Mitglieder sehen Titel, Zeit, Ort, Kosten und wie viele Plätze noch frei sind – aber nicht, wer sonst kommt. Kosten lassen sich in der Teilnehmerliste mit „Kosten abrechnen“ als Rechnungen erstellen (Lastschrift oder Überweisung) – oder bleiben ein Hinweis wie „bar vor Ort“.</p>';
     main.querySelectorAll('[data-ver-zeile]').forEach((tr) => tr.addEventListener('click', (e) => { if (e.target.closest('button, .zm')) return; verAuswahl = tr.dataset.verZeile; zeige('veranstaltungen'); }));
     main.querySelectorAll('[data-ver-liste]').forEach((b) => b.addEventListener('click', () => { verAuswahl = b.dataset.verListe; zeige('veranstaltungen'); }));
     main.querySelectorAll('[data-ver-bearb]').forEach((b) => b.addEventListener('click', () => verForm(alle.find((v) => v.id === b.dataset.verBearb))));
@@ -1939,6 +2064,7 @@
     }));
     main.querySelectorAll('[data-ver-weg]').forEach((b) => b.addEventListener('click', () => {
       const v = alle.find((x) => x.id === b.dataset.verWeg); const n = verStand(v).z.length;
+      if (verRechnungen(v).length) return toast('Für diese Veranstaltung gibt es schon Rechnungen – sie bleibt deshalb erhalten. Stattdessen „Absagen“ oder die Rechnungen stornieren.', 'fehler', 6000);
       if (!confirm('„' + v.titel + '“ endgültig löschen?' + (n ? ' Die ' + n + ' Antworten der Mitglieder werden mit gelöscht.' : ''))) return;
       d.zusagen = (d.zusagen || []).filter((z) => z.veranstaltung_id !== v.id); d.veranstaltungen = alle.filter((x) => x.id !== v.id);
       speichern('Gelöscht.'); zeige('veranstaltungen');
@@ -1984,19 +2110,22 @@
   // Teilnehmerliste: Zusagen mit Personen und Hinweisen, Absagen, Druck (SSV-Briefkopf) und CSV
   function verTeilnehmer(main, v) {
     const st = verStand(v); const name = (id) => { const m = Q.mitglied(id); return m ? m.nachname + ', ' + m.vorname : '(nicht mehr Mitglied)'; };
+    const reVon = verRechnungen(v); const reZu = (mid) => reVon.find((r) => r.mitglied_id === mid);
+    const offenAbr = verAbrechenbar(v); const darfGeld = darf('abrechnung');
     const sort = (l) => l.slice().sort((a, b) => name(a.mitglied_id).localeCompare(name(b.mitglied_id), 'de'));
     const ja = sort(st.ja), nein = sort(st.nein); const frei = v.max_personen ? v.max_personen - st.pers : null;
     const wann = (z) => z.geaendert ? new Date(z.geaendert).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) : '';
     const menue = (z) => zeilenMenue(['<button class="zm-punkt" data-z-bearb="' + z.id + '">Ändern</button>', '<button class="zm-punkt gefahr" data-z-weg="' + z.id + '">Antwort löschen</button>']);
     main.innerHTML = druckKopf() + kopf(esc(v.titel) + (v.abgesagt ? ' <span class="tag rot">abgesagt</span>' : ''), H.datum(v.datum) + (verZeit(v) ? ' · ' + esc(verZeit(v)) : '') + (v.anmeldung_bis ? ' · Anmeldung bis ' + H.datum(v.anmeldung_bis) : ''),
-        '<button class="btn" id="v-zurueck">← Alle Veranstaltungen</button><button class="btn" id="v-eintragen">+ Antwort eintragen</button><button class="btn" id="v-csv">CSV</button><button class="btn primaer" id="v-druck">Drucken</button>') +
+        '<button class="btn" id="v-zurueck">← Alle Veranstaltungen</button><button class="btn" id="v-eintragen">+ Antwort eintragen</button>' + (v.kosten && darfGeld && offenAbr.length ? '<button class="btn" id="v-abr">Kosten abrechnen (' + offenAbr.length + ')</button>' : '') + '<button class="btn" id="v-csv">CSV</button><button class="btn primaer" id="v-druck">Drucken</button>') +
       '<div class="karten ver-karten"><div class="kz"><small>Personen zugesagt</small><strong>' + st.pers + (v.max_personen ? ' / ' + v.max_personen : '') + '</strong><span>' + ja.length + ' Mitglied' + (ja.length === 1 ? '' : 'er') + (st.pers > ja.length ? ' + ' + (st.pers - ja.length) + ' Begleitung' : '') + '</span></div>' +
         (frei !== null ? '<div class="kz"><small>Plätze frei</small><strong>' + Math.max(0, frei) + '</strong><span>' + (frei <= 0 ? 'ausgebucht' : 'Mitglieder sehen nur diese Zahl') + '</span></div>' : '') +
         '<div class="kz"><small>Absagen</small><strong>' + nein.length + '</strong><span>' + (d.mitglieder.length ? 'noch keine Antwort: ' + Math.max(0, d.mitglieder.filter((m) => m.art !== 'gast' && !(m.austritt && m.austritt <= heute)).length - st.z.length) : '') + '</span></div>' +
-        (v.kosten ? '<div class="kz"><small>Kosten</small><strong>' + H.geld(v.kosten * st.pers) + '</strong><span>' + st.pers + ' × ' + H.geld(v.kosten) + (v.kosten_hinweis ? ' ' + esc(v.kosten_hinweis) : '') + '</span></div>' : '') + '</div>' +
-      '<div class="panel"><h2>Zusagen</h2>' + (ja.length ? '<table class="tab"><thead><tr><th class="r">#</th><th>Name</th><th class="r">Personen</th><th>Hinweis</th><th>Antwort</th><th class="kein-druck"></th></tr></thead><tbody>' +
-        ja.map((z, i) => '<tr><td class="r">' + (i + 1) + '</td><td>' + esc(name(z.mitglied_id)) + '</td><td class="r">' + z.personen + '</td><td>' + esc(z.bemerkung || '') + '</td><td><small>' + wann(z) + (z.quelle === 'verein' ? ' · vom Verein eingetragen' : '') + '</small></td><td class="r aktion kein-druck">' + menue(z) + '</td></tr>').join('') +
-        '<tr class="summe"><td></td><td><strong>Zusammen</strong></td><td class="r"><strong>' + st.pers + '</strong></td><td colspan="3"></td></tr></tbody></table>' : '<p class="leer">Noch keine Zusagen.</p>') + '</div>' +
+        (v.kosten ? '<div class="kz"><small>Kosten</small><strong>' + H.geld(v.kosten * st.pers) + '</strong><span>' + st.pers + ' × ' + H.geld(v.kosten) + (reVon.length ? ' · ' + reVon.length + ' abgerechnet' + (offenAbr.length ? ', ' + offenAbr.length + ' noch nicht' : '') : v.kosten_hinweis ? ' ' + esc(v.kosten_hinweis) : '') + '</span></div>' : '') + '</div>' +
+      '<div class="panel"><h2>Zusagen</h2>' + (ja.length ? '<table class="tab"><thead><tr><th class="r">#</th><th>Name</th><th class="r">Personen</th><th>Hinweis</th><th>Antwort</th>' + (reVon.length ? '<th>Rechnung</th>' : '') + '<th class="kein-druck"></th></tr></thead><tbody>' +
+        ja.map((z, i) => { const r = reZu(z.mitglied_id); return '<tr><td class="r">' + (i + 1) + '</td><td>' + esc(name(z.mitglied_id)) + '</td><td class="r">' + z.personen + '</td><td>' + esc(z.bemerkung || '') + '</td><td><small>' + wann(z) + (z.quelle === 'verein' ? ' · vom Verein eingetragen' : '') + '</small></td>' +
+          (reVon.length ? '<td>' + (r ? '<small>' + esc(r.nr) + '</small> <span class="tag ' + STUFE[stufe(r)][1] + '">' + STUFE[stufe(r)][0] + '</span>' : '<small style="color:var(--muted)">–</small>') + '</td>' : '') + '<td class="r aktion kein-druck">' + menue(z) + '</td></tr>'; }).join('') +
+        '<tr class="summe"><td></td><td><strong>Zusammen</strong></td><td class="r"><strong>' + st.pers + '</strong></td><td colspan="' + (reVon.length ? 4 : 3) + '"></td></tr></tbody></table>' : '<p class="leer">Noch keine Zusagen.</p>') + '</div>' +
       (nein.length ? '<div class="panel"><h2>Absagen</h2><table class="tab"><tbody>' + nein.map((z) => '<tr><td>' + esc(name(z.mitglied_id)) + '</td><td>' + esc(z.bemerkung || '') + '</td><td><small>' + wann(z) + (z.quelle === 'verein' ? ' · vom Verein eingetragen' : '') + '</small></td><td class="r aktion kein-druck">' + menue(z) + '</td></tr>').join('') + '</tbody></table></div>' : '') +
       (v.text ? '<p class="hinweis kein-druck">' + esc(v.text) + '</p>' : '');
     $('#v-zurueck').addEventListener('click', () => { verAuswahl = null; zeige('veranstaltungen'); });
@@ -2004,11 +2133,53 @@
     $('#v-csv').addEventListener('click', () => download('ssv-teilnehmer-' + v.datum + '.csv', csv([['Veranstaltung', v.titel, H.datum(v.datum)], ['Mitgliedsnr', 'Name', 'Antwort', 'Personen', 'Hinweis', 'geantwortet am', 'eingetragen']].concat(
       ja.concat(nein).map((z) => { const m = Q.mitglied(z.mitglied_id) || {}; return [m.nr || '', name(z.mitglied_id), z.antwort === 'ja' ? 'Zusage' : 'Absage', z.personen, z.bemerkung || '', z.geaendert ? new Date(z.geaendert).toLocaleString('de-DE') : '', z.quelle === 'verein' ? 'vom Verein' : 'Mein SSV']; }))), 'text/csv'));
     $('#v-eintragen').addEventListener('click', () => zusageForm(v, null));
+    const vabr = $('#v-abr'); if (vabr) vabr.addEventListener('click', () => verAbrechnenDialog(v));
     main.querySelectorAll('[data-z-bearb]').forEach((b) => b.addEventListener('click', () => zusageForm(v, st.z.find((z) => z.id === b.dataset.zBearb))));
     main.querySelectorAll('[data-z-weg]').forEach((b) => b.addEventListener('click', () => {
       const z = st.z.find((x) => x.id === b.dataset.zWeg); if (!confirm('Antwort von ' + name(z.mitglied_id) + ' löschen?')) return;
       d.zusagen = d.zusagen.filter((x) => x.id !== z.id); speichern('Gelöscht.'); zeige('veranstaltungen');
     }));
+  }
+  /* Veranstaltungskosten abrechnen: je Zusage eine Rechnung (Personen × Kosten), mit Mandat per Lastschrift, sonst Überweisung.
+   * Die Rechnungen laufen danach wie alle anderen über „Abrechnung & Lastschrift“ und den Kontoauszug-Abgleich. */
+  const verRechnungen = (v) => d.rechnungen.filter((r) => r.veranstaltung_id === v.id && !r.storniert_am);
+  const verAbrechenbar = (v) => { const schon = new Set(verRechnungen(v).map((r) => r.mitglied_id));
+    return verStand(v).ja.filter((z) => !schon.has(z.mitglied_id) && Q.mitglied(z.mitglied_id) && Number(z.personen) > 0); };
+  function verRechnungenErzeugen(v, datum) {
+    const e = d.einstellungen; const jahr = datum.slice(0, 4); const praefix = (e.veranstaltung_praefix || 'SSV-V') + '-' + jahr + '-';
+    let lfd = d.rechnungen.filter((r) => r.nr.startsWith(praefix)).reduce((mx, r) => Math.max(mx, parseInt(r.nr.slice(praefix.length), 10) || 0), 0);
+    const faellig = H.tag(new Date(new Date(datum + 'T12:00:00').getTime() + Number(e.zahlungsziel_tage || 14) * 864e5));
+    const text = v.titel + ' am ' + H.datum(v.datum);
+    return verAbrechenbar(v).map((z) => { const m = Q.mitglied(z.mitglied_id); lfd += 1; const p = Number(z.personen);
+      const re = { id: H.uid('R'), nr: praefix + String(lfd).padStart(4, '0'), mitglied_id: m.id, datum, saison: Number(v.datum.slice(0, 4)), periode: 'veranstaltung', veranstaltung_id: v.id, faellig,
+        positionen: [{ text, menge: p, einheit: p === 1 ? 'Person' : 'Personen', einzelpreis: Number(v.kosten), betrag: Math.round(p * v.kosten * 100) / 100 }], summe: Math.round(p * v.kosten * 100) / 100,
+        empfaenger: { nr: m.nr, vorname: m.vorname, nachname: m.nachname, strasse: m.strasse, plz: m.plz, ort: m.ort, email: m.email, art: m.art },
+        sepa: !!(m.iban && m.mandat_ref && m.mandat_datum), mandat_ref: m.mandat_ref || '', mandat_datum: m.mandat_datum || '', bezahlt_am: null, storniert_am: null, sepa_lauf: null, zahlungen: [] };
+      d.rechnungen.push(re); return re; });
+  }
+  let verAbrLaeuft = false;
+  function verAbrechnenDialog(v) {
+    const l = verAbrechenbar(v); if (!l.length) return toast('Alle Zusagen sind schon abgerechnet.');
+    const zeilen = l.map((z) => { const m = Q.mitglied(z.mitglied_id); const sepa = !!(m.iban && m.mandat_ref && m.mandat_datum);
+      return '<tr><td>' + esc(m.nachname + ', ' + m.vorname) + '</td><td class="r">' + z.personen + ' × ' + H.geld(v.kosten) + '</td><td class="r"><strong>' + H.geld(z.personen * v.kosten) + '</strong></td><td>' + (sepa ? 'Lastschrift' : '<span class="tag warn">Überweisung</span>') + '</td></tr>'; }).join('');
+    const summe = l.reduce((x, z) => x + z.personen * v.kosten, 0);
+    const el = modal('<h2>Kosten abrechnen</h2><p style="margin-top:0">' + esc(v.titel) + ' · ' + H.datum(v.datum) + ' · ' + l.length + ' Rechnung' + (l.length === 1 ? '' : 'en') + ' über zusammen <strong>' + H.geld(summe) + '</strong></p>' +
+      '<div style="max-height:40vh;overflow:auto"><table class="tab"><tbody>' + zeilen + '</tbody></table></div>' +
+      '<form id="f" class="form" style="margin-top:12px"><label class="feld">Rechnungsdatum<input name="datum" type="date" required value="' + heute + '"><small>fällig ' + Number(d.einstellungen.zahlungsziel_tage || 14) + ' Tage später</small></label></form>' +
+      '<p class="hinweis">Mit Lastschriftmandat wird der Betrag beim nächsten Lastschrift-Lauf eingezogen (Abrechnung & Lastschrift), sonst steht auf der Rechnung die Bitte um Überweisung. Die Mitglieder sehen die Rechnung sofort in „Mein SSV“. Zusagen, die später dazukommen, lassen sich nachträglich abrechnen.</p>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">' + l.length + ' Rechnung' + (l.length === 1 ? '' : 'en') + ' erstellen</button></div>', true);
+    $('#ok', el).addEventListener('click', async () => {
+      const fm = $('#f', el); if (!fm.reportValidity() || verAbrLaeuft) return; verAbrLaeuft = true; $('#ok', el).disabled = true;
+      try {
+        if (DB) { await HF.neuLaden(); d = HF.d; v = d.veranstaltungen.find((x) => x.id === v.id) || v; }   // neuester Stand: keine doppelten Rechnungen
+        const neu = verRechnungenErzeugen(v, fm.datum.value); zu();
+        if (!neu.length) { toast('Keine neuen Rechnungen – schon abgerechnet.'); return zeige('veranstaltungen'); }
+        const ok = await speichern(); if (ok === false) return;
+        toast(neu.length + ' Rechnungen erstellt.'); zeige('veranstaltungen');
+        if (confirm('Rechnungen jetzt ansehen / als PDF sichern?')) oeffnen('drucken.html?art=rechnungen&ids=' + neu.map((r) => r.id).join(','));
+      } catch (x) { toast('Rechnungen nicht erstellt: ' + x.message, 'fehler', 7000); zeige('veranstaltungen'); }
+      finally { verAbrLaeuft = false; }
+    });
   }
   // Antwort für ein Mitglied eintragen (Telefon, Zettel an der Messe) – der Verein darf auch nach der Frist und über die Grenze
   function zusageForm(v, z) {

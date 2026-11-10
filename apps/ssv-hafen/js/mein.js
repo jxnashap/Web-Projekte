@@ -133,7 +133,7 @@
 
     // Persönliche Termine (nur, was kommt)
     const termine = [];
-    d.rechnungen.filter((r) => r.mitglied_id === mid && Q.rest(r) > 0 && r.faellig >= heute).forEach((r) => termine.push([r.faellig, r.sepa ? 'Lastschrift-Einzug ' + H.geld(Q.rest(r)) : 'Überweisung fällig ' + H.geld(Q.rest(r)), (r.periode === 'beitrag' ? 'Beitrag ' + r.saison : H.periodeText(r)) + ' · ' + r.nr]));
+    d.rechnungen.filter((r) => r.mitglied_id === mid && Q.rest(r) > 0 && r.faellig >= heute).forEach((r) => termine.push([r.faellig, r.sepa ? 'Lastschrift-Einzug ' + H.geld(Q.rest(r)) : 'Überweisung fällig ' + H.geld(Q.rest(r)), H.periodeText(r) + ' · ' + r.nr]));
     if (awAktuell) termine.push([awAktuell.bis, 'Rückkehr gemeldet', 'grünes Schild endet']);
     if (b && sd.einlagern >= heute) termine.push([sd.einlagern, 'Einlagern', 'Gemeinschaftsarbeit nach Belegungsplan']);
     (d.arbeitseinsaetze || []).filter((x) => x.datum >= heute).forEach((x) => termine.push([x.datum, 'Arbeitseinsatz: ' + x.titel, [x.beginn && x.beginn + (x.ende ? '–' + x.ende : '') + ' Uhr', x.notiz].filter(Boolean).join(' · ')]));
@@ -222,7 +222,7 @@
     }));
 
     // Rechnungen: Hafen und Beitrag sofort, Getränke sobald die Kasse geantwortet hat
-    const hafenPosten = res.map((r) => ({ art: r.periode === 'beitrag' ? 'Beitrag' : 'Hafen', nr: r.nr, datum: r.datum || '', text: r.periode === 'beitrag' ? String(r.saison) : H.periodeText(r),
+    const hafenPosten = res.map((r) => ({ art: r.periode === 'beitrag' ? 'Beitrag' : r.periode === 'veranstaltung' ? 'Veranstaltung' : 'Hafen', nr: r.nr, datum: r.datum || '', text: r.periode === 'beitrag' ? String(r.saison) : H.periodeText(r),
       summe: Q.rest(r) || r.summe, rest: Q.rest(r), stand: Q.rstatus(r, heute), bezahlt_am: Q.rest(r) === 0 ? (r.bezahlt_am || heute) : null, sepa: r.sepa, faellig: r.faellig, href: 'drucken.html?art=rechnungen&ids=' + r.id + (DBM ? '&mein=1' : '') }));
     let bezahlteZeigen = false;
     const erklaerung = (r) => r.stand === 'ruecklastschrift' ? ['Lastschrift zurückgekommen – bitte überweisen', 'rot'] : r.stand === 'teilbezahlt' ? ['teilweise bezahlt – Rest ' + (r.sepa ? 'wird eingezogen' : 'bitte überweisen'), 'warn']
