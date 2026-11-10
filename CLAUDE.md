@@ -41,7 +41,7 @@ Repo für alle Website-Projekte. Struktur:
   „© GeoBasis-DE/LVermGeo SH/CC BY 4.0“ muss sichtbar bleiben (Details `RECHERCHE.md`).
   Arbeitsdienst: 12 Arbeitsgruppen laut Vorstand (Vorlage `js/bereiche-vorlage.js`, live eingespielt), Aufgaben je Gruppe mit `pos` (Aktionsliste),
   `art` aufgabe|besorgen, `erledigt` (Datum) im jsonb `arbeitsbereiche.aufgaben`; Ansicht „Arbeitsgruppen“ mit Gruppen/Aufgabenliste/Einkaufsliste.
-  Gewichtsgrenze Steg/Kran nur über `einstellungen.max_gewicht_t` (`Q.maxT()/Q.zuSchwer()/Q.maxTxt()`, Standard 10 t laut HBO; Website sagt 9 t – Vorstand klärt, `grenze_bestaetigt`).
+  Gewichtsgrenzen nur über die Einstellungen: **Kran 9 t** (`kran_max_t`, Entscheidung des Nutzers, so auch auf der Website) und **Steg/Wasserliegeplatz 10 t** (`max_gewicht_t`, HBO 3.1.4); `Q.maxT(art)/Q.zuSchwer(b, art)/Q.maxTxt(art)` mit art 'kran' (Standard) | 'steg' (nur `Q.passt` für Wasserplätze).
   Gastlieger: Status wird aus Daten berechnet (`gastLage()` in app.js: Aufenthalt/Platz/Zahlung, Ansichten Heute & offen/Anreisen/Im Hafen/Abreisen/Archiv);
   Finanzen: Reiter „Übersicht“ (`V.finanzen`, liest die Getränkekasse über `window.SSV.speicher` – index.html lädt dafür `../ssv-getraenke/js/store.js`), Rechnungskette `stufe()`/`kette()` mit „Gutschrift ist da“ je SEPA-Lauf;
   Sicherung zurückspielen: `HAFEN.sicherungLesen()/zurueckspielen()` (nur Vorstand, über den normalen Speicherweg – Mitglieder/Rechnungen werden nie gelöscht).

@@ -151,7 +151,7 @@
     const st = {}; if (imSommer) d.liegeplaetze.forEach((p) => { const s2 = Q.statusWasser(p, SAISON, heute); st[s2] = (st[s2] || 0) + 1; });
     const versProbleme = d.boote.filter((b) => ['abgelaufen', 'bald', 'fehlt'].includes(Q.versicherungsStatus(b, heute)));
     const nachweise = d.boote.filter((b) => b.vers_status === 'eingereicht');
-    const zuSchwer = d.boote.filter((b) => Q.zuSchwer(b));
+    const zuSchwer = d.boote.filter((b) => Q.zuSchwer(b, 'kran')); const zuSchwerSteg = zuSchwer.filter((b) => Q.zuSchwer(b, 'steg'));
     const anfragen = d.gaeste.filter((g) => g.status === 'angemeldet');
     const gaesteHeute = d.gaeste.filter((g) => g.status !== 'storniert' && g.platz_id && g.ankunft <= heute && abreise(g) > heute);
     const winterOffen = G.vorschau(d, SAISON, 'winter', heute).filter((x) => !x.schon_abgerechnet && x.summe > 0);
@@ -191,13 +191,12 @@
     if (sepaOffen.length && darf('abrechnung')) add(anst, 'abrechnung', sepaOffen.length + ' Rechnungen warten auf die Lastschrift-Datei für die Bank', 'warn');
     if (nachweise.length && darf('boote')) add(anst, 'boote', nachweise.length + ' Versicherungsnachweis' + (nachweise.length > 1 ? 'e' : '') + ' prüfen', 'gast');
     if (versProbleme.length && darf('boote')) add(anst, 'boote', versProbleme.length + ' Boote: Versicherung abgelaufen, fehlt oder läuft in 30 Tagen ab', 'warn');
-    if (zuSchwer.length && darf('boote')) add(anst, 'boote', zuSchwer.length + (zuSchwer.length > 1 ? ' Boote' : ' Boot') + ' über ' + Q.maxTxt() + ' – laut Hafenbetriebsordnung nicht zulässig', 'warn');
+    if (zuSchwer.length && darf('boote')) add(anst, 'boote', zuSchwer.length + (zuSchwer.length > 1 ? ' Boote' : ' Boot') + ' über ' + Q.maxTxt('kran') + ' – ' + (zuSchwer.length > 1 ? 'werden' : 'wird') + ' nicht gekrant' + (zuSchwerSteg.length ? ', davon ' + zuSchwerSteg.length + ' über ' + Q.maxTxt('steg') + ' (auch kein Wasserliegeplatz)' : ''), 'warn');
     const normal = schaeden.filter((t) => !dringend.includes(t));
     if (normal.length && darf('aufgaben')) add(anst, 'aufgaben', normal.length + ' offene Schäden/Wartungen', 'warn');
     if (!e.steuer_hinweis && darf('einstellungen')) add(einr, 'einstellungen', 'Steuerhinweis für Rechnungen festlegen (mit dem Steuerberater klären)', 'warn');
     if (darf('einstellungen') && !(SEPA.ibanGueltig(e.iban) && SEPA.glaeubigerGueltig(e.glaeubiger_id))) add(einr, 'einstellungen', 'Vereinskonto und Gläubiger-ID für die Lastschrift eintragen', 'warn');
     if (!e.arbeitsdienst_bestaetigt && rolle === 'vorstand') add(einr, 'einstellungen', 'Regeln für den Arbeitsdienst beschließen (Soll, Befreiungen, Übertrag, Ersatz)', 'warn');
-    if (!e.grenze_bestaetigt && rolle === 'vorstand') add(einr, 'einstellungen', 'Gewichtsgrenze für Steg und Kran klären: Website nennt 9 t, Hafenbetriebsordnung 10 t (eingestellt: ' + Q.maxTxt() + ')', 'warn');
     if (planAnnahme() && darf('belegung')) add(einr, 'plaetze', 'Boxmaße, Brücken und Wassertiefen eintragen und bestätigen', 'warn');
     if (!naechste && darf('einstellungen')) add(einr, 'einstellungen', 'Saisontermine ' + (SAISON + 1) + ' (Auslagern/Einlagern) eintragen', 'warn');
     const warte = d.warteliste.filter((w) => w.status === 'wartend').length;
@@ -313,7 +312,7 @@
       (d.aufgaben || []).filter((t) => t.platz_id === id && t.status !== 'erledigt').map((t) => '<p class="hinweis warn">' + esc(t.titel) + ' <small>(' + ({ offen: 'offen', in_arbeit: 'in Arbeit' })[t.status] + ')</small></p>').join('') +
       '<p><span class="tag ' + ({ belegt: '', unterwegs: 'gruen', gast: 'gast', saisongast: 'lila', frei: 'ok', gesperrt: 'rot' })[Q.statusWasser(p, SAISON, tagX)] + '">' + esc(status) + '</span></p>' +
       (p.gesperrt ? '<p class="hinweis warn">' + esc(p.notiz || 'Gesperrt') + '</p>' : '') +
-      (b ? '<dl><dt>Boot</dt><dd>' + bootTxt(b) + '</dd><dt>Maße</dt><dd>' + masse(b) + ' · Tiefgang ' + H.zahl(b.tiefgang) + ' m</dd><dt>Gewicht</dt><dd>' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">über ' + Q.maxTxt() + '</span>' : '') + '</dd>' +
+      (b ? '<dl><dt>Boot</dt><dd>' + bootTxt(b) + '</dd><dt>Maße</dt><dd>' + masse(b) + ' · Tiefgang ' + H.zahl(b.tiefgang) + ' m</dd><dt>Gewicht</dt><dd>' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">über ' + Q.maxTxt() + ' (Kran)</span>' : '') + '</dd>' +
         '<dt>Versicherung</dt><dd>' + versTag(b) + '</dd><dt>Eigner</dt><dd>' + esc(Q.name(m)) + ' <span class="tag">' + H.ART[m.art] + '</span></dd><dt>Telefon</dt><dd><a href="tel:' + esc((m.tel || '').replace(/\s/g, '')) + '">' + esc(m.tel) + '</a></dd></dl>' +
         (probleme.length ? '<p class="hinweis warn" style="margin-top:10px">Passt nicht: ' + probleme.map(esc).join(', ') + '</p>' : '') + '<div class="bootsfoto" id="bootsfoto"></div>' : '<p class="leer">Kein Dauerlieger in dieser Saison.</p>') +
       (gast ? '<div class="abschnitt"><h3>Gastlieger</h3><dl><dt>Boot</dt><dd>„' + esc(gast.bootsname) + '“ · ' + H.zahl(gast.laenge, 1) + ' m</dd><dt>Skipper</dt><dd>' + esc(gast.skipper) + (gast.herkunft ? ' · ' + esc(gast.herkunft) : '') + '</dd><dt>Zeitraum</dt><dd>' + H.kurz(gast.ankunft) + ', ' + gast.naechte + ' Nacht' + (gast.naechte > 1 ? 'e' : '') + '</dd><dt>Zahlung</dt><dd>' + zahlungText(gast) + '</dd></dl></div>' : '') +
@@ -446,14 +445,14 @@
   };
   function bootForm(b) {
     const neu = !b.id;
-    const el = modal('<h2>' + (neu ? 'Boot anmelden' : '„' + esc(b.name) + '“') + '</h2><p class="hinweis">Laut Hafenbetriebsordnung muss jedes Boot vor dem Einbringen angemeldet werden und versichert sein (Personen-, Sach- und Umweltschäden, Bergung). Grenze für Steg und Kran: ' + Q.maxTxt() + '.</p><form id="f" class="form">' +
+    const el = modal('<h2>' + (neu ? 'Boot anmelden' : '„' + esc(b.name) + '“') + '</h2><p class="hinweis">Laut Hafenbetriebsordnung muss jedes Boot vor dem Einbringen angemeldet werden und versichert sein (Personen-, Sach- und Umweltschäden, Bergung). Grenzen: Kran ' + Q.maxTxt('kran') + ', Steg/Wasserliegeplatz ' + Q.maxTxt('steg') + '.</p><form id="f" class="form">' +
       '<label class="feld">Bootsname<input name="name" required value="' + esc(b.name || '') + '"></label>' +
       '<label class="feld">Typ<input name="typ" value="' + esc(b.typ || '') + '" placeholder="z. B. Dehler 34"></label>' +
       '<label class="feld voll">Eigner<select name="eigner_id" required><option value="">bitte wählen</option>' + mOpt(b.eigner_id) + '</select></label>' +
       '<label class="feld">Länge (m)<input name="laenge" type="number" step="0.01" min="1" required value="' + (b.laenge || '') + '"></label>' +
       '<label class="feld">Breite (m)<input name="breite" type="number" step="0.01" min="0.5" required value="' + (b.breite || '') + '"></label>' +
       '<label class="feld">Tiefgang (m)<input name="tiefgang" type="number" step="0.01" value="' + (b.tiefgang || '') + '"></label>' +
-      '<label class="feld">Gewicht (t)<input name="gewicht_t" type="number" step="0.1" required value="' + (b.gewicht_t || '') + '"><small>inkl. Ausrüstung – max. ' + Q.maxTxt() + '</small></label>' +
+      '<label class="feld">Gewicht (t)<input name="gewicht_t" type="number" step="0.1" required value="' + (b.gewicht_t || '') + '"><small>inkl. Ausrüstung – Kran max. ' + Q.maxTxt('kran') + ', Steg max. ' + Q.maxTxt('steg') + '</small></label>' +
       '<label class="feld">Segelnummer / Kennzeichen<input name="segelnr" value="' + esc(b.segelnr || '') + '"></label>' +
       '<label class="feld">Versicherung<input name="versicherung" value="' + esc(b.versicherung || '') + '"></label>' +
       '<label class="feld">Versichert bis<input name="vers_bis" type="date" value="' + esc(b.vers_bis || '') + '"></label>' +
@@ -465,7 +464,7 @@
     $('#ok', el).addEventListener('click', () => {
       const f = $('#f', el); if (!f.reportValidity()) return;
       const x = Object.fromEntries(new FormData(f)); ['laenge', 'breite', 'tiefgang', 'gewicht_t'].forEach((k) => { x[k] = H.dez(x[k]) || 0; });
-      if (Q.zuSchwer(x) && !confirm('Das Boot wiegt mehr als ' + Q.maxTxt() + '. Laut Hafenbetriebsordnung ist das für Steg und Kran nicht zulässig. Trotzdem speichern?')) return;
+      if (Q.zuSchwer(x, 'kran') && !confirm('Das Boot wiegt mehr als ' + Q.maxTxt('kran') + ' und kann nicht gekrant werden' + (Q.zuSchwer(x, 'steg') ? '; über ' + Q.maxTxt('steg') + ' ist laut Hafenbetriebsordnung auch kein Wasserliegeplatz möglich' : '') + '. Trotzdem speichern?')) return;
       if (!neu && (x.versicherung !== (b.versicherung || '') || x.vers_bis !== (b.vers_bis || '')) && b.vers_status === 'geprueft') x.vers_status = null;   // neue Angaben → neu prüfen
       if (neu) d.boote.push({ id: H.uid('B'), vers_status: null, ...x }); else Object.assign(b, x);
       speichern('Boot gespeichert.'); zu(); zeige(tab);
@@ -540,7 +539,7 @@
         '<section class="akte-teil"><h3>Kontakt</h3>' + dl([['E-Mail', m.email ? '<a href="mailto:' + esc(m.email) + '">' + esc(m.email) + '</a>' : ''], ['Telefon', m.tel ? '<a href="tel:' + esc(m.tel) + '">' + esc(m.tel) + '</a>' : ''],
           ['Anschrift', esc([m.strasse, [m.plz, m.ort].filter(Boolean).join(' ')].filter(Boolean).join(', '))], ['Geboren', m.geburtsdatum ? H.datum(m.geburtsdatum) + ' (' + Q.alterAm(m, heute) + ')' : ''], ['Kfz', esc(m.kfz || '')]]) +
           (bank ? '<p style="margin:8px 0 0">' + (m.iban && m.mandat_ref ? '<span class="tag ok">Lastschrift · Mandat ' + esc(m.mandat_ref) + '</span>' : '<span class="tag warn">kein Lastschriftmandat – zahlt per Überweisung</span>') + '</p>' : '') + '</section>' +
-        '<section class="akte-teil"><h3>Boote & Plätze</h3>' + (boote.length ? boote.map((b) => '<p style="margin:0 0 6px"><strong>„' + esc(b.name) + '“</strong> ' + esc(b.typ || '') + '<br><small>' + masse(b) + ' · ' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">über ' + Q.maxTxt() + '</span>' : '') + ' · Versicherung ' + versTag(b) + '</small></p>').join('') : '<p class="leer" style="margin:0">Kein Boot eingetragen.</p>') +
+        '<section class="akte-teil"><h3>Boote & Plätze</h3>' + (boote.length ? boote.map((b) => '<p style="margin:0 0 6px"><strong>„' + esc(b.name) + '“</strong> ' + esc(b.typ || '') + '<br><small>' + masse(b) + ' · ' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">über ' + Q.maxTxt() + ' (Kran)</span>' : '') + ' · Versicherung ' + versTag(b) + '</small></p>').join('') : '<p class="leer" style="margin:0">Kein Boot eingetragen.</p>') +
           (bel.length ? '<table class="tab kompakt"><tbody>' + bel.slice(0, 4).map((x) => '<tr><td>' + (x.periode === 'sommer' ? 'Sommer ' + x.saison : 'Winter ' + x.saison + '/' + String(x.saison + 1).slice(2)) + '</td><td>' + esc(x.platz_id ? platzName(x.platz_id) : (x.art || x.platz_typ || '')) + '</td></tr>').join('') + '</tbody></table>' : '') +
           (wl.length ? '<p style="margin:8px 0 0">' + wl.map((w) => '<span class="tag ' + (w.status === 'wartend' ? 'gast' : '') + '">Warteliste seit ' + H.datum(w.datum) + ' · ' + esc(w.status) + '</span>').join(' ') + '</p>' : '') + '</section>' +
         '<section class="akte-teil"><h3>Arbeitsdienst ' + SAISON + '</h3>' + (ad ? (ad.befreit ? '<p style="margin:0"><span class="tag">befreit</span> ' + esc(ad.befreit) + '</p>' : '<p style="margin:0"><strong>' + H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' von ' + ad.soll + ' Std.</strong>' + (ad.gemeldet ? ' · ' + H.zahl(ad.gemeldet, 1) + ' Std. gemeldet, noch nicht bestätigt' : '') + (ad.fehl > 0 && ad.erfasst ? ' · <span class="tag warn">fehlen ' + H.zahl(ad.fehl, 1) + '</span>' : '') + '</p>') : '<p class="leer" style="margin:0">nicht arbeitspflichtig (' + (H.ART[m.art] || m.art) + ')</p>') +
@@ -850,7 +849,7 @@
       plaetze.map((p) => {
         const bel = Q.belegungPlatz(SAISON, per, p.id); const b = bel && Q.boot(bel.boot_id); const m = b && Q.mitglied(b.eigner_id);
         if (p.bez && per === 'sommer' && !bel) return '';
-        const prob = b && !p.bez ? Q.passt(b, p) : (Q.zuSchwer(b) ? ['über ' + Q.maxTxt()] : []);
+        const prob = b && !p.bez ? Q.passt(b, p) : (Q.zuSchwer(b, 'kran') ? ['über ' + Q.maxTxt('kran') + ' (Kran)'] : []);
         return '<tr' + (p.gesperrt ? ' class="blass"' : '') + '><td><strong>' + esc(platzName(p.id)) + '</strong></td><td>' + (p.bez ? ({ palette: 'Palette', halle: 'Halle', aussen: 'Außen' })[p.art] : H.BRUECKE[p.bruecke]) + '</td>' +
           '<td>' + (b ? esc(b.name) + ' <small style="color:var(--muted)">' + masse(b) + '</small>' : (p.gesperrt ? '<span class="tag rot">gesperrt</span>' : '<span class="leer">frei</span>')) + '</td><td>' + (m ? esc(Q.name(m)) + ' <span class="tag">' + H.ART[m.art] + '</span>' : '') + '</td>' +
           '<td class="r">' + (p.bez ? (b && p.art !== 'palette' ? G.flaeche(d, bel, b) + ' m²' : '') : p.box) + '</td><td>' + (prob.length ? '<span class="tag warn">' + prob.map(esc).join(', ') + '</span>' : '') + (bel && bel.art === 'saisongast' ? ' <span class="tag lila">Saison-Gast</span>' : '') + (bel && bel.nicht_kranen ? ' <span class="tag warn">nicht kranen</span>' : '') + '</td>' +
@@ -876,7 +875,7 @@
         (per === 'sommer' ? '<label class="feld">Wievielter Sommer an Land?<input name="sommer_an_land_jahr" type="number" min="1" value="' + (bel && bel.sommer_an_land_jahr || 1) + '"><small>ab dem 2. verdoppelt sich die Gebühr</small></label>' : '')
         : '<label class="feld">Art<select name="art"><option value="dauer"' + (bel && bel.art === 'dauer' ? ' selected' : '') + '>Dauerlieger</option><option value="saisongast"' + (bel && bel.art === 'saisongast' ? ' selected' : '') + '>Saison-Gastlieger</option></select></label>') +
       '</form><p id="pruef"></p><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>');
-    const pruef = () => { const b = Q.boot($('[name=boot_id]', el).value); const pr = b ? (p.bez ? (Q.zuSchwer(b) ? ['über ' + Q.maxTxt()] : []) : Q.passt(b, p)) : [];
+    const pruef = () => { const b = Q.boot($('[name=boot_id]', el).value); const pr = b ? (p.bez ? (Q.zuSchwer(b, 'kran') ? ['über ' + Q.maxTxt('kran') + ' (Kran)'] : []) : Q.passt(b, p)) : [];
       const woanders = b && Q.belegungBoot(SAISON, per, b.id); $('#pruef', el).innerHTML = (pr.length ? '<span class="hinweis warn" style="display:block">Achtung: ' + pr.map(esc).join(', ') + '</span>' : '') + (woanders && woanders.platz_id !== platzId ? '<span class="hinweis" style="display:block">„' + esc(b.name) + '“ liegt bisher auf ' + esc(platzName(woanders.platz_id)) + ' – wird umgelegt.</span>' : ''); };
     $('[name=boot_id]', el).addEventListener('change', pruef); pruef();
     $('#ok', el).addEventListener('click', () => {
@@ -1114,7 +1113,7 @@
     const winter = Q.belegungen(SAISON, 'winter');
     const gb = G.gebuehrenFuer(d, SAISON);
     main.innerHTML = kopf('Ein-/Auslagern & Kran', 'Gemeinschaftsarbeit nach Belegungsplan · Auslagern ' + H.datum(sd.auslagern) + ' · Einlagern ' + H.datum(sd.einlagern), '<button class="btn" id="druck">Belegungsplan drucken</button><button class="btn primaer" id="kran">+ Kran-Einsatz</button>') +
-      '<div class="zwei"><div class="panel"><h2>Belegungsplan Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) + '</h2><p class="hinweis">Boote über ' + Q.maxTxt() + ' werden nicht gekrant. „Nicht kranen“ muss spätestens eine Woche vor dem Auslagern gemeldet sein.</p><table class="tab"><thead><tr><th>Landplatz</th><th>Boot</th><th class="r">Gewicht</th><th>Eigner</th><th></th></tr></thead><tbody>' +
+      '<div class="zwei"><div class="panel"><h2>Belegungsplan Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) + '</h2><p class="hinweis">Boote über ' + Q.maxTxt('kran') + ' werden nicht gekrant. „Nicht kranen“ muss spätestens eine Woche vor dem Auslagern gemeldet sein.</p><table class="tab"><thead><tr><th>Landplatz</th><th>Boot</th><th class="r">Gewicht</th><th>Eigner</th><th></th></tr></thead><tbody>' +
       winter.slice().sort((a, b) => a.platz_id.localeCompare(b.platz_id)).map((bl) => { const b = Q.boot(bl.boot_id); const m = Q.mitglied(b.eigner_id);
         return '<tr><td>' + esc(platzName(bl.platz_id)) + '</td><td>' + esc(b.name) + '</td><td class="r">' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">!</span>' : '') + '</td><td>' + esc(Q.name(m)) + '</td><td>' + (bl.nicht_kranen ? '<span class="tag warn">nicht kranen</span>' : '') + '</td></tr>'; }).join('') +
       '</tbody></table></div><div class="panel"><h2>Kran-Einsätze außerhalb der Termine</h2><p class="hinweis">Schiffskran ' + H.geld(gb.schiffskran_std) + ', Mastenkran ' + H.geld(gb.mastenkran_std) + ' je angefangene Stunde – laufen automatisch in die nächste Abrechnung.</p><table class="tab"><thead><tr><th>Datum</th><th>Boot</th><th>Kran</th><th class="r">Dauer</th><th>Abrechnung</th></tr></thead><tbody>' +
@@ -1124,7 +1123,7 @@
     $('#kran').addEventListener('click', () => {
       const el = modal('<h2>Kran-Einsatz</h2><form id="f" class="form"><label class="feld voll">Boot<select name="boot_id" required>' + bOpt() + '</select></label><label class="feld">Datum<input name="datum" type="date" value="' + heute + '" required></label><label class="feld">Kran<select name="art"><option value="schiff">Schiffskran</option><option value="mast">Mastenkran</option></select></label><label class="feld">Dauer (Minuten)<input name="minuten" type="number" min="1" value="60" required></label><label class="feld">Anlass<input name="notiz"></label></form><p class="hinweis">Kran nur durch eingewiesene Personen (Hafenbetriebsordnung 3.1.4).</p><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Erfassen</button></div>');
       $('#ok', el).addEventListener('click', () => { const f = $('#f', el); if (!f.reportValidity()) return; const x = Object.fromEntries(new FormData(f)); const b = Q.boot(x.boot_id);
-        if (Q.zuSchwer(b) && x.art === 'schiff' && !confirm('Boot über ' + Q.maxTxt() + ' – laut Hafenbetriebsordnung wird nicht gekrant. Trotzdem erfassen?')) return;
+        if (Q.zuSchwer(b, 'kran') && x.art === 'schiff' && !confirm('Boot über ' + Q.maxTxt('kran') + ' – wird nicht gekrant. Trotzdem erfassen?')) return;
         d.kran.push({ id: H.uid('K'), ...x, minuten: Number(x.minuten), abgerechnet: '' }); speichern('Kran-Einsatz erfasst.'); zu(); zeige(tab); });
     });
   };
@@ -1759,18 +1758,17 @@
       '<h3 class="voll" style="margin:14px 0 0">Saisontermine</h3>' + [SAISON, SAISON + 1].map((j) => { const s = (d.saisons || []).find((x) => x.jahr === j) || {};
         return '<label class="feld">Auslagern ' + j + '<input type="date" name="aus_' + j + '" value="' + esc(s.auslagern || '') + '"></label><label class="feld">Einlagern ' + j + '<input type="date" name="ein_' + j + '" value="' + esc(s.einlagern || '') + '"></label>'; }).join('') +
       (DB ? '<h3 class="voll" style="margin:14px 0 0">Push-Benachrichtigungen</h3><label class="feld check voll"><input type="checkbox" name="push_aktiv"' + (e.push_aktiv ? ' checked' : '') + '> In „Mein SSV“ anbieten, Mitteilungen auch als Push aufs Handy zu bekommen (iPhone: nur wenn „Mein SSV“ zum Home-Bildschirm hinzugefügt ist)</label>' : '') +
-      '<h3 class="voll" style="margin:14px 0 0">Gewichtsgrenze für Steg und Kran</h3><p class="hinweis voll" style="margin:0">Gilt überall: Bootsanmeldung, Belegung, Kranliste, Warnungen. Hafenbetriebsordnung 3.1.4: 10 t inkl. Zubehör – die Website nennt beim Kran 9 t.</p>' +
-      f('max_gewicht_t', 'Höchstgewicht (t)', 'number', ' step="0.1" min="1"') +
-      '<label class="feld check voll"><input type="checkbox" name="grenze_bestaetigt"' + (e.grenze_bestaetigt ? ' checked' : '') + '> Grenze ist vom Vorstand geklärt (Website und Hafenbetriebsordnung stimmen überein)</label>' +
+      '<h3 class="voll" style="margin:14px 0 0">Gewichtsgrenzen (inkl. Zubehör)</h3><p class="hinweis voll" style="margin:0">Kran: Kranliste, Winterlager, Landplätze. Steg: Wasserliegeplätze (Hafenbetriebsordnung 3.1.4). Gilt überall, auch für Warnungen und die Bootsanmeldung.</p>' +
+      f('kran_max_t', 'Kran: höchstens (t)', 'number', ' step="0.1" min="1"') + f('max_gewicht_t', 'Steg/Wasserliegeplatz: höchstens (t)', 'number', ' step="0.1" min="1"') +
       '<h3 class="voll" style="margin:14px 0 0">Hafenplan</h3>' +
       '<label class="feld check voll"><input type="checkbox" name="plan_bestaetigt"' + (e.plan_bestaetigt ? ' checked' : '') + '> Brückenzuordnung und Boxmaße unter „Liegeplätze“ sind geprüft und stimmen</label></form></div>' +
       (darf('verlauf') ? '<div class="panel"><h2>Datensicherung</h2><p class="hinweis">' + (DB ? 'Die Vereinsdatenbank wird beim Anbieter gesichert (Tarif prüfen: tägliche Sicherung). Zusätzlich kannst du hier jederzeit eine Kopie aller Hafen- und Mitgliederdaten herunterladen – z. B. einmal im Monat, sicher aufbewahren (enthält Bankdaten).' : 'In der Demo liegen die Daten nur in diesem Browser.') + '</p><div class="aktionen"><button class="btn" id="sicherung">Datensicherung herunterladen</button>' + (rolle === 'vorstand' ? '<label class="btn" for="sich-datei">Sicherung zurückspielen …</label><input type="file" id="sich-datei" accept=".json,application/json" hidden>' : '') + '</div>' +
         (rolle === 'vorstand' ? '<p class="hinweis" style="margin-top:10px">Zurückspielen zeigt zuerst einen Vergleich (Sicherung ↔ jetzt) und fragt dann nach. Mitglieder und Rechnungen werden dabei nie gelöscht, nur wiederhergestellt; hochgeladene Dokumente und die Getränkekasse sind nicht Teil dieser Sicherung.</p>' : '') + '</div>' : '') +
       (DB ? '' : '<div class="panel"><h2>Demo</h2><p class="hinweis">Setzt alle Daten auf die erfundenen Beispieldaten zurück.</p><button class="btn gefahr" id="reset">Demo zurücksetzen</button></div>');
     $('#ok').addEventListener('click', () => {
-      const x = Object.fromEntries(new FormData($('#f'))); ['stromumlage_ueber_hafen', 'arbeitsdienst_vorjahr', 'arbeitsdienst_bestaetigt', 'plan_bestaetigt', 'grenze_bestaetigt'].concat(DB ? ['push_aktiv'] : []).forEach((k) => { x[k] = !!x[k]; });
-      ['zahlungsziel_tage', 'arbeitsdienst_soll', 'arbeitsdienst_mahnung_ab', 'arbeitsdienst_befreit_ab', 'arbeitsdienst_satz', 'max_gewicht_t'].forEach((k) => { x[k] = Number(String(x[k]).replace(',', '.')) || 0; });
-      if (!(x.max_gewicht_t >= 1)) return toast('Bitte ein Höchstgewicht für Steg und Kran eintragen.', 'fehler');
+      const x = Object.fromEntries(new FormData($('#f'))); ['stromumlage_ueber_hafen', 'arbeitsdienst_vorjahr', 'arbeitsdienst_bestaetigt', 'plan_bestaetigt'].concat(DB ? ['push_aktiv'] : []).forEach((k) => { x[k] = !!x[k]; });
+      ['zahlungsziel_tage', 'arbeitsdienst_soll', 'arbeitsdienst_mahnung_ab', 'arbeitsdienst_befreit_ab', 'arbeitsdienst_satz', 'max_gewicht_t', 'kran_max_t'].forEach((k) => { x[k] = Number(String(x[k]).replace(',', '.')) || 0; });
+      if (!(x.max_gewicht_t >= 1) || !(x.kran_max_t >= 1)) return toast('Bitte die Höchstgewichte für Kran und Steg eintragen.', 'fehler');
       if (x.steuer_hinweis === 'frei' && !x.steuer_text.trim()) return toast('Bitte den eigenen Steuerhinweis eintragen.', 'fehler');
       for (const j of [SAISON, SAISON + 1]) {
         const aus = x['aus_' + j], ein = x['ein_' + j]; delete x['aus_' + j]; delete x['ein_' + j];

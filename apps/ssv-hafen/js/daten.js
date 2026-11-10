@@ -47,8 +47,8 @@
     plan_bestaetigt: false,             // Boxmaße und Brückenzuordnung vom Verein bestätigt?
     push_aktiv: false,                  // Push-Benachrichtigungen in „Mein SSV“ anbieten (nach dem ersten Test einschalten)
     flaeche_aufschlag_m: 0,
-    max_gewicht_t: 10,                  // Grenze für Steg und Kran (Hafenbetriebsordnung 3.1.4: 10 t inkl. Zubehör)
-    grenze_bestaetigt: false,           // Website nennt 9 t, Hafenbetriebsordnung 10 t – Vorstand klärt
+    kran_max_t: 9,                      // Kran: höchstens 9 t (Beschluss des Vereins, so auch auf der Website)
+    max_gewicht_t: 10,                  // Steg/Wasserliegeplatz: höchstens 10 t (Hafenbetriebsordnung 3.1.4)
     fusstext: 'Danke, dass du dabei bist – und allzeit gute Fahrt!'
   };
 
@@ -690,10 +690,11 @@
   };
 
   // Gewichtsgrenze für Steg und Kran – einzige Stelle, aus den Einstellungen
-  const maxT = () => { const v = Number(d && d.einstellungen && d.einstellungen.max_gewicht_t); return v > 0 ? v : 10; };
-  const zuSchwer = (b) => !!b && Number(b.gewicht_t) > maxT();
+  // Zwei Grenzen: Kran (Standard 9 t) und Steg/Wasserliegeplatz (Standard 10 t) – nur hier, aus den Einstellungen
+  const maxT = (art = 'kran') => { const e = (d && d.einstellungen) || {}; const v = Number(art === 'steg' ? e.max_gewicht_t : e.kran_max_t); return v > 0 ? v : (art === 'steg' ? 10 : 9); };
+  const zuSchwer = (b, art = 'kran') => !!b && Number(b.gewicht_t) > maxT(art);
   const Q = {
-    maxT, zuSchwer, maxTxt: () => maxT().toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' t',
+    maxT, zuSchwer, maxTxt: (art = 'kran') => maxT(art).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' t',
     mitglied: (id) => d.mitglieder.find((m) => m.id === id),
     // Mitglied am Stichtag (kein Saison-Gast, eingetreten, nicht ausgetreten)
     istMitglied: (m, stichtag) => m.art !== 'gast' && (!m.eintritt || m.eintritt <= stichtag) && (!m.austritt || m.austritt > stichtag),
@@ -723,7 +724,7 @@
       const probleme = [];
       if (platz.max_laenge && boot.laenge > platz.max_laenge) probleme.push('Länge ' + H.zahl(boot.laenge) + ' m > ' + H.zahl(platz.max_laenge, 1) + ' m');
       if (platz.max_breite && boot.breite > platz.max_breite) probleme.push('Breite ' + H.zahl(boot.breite) + ' m > ' + H.zahl(platz.max_breite, 1) + ' m');
-      if (zuSchwer(boot)) probleme.push('Gewicht ' + H.zahl(boot.gewicht_t, 1) + ' t > ' + Q.maxTxt());
+      if (zuSchwer(boot, 'steg')) probleme.push('Gewicht ' + H.zahl(boot.gewicht_t, 1) + ' t > ' + Q.maxTxt('steg'));
       return probleme;
     },
     // Rechnungen: gezahlt, Rest und Status (Teilzahlung, Rücklastschrift)

@@ -35,7 +35,7 @@ Bootsgröße steht, steht nicht in den Unterlagen.
 
 ### Hafenbetriebsordnung (Stand 10/2020) – relevant für die Software
 
-- **Gewicht:** Infrastruktur bis 10 t Gesamtmasse, Wasserliegeplätze ab LP 2 nur bis 10 t, Kranen nur bis 10 t inkl. Zubehör. Die Software sollte das Bootsgewicht prüfen.
+- **Gewicht:** Infrastruktur bis 10 t Gesamtmasse, Wasserliegeplätze ab LP 2 nur bis 10 t, Kranen nur bis 10 t inkl. Zubehör. Die Software sollte das Bootsgewicht prüfen. **Entscheidung des Vereins (Nov. 2026): Kran bis 9 t** (wie auf der Website), Wasserliegeplatz bis 10 t laut HBO – im Hafen-Manager als zwei Einstellungen.
 - **Versicherungspflicht** (Personen-, Sach-, Umweltschäden, Bergung): Nachweis samt Ablaufdatum erfassen.
 - **An- und Abmeldung von Booten** ist Pflicht, Bootsverkauf sofort melden, und die Übergabe an den neuen Eigner findet nur im Wasser statt.
 - **Abwesenheit:** Bei längeren Fahrten wird das Liegeplatzschild auf **grün** gedreht und die Abwesenheit dem Hafenmeister oder der Brückenwartin gemeldet, „auch durch Eintragung in eine geeignete Liste“. Das ist der perfekte Fall für eine digitale Lösung.

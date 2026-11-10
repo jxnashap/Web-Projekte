@@ -55,10 +55,10 @@
     const saison = HF.aktuelleSaison();
     const bel = Q.belegungen(saison, 'winter').slice().sort((a, b) => a.platz_id.localeCompare(b.platz_id));
     return '<section class="blatt quer">' + kopf + '<h1 style="margin-top:5mm">Belegungsplan Winterlager ' + saison + '/' + String(saison + 1).slice(2) + '</h1>' +
-      '<p style="font-size:9pt;color:#555">Reihenfolge beim Ein- und Auslagern nach Belegungsplan und Rangiermöglichkeiten. Boote über ' + Q.maxTxt() + ' werden nicht gekrant (Hafenbetriebsordnung 3.1.4).</p>' +
+      '<p style="font-size:9pt;color:#555">Reihenfolge beim Ein- und Auslagern nach Belegungsplan und Rangiermöglichkeiten. Boote über ' + Q.maxTxt('kran') + ' werden nicht gekrant.</p>' +
       '<table class="r-tab"><thead><tr><th>Landplatz</th><th>Boot</th><th>Typ</th><th class="r">L × B</th><th class="r">Gewicht</th><th>Eigner</th><th>Telefon</th><th>Hinweis</th><th>gekrant ✓</th></tr></thead><tbody>' +
       bel.map((b) => { const bt = Q.boot(b.boot_id); const m = Q.mitglied(bt.eigner_id);
-        return '<tr><td>' + esc(Q.platz(b.platz_id).bez) + '</td><td>' + esc(bt.name) + '</td><td>' + esc(bt.typ) + '</td><td class="r">' + H.zahl(bt.laenge) + ' × ' + H.zahl(bt.breite) + '</td><td class="r">' + H.zahl(bt.gewicht_t, 1) + ' t</td><td>' + esc(Q.name(m)) + '</td><td>' + esc(m.tel) + '</td><td>' + (b.nicht_kranen ? 'nicht kranen' : '') + (Q.zuSchwer(bt) ? ' über ' + Q.maxTxt() + '!' : '') + '</td><td>☐</td></tr>'; }).join('') +
+        return '<tr><td>' + esc(Q.platz(b.platz_id).bez) + '</td><td>' + esc(bt.name) + '</td><td>' + esc(bt.typ) + '</td><td class="r">' + H.zahl(bt.laenge) + ' × ' + H.zahl(bt.breite) + '</td><td class="r">' + H.zahl(bt.gewicht_t, 1) + ' t</td><td>' + esc(Q.name(m)) + '</td><td>' + esc(m.tel) + '</td><td>' + (b.nicht_kranen ? 'nicht kranen' : '') + (Q.zuSchwer(bt) ? ' über ' + Q.maxTxt() + ' – nicht kranen!' : '') + '</td><td>☐</td></tr>'; }).join('') +
       '</tbody></table></section>';
   }
 
