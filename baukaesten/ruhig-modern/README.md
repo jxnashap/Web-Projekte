@@ -12,7 +12,8 @@ Generator: `generatoren/build_letsdrive.py`.
 ruhig-modern/
 ├── css/style.css            Design-System (Tokens in :root, Komponenten)
 ├── js/script.js             Header, Mobile-Nav, Reveals, Tabs, Bürozeiten, Formular, Map-Consent
-├── generatoren/build_letsdrive.py   erzeugt alle Seiten + sitemap.xml + robots.txt
+├── generatoren/build_letsdrive.py   erzeugt alle Seiten + sitemap.xml + robots.txt + .htaccess + kontakt.php
+├── generatoren/kontakt.tpl.php      Vorlage Formularversand (PHP mail(), IONOS-tauglich)
 ├── generatoren/trace_logo.py        Original-Logo (JPG/PNG) → logo.svg, logo-dark.svg, Icon-SVG
 ├── tools/render_brand.js    Favicon-PNG, Touch-/Manifest-Icons, logo.png, og-image.jpg aus den SVGs
 └── tools/shot.js            QA: Screenshots Desktop/Mobil, Reveal-Zählung, Fremd-Host-Check, Größe
@@ -68,14 +69,22 @@ Formular (Validierung → `mailto:`), Google-Maps-2-Klick-Lösung, CTA-Band, Foo
 QA (`tools/shot.js`): 9 Seiten × Desktop/Mobil – Reveals n/n, 0 Fehler, 0 Fremd-Requests,
 kein Overflow, Ordner 1,6 MB (ZIP in `auslieferung/`).
 
-Vor Livegang vom Kunden klären (alle als `[PLATZHALTER]` sichtbar markiert):
-- Impressum: Steuernummer 20/031/64345 war im Original als „Umsatzsteuer-ID" beschriftet → prüfen.
-- Datenschutz: rechtlich prüfen lassen, Hoster + Log-Speicherdauer eintragen.
-- AGB: Text vom Kunden (Original-Seite war leer).
-- Kontaktformular: aktuell `mailto:`; optional Formular-Backend anbinden.
-- Stimmen: gekürzte öffentliche Google-Bewertungen (Vorname + Initial) – Freigabe bestätigen.
-- Bilder: Fahrschulauto = Original des Kunden; übrige Fotos sind KI-Symbolbilder (Higgsfield,
-  im Impressum vermerkt) – gern durch echte Fotos ersetzen (gleiche Dateinamen/Seitenverhältnisse).
+Erledigt ohne Kunden (10.11.2026): Steuernummer korrekt beschriftet, IONOS als Hoster in
+der Datenschutzerklärung, AGB-Seite ausgeblendet bis Text da (`AGB_TEXT`), Kontaktformular
+sendet per `kontakt.php` (IONOS-PHP, Honeypot + Zeitsperre, Fallback mailto), `.htaccess`
+(HTTPS/www, 301 von alten WordPress-URLs, 410 für wp-*, 404-Seite, Gzip, Cache, Security-Header –
+mit Apache 2.4 lokal getestet). Upload-Anleitung: `auslieferung/lets-drive-kiel-IONOS-Anleitung.md`.
+
+Noch vom Kunden (Checkliste als Artifact verschickt):
+- USt-IdNr., falls vorhanden (§ 5 DDG) – sonst bleibt die Steuernummer.
+- AV-Vertrag mit IONOS abschließen; Datenschutzerklärung rechtlich prüfen lassen.
+- IONOS-Webhosting-Paket (alte Seite = Baukasten „MyWebsite Now", kein Datei-Upload möglich).
+- AGB-Text; Freigaben (Bewertungen, KI-Symbolbilder, Fax, Facebook, Klassen, Stelle).
+- Optional: echte Fotos (gleiche Dateinamen/Seitenverhältnisse), Team, Preise, Intensivkurs.
+
+**Stolperstein Apache:** keine Kommentare am Zeilenende in `.htaccess` – ein `# …` hinter
+einer Direktive legt die ganze Seite mit „500" lahm. **Stolperstein IONOS-Mail:** From muss
+eine Adresse der eigenen Vertragsdomain sein (seit 29.01.2024), Besucher-Adresse in Reply-To.
 
 ## Original-Logo übernehmen (Logo-Pipeline)
 

@@ -13,7 +13,8 @@ Repo für alle Website-Projekte. Struktur:
   echte App-Screenshots) · PR #8
 - `webseiten/lets-drive-kiel/` – Fahrschule Let's Drive Kiel (Ruhig-Modern, Anthrazit
   #151414/Fahrschul-Grün #139d27/Off-White, Manrope selbst gehostet, 0 Fremd-Requests,
-  Original-Logo vektorisiert (hell/dunkel + „L"-Favicon), 1,6 MB) · Branch `claude/tender-edison-vwar5s`
+  Original-Logo vektorisiert (hell/dunkel + „L"-Favicon), IONOS-fertig mit .htaccess +
+  kontakt.php, 1,6 MB) · Branch `claude/tender-edison-vwar5s` · Upload: `auslieferung/lets-drive-kiel-IONOS-Anleitung.md`
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).

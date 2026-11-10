@@ -507,7 +507,16 @@ html:not(.js) .tabs{display:none}
 }
 .form-success:empty{padding:0;background:none}
 .form-success:empty::before{content:none}
-.form-success a{color:var(--green-ink);text-decoration:underline;text-underline-offset:3px}
+.form-success a,.form-flash a{color:var(--green-ink);text-decoration:underline;text-underline-offset:3px}
+.form-success.is-error,.form-flash.is-error{background:#fbf1df}
+.form-success.is-error::before{
+  background:#8a5a00 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M12 7v6.5M12 17v.01'/%3E%3C/svg%3E") center/100% no-repeat;
+}
+/* Ohne JS: Rückmeldung von kontakt.php über #gesendet / #fehler */
+.form-flash{display:none}
+.form-flash:target{display:block;padding:16px 18px;border-radius:var(--radius-sm);background:var(--mint);color:var(--ink);font-size:.9375rem;line-height:1.6;scroll-margin-top:calc(var(--header-h-s) + 24px)}
+/* Spamschutz-Feld: für Menschen unsichtbar, für Bots ein normales Feld */
+.hp{position:absolute!important;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
 
 /* ---------- 15 · Karte (2-Klick-Lösung) ---------- */
 .map-consent,.map-frame{width:100%;min-height:clamp(340px,38vw,460px);border-radius:var(--radius)}

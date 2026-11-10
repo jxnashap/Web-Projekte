@@ -194,15 +194,21 @@
     setInterval(update, 60000);
   });
 
-  /* ---- Kontaktformular: Prüfung + vorbereitete E-Mail ---- */
+  /* ---- Kontaktformular: Prüfung → Versand über kontakt.php, sonst vorbereitete E-Mail ---- */
   run(() => $$('form.form').forEach(form => {
     form.noValidate = true;
     let ok = form.querySelector('.form-success');
     if (!ok) { ok = d.createElement('div'); ok.className = 'form-success'; form.appendChild(ok); }
-    const tpl = ok.innerHTML.trim() || '<p>Dein E-Mail-Programm öffnet sich mit deiner Nachricht.</p>';
+    const msgs = {};
+    $$('template[data-msg]', ok).forEach(t => { msgs[ga(t, 'data-msg')] = t.innerHTML.trim(); });
+    if (!msgs.mailto) msgs.mailto = ok.innerHTML.trim() || '<p>Dein E-Mail-Programm öffnet sich mit deiner Nachricht.</p>';
     ok.innerHTML = ''; ok.hidden = false;
     ok.setAttribute('role', 'status'); ok.setAttribute('aria-live', 'polite');
-    const fields = () => Array.from(form.elements).filter(el => el.name && !el.disabled && el.type !== 'submit');
+    const show = (key, isError) => { ok.innerHTML = msgs[key] || ''; ok.classList.toggle('is-error', !!isError); };
+    const stamp = form.querySelector('[data-ts]');            // Spamschutz: Ladezeitpunkt
+    if (stamp) stamp.value = String(Date.now());
+    const fields = () => Array.from(form.elements).filter(el =>
+      el.name && !el.disabled && el.type !== 'submit' && el.type !== 'hidden' && !el.closest('.hp'));
     const labelOf = el => {
       const l = el.id && form.querySelector('label[for="' + el.id + '"]');
       return (l ? l.textContent : ga(el, 'aria-label') || el.name).replace(/\*/g, '').replace(/\s+/g, ' ').trim();
@@ -235,12 +241,8 @@
     const recheck = e => { if (e.target.name && e.target.closest('.is-invalid')) mark(e.target, valid(e.target)); };
     form.addEventListener('input', recheck);
     form.addEventListener('change', recheck);
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      const list = fields();
-      let bad = null;
-      list.forEach(el => { if (!mark(el, valid(el)) && !bad) bad = el; });
-      if (bad) { ok.innerHTML = ''; return bad.focus(); }
+    /* Fallback: vorbereitete E-Mail (zusätzlich als Link, falls der Browser das Öffnen blockiert) */
+    const viaMail = list => {
       const lines = [];
       let name = '', subject = 'Anfrage über die Website';
       list.forEach(el => {
@@ -252,8 +254,39 @@
       });
       if (name) subject += ' – ' + name;
       const to = ga(form, 'data-mailto') || 'info@lets-drive-kiel.de';
-      ok.innerHTML = tpl;
-      location.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
+      const href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
+      show('mailto');
+      $$('[data-mailto-link]', ok).forEach(a => { a.href = href; });
+      location.href = href;
+    };
+    let busy = false;
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if (busy) return;
+      const list = fields();
+      let bad = null;
+      list.forEach(el => { if (!mark(el, valid(el)) && !bad) bad = el; });
+      if (bad) { show(''); return bad.focus(); }
+      const action = ga(form, 'action') || '';
+      if (!/\.php$/.test(action) || location.protocol === 'file:' || !window.fetch) return viaMail(list);
+      busy = true;
+      const btn = form.querySelector('[type="submit"]');
+      if (btn) btn.disabled = true;
+      const ctrl = window.AbortController ? new AbortController() : null;
+      const timer = setTimeout(() => ctrl && ctrl.abort(), 12000);
+      fetch(action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' }, signal: ctrl ? ctrl.signal : undefined })
+        .then(r => r.json().catch(() => null))
+        .then(res => {
+          if (res && res.ok) { show('sent'); form.reset(); if (stamp) stamp.value = String(Date.now()); }
+          else if (res && res.code === 'invalid') show('invalid', true);
+          else viaMail(list);                               // kein PHP oder Mailfehler → E-Mail-Programm
+        })
+        .catch(() => viaMail(list))
+        .then(() => {
+          clearTimeout(timer); busy = false;
+          if (btn) btn.disabled = false;
+          ok.scrollIntoView({ block: 'nearest', behavior: prm ? 'auto' : 'smooth' });
+        });
     });
   }));
 

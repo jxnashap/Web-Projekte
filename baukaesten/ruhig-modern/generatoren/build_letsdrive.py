@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """Generator: Fahrschule Let’s Drive Kiel — Baukasten „Ruhig-Modern“.
 
-Erzeugt alle HTML-Seiten + sitemap.xml + robots.txt nach
-webseiten/lets-drive-kiel/. Fasst css/, js/ und assets/ NICHT an.
+Erzeugt alle HTML-Seiten + sitemap.xml + robots.txt + .htaccess + kontakt.php
+nach webseiten/lets-drive-kiel/. Fasst css/, js/ und assets/ NICHT an.
 
 Inhalte ausschließlich aus PLAN §3 bzw. .preview-cache/ldk/* (Original-Website)
 – nichts erfunden; Unbelegtes ist als [PLATZHALTER: …] markiert.
@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]          # …/Web-Projekte
 SITE = ROOT / "webseiten" / "lets-drive-kiel"
 BASE = "https://www.lets-drive-kiel.de/"
-TODAY = "2026-10-26"
+TODAY = "2026-11-10"
 
 # ------------------------------------------------------------------
 # Stammdaten (PLAN §3)
@@ -35,6 +35,11 @@ FB = "https://www.facebook.com/people/Fahrschule-Lets-Drive-Kiel/100004820191887
 ROUTE = "https://www.google.com/maps/dir/?api=1&amp;destination=Knooper+Weg+193,+24118+Kiel"
 MAP_EMBED = "https://www.google.com/maps?q=Knooper+Weg+193,+24118+Kiel&amp;output=embed"
 APPLY = f"mailto:{MAIL}?subject=Bewerbung%20Fahrlehrer"
+# Hosting (Datenschutz): Website liegt im IONOS-Webhosting
+HOSTER = "IONOS SE, Elgendorfer Str.&nbsp;57, 56410&nbsp;Montabaur"
+# AGB: Original-Seite war leer. Solange None, wird agb.html nicht erzeugt und
+# nirgends verlinkt. Zum Aktivieren den AGB-Text als HTML (<h2>, <p> …) eintragen.
+AGB_TEXT = None
 
 # (Label, JS-Wochentage nach Date.getDay(): 0 = So … 6 = Sa, von, bis)
 HOURS = [
@@ -53,8 +58,7 @@ NAV = [
 LEGAL_NAV = [
     ("impressum.html", "Impressum"),
     ("datenschutz.html", "Datenschutz"),
-    ("agb.html", "AGB"),
-]
+] + ([("agb.html", "AGB")] if AGB_TEXT else [])
 
 # ------------------------------------------------------------------
 # SVG-Bausteine
@@ -241,7 +245,7 @@ def head(fname, title, desc, noindex=False, extra=""):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{full_title}</title>
+{'<base href="/">' + chr(10) if is404 else ''}<title>{full_title}</title>
 <meta name="description" content="{desc}">
 {robots}{canon}<meta name="theme-color" content="#151414">
 <meta property="og:type" content="website">
@@ -724,7 +728,7 @@ PRICE_BLOCK = f"""<section class="section section-mint" id="preise">
     </div>
     <div>
       <p class="rv rv-d2">Unsere aktuellen Preise erfragst du ganz einfach in der Fahrschule zu den Bürozeiten – gerne auch telefonisch oder per Mail.</p>
-      <p class="rv rv-d2">Wie teuer dein Führerschein insgesamt wird, können wir pauschal nicht beantworten: Der Lernerfolg ist immer individuell, denn jeder Fahrschüler und jede Fahrschülerin ist unterschiedlich. Lass es auf dich zukommen – bei Fragen sprich uns gerne an. Es gelten unsere <a href="agb.html">AGB</a>.</p>
+      <p class="rv rv-d2">Wie teuer dein Führerschein insgesamt wird, können wir pauschal nicht beantworten: Der Lernerfolg ist immer individuell, denn jeder Fahrschüler und jede Fahrschülerin ist unterschiedlich. Lass es auf dich zukommen – bei Fragen sprich uns gerne an. Es gelten unsere {'<a href="agb.html">AGB</a>' if AGB_TEXT else 'AGB'}.</p>
       <div class="actions rv rv-d3">{btn(TEL_HREF, f"{TEL} anrufen")}{btn(f"mailto:{MAIL}", "E-Mail schreiben", "ghost", arrow=False)}</div>
     </div>
   </div>
@@ -951,9 +955,11 @@ KONTAKT_BODY = hero_page(
       <div class="rv rv-d3">{hours_dl()}</div>
     </div>
     <div class="rv rv-d2">
-      <!-- [PLATZHALTER: Formular-Backend] – bis dahin öffnet das JS eine vorbereitete E-Mail (mailto) -->
-      <form class="form card" data-mailto="{MAIL}" action="mailto:{MAIL}" method="post" enctype="text/plain">
+      <!-- Versand über kontakt.php (IONOS-Webhosting); klappt das nicht, öffnet das JS eine vorbereitete E-Mail -->
+      <form class="form card" id="nachricht" data-mailto="{MAIL}" action="kontakt.php" method="post">
         <h2>Schreib uns eine Nachricht</h2>
+        <p class="form-flash" id="gesendet" role="status"><strong>Danke für deine Nachricht!</strong> Sie ist bei uns angekommen – wir melden uns bei dir.</p>
+        <p class="form-flash is-error" id="fehler" role="alert">Das Senden hat leider nicht geklappt. Bitte schreib uns direkt an <a href="mailto:{MAIL}">{MAIL}</a> oder ruf an: <a href="{TEL_HREF}">{TEL}</a>.</p>
         <div class="field">
           <label for="f-name">Name {REQ}</label>
           <input id="f-name" name="name" type="text" autocomplete="name" required>
@@ -974,14 +980,21 @@ KONTAKT_BODY = hero_page(
           <label for="f-msg">Nachricht {REQ}</label>
           <textarea id="f-msg" name="nachricht" rows="5" required></textarea>
         </div>
+        <div class="hp" aria-hidden="true">
+          <label for="f-website">Website (bitte leer lassen)</label>
+          <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
+          <input name="ts" type="hidden" value="" data-ts>
+        </div>
         <div class="field-check">
           <input id="f-consent" name="einwilligung" type="checkbox" value="ja" required>
           <label for="f-consent">Ich bin damit einverstanden, dass meine Angaben zur Kontaktaufnahme gespeichert und verarbeitet werden. Ich kann meine Einwilligung jederzeit widerrufen. Mehr dazu in der <a href="datenschutz.html">Datenschutzerklärung</a>. {REQ}</label>
         </div>
         <button class="btn btn-primary" type="submit">Nachricht senden{ARROW}</button>
-        <p class="form-note"><span aria-hidden="true">*</span> Pflichtfeld. Beim Absenden öffnet sich dein E-Mail-Programm mit deiner vorbereiteten Nachricht – du kannst sie vor dem Versand noch prüfen.</p>
+        <p class="form-note"><span aria-hidden="true">*</span> Pflichtfeld. Deine Nachricht wird direkt an uns gesendet. Klappt das einmal nicht, öffnet sich stattdessen dein E-Mail-Programm mit der vorbereiteten Nachricht.</p>
         <div class="form-success" role="status" aria-live="polite" hidden>
-          <p><strong>Danke für deine Nachricht!</strong> Dein E-Mail-Programm sollte sich jetzt geöffnet haben. Falls nicht, schreib uns direkt an <a href="mailto:{MAIL}">{MAIL}</a> oder ruf an: <a href="{TEL_HREF}">{TEL}</a>.</p>
+          <template data-msg="sent"><p><strong>Danke für deine Nachricht!</strong> Sie ist bei uns angekommen – wir melden uns bei dir.</p></template>
+          <template data-msg="mailto"><p><strong>Fast geschafft!</strong> Dein E-Mail-Programm sollte sich jetzt mit deiner Nachricht geöffnet haben – bitte dort noch absenden. Falls nicht: <a data-mailto-link href="mailto:{MAIL}">vorbereitete E-Mail öffnen</a>, direkt an {MAIL} schreiben oder anrufen: <a href="{TEL_HREF}">{TEL}</a>.</p></template>
+          <template data-msg="invalid"><p>Bitte prüfe deine Angaben – Name, eine gültige E-Mail-Adresse, Nachricht und Einwilligung werden benötigt.</p></template>
         </div>
       </form>
     </div>
@@ -1029,8 +1042,8 @@ IMPRESSUM = f"""    <h2>Angaben gemäß §&nbsp;5 DDG</h2>
     <h2>Kontakt</h2>
     <p>Telefon: <a href="{TEL_HREF}">{TEL}</a><br>Telefax: {FAX}<br>E-Mail: <a href="mailto:{MAIL}">{MAIL}</a></p>
 
-    <h2>Umsatzsteuer-ID</h2>
-    <p>20/031/64345<br><mark>[PLATZHALTER: prüfen, ob USt-IdNr. oder Steuernummer]</mark></p>
+    <h2>Steuernummer</h2>
+    <p>20/031/64345</p>
 
     <h2>Berufsrechtliche Angaben</h2>
     <h3>Aufsichtsbehörde</h3>
@@ -1050,21 +1063,17 @@ PAGES["impressum.html"] = legal_page(
     "Impressum der Fahrschule Let’s Drive Kiel, Inhaber Andreas Glander, Knooper Weg 193, 24118 Kiel.",
     IMPRESSUM)
 
-DATENSCHUTZ = f"""    <aside class="card notice" role="note">
-      <p><mark>[PLATZHALTER: Datenschutzerklärung vor Livegang rechtlich prüfen lassen]</mark></p>
-    </aside>
-
-    <h2>Auf einen Blick</h2>
+DATENSCHUTZ = f"""    <h2>Auf einen Blick</h2>
     <p>Diese Website kommt ohne Cookies, ohne Analyse- oder Tracking-Werkzeuge und ohne Werbung aus. Beim Aufruf werden keine Inhalte von Drittanbietern geladen – auch die Schrift liegt auf unserem eigenen Server. Google Maps wird erst geladen, wenn du ausdrücklich darauf klickst.</p>
 
     <h2>Verantwortlicher</h2>
     <p>{FULL}<br>Inhaber: {OWNER}<br>{STREET}<br>{CITY}<br>Telefon: <a href="{TEL_HREF}">{TEL}</a><br>E-Mail: <a href="mailto:{MAIL}">{MAIL}</a></p>
 
     <h2>Hosting und Server-Logfiles</h2>
-    <p>Diese Website wird bei <mark>[PLATZHALTER: Hoster mit Anschrift]</mark> gehostet. Beim Aufruf der Seiten verarbeitet der Server technisch notwendige Daten (IP-Adresse, Datum und Uhrzeit, aufgerufene Seite, Referrer, Browser und Betriebssystem), um die Website auszuliefern und ihre Sicherheit zu gewährleisten. Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO; unser berechtigtes Interesse liegt im sicheren und stabilen Betrieb der Website. Die Logfiles werden nach <mark>[PLATZHALTER: Speicherdauer]</mark> gelöscht. Mit dem Hoster besteht ein Vertrag zur Auftragsverarbeitung nach Art.&nbsp;28 DSGVO.</p>
+    <p>Diese Website wird bei der {HOSTER} gehostet. Beim Aufruf der Seiten verarbeitet der Server technisch notwendige Daten (IP-Adresse, Datum und Uhrzeit, aufgerufene Seite, Referrer, Browser und Betriebssystem), um die Website auszuliefern und ihre Sicherheit zu gewährleisten. Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO; unser berechtigtes Interesse liegt im sicheren und stabilen Betrieb der Website. Die Logfiles werden von IONOS nach kurzer Zeit automatisch gelöscht; die genaue Speicherdauer richtet sich nach den Datenschutzhinweisen von IONOS. Mit IONOS besteht ein Vertrag zur Auftragsverarbeitung nach Art.&nbsp;28 DSGVO.</p>
 
     <h2>Kontakt per Telefon, E-Mail und Kontaktformular</h2>
-    <p>Wenn du uns anrufst, eine E-Mail schreibst oder das Kontaktformular nutzt, verarbeiten wir deine Angaben (z.&nbsp;B. Name, E-Mail-Adresse, Telefonnummer, gewünschte Klasse und Nachricht), um deine Anfrage zu beantworten. Das Kontaktformular übermittelt keine Daten an einen Server: Beim Absenden öffnet sich dein eigenes E-Mail-Programm mit der vorbereiteten Nachricht, die du selbst abschickst.</p>
+    <p>Wenn du uns anrufst, eine E-Mail schreibst oder das Kontaktformular nutzt, verarbeiten wir deine Angaben (z.&nbsp;B. Name, E-Mail-Adresse, Telefonnummer, gewünschte Klasse und Nachricht), um deine Anfrage zu beantworten. Wenn du das Kontaktformular absendest, werden deine Angaben über unseren Webserver bei IONOS als E-Mail an uns übermittelt und dort nicht gespeichert. Ist der Versand über den Server nicht möglich, öffnet sich stattdessen dein eigenes E-Mail-Programm mit der vorbereiteten Nachricht, die du selbst abschickst.</p>
     <p>Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;b DSGVO, soweit deine Anfrage auf eine Ausbildung bei uns abzielt, im Übrigen Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO (deine Einwilligung) bzw. lit.&nbsp;f DSGVO. Wir löschen deine Daten, sobald sie nicht mehr benötigt werden, sofern keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</p>
 
     <h2 id="google-maps">Google Maps (nur nach Klick)</h2>
@@ -1077,7 +1086,7 @@ DATENSCHUTZ = f"""    <aside class="card notice" role="note">
     <h2>Deine Rechte</h2>
     <p>Du hast das Recht auf Auskunft (Art.&nbsp;15 DSGVO), Berichtigung (Art.&nbsp;16), Löschung (Art.&nbsp;17), Einschränkung der Verarbeitung (Art.&nbsp;18), Datenübertragbarkeit (Art.&nbsp;20) und Widerspruch (Art.&nbsp;21 DSGVO). Eine erteilte Einwilligung kannst du jederzeit widerrufen (Art.&nbsp;7 Abs.&nbsp;3 DSGVO). Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren (Art.&nbsp;77 DSGVO), zum Beispiel beim Unabhängigen Landeszentrum für Datenschutz Schleswig-Holstein (ULD).</p>
 
-    <p><small>Stand: Oktober 2026</small></p>"""
+    <p><small>Stand: November 2026</small></p>"""
 
 PAGES["datenschutz.html"] = legal_page(
     "datenschutz.html", "datenschutz", "Datenschutzerklärung", "Datenschutz&shy;erklärung",
@@ -1085,16 +1094,11 @@ PAGES["datenschutz.html"] = legal_page(
     "Schrift, Google Maps nur nach deinem Klick.",
     DATENSCHUTZ)
 
-AGB = f"""    <aside class="card notice" role="note">
-      <p class="eyebrow">In Vorbereitung</p>
-      <p><mark>[PLATZHALTER: AGB vom Kunden einfügen]</mark></p>
-      <p>Bei Fragen zu unseren Geschäftsbedingungen sprich uns gerne an – in der Fahrschule zu den Bürozeiten, telefonisch unter <a href="{TEL_HREF}">{TEL}</a> oder per Mail an <a href="mailto:{MAIL}">{MAIL}</a>.</p>
-    </aside>"""
-
-PAGES["agb.html"] = legal_page(
-    "agb.html", "agb", "AGB", "Allgemeine Geschäfts&shy;bedingungen",
-    "Allgemeine Geschäftsbedingungen der Fahrschule Let’s Drive Kiel.",
-    AGB)
+if AGB_TEXT:
+    PAGES["agb.html"] = legal_page(
+        "agb.html", "agb", "AGB", "Allgemeine Geschäfts&shy;bedingungen",
+        "Allgemeine Geschäftsbedingungen der Fahrschule Let’s Drive Kiel.",
+        AGB_TEXT)
 
 # ==================================================================
 # 404
@@ -1137,6 +1141,94 @@ def sitemap():
 
 ROBOTS = f"User-agent: *\nAllow: /\n\nSitemap: {BASE}sitemap.xml\n"
 
+# ==================================================================
+# .htaccess (IONOS-Webhosting = Apache)
+# ==================================================================
+# Alte WordPress-Adressen (MyWebsite Now) → neue Seiten, damit Google-Treffer
+# und Lesezeichen weiter funktionieren.
+OLD_URLS = [
+    ("kontakt", "kontakt.html"),
+    ("fahrerlaubnisklassen", "fahrerlaubnisklassen.html"),
+    ("theorieunterricht", "theorieunterricht.html"),
+    ("jobs", "jobs.html"),
+    ("impressum", "impressum.html"),
+    ("datenschutzerklarung", "datenschutz.html"),
+    ("preisliste", "fahrerlaubnisklassen.html#preise"),
+    ("landingpage", ""),
+]
+HOST = BASE.split("//")[1].rstrip("/")
+
+
+def htaccess():
+    # Ziele absolut mit https://www…, sonst baut Apache hinter dem TLS-Proxy http-Adressen
+    old = "\n".join(f"RewriteRule ^{a}/?$ https://{HOST}/{b} [R=301,L,NE]" for a, b in OLD_URLS)
+    agb = (f"RewriteRule ^agb/?$ https://{HOST}/agb.html [R=301,L]" if AGB_TEXT
+           else "# AGB-Seite folgt – bis dahin vorübergehend zur Kontaktseite\n"
+                f"RewriteRule ^agb/?$ https://{HOST}/kontakt.html [R=302,L]")
+    # Achtung: Apache kennt keine Kommentare am Zeilenende – nur ganze Kommentarzeilen.
+    return f"""# Let's Drive Kiel – Apache-Konfiguration (IONOS Webhosting)
+# Erzeugt von build_letsdrive.py – Änderungen dort vornehmen.
+
+Options -Indexes
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# 1) Immer HTTPS (mehrfach abgesichert, kein Schleifenrisiko hinter Proxys)
+RewriteCond %{{HTTPS}} !=on
+RewriteCond %{{SERVER_PORT}} !=443
+RewriteCond %{{HTTP:X-Forwarded-Proto}} !=https
+RewriteRule ^ https://%{{HTTP_HOST}}%{{REQUEST_URI}} [R=301,L]
+
+# 2) Ohne www → mit www (wie Canonical-URLs)
+RewriteCond %{{HTTP_HOST}} ^{HOST.removeprefix("www.").replace(".", "[.]")}$ [NC]
+RewriteRule ^ https://{HOST}%{{REQUEST_URI}} [R=301,L]
+
+# 3) Alte Adressen der bisherigen Website
+{old}
+{agb}
+RewriteRule ^wp-sitemap.*\\.xml$ https://{HOST}/sitemap.xml [R=301,L]
+RewriteRule ^(feed|comments/feed|wp-json|wp-content|wp-includes|wp-admin|wp-login\\.php|xmlrpc\\.php)(/.*)?$ - [G,L]
+</IfModule>
+
+# Sicherheit
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+</IfModule>
+
+# Kompression
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json application/xml application/manifest+json image/svg+xml
+</IfModule>
+
+# Caching (Dateinamen ohne Versionsnummer → moderate Zeiten)
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresDefault "access plus 1 hour"
+ExpiresByType text/html "access plus 0 seconds"
+ExpiresByType text/css "access plus 7 days"
+ExpiresByType application/javascript "access plus 7 days"
+ExpiresByType image/webp "access plus 30 days"
+ExpiresByType image/jpeg "access plus 30 days"
+ExpiresByType image/png "access plus 30 days"
+ExpiresByType image/svg+xml "access plus 30 days"
+ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+AddType font/woff2 .woff2
+AddType application/manifest+json .webmanifest
+"""
+
+
+# ==================================================================
+# kontakt.php – Formularversand per PHP mail(); Vorlage liegt daneben
+# ==================================================================
+KONTAKT_PHP = (Path(__file__).parent / "kontakt.tpl.php").read_text(encoding="utf-8")
+
 
 if __name__ == "__main__":
     SITE.mkdir(parents=True, exist_ok=True)
@@ -1145,4 +1237,9 @@ if __name__ == "__main__":
         print(f"wrote {fname:28s} {len(html):>7d} bytes")
     (SITE / "sitemap.xml").write_text(sitemap(), encoding="utf-8")
     (SITE / "robots.txt").write_text(ROBOTS, encoding="utf-8")
-    print("wrote sitemap.xml, robots.txt →", SITE)
+    (SITE / ".htaccess").write_text(htaccess(), encoding="utf-8")
+    (SITE / "kontakt.php").write_text(
+        KONTAKT_PHP.replace("__MAIL__", MAIL).replace("__HOST__", HOST), encoding="utf-8")
+    if not AGB_TEXT and (SITE / "agb.html").exists():
+        (SITE / "agb.html").unlink()            # AGB-Seite erst mit Text veröffentlichen
+    print("wrote sitemap.xml, robots.txt, .htaccess, kontakt.php →", SITE)

@@ -87,9 +87,11 @@
       <div class="rv rv-d3"><dl class="hours"><div data-days="1,3,5" data-from="12:00" data-to="16:00"><dt>Mo, Mi, Fr</dt><dd>12:00&nbsp;– 16:00&nbsp;Uhr</dd></div><div data-days="2,4" data-from="15:00" data-to="19:00"><dt>Di, Do</dt><dd>15:00&nbsp;– 19:00&nbsp;Uhr</dd></div><div data-days="6,0"><dt>Sa, So</dt><dd>geschlossen</dd></div></dl></div>
     </div>
     <div class="rv rv-d2">
-      <!-- [PLATZHALTER: Formular-Backend] – bis dahin öffnet das JS eine vorbereitete E-Mail (mailto) -->
-      <form class="form card" data-mailto="info@lets-drive-kiel.de" action="mailto:info@lets-drive-kiel.de" method="post" enctype="text/plain">
+      <!-- Versand über kontakt.php (IONOS-Webhosting); klappt das nicht, öffnet das JS eine vorbereitete E-Mail -->
+      <form class="form card" id="nachricht" data-mailto="info@lets-drive-kiel.de" action="kontakt.php" method="post">
         <h2>Schreib uns eine Nachricht</h2>
+        <p class="form-flash" id="gesendet" role="status"><strong>Danke für deine Nachricht!</strong> Sie ist bei uns angekommen – wir melden uns bei dir.</p>
+        <p class="form-flash is-error" id="fehler" role="alert">Das Senden hat leider nicht geklappt. Bitte schreib uns direkt an <a href="mailto:info@lets-drive-kiel.de">info@lets-drive-kiel.de</a> oder ruf an: <a href="tel:+4943186923">0431&nbsp;86923</a>.</p>
         <div class="field">
           <label for="f-name">Name <span class="req" aria-hidden="true">*</span></label>
           <input id="f-name" name="name" type="text" autocomplete="name" required>
@@ -110,14 +112,21 @@
           <label for="f-msg">Nachricht <span class="req" aria-hidden="true">*</span></label>
           <textarea id="f-msg" name="nachricht" rows="5" required></textarea>
         </div>
+        <div class="hp" aria-hidden="true">
+          <label for="f-website">Website (bitte leer lassen)</label>
+          <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
+          <input name="ts" type="hidden" value="" data-ts>
+        </div>
         <div class="field-check">
           <input id="f-consent" name="einwilligung" type="checkbox" value="ja" required>
           <label for="f-consent">Ich bin damit einverstanden, dass meine Angaben zur Kontaktaufnahme gespeichert und verarbeitet werden. Ich kann meine Einwilligung jederzeit widerrufen. Mehr dazu in der <a href="datenschutz.html">Datenschutzerklärung</a>. <span class="req" aria-hidden="true">*</span></label>
         </div>
         <button class="btn btn-primary" type="submit">Nachricht senden<svg class="btn-arrow" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10h12M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <p class="form-note"><span aria-hidden="true">*</span> Pflichtfeld. Beim Absenden öffnet sich dein E-Mail-Programm mit deiner vorbereiteten Nachricht – du kannst sie vor dem Versand noch prüfen.</p>
+        <p class="form-note"><span aria-hidden="true">*</span> Pflichtfeld. Deine Nachricht wird direkt an uns gesendet. Klappt das einmal nicht, öffnet sich stattdessen dein E-Mail-Programm mit der vorbereiteten Nachricht.</p>
         <div class="form-success" role="status" aria-live="polite" hidden>
-          <p><strong>Danke für deine Nachricht!</strong> Dein E-Mail-Programm sollte sich jetzt geöffnet haben. Falls nicht, schreib uns direkt an <a href="mailto:info@lets-drive-kiel.de">info@lets-drive-kiel.de</a> oder ruf an: <a href="tel:+4943186923">0431&nbsp;86923</a>.</p>
+          <template data-msg="sent"><p><strong>Danke für deine Nachricht!</strong> Sie ist bei uns angekommen – wir melden uns bei dir.</p></template>
+          <template data-msg="mailto"><p><strong>Fast geschafft!</strong> Dein E-Mail-Programm sollte sich jetzt mit deiner Nachricht geöffnet haben – bitte dort noch absenden. Falls nicht: <a data-mailto-link href="mailto:info@lets-drive-kiel.de">vorbereitete E-Mail öffnen</a>, direkt an info@lets-drive-kiel.de schreiben oder anrufen: <a href="tel:+4943186923">0431&nbsp;86923</a>.</p></template>
+          <template data-msg="invalid"><p>Bitte prüfe deine Angaben – Name, eine gültige E-Mail-Adresse, Nachricht und Einwilligung werden benötigt.</p></template>
         </div>
       </form>
     </div>
@@ -168,7 +177,6 @@
           <li><a href="kontakt.html">Kontakt</a></li>
           <li><a href="impressum.html">Impressum</a></li>
           <li><a href="datenschutz.html">Datenschutz</a></li>
-          <li><a href="agb.html">AGB</a></li>
         </ul>
       </nav>
     </div>
