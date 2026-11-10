@@ -56,6 +56,9 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
 11. `apps/ssv-hafen/supabase/nachtrag-11.sql` – Lagerplätze nach dem echten Nordlager: P01–P36 im Norden (vorne schräg,
    links eine Reihe, rechts zwei Reihen), Winterlager West wandert von P21–P40 nach P41–P60 (nur solange dort noch
    nichts belegt ist).
+12. `apps/ssv-hafen/supabase/nachtrag-12.sql` – 54 statt 79 Liegeplätze (Angabe Verein, Luftbild 2025): Ost 1–16,
+   West 25–56, Schwimmbrücke 71–76 (+ L1/L2). Die übrigen Nummern werden nicht gelöscht, sondern als
+   „nicht vorhanden“ markiert (`vorhanden = false`, gesperrt) und im Hafen-Manager ausgeblendet.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 

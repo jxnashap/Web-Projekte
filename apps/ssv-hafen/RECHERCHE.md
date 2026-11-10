@@ -113,3 +113,13 @@ ersetzt es nicht.
   und Lagerweg nur etwa 6 m frei wären, führt der Lagerweg vorn an der Messe vorbei und läuft dann mittig bis zum Ende.
   Rechte Reihen: Boote längs zum Weg (je ca. 8,8 × 4 m). Platzzahl (36) und Lage der „Halle“ H1–H4 sind **[ANNAHME]**,
   bis der Verein sie bestätigt – beides lässt sich im Lageplan-Editor ändern.
+
+## Liegeplätze: 54 statt 79 (Nov. 2026)
+- Die Gebührenordnung 2024 nummeriert 79 Plätze (Ost 1–24, West 25–70, Schwimm 71–79), die Website nennt „etwa 80“.
+- Auswertung des amtlichen Luftbilds (Bildflug **13.06.2025**, DOP20, Metadaten über `WMS_SH_MD_DOP`): Stege gerade gerückt
+  und vermessen – Oststeg 106 m, Weststeg 51 m + 121 m bis zum T-Stück, dahinter versetzt die Schwimmbrücke (ca. 28 m).
+  Darauf liegen rund 50 Boote: Ost ca. 15 (Abstand 4–5 m), West ca. 34, Schwimmbrücke ca. 6.
+- **Angabe des Vereins:** etwa zwei Drittel – der Plan hat jetzt **54 Plätze**: Ost 1–16 (je ca. 5,5 m), West 25–34 und 35–56
+  (je ca. 5,4 m, bis zum T-Stück), Schwimmbrücke 71–76 (je ca. 4,6 m), dazu längsseits L1/L2.
+- Die übrigen Nummern (17–24, 57–70, 77–79) sind in der Datenbank nur ausgeblendet (`vorhanden = false`, Nachtrag 12).
+- Offen: Welche Nummer an welcher Box hängt, und ob die Website-Angabe „80 Liegeplätze“ angepasst werden soll.

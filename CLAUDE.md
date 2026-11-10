@@ -28,7 +28,7 @@ Repo für alle Website-Projekte. Struktur:
   Datenbankschema `supabase/schema.sql` lokal getestet, **nichts deployt** – auf
   Wunsch des Nutzers keine Verknüpfung mit bestehenden Supabase-/Vercel-Projekten.
 - `apps/ssv-hafen/` – Hafen-Manager für den SSV (Prototyp, Demo-Modus): SVG-Hafenplan nach
-  amtlichem Luftbild (Ost 1–24, West 25–70, Schwimm 71–79, L1/L2 – Zuordnung = Annahme), Belegung
+  amtlichem Luftbild (54 Plätze laut Verein Nov. 2026: Ost 1–16, West 25–56 bis zum T-Stück, Schwimmbrücke 71–76, dazu L1/L2; Lage der Nummern = Annahme), Belegung
   Sommer/Winter, grünes Schild, Gastlieger + QR-Anmeldung, Warteliste, Kran, Arbeitsdienst,
   Abrechnung nach Gebührenordnung 2024, SEPA-XML pain.008.001.08 (XSD-geprüft), „Mein SSV“ für jedes
   Mitglied (Hafen- + Getränkerechnungen, grünes Schild, Getränke-Code ändern; lädt `../ssv-getraenke/js/store.js`).
@@ -55,7 +55,7 @@ Repo für alle Website-Projekte. Struktur:
   **Echtbetrieb-Konten (nur SSV, getrennt von allen anderen Projekten):**
   Supabase Org „SSV Manager“, Projekt `jprpgadcycaawxlyozkm` (Frankfurt) – Schema aus
   `apps/ssv-hafen/supabase/ssv-komplett.sql` eingespielt (Kasse + Website + Hafen/Mitglieder, RLS je Rolle).
-  Bestehende DB nachziehen mit `nachtrag-01…11.sql` (05 = Kasse ohne Netz, `kasse_buchen_nach` mit Kennung; 06 = Arbeitseinsätze/QR, Mitteilungen, Push-Tabellen; 07 = Gast gibt Platz vom grünen Schild an und bezahlt sofort, `gast_zahlung_melden`; 08 = Arbeitsbereiche + Zuordnung, `meine_arbeitsbereiche`; 09 = Toilettencode `gast_toilette` + `gast_status`; 10 = eindeutiger Index `hafen_rechnungen_einmal` gegen doppelte Rechnungen; 11 = Lagerplätze Nordlager P01–P36, West → P41–P60; Gäste zahlen per GiroCode/EPC-QR `H.epc()`); Edge Function `push` (Quelle `apps/ssv-hafen/supabase/functions/push`) ist deployt (Anleitung `apps/ssv-hafen/INBETRIEBNAHME.md`; 03 = Doppelvergabe-Schutz,
+  Bestehende DB nachziehen mit `nachtrag-01…12.sql` (05 = Kasse ohne Netz, `kasse_buchen_nach` mit Kennung; 06 = Arbeitseinsätze/QR, Mitteilungen, Push-Tabellen; 07 = Gast gibt Platz vom grünen Schild an und bezahlt sofort, `gast_zahlung_melden`; 08 = Arbeitsbereiche + Zuordnung, `meine_arbeitsbereiche`; 09 = Toilettencode `gast_toilette` + `gast_status`; 10 = eindeutiger Index `hafen_rechnungen_einmal` gegen doppelte Rechnungen; 11 = Lagerplätze Nordlager P01–P36, West → P41–P60; 12 = Spalte `liegeplaetze.vorhanden`, 17–24/57–70/77–79 ausgeblendet (nicht gelöscht, beim Laden gefiltert); Gäste zahlen per GiroCode/EPC-QR `H.epc()`); Edge Function `push` (Quelle `apps/ssv-hafen/supabase/functions/push`) ist deployt (Anleitung `apps/ssv-hafen/INBETRIEBNAHME.md`; 03 = Doppelvergabe-Schutz,
   Gast-Prüfung per Trigger, Änderungsverlauf `aenderungen`, `dokumente`, `aufgaben`, Zahlungen je Rechnung);
   Speichern im DB-Modus: erst löschen, dann neue Zeilen einfügen, Geändertes nur feldweise per PATCH (kein Überschreiben fremder Änderungen);
   `ssv-komplett.sql` wird aus schema.sql + website.sql + hafen.sql erzeugt – nie von Hand ändern.

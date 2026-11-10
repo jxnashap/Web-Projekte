@@ -9,7 +9,8 @@
  * nachzeichnen – gespeichert wird er in den Einstellungen (einstellungen.lageplan).
  * Vom Verein bestätigt: Kran an der Kaimauer am Parkplatz, Slip zwischen Vereinsheim und Opti-Schuppen am blauen Schwimmsteg,
  * Gebäude östlich davon = Mastenlager und Trecker.
- * [ANNAHME] Platznummern je Steg, Lagerfelder (auch „Halle“ H1–H4) und Längsseits-Plätze bis zur Bestätigung durch den Verein.
+ * Platzzahl vom Verein bestätigt (Nov. 2026): Ost 1–16, West 25–56, Schwimmbrücke 71–76 – Boxbreiten wie auf dem Luftbild (ca. 5–5,5 m).
+ * [ANNAHME] genaue Lage der Nummern, Lagerfelder (auch „Halle“ H1–H4) und Längsseits-Plätze bis zur Bestätigung durch den Verein.
  */
 (function () {
   'use strict';
@@ -18,10 +19,12 @@
   const STANDARD = {
     v: 1, breite: 1000, hoehe: 750, m: 0.4, bild: 'img/luftbild-dop20.jpg',
     stege: [
-      { id: 'ost', name: 'Ostbrücke', bruecke: 'ost', a: [567, 328], b: [809, 219], von: 1, bis: 24, seite: 1, frei: [12, 0], tiefe: 10 },
-      { id: 'west1', name: 'Westbrücke', bruecke: 'west', a: [551, 352], b: [437, 409], von: 25, bis: 38, seite: -1, frei: [0, 0], tiefe: 10 },
-      { id: 'west2', name: 'Westbrücke', bruecke: 'west', a: [437, 409], b: [203, 600], von: 39, bis: 70, seite: -1, frei: [0, 0], tiefe: 10 },
-      { id: 'schwimm', name: 'Schwimmbrücke', bruecke: 'schwimm', schwimm: true, a: [209, 606], b: [157, 663], von: 71, bis: 79, seite: -1, frei: [0, 0], tiefe: 8 },
+      // Platzzahl nach Luftbild (13.06.2025) und Angabe des Vereins (Nov. 2026): Ost 1–16, West 25–56, Schwimmbrücke 71–76
+      { id: 'ost', name: 'Ostbrücke', bruecke: 'ost', a: [567, 328], b: [809, 219], von: 1, bis: 16, seite: 1, frei: [10.5, 8], tiefe: 10 },
+      { id: 'west1', name: 'Westbrücke', bruecke: 'west', a: [551, 352], b: [437, 409], von: 25, bis: 34, seite: -1, frei: [0, 0], tiefe: 10 },
+      { id: 'west2', name: 'Westbrücke', bruecke: 'west', a: [437, 409], b: [201.5, 600], von: 35, bis: 56, seite: -1, frei: [0, 0], tiefe: 10 },
+      { id: 'west-t', name: '', bruecke: '', a: [201.5, 600], b: [212, 617], von: null, bis: null, seite: -1, frei: [0, 0], tiefe: 10 },
+      { id: 'schwimm', name: 'Schwimmbrücke', bruecke: 'schwimm', schwimm: true, a: [212, 617], b: [158, 661], von: 71, bis: 76, seite: -1, frei: [0, 0], tiefe: 8 },
       { id: 'quer', name: 'Schwimmsteg', bruecke: '', schwimm: true, a: [562, 325], b: [587, 366], von: null, bis: null, seite: 1, frei: [0, 0], tiefe: 10 }
     ],
     laengs: [{ nr: 'L1', x: 148, y: 673, rot: 132, w: 30 }, { nr: 'L2', x: 814, y: 243, rot: 61, w: 36 }],

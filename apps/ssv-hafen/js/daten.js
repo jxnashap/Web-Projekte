@@ -89,7 +89,10 @@
       return [71, 73, 75, 76].includes(nr) ? 'III' : 'II';
     };
     const MASSE = { I: [11, 3.7], II: [9, 3.1], III: [7, 2.6] };
+    // Vorhanden laut Verein (Nov. 2026) und Luftbild: Ost 1–16, West 25–56, Schwimmbrücke 71–76
+    const VORHANDEN = (nr) => (nr >= 1 && nr <= 16) || (nr >= 25 && nr <= 56) || (nr >= 71 && nr <= 76);
     for (let nr = 1; nr <= 79; nr++) {
+      if (!VORHANDEN(nr)) continue;
       const b = box(nr);
       lp.push({ id: 'LP' + pad(nr), nr: String(nr), bruecke: nr <= 24 ? 'ost' : nr <= 70 ? 'west' : 'schwimm', box: b,
         max_laenge: MASSE[b][0], max_breite: MASSE[b][1], tiefe: null, strom: true, gesperrt: false, sonderpreis: null, notiz: '' });
@@ -172,11 +175,11 @@
     }
 
     // Sommer 2026: Dauerlieger + Saisongäste + freie Plätze
-    const frei = new Set(['LP19', 'LP41', 'LP58', 'LP66', 'LP77', 'LPL2']);
+    const frei = new Set(['LP12', 'LP41', 'LP53', 'LP75', 'LPL2']);
     const gesperrt = 'LP52';
     const saisongast = new Set(['LP33', 'LP47', 'LPL1']);
-    const foerdernd = new Set(['LP09', 'LP27', 'LP38', 'LP55', 'LP64', 'LP72', 'LP14', 'LP45']);
-    const probe = new Set(['LP05', 'LP30', 'LP44', 'LP61', 'LP74', 'LP23']);
+    const foerdernd = new Set(['LP09', 'LP27', 'LP38', 'LP55', 'LP72', 'LP14', 'LP45']);
+    const probe = new Set(['LP05', 'LP30', 'LP44', 'LP74', 'LP26']);
     lp.forEach((p) => {
       if (p.id === gesperrt) { p.gesperrt = true; p.notiz = 'Dalben defekt – Reparatur geplant [BEISPIEL]'; return; }
       if (frei.has(p.id)) return;
@@ -217,7 +220,7 @@
     // Gastlieger (Tageslieger) – Beispieltag 15.08.2026 und Historie
     const gaeste = [
       { id: uid('G'), bootsname: 'Sea Breeze', skipper: 'Familie de Vries', herkunft: 'Enkhuizen (NL)', tel: '', email: '', laenge: 9.8, breite: 3.3, ankunft: '2026-08-14', naechte: 3, platz_id: wasserBel[11].platz_id, betrag: 45, zahlung: 'bar', quittung_nr: 'Q-2026-041', status: 'eingewiesen', quelle: 'qr', erstellt: '2026-08-14T17:20:00' },
-      { id: uid('G'), bootsname: 'Hav', skipper: 'Mette Larsen', herkunft: 'Svendborg (DK)', tel: '', email: '', laenge: 8.4, breite: 2.9, ankunft: '2026-08-15', naechte: 1, platz_id: 'LP19', betrag: 15, zahlung: 'offen', quittung_nr: '', status: 'eingewiesen', quelle: 'hafenmeister', erstellt: '2026-08-15T16:05:00' },
+      { id: uid('G'), bootsname: 'Hav', skipper: 'Mette Larsen', herkunft: 'Svendborg (DK)', tel: '', email: '', laenge: 8.4, breite: 2.9, ankunft: '2026-08-15', naechte: 1, platz_id: 'LP12', betrag: 15, zahlung: 'offen', quittung_nr: '', status: 'eingewiesen', quelle: 'hafenmeister', erstellt: '2026-08-15T16:05:00' },
       { id: uid('G'), bootsname: 'Elbe 3', skipper: 'Thomas Brandes', herkunft: 'Hamburg', tel: '0170 0000000', email: '', laenge: 11.2, breite: 3.6, ankunft: '2026-08-15', naechte: 2, platz_id: 'LPL2', betrag: 30, zahlung: 'ueberweisung', quittung_nr: 'Q-2026-042', status: 'eingewiesen', quelle: 'hafenmeister', erstellt: '2026-08-15T18:40:00' },
       { id: uid('G'), bootsname: 'Seute Deern II', skipper: 'Karl Behn', herkunft: 'Neustadt i. H.', tel: '', email: '', laenge: 7.6, breite: 2.7, ankunft: '2026-08-15', naechte: 1, platz_id: '', betrag: 15, zahlung: 'offen', quittung_nr: '', status: 'angemeldet', quelle: 'qr', erstellt: '2026-08-15T19:12:00' },
       { id: uid('G'), bootsname: 'Lykke', skipper: 'Jens Holm', herkunft: 'Aarhus (DK)', tel: '', email: '', laenge: 9.1, breite: 3.1, ankunft: '2026-07-02', naechte: 2, platz_id: 'LP41', betrag: 30, zahlung: 'bar', quittung_nr: 'Q-2026-027', status: 'abgereist', quelle: 'hafenmeister', erstellt: '2026-07-02T15:00:00' }
@@ -303,7 +306,7 @@
     ];
 
     arbeitsdienst.forEach((a) => { const z = bereicheDemo.arbeitsbereich_mitglieder.find((x) => x.mitglied_id === a.mitglied_id); a.bereich_id = z ? z.bereich_id : null; });
-    return { version: 2, antraege, einstellungen: { ...STANDARD_EINSTELLUNGEN, glaeubiger_id: 'DE98ZZZ09999999999', iban: demoIban('23050101', 1234567), bic: 'NOLADE21SPL', bank: 'Demo-Sparkasse [PLATZHALTER]' },
+    return { version: 3, antraege, einstellungen: { ...STANDARD_EINSTELLUNGEN, glaeubiger_id: 'DE98ZZZ09999999999', iban: demoIban('23050101', 1234567), bic: 'NOLADE21SPL', bank: 'Demo-Sparkasse [PLATZHALTER]' },
       gebuehren: { 2026: { ...GEBUEHREN_2024 } }, saisons: [{ jahr: 2026, auslagern: '2026-04-11', einlagern: '2026-10-24' }],
       liegeplaetze: lp, landplaetze: landplaetze(), mitglieder, boote, belegungen, abwesenheiten, gaeste, warteliste, kran, arbeitsdienst, rechnungen: [], sepa_laeufe: [], zaehler: { quittung: 42 },
       aufgaben, dokumente: [], aenderungen: [], arbeitseinsaetze, arbeitseinsatz_codes, mitteilungen, ...bereicheDemo, toilette: { ...TOILETTE_DEMO } };
@@ -331,7 +334,7 @@
   function laden() {
     if (SB) return d;   // Datenbank-Modus: Daten kommen aus verbinden()
     try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) { d = null; }
-    if (!d || d.version !== 2) {
+    if (!d || d.version !== 3) {   // 3 = 54 Liegeplätze nach Luftbild/Verein
       d = beispieldaten();
       if (window.HAFEN_GEBUEHREN && window.HAFEN_GEBUEHREN.saisonAbrechnen) {
         // Historie: Beitrag 2026 im Januar, Sommer 2026 im April abgerechnet und eingezogen
@@ -512,7 +515,8 @@
       einstellungen: { ...STANDARD_EINSTELLUNGEN, ...((einst[0] && einst[0].daten) || {}) },
       gebuehren: geb.length ? Object.fromEntries(geb.map((g) => [g.jahr, g.daten])) : { 2024: { ...GEBUEHREN_2024 } },
       saisons: sais,
-      liegeplaetze: lp.map((p) => zahl(p, ['max_laenge', 'max_breite', 'tiefe', 'sonderpreis'])), landplaetze: landp,
+      // nicht vorhandene Plätze (Nachtrag 12: vorhanden = false) gar nicht laden – so werden sie auch nie gespeichert oder gelöscht
+      liegeplaetze: lp.filter((p) => p.vorhanden !== false).map((p) => { const z = zahl(p, ['max_laenge', 'max_breite', 'tiefe', 'sonderpreis']); delete z.vorhanden; return z; }), landplaetze: landp,
       mitglieder: mg.map((m) => { const b = bankVon.get(m.id) || {}; return { ...m, mandat_ref: m.mandatsreferenz || '', iban: b.iban || '', bic: b.bic || '', kontoinhaber: b.kontoinhaber || '', mandat_datum: b.mandat_datum || '' }; }),
       boote: boote.map((b) => zahl(b, ['laenge', 'breite', 'tiefgang', 'gewicht_t'])),
       belegungen: bel.map((b) => zahl(b, ['flaeche_m2'])), abwesenheiten: aw,
@@ -603,7 +607,7 @@
     SICHER_TAB.forEach((t) => { if (Array.isArray(s[t])) d[t] = kopie(s[t]); });
     if (s.gebuehren) d.gebuehren = kopie(s.gebuehren);
     if (s.einstellungen) d.einstellungen = { ...STANDARD_EINSTELLUNGEN, ...kopie(s.einstellungen) };
-    if (!SB) { ['zaehler', 'toilette', 'bereiche_v', 'version'].forEach((k) => { if (s[k] !== undefined) d[k] = kopie(s[k]); }); }
+    if (!SB) { ['zaehler', 'toilette', 'bereiche_v'].forEach((k) => { if (s[k] !== undefined) d[k] = kopie(s[k]); }); }
     d.rechnungen.forEach((r) => { if (!r.zahlungen) r.zahlungen = []; });
     const ok = await sichern();
     if (ok === false) throw new Error('Zurückspielen abgebrochen – die Datenbank hat einen Teil abgelehnt (siehe Meldung).');
