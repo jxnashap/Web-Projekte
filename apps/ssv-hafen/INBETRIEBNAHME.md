@@ -7,7 +7,7 @@ freigibt.
 
 ## 1 · Datenbank-Nachträge einspielen (einmalig, in dieser Reihenfolge)
 
-Bereits eingespielt: 01–04. Neu: 05 und 06.
+Bereits eingespielt: 01–06. Neu: 07.
 
 Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inhalt einfügen → **Run**:
 
@@ -32,6 +32,12 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    nachgetragen; jede Buchung zählt nur einmal. Nicht verbuchbare (z. B. Code falsch) zeigt das iPad oben rechts an.
 6. `apps/ssv-hafen/supabase/nachtrag-06.sql` – Arbeitseinsätze mit QR-Check-in (Stunden „eingereicht“ → vom Verein
    „bestätigt“), Mitteilungen an Mitglieder (Mein SSV, Kassen-iPad), Tabellen für Push-Benachrichtigungen.
+7. `apps/ssv-hafen/supabase/nachtrag-07.sql` – Gastlieger ohne Warten: Der Gast gibt die Platznummer vom grünen
+   Schild an und steht sofort „im Hafen“ (passt der Platz laut Plan nicht, wird er trotzdem angenommen und unter
+   „Platz prüfen“ angezeigt). Danach bezahlt er direkt (PayPal, Überweisung, bar) und meldet „bezahlt“; den Eingang
+   bestätigt der Hafenmeister mit einem Klick. Behebt außerdem: leere Breite/Tiefgang wurden als Höchstmaß gespeichert.
+   Danach in Verwaltung → Einstellungen den **PayPal.me-Namen** des Vereins und den **Hinweis für Barzahlung** eintragen
+   (ohne PayPal-Namen sehen Gäste nur Überweisung und bar).
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 

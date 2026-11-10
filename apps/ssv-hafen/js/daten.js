@@ -30,6 +30,8 @@
     kassenwart_name: 'Carsten Schneider',
     hafenmeister_name: 'Dieter Voß',
     hafenmeister_tel: '0179 5916979',
+    paypal_me: '',                      // PayPal.me-Name des Vereins (leer = Gäste sehen kein PayPal)
+    gast_bar_hinweis: '',               // wohin Gäste Bargeld geben (Briefkasten, Kasse …)
     rechnung_praefix: 'SSV-H',
     beitrag_praefix: 'SSV-B',
     zahlungsziel_tage: 14,
@@ -219,6 +221,8 @@
 
     gaeste.forEach((g) => { g.tiefgang = null; g.bezahlt_am = g.zahlung === 'bar' || g.quittung_nr ? g.ankunft : ''; });
     gaeste[2].quittung_nr = ''; gaeste[2].bezahlt_am = '';   // Überweisung vereinbart, aber noch nicht eingegangen
+    // Gast hat selbst Platz 33 angegeben (Schild grün), der Eigner hat aber keine Abwesenheit eingetragen → Hafenmeister klärt
+    gaeste[3].platz_angabe = '33'; gaeste[3].platz_hinweis = 'Platz 33: Eigner hat für den 15.08.2026 keine Abwesenheit (grünes Schild) gemeldet.'; gaeste[3].zahlung = 'paypal'; gaeste[3].zahlung_gemeldet = '2026-08-15T19:14:00';
 
     // Schäden und Wartung
     const aufgaben = [
@@ -358,7 +362,7 @@
     boote: ['id', 'name', 'typ', 'eigner_id', 'laenge', 'breite', 'tiefgang', 'gewicht_t', 'segelnr', 'versicherung', 'vers_bis', 'notiz', 'vers_status', 'vers_geprueft_am', 'vers_geprueft_von'],
     belegungen: ['id', 'saison', 'periode', 'boot_id', 'platz_typ', 'platz_id', 'art', 'flaeche_m2', 'sommer_an_land_jahr', 'nicht_kranen', 'notiz'],
     abwesenheiten: ['id', 'boot_id', 'platz_id', 'von', 'bis', 'notiz', 'gemeldet'],
-    gaeste: ['id', 'bootsname', 'skipper', 'herkunft', 'tel', 'email', 'laenge', 'breite', 'tiefgang', 'ankunft', 'naechte', 'platz_id', 'betrag', 'zahlung', 'bezahlt_am', 'quittung_nr', 'status', 'quelle', 'erstellt'],
+    gaeste: ['id', 'bootsname', 'skipper', 'herkunft', 'tel', 'email', 'laenge', 'breite', 'tiefgang', 'ankunft', 'naechte', 'platz_id', 'platz_angabe', 'platz_hinweis', 'betrag', 'zahlung', 'zahlung_gemeldet', 'bezahlt_am', 'quittung_nr', 'status', 'quelle', 'erstellt'],
     warteliste: ['id', 'mitglied_id', 'datum', 'boot_laenge', 'boot_breite', 'wunsch_box', 'notiz', 'status'],
     kran: ['id', 'boot_id', 'datum', 'art', 'minuten', 'notiz', 'abgerechnet'],
     arbeitsdienst: ['id', 'mitglied_id', 'datum', 'stunden', 'taetigkeit', 'status', 'einsatz_id', 'gemeldet', 'geprueft_von'],

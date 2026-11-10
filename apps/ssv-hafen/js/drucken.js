@@ -47,7 +47,7 @@
       '<table class="r-tab"><tbody><tr><td>Boot</td><td>„' + esc(g.bootsname) + '“ · ' + H.zahl(g.laenge, 1) + ' m</td></tr><tr><td>Skipper</td><td>' + esc(g.skipper) + (g.herkunft ? ', ' + esc(g.herkunft) : '') + '</td></tr>' +
       '<tr><td>Liegeplatz</td><td>' + esc(g.platz_id ? (Q.platz(g.platz_id).box === 'L' ? 'Längsseits ' : 'Platz ') + Q.platz(g.platz_id).nr : '') + '</td></tr><tr><td>Zeitraum</td><td>ab ' + H.datum(g.ankunft) + ', ' + g.naechte + ' × ' + H.geld(gb.gast_nacht) + '</td></tr></tbody>' +
       '<tfoot><tr><td>Betrag</td><td class="r">' + H.geld(g.betrag) + '</td></tr></tfoot></table>' +
-      '<p>' + (g.bezahlt_am ? (g.zahlung === 'bar' ? 'Betrag bar dankend erhalten am ' : g.zahlung === 'karte' ? 'Betrag per Karte erhalten am ' : 'Zahlung eingegangen am ') + H.datum(g.bezahlt_am) + '.' : '<strong>Noch nicht bezahlt.</strong>') + ' ' + esc(steuer(g.betrag)) + ' Gute Fahrt und willkommen zurück!</p>' +
+      '<p>' + (g.bezahlt_am ? (g.zahlung === 'bar' ? 'Betrag bar dankend erhalten am ' : g.zahlung === 'karte' ? 'Betrag per Karte erhalten am ' : g.zahlung === 'paypal' ? 'Betrag per PayPal erhalten am ' : 'Zahlung eingegangen am ') + H.datum(g.bezahlt_am) + '.' : '<strong>Noch nicht bezahlt.</strong>') + ' ' + esc(steuer(g.betrag)) + ' Gute Fahrt und willkommen zurück!</p>' +
       '<p style="margin-top:10mm;border-top:1px solid #999;width:60mm;padding-top:1mm;font-size:8pt;color:#555">' + esc(e.hafenmeister_name) + ', Hafenmeister · ' + H.datum(g.ankunft) + '</p></section>';
   }
 
@@ -67,11 +67,11 @@
     const qr = qrcode(0, 'M'); qr.addData(url, 'Byte'); qr.make();
     const gb = window.HAFEN_GEBUEHREN.gebuehrenFuer(d, HF.aktuelleSaison());
     return '<section class="blatt plakat">' + STANDER.replace('class="stander"', 'class="stander" style="width:56mm;height:28mm;color:#0E1B45"') +
-      '<h1>Moin und willkommen!</h1><p class="unter">Gastlieger beim Schwartauer Segler-Verein – hier kurz anmelden:</p>' +
+      '<h1>Moin und willkommen!</h1><p class="unter">Grünes Schild? Einfach festmachen – dann hier anmelden und gleich bezahlen:</p>' +
       '<div class="qr">' + qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }) + '</div>' +
-      '<p class="preis">' + H.geld(gb.gast_nacht) + ' pro Nacht</p><p>Grüne Schilder = freier Platz · Hafenmeister ' + esc(e.hafenmeister_name) + ' · ' + esc(e.hafenmeister_tel) + '</p>' +
-      '<div class="sprachen"><p><strong>English:</strong> Welcome! Please scan the code to register. Green signs mark free berths. ' + H.geld(gb.gast_nacht) + ' per night.</p>' +
-      '<p><strong>Dansk:</strong> Velkommen! Scan koden for at tilmelde dig. Grønne skilte = ledig plads. ' + H.geld(gb.gast_nacht) + ' pr. nat.</p></div></section>';
+      '<p class="preis">' + H.geld(gb.gast_nacht) + ' pro Nacht</p><p>Platznummer steht am Schild · bezahlen per ' + (e.paypal_me ? 'PayPal, ' : '') + 'Überweisung oder bar · niemand muss kommen<br>Fragen: Hafenmeister ' + esc(e.hafenmeister_name) + ' · ' + esc(e.hafenmeister_tel) + '</p>' +
+      '<div class="sprachen"><p><strong>English:</strong> Welcome! Green sign = free berth. Moor up, scan the code, register with the berth number and pay right away. ' + H.geld(gb.gast_nacht) + ' per night.</p>' +
+      '<p><strong>Dansk:</strong> Velkommen! Grønt skilt = ledig plads. Fortøj, scan koden, tilmeld dig med pladsnummeret og betal med det samme. ' + H.geld(gb.gast_nacht) + ' pr. nat.</p></div></section>';
   }
 
   function einsatzPlakat(x) {

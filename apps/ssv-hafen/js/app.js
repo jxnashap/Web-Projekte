@@ -104,8 +104,10 @@
   // Versicherung: Gültigkeit plus Nachweis-Stand (selbst angegeben → eingereicht → geprüft)
   const nachweisTag = (b) => b.vers_status === 'geprueft' ? '<span class="tag ok" title="geprüft' + (b.vers_geprueft_am ? ' am ' + H.datum(b.vers_geprueft_am) : '') + '">✓ geprüft</span>' : b.vers_status === 'eingereicht' ? '<span class="tag gast">Nachweis prüfen</span>' : '<span class="tag">ungeprüft</span>';
   const versTag = (b) => { const s = Q.versicherungsStatus(b, heute); return (s === 'ok' ? '<span class="tag ok">bis ' + H.datum(b.vers_bis) + '</span>' : s === 'bald' ? '<span class="tag warn">läuft ' + H.datum(b.vers_bis) + ' ab</span>' : s === 'fehlt' ? '<span class="tag rot">fehlt</span>' : '<span class="tag rot">abgelaufen ' + H.datum(b.vers_bis) + '</span>') + (s === 'fehlt' ? '' : ' ' + nachweisTag(b)); };
-  const ZAHLART = { bar: 'bar', ueberweisung: 'Überweisung', karte: 'Karte', offen: 'Zahlart offen' };
-  const zahlungText = (g) => esc(ZAHLART[g.zahlung] || g.zahlung || '') + ' · ' + (g.bezahlt_am ? '<span class="tag ok">bezahlt ' + H.kurz(g.bezahlt_am) + '</span>' : '<span class="tag warn">noch nicht bezahlt</span>');
+  const ZAHLART = { bar: 'bar', ueberweisung: 'Überweisung', paypal: 'PayPal', karte: 'Karte', offen: 'Zahlart offen' };
+  // „gemeldet“ = Gast hat auf der Gast-Seite angegeben, dass er bezahlt hat; der Eingang wird hier bestätigt
+  const zahlungText = (g) => esc(ZAHLART[g.zahlung] || g.zahlung || '') + ' · ' + (g.bezahlt_am ? '<span class="tag ok">bezahlt ' + H.kurz(g.bezahlt_am) + '</span>' : g.zahlung_gemeldet ? '<span class="tag gast">Gast meldet bezahlt</span>' : '<span class="tag warn">noch nicht bezahlt</span>');
+  const angabe = (t) => (/^\s*platz/i.test(t) ? '' : 'Platz ') + String(t).trim();   // vom Gast eingetippte Platznummer
   const platzName = (id) => { const p = Q.platz(id); if (!p) return '–'; return p.bez || ((p.box === 'L' ? 'Längsseits ' : 'Platz ') + p.nr); };
   function download(name, text, typ) {
     const blob = new Blob([text], { type: typ }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
@@ -169,7 +171,9 @@
     }).filter(Boolean);
     const ankuenfte = d.gaeste.filter((g) => g.ankunft === heute && g.status !== 'storniert');
     if (darf('gaeste')) konflikte.forEach(({ g, grund }) => add(heuteL, 'gaeste', 'Konflikt ' + platzName(g.platz_id) + ': Gast „' + esc(g.bootsname) + '“ – ' + esc(grund), 'rot', 'data-gast="' + g.id + '"'));
-    if (anfragen.length) add(heuteL, 'gaeste', anfragen.length + ' Gast-Anmeldung' + (anfragen.length > 1 ? 'en' : '') + ' per QR-Code warten auf einen Platz', 'gast');
+    if (anfragen.length) add(heuteL, 'gaeste', anfragen.length + (anfragen.length > 1 ? ' Gäste liegen' : ' Gast liegt') + ' ohne bestätigten Platz (selbst angemeldet) – bitte prüfen', 'gast');
+    const zahlPruef = d.gaeste.filter((g) => g.zahlung_gemeldet && !g.bezahlt_am && g.status !== 'storniert');
+    if (zahlPruef.length && darf('gaeste')) add(anst, 'gaeste', zahlPruef.length + ' Gast-Zahlung' + (zahlPruef.length > 1 ? 'en' : '') + ' gemeldet – Eingang bestätigen (' + zahlPruef.map((g) => esc(ZAHLART[g.zahlung] || g.zahlung)).join(', ') + ')', 'gast');
     if (ankuenfte.length && darf('gaeste')) add(heuteL, 'gaeste', ankuenfte.length + (ankuenfte.length === 1 ? ' Gast kommt' : ' Gäste kommen') + ' heute an: ' + ankuenfte.map((g) => '„' + esc(g.bootsname) + '“').join(', '), 'gast');
     const dringend = schaeden.filter((t) => t.prioritaet === 'hoch' || (t.faellig && t.faellig < heute));
     if (dringend.length && darf('aufgaben')) add(heuteL, 'aufgaben', dringend.length + (dringend.length === 1 ? ' dringender oder überfälliger Schaden' : ' dringende oder überfällige Schäden/Wartungen') + ': ' + dringend.slice(0, 2).map((t) => esc(t.titel)).join(', '), 'rot');
@@ -851,19 +855,27 @@
     const anfragen = d.gaeste.filter((x) => x.status === 'angemeldet');
     const gb = G.gebuehrenFuer(d, SAISON);
     main.innerHTML = kopf('Gastlieger', 'Tageslieger: ' + H.geld(gb.gast_nacht) + ' pro Nacht · Hafenmeister ' + esc(d.einstellungen.hafenmeister_name), '<button class="btn" id="plakat">QR-Plakat für den Steg</button><a class="btn" href="gast.html" target="_blank">Gast-Anmeldung ansehen</a><button class="btn primaer" id="neu">+ Gast einweisen</button>') +
-      (anfragen.length ? '<div class="panel" style="border:2px solid var(--gast)"><h2>Neue Anmeldungen per QR-Code</h2><table class="tab"><tbody>' + anfragen.map((x) =>
-        '<tr><td><strong>„' + esc(x.bootsname) + '“</strong> · ' + H.zahl(x.laenge, 1) + ' × ' + H.zahl(x.breite || 0, 1) + ' m' + (x.tiefgang ? ' · Tg. ' + H.zahl(x.tiefgang, 1) + ' m' : '') + '</td><td>' + esc(x.skipper) + (x.herkunft ? ' · ' + esc(x.herkunft) : '') + '</td><td>' + H.datum(x.ankunft) + ', ' + x.naechte + ' N.</td><td class="r"><button class="btn klein primaer" data-zuw="' + x.id + '">Platz zuweisen</button></td></tr>').join('') + '</tbody></table></div>' : '') +
+      '<p class="hinweis">So läuft es: Gast sieht ein grünes Schild, macht fest, meldet sich per QR-Code mit der Platznummer an und bezahlt sofort (PayPal, Überweisung oder bar). Passt der Platz laut Plan, steht der Gast direkt „im Hafen“ – hier landet nur, was zu prüfen ist.</p>' +
+      (anfragen.length ? '<div class="panel" style="border:2px solid var(--gast)"><h2>Platz prüfen (' + anfragen.length + ')</h2><p class="hinweis" style="margin-top:0">Diese Gäste liegen schon – der angegebene Platz passt laut Plan nicht oder fehlt.</p><table class="tab"><tbody>' + anfragen.map((x) =>
+        '<tr><td><strong>„' + esc(x.bootsname) + '“</strong> · ' + H.zahl(x.laenge, 1) + (x.breite ? ' × ' + H.zahl(x.breite, 1) : '') + ' m' + (x.tiefgang ? ' · Tg. ' + H.zahl(x.tiefgang, 1) + ' m' : '') + ' · ' + esc(x.skipper) + (x.tel ? ' · <a href="tel:' + esc(x.tel) + '">' + esc(x.tel) + '</a>' : '') +
+        '<br><small>' + (x.platz_angabe ? 'liegt laut Gast an <strong>' + esc(angabe(x.platz_angabe)) + '</strong>' + (x.platz_hinweis ? ' – ' + esc(x.platz_hinweis) : '') : 'keine Platznummer angegeben') + '</small></td><td>' + H.datum(x.ankunft) + ', ' + x.naechte + ' N. · ' + zahlungText(x) + '</td><td class="r"><button class="btn klein primaer" data-zuw="' + x.id + '">Platz eintragen</button></td></tr>').join('') + '</tbody></table></div>' : '') +
       '<div class="panel"><table class="tab"><thead><tr><th>Ankunft</th><th>Boot</th><th>Skipper</th><th>Platz</th><th class="r">Nächte</th><th class="r">Betrag</th><th>Zahlung</th><th>Status</th><th></th></tr></thead><tbody>' +
       d.gaeste.slice().sort((a, b) => b.ankunft.localeCompare(a.ankunft)).map((x) =>
         '<tr' + (x.status === 'abgereist' || x.status === 'storniert' ? ' class="blass"' : '') + '><td>' + H.datum(x.ankunft) + '</td><td><strong>' + esc(x.bootsname) + '</strong> <small style="color:var(--muted)">' + H.zahl(x.laenge, 1) + ' m</small></td><td>' + esc(x.skipper) + '</td><td>' + (x.platz_id ? esc(platzName(x.platz_id)) : '<span class="tag gast">offen</span>') + '</td>' +
         '<td class="r">' + x.naechte + '</td><td class="r">' + H.geld(x.betrag) + '</td><td>' + (x.status === 'storniert' ? '–' : zahlungText(x)) + '</td>' +
         '<td>' + ({ angemeldet: '<span class="tag gast">angemeldet</span>', eingewiesen: '<span class="tag ok">im Hafen</span>', abgereist: 'abgereist', storniert: '<span class="tag">storniert</span>' })[x.status] + (x.quelle === 'qr' ? ' <small style="color:var(--muted)">QR</small>' : '') + '</td>' +
-        '<td class="r" style="white-space:nowrap">' + (x.status !== 'angemeldet' ? '<button class="btn klein" data-bearb="' + x.id + '">Bearbeiten</button> ' : '') + (x.quittung_nr && x.bezahlt_am ? '<button class="btn klein" data-quit="' + x.id + '">Quittung</button>' : '') + '</td></tr>').join('') + '</tbody></table></div>';
+        '<td class="r" style="white-space:nowrap">' + (x.zahlung_gemeldet && !x.bezahlt_am && x.status !== 'storniert' ? '<button class="btn klein primaer" data-eingang="' + x.id + '" title="Geld ist da – als bezahlt verbuchen, Quittungsnummer vergeben">Eingang bestätigen</button> ' : '') + (x.status !== 'angemeldet' ? '<button class="btn klein" data-bearb="' + x.id + '">Bearbeiten</button> ' : '') + (x.quittung_nr && x.bezahlt_am ? '<button class="btn klein" data-quit="' + x.id + '">Quittung</button>' : '') + '</td></tr>').join('') + '</tbody></table></div>';
     $('#neu').addEventListener('click', () => gastForm({}));
     $('#plakat').addEventListener('click', () => oeffnen('drucken.html?art=plakat'));
     main.querySelectorAll('[data-zuw]').forEach((b) => b.addEventListener('click', () => gastForm(d.gaeste.find((x) => x.id === b.dataset.zuw))));
     main.querySelectorAll('[data-bearb]').forEach((b) => b.addEventListener('click', () => gastForm(d.gaeste.find((x) => x.id === b.dataset.bearb))));
     main.querySelectorAll('[data-quit]').forEach((b) => b.addEventListener('click', () => oeffnen('drucken.html?art=quittung&id=' + b.dataset.quit)));
+    main.querySelectorAll('[data-eingang]').forEach((b) => b.addEventListener('click', () => {
+      const g = d.gaeste.find((x) => x.id === b.dataset.eingang);
+      if (!confirm(H.geld(g.betrag) + ' von „' + g.bootsname + '“ per ' + (ZAHLART[g.zahlung] || g.zahlung) + ' eingegangen?')) return;
+      g.bezahlt_am = heute; if (!g.quittung_nr) g.quittung_nr = 'Q-' + g.ankunft.slice(0, 4) + '-' + String(++d.zaehler.quittung).padStart(3, '0');
+      speichern('Zahlung verbucht – Quittung ' + g.quittung_nr + '.'); zeige(tab, true);
+    }));
   };
   function gastForm(g) {
     const neu = !g.id; const gb = G.gebuehrenFuer(d, SAISON);
@@ -875,6 +887,7 @@
       '<label class="feld">Länge (m)<input name="laenge" type="number" step="0.1" min="2" max="40" required inputmode="decimal" value="' + x0.laenge + '"></label><label class="feld">Breite (m)<input name="breite" type="number" step="0.1" min="1" max="12" inputmode="decimal" value="' + (x0.breite || '') + '"></label>' +
       '<label class="feld">Tiefgang (m)<input name="tiefgang" type="number" step="0.1" min="0.2" max="6" inputmode="decimal" value="' + (x0.tiefgang || '') + '"></label><label class="feld">Ankunft<input name="ankunft" type="date" required value="' + x0.ankunft + '"></label>' +
       '<label class="feld">Nächte<input name="naechte" type="number" min="1" max="60" required value="' + x0.naechte + '"></label><label class="feld">Betrag<input name="betrag" id="betrag" readonly></label>' +
+      (g.platz_angabe && !g.platz_id ? '<p class="hinweis warn voll" style="margin:0">Gast liegt laut eigener Angabe an <strong>' + esc(angabe(g.platz_angabe)) + '</strong>' + (g.platz_hinweis ? ' – ' + esc(g.platz_hinweis) : '') + '</p>' : '') +
       '<label class="feld voll">Platz<select name="platz_id" id="platzwahl"></select><small id="platzinfo"></small></label><div class="voll" id="platzwarn" role="alert"></div>' +
       '<label class="feld">Zahlart<select name="zahlung">' + zahlOpt + '</select></label>' +
       '<label class="feld">Zahlung eingegangen am<input name="bezahlt_am" type="date" value="' + esc(x0.bezahlt_am || '') + '"><small>leer = noch nicht bezahlt · <a href="#" id="bez-heute">heute</a></small></label>' +
@@ -1171,6 +1184,8 @@
     main.innerHTML = kopf('Einstellungen', 'Vereins- und Bankdaten für Rechnungen und Lastschrift.', '<button class="btn primaer" id="ok">Speichern</button>') +
       '<div class="panel"><form id="f" class="form">' + f('verein_name', 'Vereinsname') + f('verein_email', 'E-Mail') + f('verein_strasse', 'Straße') + f('verein_ort', 'PLZ und Ort') +
       f('glaeubiger_id', 'Gläubiger-ID') + f('iban', 'IBAN des Vereins') + f('bic', 'BIC') + f('bank', 'Bank') + f('kassenwart_name', 'Kassenwart (Gruß auf Rechnungen)') + f('hafenmeister_name', 'Hafenmeister') + f('hafenmeister_tel', 'Telefon Hafenmeister') +
+      '<h3 class="voll" style="margin:14px 0 0">Gastlieger bezahlen direkt</h3><p class="hinweis voll" style="margin:0">Gäste sehen nach der Anmeldung den Betrag und diese Zahlwege. Überweisung nutzt die IBAN oben.</p>' +
+      f('paypal_me', 'PayPal.me-Name des Vereins', 'text', ' placeholder="z. B. SSVLuebeck – leer = kein PayPal"') + f('gast_bar_hinweis', 'Hinweis für Barzahlung', 'text', ' placeholder="z. B. Umschlag in den Briefkasten am Vereinsheim"') +
       f('rechnung_praefix', 'Rechnungsnummer-Präfix') + f('zahlungsziel_tage', 'Einzug nach Rechnungsdatum (Tage)', 'number') + f('steuernummer', 'Steuernummer (Rechnungsfuß)') +
       '<label class="feld check voll"><input type="checkbox" name="stromumlage_ueber_hafen"' + (e.stromumlage_ueber_hafen ? ' checked' : '') + '> Stromumlage mit der Hafenrechnung einziehen (sonst über den Mitgliedsbeitrag)</label>' +
       '<h3 class="voll" style="margin:14px 0 0">Steuerhinweis auf Hafen-Rechnungen und Quittungen</h3>' +
