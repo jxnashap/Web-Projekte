@@ -106,7 +106,7 @@
   const versTag = (b) => { const s = Q.versicherungsStatus(b, heute); return (s === 'ok' ? '<span class="tag ok">bis ' + H.datum(b.vers_bis) + '</span>' : s === 'bald' ? '<span class="tag warn">läuft ' + H.datum(b.vers_bis) + ' ab</span>' : s === 'fehlt' ? '<span class="tag rot">fehlt</span>' : '<span class="tag rot">abgelaufen ' + H.datum(b.vers_bis) + '</span>') + (s === 'fehlt' ? '' : ' ' + nachweisTag(b)); };
   const ZAHLART = { bar: 'bar', ueberweisung: 'Überweisung', paypal: 'PayPal', karte: 'Karte', offen: 'Zahlart offen' };
   // „gemeldet“ = Gast hat auf der Gast-Seite angegeben, dass er bezahlt hat; der Eingang wird hier bestätigt
-  const zahlungText = (g) => esc(ZAHLART[g.zahlung] || g.zahlung || '') + ' · ' + (g.bezahlt_am ? '<span class="tag ok">bezahlt ' + H.kurz(g.bezahlt_am) + '</span>' : g.zahlung_gemeldet ? '<span class="tag gast">Gast meldet bezahlt</span>' : '<span class="tag warn">noch nicht bezahlt</span>');
+  const zahlungText = (g) => esc(ZAHLART[g.zahlung] || g.zahlung || '') + ' · ' + (g.bezahlt_am ? '<span class="tag ok">bezahlt ' + H.kurz(g.bezahlt_am) + '</span>' : g.zahlung_gemeldet ? '<span class="tag gast">vom Gast gemeldet – noch nicht geprüft</span>' : '<span class="tag warn">noch nicht bezahlt</span>');
   const angabe = (t) => (/^\s*platz/i.test(t) ? '' : 'Platz ') + String(t).trim();   // vom Gast eingetippte Platznummer
   const platzName = (id) => { const p = Q.platz(id); if (!p) return '–'; return p.bez || ((p.box === 'L' ? 'Längsseits ' : 'Platz ') + p.nr); };
   function download(name, text, typ) {
@@ -151,7 +151,7 @@
     const st = {}; if (imSommer) d.liegeplaetze.forEach((p) => { const s2 = Q.statusWasser(p, SAISON, heute); st[s2] = (st[s2] || 0) + 1; });
     const versProbleme = d.boote.filter((b) => ['abgelaufen', 'bald', 'fehlt'].includes(Q.versicherungsStatus(b, heute)));
     const nachweise = d.boote.filter((b) => b.vers_status === 'eingereicht');
-    const zuSchwer = d.boote.filter((b) => b.gewicht_t > 10);
+    const zuSchwer = d.boote.filter((b) => Q.zuSchwer(b));
     const anfragen = d.gaeste.filter((g) => g.status === 'angemeldet');
     const gaesteHeute = d.gaeste.filter((g) => g.status !== 'storniert' && g.platz_id && g.ankunft <= heute && abreise(g) > heute);
     const winterOffen = G.vorschau(d, SAISON, 'winter', heute).filter((x) => !x.schon_abgerechnet && x.summe > 0);
@@ -175,8 +175,10 @@
     if (darf('gaeste')) konflikte.forEach(({ g, grund }) => add(heuteL, 'gaeste', 'Konflikt ' + platzName(g.platz_id) + ': Gast „' + esc(g.bootsname) + '“ – ' + esc(grund), 'rot', 'data-gast="' + g.id + '"'));
     if (anfragen.length) add(heuteL, 'gaeste', anfragen.length + (anfragen.length > 1 ? ' Gäste liegen' : ' Gast liegt') + ' ohne bestätigten Platz (selbst angemeldet) – bitte prüfen', 'gast');
     const zahlPruef = d.gaeste.filter((g) => g.zahlung_gemeldet && !g.bezahlt_am && g.status !== 'storniert');
-    if (zahlPruef.length && darf('gaeste')) add(anst, 'gaeste', zahlPruef.length + ' Gast-Zahlung' + (zahlPruef.length > 1 ? 'en' : '') + ' gemeldet – Eingang bestätigen (' + zahlPruef.map((g) => esc(ZAHLART[g.zahlung] || g.zahlung)).join(', ') + ')', 'gast');
+    if (zahlPruef.length && darf('gaeste')) add(anst, 'gaeste', zahlPruef.length + ' Gast-Zahlung' + (zahlPruef.length > 1 ? 'en' : '') + ' vom Gast gemeldet, noch nicht geprüft – Eingang bestätigen (' + zahlPruef.map((g) => esc(ZAHLART[g.zahlung] || g.zahlung)).join(', ') + ')', 'gast');
     if (ankuenfte.length && darf('gaeste')) add(heuteL, 'gaeste', ankuenfte.length + (ankuenfte.length === 1 ? ' Gast kommt' : ' Gäste kommen') + ' heute an: ' + ankuenfte.map((g) => '„' + esc(g.bootsname) + '“').join(', '), 'gast');
+    const abreisePruefen = darf('gaeste') ? d.gaeste.filter((g) => gastLage(g).offen.includes('abreise')) : [];
+    if (abreisePruefen.length) add(heuteL, 'gaeste', abreisePruefen.length + (abreisePruefen.length === 1 ? ' Gast reist heute ab oder ist überfällig' : ' Gäste reisen heute ab oder sind überfällig') + ': ' + abreisePruefen.map((g) => '„' + esc(g.bootsname) + '“').join(', ') + ' – Abreise bestätigen', 'warn');
     const dringend = schaeden.filter((t) => t.prioritaet === 'hoch' || (t.faellig && t.faellig < heute));
     if (dringend.length && darf('aufgaben')) add(heuteL, 'aufgaben', dringend.length + (dringend.length === 1 ? ' dringender oder überfälliger Schaden' : ' dringende oder überfällige Schäden/Wartungen') + ': ' + dringend.slice(0, 2).map((t) => esc(t.titel)).join(', '), 'rot');
     if (rueck.length && darf('abrechnung')) add(heuteL, 'abrechnung', rueck.length + ' Rücklastschrift' + (rueck.length > 1 ? 'en' : '') + ' – Mitglied ansprechen oder erneut einziehen', 'rot');
@@ -189,12 +191,13 @@
     if (sepaOffen.length && darf('abrechnung')) add(anst, 'abrechnung', sepaOffen.length + ' Rechnungen warten auf die Lastschrift-Datei für die Bank', 'warn');
     if (nachweise.length && darf('boote')) add(anst, 'boote', nachweise.length + ' Versicherungsnachweis' + (nachweise.length > 1 ? 'e' : '') + ' prüfen', 'gast');
     if (versProbleme.length && darf('boote')) add(anst, 'boote', versProbleme.length + ' Boote: Versicherung abgelaufen, fehlt oder läuft in 30 Tagen ab', 'warn');
-    if (zuSchwer.length && darf('boote')) add(anst, 'boote', zuSchwer.length + ' Boot über 10 t – laut Hafenbetriebsordnung nicht zulässig', 'warn');
+    if (zuSchwer.length && darf('boote')) add(anst, 'boote', zuSchwer.length + (zuSchwer.length > 1 ? ' Boote' : ' Boot') + ' über ' + Q.maxTxt() + ' – laut Hafenbetriebsordnung nicht zulässig', 'warn');
     const normal = schaeden.filter((t) => !dringend.includes(t));
     if (normal.length && darf('aufgaben')) add(anst, 'aufgaben', normal.length + ' offene Schäden/Wartungen', 'warn');
     if (!e.steuer_hinweis && darf('einstellungen')) add(einr, 'einstellungen', 'Steuerhinweis für Rechnungen festlegen (mit dem Steuerberater klären)', 'warn');
     if (darf('einstellungen') && !(SEPA.ibanGueltig(e.iban) && SEPA.glaeubigerGueltig(e.glaeubiger_id))) add(einr, 'einstellungen', 'Vereinskonto und Gläubiger-ID für die Lastschrift eintragen', 'warn');
     if (!e.arbeitsdienst_bestaetigt && rolle === 'vorstand') add(einr, 'einstellungen', 'Regeln für den Arbeitsdienst beschließen (Soll, Befreiungen, Übertrag, Ersatz)', 'warn');
+    if (!e.grenze_bestaetigt && rolle === 'vorstand') add(einr, 'einstellungen', 'Gewichtsgrenze für Steg und Kran klären: Website nennt 9 t, Hafenbetriebsordnung 10 t (eingestellt: ' + Q.maxTxt() + ')', 'warn');
     if (planAnnahme() && darf('belegung')) add(einr, 'plaetze', 'Boxmaße, Brücken und Wassertiefen eintragen und bestätigen', 'warn');
     if (!naechste && darf('einstellungen')) add(einr, 'einstellungen', 'Saisontermine ' + (SAISON + 1) + ' (Auslagern/Einlagern) eintragen', 'warn');
     const warte = d.warteliste.filter((w) => w.status === 'wartend').length;
@@ -208,7 +211,13 @@
         '<div class="kz"><small>Wasserplätze Sommer ' + SAISON + '</small><strong>' + wasserVergeben + ' / ' + d.liegeplaetze.length + '</strong><span>vergeben (Saison beendet)</span></div>' +
         '<div class="kz"><small>Nächstes Auslagern</small><strong style="font-size:20px">' + (naechste ? H.datum(naechste.auslagern) : 'Termin offen') + '</strong><span>' + (naechste ? 'Saison ' + (SAISON + 1) : 'noch nicht eingetragen') + '</span></div>';
     const handy = window.matchMedia('(max-width: 860px)').matches;
-    const zeilen = (l) => '<table class="tab todo"><tbody>' + l.map((x) => '<tr class="klickbar" data-gehe="' + x.tab + '" ' + x.extra + '><td><span class="tag ' + x.art + '">' + (x.art === 'rot' ? 'wichtig' : x.art === 'gast' ? (x.tab === 'boote' ? 'prüfen' : 'Gäste') : 'offen') + '</span></td><td>' + x.txt + '</td><td class="r">' + (darf(x.tab) ? '→' : '') + '</td></tr>').join('') + '</tbody></table>';
+    // Etikett = Thema (nicht Farbe): Gäste, Arbeitsdienst, Boote …; Farbe zeigt die Dringlichkeit
+    const THEMA = { gaeste: 'Gäste', arbeitsdienst: 'Arbeitsdienst', boote: 'Boote', abrechnung: 'Geld', antraege: 'Anträge', aufgaben: 'Schäden', einstellungen: 'Einrichtung', plaetze: 'Liegeplätze' };
+    const MAX = 5;
+    const zeilen = (l) => '<table class="tab todo"><tbody>' + l.map((x, i) => '<tr class="klickbar' + (i >= MAX ? ' todo-mehr' : '') + '" data-gehe="' + x.tab + '" ' + x.extra + (i >= MAX ? ' hidden' : '') + '><td><span class="tag ' + x.art + '">' + (THEMA[x.tab] || 'offen') + '</span></td><td>' + x.txt + '</td><td class="r">' + (darf(x.tab) ? '→' : '') + '</td></tr>').join('') + '</tbody></table>' +
+      (l.length > MAX ? '<button class="btn klein todo-weitere" type="button">+ ' + (l.length - MAX) + ' weitere anzeigen</button>' : '');
+    // Dringendes zuerst (rot vor warn vor Hinweis)
+    const RANG = { rot: 0, warn: 1, gast: 2 }; [heuteL, anst, einr].forEach((l) => l.sort((a, b) => (RANG[a.art] ?? 3) - (RANG[b.art] ?? 3)));
     const gruppe = (titel, l, offen, leer) => !l.length && !leer ? '' : '<details class="panel todo-gruppe"' + (offen ? ' open' : '') + '><summary><h2>' + titel + '</h2><span class="tag' + (l.length ? '' : ' ok') + '">' + l.length + '</span></summary>' + (l.length ? zeilen(l) : '<p class="leer">' + leer + '</p>') + '</details>';
     main.innerHTML = kopf('Moin, ' + ROLLEN[rolle].name + '!', 'Stand heute, ' + H.datum(heute) + ' · ' + (imSommer ? 'Sommer ' + SAISON + ' – die Boote sind im Wasser' : 'Winterpause seit ' + H.datum(sd.einlagern) + ' (Winterlager ' + SAISON + '/' + yy + ')'),
       darf('plan') ? '<button class="btn dunkel" data-gehe="plan">Hafenplan öffnen</button>' : '') + DEMO +
@@ -217,8 +226,9 @@
       gruppe('Einrichtung abschließen', einr, !handy && heuteL.length + anst.length < 6) +
       '<div class="karten">' + karten +
       '<div class="kz"><small>Warteliste</small><strong>' + warte + '</strong><span>Mitglieder warten</span></div>' +
-      (darf('abrechnung') ? '<div class="kz"><small>Offene Rechnungen</small><strong>' + H.geld(offeneRe.reduce((s, r) => s + Q.rest(r), 0)) + '</strong><span>' + offeneRe.length + ' Rechnungen</span></div>' : '') + '</div>';
+      (darf('abrechnung') ? '<div class="kz"><small>Offene Rechnungen · Hafen & Beiträge</small><strong>' + H.geld(offeneRe.reduce((s, r) => s + Q.rest(r), 0)) + '</strong><span>' + offeneRe.length + (offeneRe.length === 1 ? ' Rechnung' : ' Rechnungen') + ' · Getränke siehe Kasse</span></div>' : '') + '</div>';
     main.querySelectorAll('[data-gast]').forEach((z) => z.addEventListener('click', (ev) => { ev.stopPropagation(); gastForm(d.gaeste.find((g) => g.id === z.dataset.gast)); }, true));
+    main.querySelectorAll('.todo-weitere').forEach((k) => k.addEventListener('click', () => { k.previousElementSibling.querySelectorAll('.todo-mehr').forEach((z) => { z.hidden = false; }); k.remove(); }));
   };
 
   /* ============================================================ Hafenplan */
@@ -303,7 +313,7 @@
       (d.aufgaben || []).filter((t) => t.platz_id === id && t.status !== 'erledigt').map((t) => '<p class="hinweis warn">' + esc(t.titel) + ' <small>(' + ({ offen: 'offen', in_arbeit: 'in Arbeit' })[t.status] + ')</small></p>').join('') +
       '<p><span class="tag ' + ({ belegt: '', unterwegs: 'gruen', gast: 'gast', saisongast: 'lila', frei: 'ok', gesperrt: 'rot' })[Q.statusWasser(p, SAISON, tagX)] + '">' + esc(status) + '</span></p>' +
       (p.gesperrt ? '<p class="hinweis warn">' + esc(p.notiz || 'Gesperrt') + '</p>' : '') +
-      (b ? '<dl><dt>Boot</dt><dd>' + bootTxt(b) + '</dd><dt>Maße</dt><dd>' + masse(b) + ' · Tiefgang ' + H.zahl(b.tiefgang) + ' m</dd><dt>Gewicht</dt><dd>' + H.zahl(b.gewicht_t, 1) + ' t' + (b.gewicht_t > 10 ? ' <span class="tag rot">über 10 t</span>' : '') + '</dd>' +
+      (b ? '<dl><dt>Boot</dt><dd>' + bootTxt(b) + '</dd><dt>Maße</dt><dd>' + masse(b) + ' · Tiefgang ' + H.zahl(b.tiefgang) + ' m</dd><dt>Gewicht</dt><dd>' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">über ' + Q.maxTxt() + '</span>' : '') + '</dd>' +
         '<dt>Versicherung</dt><dd>' + versTag(b) + '</dd><dt>Eigner</dt><dd>' + esc(Q.name(m)) + ' <span class="tag">' + H.ART[m.art] + '</span></dd><dt>Telefon</dt><dd><a href="tel:' + esc((m.tel || '').replace(/\s/g, '')) + '">' + esc(m.tel) + '</a></dd></dl>' +
         (probleme.length ? '<p class="hinweis warn" style="margin-top:10px">Passt nicht: ' + probleme.map(esc).join(', ') + '</p>' : '') + '<div class="bootsfoto" id="bootsfoto"></div>' : '<p class="leer">Kein Dauerlieger in dieser Saison.</p>') +
       (gast ? '<div class="abschnitt"><h3>Gastlieger</h3><dl><dt>Boot</dt><dd>„' + esc(gast.bootsname) + '“ · ' + H.zahl(gast.laenge, 1) + ' m</dd><dt>Skipper</dt><dd>' + esc(gast.skipper) + (gast.herkunft ? ' · ' + esc(gast.herkunft) : '') + '</dd><dt>Zeitraum</dt><dd>' + H.kurz(gast.ankunft) + ', ' + gast.naechte + ' Nacht' + (gast.naechte > 1 ? 'e' : '') + '</dd><dt>Zahlung</dt><dd>' + zahlungText(gast) + '</dd></dl></div>' : '') +
@@ -423,11 +433,11 @@
       const f = $('#such').value.toLowerCase(), nurP = $('#probl').checked;
       $('#tb').innerHTML = d.boote.slice().sort((a, b) => a.name.localeCompare(b.name, 'de')).map((b) => {
         const m = Q.mitglied(b.eigner_id); const bel = Q.belegungBoot(SAISON, 'sommer', b.id);
-        const vs = Q.versicherungsStatus(b, heute); const probl = vs !== 'ok' || b.vers_status === 'eingereicht' || b.gewicht_t > 10 || (bel && bel.platz_typ === 'wasser' && Q.passt(b, Q.platz(bel.platz_id)).length);
+        const vs = Q.versicherungsStatus(b, heute); const probl = vs !== 'ok' || b.vers_status === 'eingereicht' || Q.zuSchwer(b) || (bel && bel.platz_typ === 'wasser' && Q.passt(b, Q.platz(bel.platz_id)).length);
         if (nurP && !probl) return '';
         if (f && !(b.name + ' ' + b.typ + ' ' + b.segelnr + ' ' + Q.name(m)).toLowerCase().includes(f)) return '';
         return '<tr class="klickbar" data-b="' + b.id + '"><td><strong>' + esc(b.name) + '</strong><br><small style="color:var(--muted)">' + esc(b.segelnr) + '</small></td><td>' + esc(b.typ) + '</td><td class="r">' + masse(b) + '</td>' +
-          '<td class="r">' + H.zahl(b.gewicht_t, 1) + ' t' + (b.gewicht_t > 10 ? ' <span class="tag rot">!</span>' : '') + '</td><td>' + esc(Q.name(m)) + '</td><td>' + (bel ? platzName(bel.platz_id) : '–') + '</td><td>' + versTag(b) + '</td></tr>';
+          '<td class="r">' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">!</span>' : '') + '</td><td>' + esc(Q.name(m)) + '</td><td>' + (bel ? platzName(bel.platz_id) : '–') + '</td><td>' + versTag(b) + '</td></tr>';
       }).join('');
     };
     render(); $('#such').addEventListener('input', render); $('#probl').addEventListener('change', render);
@@ -436,14 +446,14 @@
   };
   function bootForm(b) {
     const neu = !b.id;
-    const el = modal('<h2>' + (neu ? 'Boot anmelden' : '„' + esc(b.name) + '“') + '</h2><p class="hinweis">Laut Hafenbetriebsordnung muss jedes Boot vor dem Einbringen angemeldet werden und versichert sein (Personen-, Sach- und Umweltschäden, Bergung). Grenze für Steg und Kran: 10 t.</p><form id="f" class="form">' +
+    const el = modal('<h2>' + (neu ? 'Boot anmelden' : '„' + esc(b.name) + '“') + '</h2><p class="hinweis">Laut Hafenbetriebsordnung muss jedes Boot vor dem Einbringen angemeldet werden und versichert sein (Personen-, Sach- und Umweltschäden, Bergung). Grenze für Steg und Kran: ' + Q.maxTxt() + '.</p><form id="f" class="form">' +
       '<label class="feld">Bootsname<input name="name" required value="' + esc(b.name || '') + '"></label>' +
       '<label class="feld">Typ<input name="typ" value="' + esc(b.typ || '') + '" placeholder="z. B. Dehler 34"></label>' +
       '<label class="feld voll">Eigner<select name="eigner_id" required><option value="">bitte wählen</option>' + mOpt(b.eigner_id) + '</select></label>' +
       '<label class="feld">Länge (m)<input name="laenge" type="number" step="0.01" min="1" required value="' + (b.laenge || '') + '"></label>' +
       '<label class="feld">Breite (m)<input name="breite" type="number" step="0.01" min="0.5" required value="' + (b.breite || '') + '"></label>' +
       '<label class="feld">Tiefgang (m)<input name="tiefgang" type="number" step="0.01" value="' + (b.tiefgang || '') + '"></label>' +
-      '<label class="feld">Gewicht (t)<input name="gewicht_t" type="number" step="0.1" required value="' + (b.gewicht_t || '') + '"><small>inkl. Ausrüstung – max. 10 t</small></label>' +
+      '<label class="feld">Gewicht (t)<input name="gewicht_t" type="number" step="0.1" required value="' + (b.gewicht_t || '') + '"><small>inkl. Ausrüstung – max. ' + Q.maxTxt() + '</small></label>' +
       '<label class="feld">Segelnummer / Kennzeichen<input name="segelnr" value="' + esc(b.segelnr || '') + '"></label>' +
       '<label class="feld">Versicherung<input name="versicherung" value="' + esc(b.versicherung || '') + '"></label>' +
       '<label class="feld">Versichert bis<input name="vers_bis" type="date" value="' + esc(b.vers_bis || '') + '"></label>' +
@@ -455,7 +465,7 @@
     $('#ok', el).addEventListener('click', () => {
       const f = $('#f', el); if (!f.reportValidity()) return;
       const x = Object.fromEntries(new FormData(f)); ['laenge', 'breite', 'tiefgang', 'gewicht_t'].forEach((k) => { x[k] = H.dez(x[k]) || 0; });
-      if (x.gewicht_t > 10 && !confirm('Das Boot wiegt mehr als 10 t. Laut Hafenbetriebsordnung ist das für Steg und Kran nicht zulässig. Trotzdem speichern?')) return;
+      if (Q.zuSchwer(x) && !confirm('Das Boot wiegt mehr als ' + Q.maxTxt() + '. Laut Hafenbetriebsordnung ist das für Steg und Kran nicht zulässig. Trotzdem speichern?')) return;
       if (!neu && (x.versicherung !== (b.versicherung || '') || x.vers_bis !== (b.vers_bis || '')) && b.vers_status === 'geprueft') x.vers_status = null;   // neue Angaben → neu prüfen
       if (neu) d.boote.push({ id: H.uid('B'), vers_status: null, ...x }); else Object.assign(b, x);
       speichern('Boot gespeichert.'); zu(); zeige(tab);
@@ -794,7 +804,7 @@
       plaetze.map((p) => {
         const bel = Q.belegungPlatz(SAISON, per, p.id); const b = bel && Q.boot(bel.boot_id); const m = b && Q.mitglied(b.eigner_id);
         if (p.bez && per === 'sommer' && !bel) return '';
-        const prob = b && !p.bez ? Q.passt(b, p) : (b && b.gewicht_t > 10 ? ['über 10 t'] : []);
+        const prob = b && !p.bez ? Q.passt(b, p) : (Q.zuSchwer(b) ? ['über ' + Q.maxTxt()] : []);
         return '<tr' + (p.gesperrt ? ' class="blass"' : '') + '><td><strong>' + esc(platzName(p.id)) + '</strong></td><td>' + (p.bez ? ({ palette: 'Palette', halle: 'Halle', aussen: 'Außen' })[p.art] : H.BRUECKE[p.bruecke]) + '</td>' +
           '<td>' + (b ? esc(b.name) + ' <small style="color:var(--muted)">' + masse(b) + '</small>' : (p.gesperrt ? '<span class="tag rot">gesperrt</span>' : '<span class="leer">frei</span>')) + '</td><td>' + (m ? esc(Q.name(m)) + ' <span class="tag">' + H.ART[m.art] + '</span>' : '') + '</td>' +
           '<td class="r">' + (p.bez ? (b && p.art !== 'palette' ? G.flaeche(d, bel, b) + ' m²' : '') : p.box) + '</td><td>' + (prob.length ? '<span class="tag warn">' + prob.map(esc).join(', ') + '</span>' : '') + (bel && bel.art === 'saisongast' ? ' <span class="tag lila">Saison-Gast</span>' : '') + (bel && bel.nicht_kranen ? ' <span class="tag warn">nicht kranen</span>' : '') + '</td>' +
@@ -820,7 +830,7 @@
         (per === 'sommer' ? '<label class="feld">Wievielter Sommer an Land?<input name="sommer_an_land_jahr" type="number" min="1" value="' + (bel && bel.sommer_an_land_jahr || 1) + '"><small>ab dem 2. verdoppelt sich die Gebühr</small></label>' : '')
         : '<label class="feld">Art<select name="art"><option value="dauer"' + (bel && bel.art === 'dauer' ? ' selected' : '') + '>Dauerlieger</option><option value="saisongast"' + (bel && bel.art === 'saisongast' ? ' selected' : '') + '>Saison-Gastlieger</option></select></label>') +
       '</form><p id="pruef"></p><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>');
-    const pruef = () => { const b = Q.boot($('[name=boot_id]', el).value); const pr = b ? (p.bez ? (b.gewicht_t > 10 ? ['über 10 t'] : []) : Q.passt(b, p)) : [];
+    const pruef = () => { const b = Q.boot($('[name=boot_id]', el).value); const pr = b ? (p.bez ? (Q.zuSchwer(b) ? ['über ' + Q.maxTxt()] : []) : Q.passt(b, p)) : [];
       const woanders = b && Q.belegungBoot(SAISON, per, b.id); $('#pruef', el).innerHTML = (pr.length ? '<span class="hinweis warn" style="display:block">Achtung: ' + pr.map(esc).join(', ') + '</span>' : '') + (woanders && woanders.platz_id !== platzId ? '<span class="hinweis" style="display:block">„' + esc(b.name) + '“ liegt bisher auf ' + esc(platzName(woanders.platz_id)) + ' – wird umgelegt.</span>' : ''); };
     $('[name=boot_id]', el).addEventListener('change', pruef); pruef();
     $('#ok', el).addEventListener('click', () => {
@@ -862,26 +872,78 @@
   }
 
   /* ============================================================ Gastlieger */
+  // Gast-Lage wird aus den Daten berechnet: Aufenthalt (Datum), Platz, Zahlung – je eine eigene Spalte
+  const tageBis = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 864e5);
+  function gastLage(g) {
+    const ab = abreise(g); const vorbei = g.status !== 'storniert' && g.status !== 'abgereist' && ab < heute && tageBis(ab, heute) > 14;   // längst weg, nur nie abgemeldet
+    const zu = g.status === 'storniert' || g.status === 'abgereist' || vorbei;
+    let auf;
+    if (g.status === 'storniert') auf = { k: 'storniert', t: 'storniert', c: '' };
+    else if (g.status === 'abgereist' || vorbei) auf = { k: 'abgereist', t: 'abgereist' + (vorbei ? ' (' + H.kurz(ab) + ')' : ''), c: '' };
+    else if (g.ankunft > heute) auf = { k: 'kommt', t: 'kommt ' + H.kurz(g.ankunft), c: 'gast' };
+    else if (ab === heute) auf = { k: 'abreise', t: 'reist heute ab', c: 'warn' };
+    else if (ab < heute) auf = { k: 'ueberfaellig', t: 'Abreise prüfen (' + H.kurz(ab) + ')', c: 'warn' };
+    else auf = { k: 'da', t: g.ankunft === heute ? 'kommt heute' : 'im Hafen bis ' + H.kurz(ab), c: 'ok' };
+    const platz = g.status === 'storniert' ? { t: '–', c: '' } : g.platz_id ? { t: esc(platzName(g.platz_id)), c: 'ok' }
+      : g.platz_angabe ? { t: 'Platz prüfen: ' + esc(angabe(g.platz_angabe)), c: 'warn', pruefen: true } : { t: 'Platz prüfen: keine Angabe', c: 'warn', pruefen: true };
+    const zahl = g.status === 'storniert' ? { t: '–', c: '' } : g.bezahlt_am ? { t: 'bezahlt ' + H.kurz(g.bezahlt_am), c: 'ok' }
+      : g.zahlung_gemeldet ? { t: 'gemeldet (' + esc(ZAHLART[g.zahlung] || g.zahlung) + ') – noch nicht geprüft', c: 'gast', melden: true } : { t: 'offen', c: g.ankunft <= heute ? 'warn' : '' };
+    // Was ist zu tun? (in dieser Reihenfolge = Hauptaktion)
+    const offen = [];
+    if (g.status !== 'storniert' && zahl.melden) offen.push('eingang');
+    if (!zu && platz.pruefen) offen.push('platz');
+    if (!zu && (auf.k === 'abreise' || auf.k === 'ueberfaellig')) offen.push('abreise');
+    if (g.status !== 'storniert' && !g.bezahlt_am && !g.zahlung_gemeldet && g.ankunft <= heute) offen.push('zahlen');
+    const archiv = zu;
+    const ansicht = archiv ? 'archiv' : auf.k === 'kommt' ? 'anreisen' : auf.k === 'abreise' || auf.k === 'ueberfaellig' ? 'abreisen' : 'hafen';
+    const heuteDran = !!offen.length || g.ankunft === heute;
+    return { auf, platz, zahl, offen, ansicht, heuteDran };
+  }
+  let gastAnsicht = '';
+  // Zeilen-Menü: eine Hauptaktion sichtbar, der Rest hinter „⋯“
+  const zeilenMenue = (knoepfe) => !knoepfe.length ? '' : '<span class="zm"><button type="button" class="btn klein zm-knopf" aria-haspopup="true" aria-expanded="false" title="Weitere Aktionen">⋯</button><span class="zm-liste" role="menu" hidden>' + knoepfe.join('') + '</span></span>';
   V.gaeste = (main) => {
-    const anfragen = d.gaeste.filter((x) => x.status === 'angemeldet');
     const gb = G.gebuehrenFuer(d, SAISON);
+    const L = new Map(d.gaeste.map((g) => [g.id, gastLage(g)]));
+    const ANS = [['heute', 'Heute & offen'], ['anreisen', 'Anreisen'], ['hafen', 'Im Hafen'], ['abreisen', 'Abreisen'], ['archiv', 'Archiv']];
+    const drin = (g, a) => a === 'heute' ? L.get(g.id).heuteDran : L.get(g.id).ansicht === a;
+    const anzahl = Object.fromEntries(ANS.map(([k]) => [k, d.gaeste.filter((g) => drin(g, k)).length]));
+    if (!gastAnsicht) gastAnsicht = anzahl.heute ? 'heute' : anzahl.hafen ? 'hafen' : 'archiv';
+    const liste = d.gaeste.filter((g) => drin(g, gastAnsicht)).sort((a, b) => gastAnsicht === 'archiv' ? b.ankunft.localeCompare(a.ankunft) : a.ankunft.localeCompare(b.ankunft));
+    const HAUPT = { eingang: (g) => '<button class="btn klein primaer" data-eingang="' + g.id + '" title="Geld ist da – als bezahlt verbuchen, Quittungsnummer vergeben">Eingang bestätigen</button>',
+      platz: (g) => '<button class="btn klein primaer" data-zuw="' + g.id + '">Platz eintragen</button>',
+      abreise: (g) => '<button class="btn klein" data-weg="' + g.id + '" title="Gast ist abgereist – Platz wird wieder frei">Abgereist</button>',
+      zahlen: (g) => '<button class="btn klein" data-zqr="' + g.id + '" title="GiroCode mit Betrag zum Scannen zeigen">Zahl-QR</button>' };
+    const aktionen = (g) => { const l = L.get(g.id); const haupt = l.offen[0];
+      const menue = [];
+      l.offen.slice(1).forEach((k) => menue.push(HAUPT[k](g).replace(/btn klein( primaer)?/, 'zm-punkt')));
+      if (haupt !== 'zahlen' && !l.offen.includes('zahlen') && !g.bezahlt_am && !g.zahlung_gemeldet && g.status !== 'storniert' && g.status !== 'abgereist') menue.push('<button class="zm-punkt" data-zqr="' + g.id + '">Zahl-QR zeigen</button>');
+      if (haupt) menue.push('<button class="zm-punkt" data-bearb="' + g.id + '">Bearbeiten</button>');
+      if (g.quittung_nr && g.bezahlt_am) menue.push('<button class="zm-punkt" data-quit="' + g.id + '">Quittung</button>');
+      if (!l.offen.includes('abreise') && g.status !== 'abgereist' && g.status !== 'storniert' && g.ankunft <= heute) menue.push('<button class="zm-punkt" data-weg="' + g.id + '">Als abgereist markieren</button>');
+      return (haupt ? HAUPT[haupt](g) : '<button class="btn klein" data-bearb="' + g.id + '">Bearbeiten</button>') + ' ' + zeilenMenue(menue); };
+    const zeile = (g) => { const l = L.get(g.id);
+      return '<tr' + (l.ansicht === 'archiv' ? ' class="blass"' : '') + ' data-gid="' + g.id + '"><td><strong>„' + esc(g.bootsname) + '“</strong><br><small style="color:var(--muted)">' + H.zahl(g.laenge, 1) + (g.breite ? ' × ' + H.zahl(g.breite, 1) : '') + ' m' + (g.tiefgang ? ' · Tg. ' + H.zahl(g.tiefgang, 1) + ' m' : '') + ' · ' + esc(g.skipper) + (g.tel ? ' · <a href="tel:' + esc(g.tel) + '">' + esc(g.tel) + '</a>' : '') + (g.quelle === 'qr' ? ' · QR' : '') + '</small></td>' +
+        '<td><span class="tag ' + l.auf.c + '">' + l.auf.t + '</span><br><small>' + H.datum(g.ankunft) + ' · ' + g.naechte + (g.naechte === 1 ? ' Nacht' : ' Nächte') + '</small></td>' +
+        '<td><span class="tag ' + l.platz.c + '">' + l.platz.t + '</span>' + (l.platz.pruefen && g.platz_hinweis ? '<br><small>' + esc(g.platz_hinweis) + '</small>' : '') + '</td>' +
+        '<td><span class="tag ' + l.zahl.c + '">' + l.zahl.t + '</span><br><small>' + H.geld(g.betrag) + (g.zahlung && !g.zahlung_gemeldet && g.zahlung !== 'offen' ? ' · ' + esc(ZAHLART[g.zahlung] || g.zahlung) : '') + '</small></td>' +
+        '<td class="r aktion">' + aktionen(g) + '</td></tr>'; };
+    const leer = { heute: 'Heute ist bei den Gästen nichts zu tun.', anreisen: 'Keine angekündigten Gäste.', hafen: 'Gerade liegt kein Gast im Hafen.', abreisen: 'Heute reist niemand ab.', archiv: 'Noch keine abgereisten Gäste.' };
     main.innerHTML = kopf('Gastlieger', 'Tageslieger: ' + H.geld(gb.gast_nacht) + ' pro Nacht · Hafenmeister ' + esc(d.einstellungen.hafenmeister_name), '<button class="btn" id="plakat">QR-Plakat für den Steg</button><a class="btn" href="gast.html" target="_blank">Gast-Anmeldung ansehen</a><button class="btn primaer" id="neu">+ Gast einweisen</button>') +
-      '<p class="hinweis">So läuft es: Gast sieht ein grünes Schild, macht fest, meldet sich per QR-Code mit der Platznummer an und bezahlt sofort (PayPal, Überweisung oder bar). Passt der Platz laut Plan, steht der Gast direkt „im Hafen“ – hier landet nur, was zu prüfen ist.</p>' + wcPanel() +
-      (anfragen.length ? '<div class="panel" style="border:2px solid var(--gast)"><h2>Platz prüfen (' + anfragen.length + ')</h2><p class="hinweis" style="margin-top:0">Diese Gäste liegen schon – der angegebene Platz passt laut Plan nicht oder fehlt.</p><table class="tab"><tbody>' + anfragen.map((x) =>
-        '<tr><td><strong>„' + esc(x.bootsname) + '“</strong> · ' + H.zahl(x.laenge, 1) + (x.breite ? ' × ' + H.zahl(x.breite, 1) : '') + ' m' + (x.tiefgang ? ' · Tg. ' + H.zahl(x.tiefgang, 1) + ' m' : '') + ' · ' + esc(x.skipper) + (x.tel ? ' · <a href="tel:' + esc(x.tel) + '">' + esc(x.tel) + '</a>' : '') +
-        '<br><small>' + (x.platz_angabe ? 'liegt laut Gast an <strong>' + esc(angabe(x.platz_angabe)) + '</strong>' + (x.platz_hinweis ? ' – ' + esc(x.platz_hinweis) : '') : 'keine Platznummer angegeben') + '</small></td><td>' + H.datum(x.ankunft) + ', ' + x.naechte + ' N. · ' + zahlungText(x) + '</td><td class="r"><button class="btn klein primaer" data-zuw="' + x.id + '">Platz eintragen</button></td></tr>').join('') + '</tbody></table></div>' : '') +
-      '<div class="panel"><table class="tab"><thead><tr><th>Ankunft</th><th>Boot</th><th>Skipper</th><th>Platz</th><th class="r">Nächte</th><th class="r">Betrag</th><th>Zahlung</th><th>Status</th><th></th></tr></thead><tbody>' +
-      d.gaeste.slice().sort((a, b) => b.ankunft.localeCompare(a.ankunft)).map((x) =>
-        '<tr' + (x.status === 'abgereist' || x.status === 'storniert' ? ' class="blass"' : '') + '><td>' + H.datum(x.ankunft) + '</td><td><strong>' + esc(x.bootsname) + '</strong> <small style="color:var(--muted)">' + H.zahl(x.laenge, 1) + ' m</small></td><td>' + esc(x.skipper) + '</td><td>' + (x.platz_id ? esc(platzName(x.platz_id)) : '<span class="tag gast">offen</span>') + '</td>' +
-        '<td class="r">' + x.naechte + '</td><td class="r">' + H.geld(x.betrag) + '</td><td>' + (x.status === 'storniert' ? '–' : zahlungText(x)) + '</td>' +
-        '<td>' + ({ angemeldet: '<span class="tag gast">angemeldet</span>', eingewiesen: '<span class="tag ok">im Hafen</span>', abgereist: 'abgereist', storniert: '<span class="tag">storniert</span>' })[x.status] + (x.quelle === 'qr' ? ' <small style="color:var(--muted)">QR</small>' : '') + '</td>' +
-        '<td class="r" style="white-space:nowrap">' + (!x.bezahlt_am && !x.zahlung_gemeldet && x.status !== 'storniert' && x.status !== 'abgereist' ? '<button class="btn klein" data-zqr="' + x.id + '" title="GiroCode mit Betrag zum Scannen zeigen">Zahl-QR</button> ' : '') + (x.zahlung_gemeldet && !x.bezahlt_am && x.status !== 'storniert' ? '<button class="btn klein primaer" data-eingang="' + x.id + '" title="Geld ist da – als bezahlt verbuchen, Quittungsnummer vergeben">Eingang bestätigen</button> ' : '') + (x.status !== 'angemeldet' ? '<button class="btn klein" data-bearb="' + x.id + '">Bearbeiten</button> ' : '') + (x.quittung_nr && x.bezahlt_am ? '<button class="btn klein" data-quit="' + x.id + '">Quittung</button>' : '') + '</td></tr>').join('') + '</tbody></table></div>';
+      '<p class="hinweis">So läuft es: Gast sieht ein grünes Schild, macht fest, meldet sich per QR-Code mit der Platznummer an und bezahlt sofort (GiroCode, PayPal oder bar). Passt der Platz laut Plan, ist nichts zu tun – unter „Heute & offen“ steht nur, was zu prüfen ist.</p>' + wcPanel() +
+      '<div class="ab-modus gast-modus" role="tablist">' + ANS.map(([k, t]) => '<button type="button" role="tab" aria-selected="' + (k === gastAnsicht) + '" class="' + (k === gastAnsicht ? 'aktiv' : '') + '" data-gans="' + k + '">' + t + (anzahl[k] ? ' <span class="zahl-leise">' + anzahl[k] + '</span>' : '') + '</button>').join('') + '</div>' +
+      '<div class="panel">' + (liste.length ? '<table class="tab gast-tab"><thead><tr><th>Boot</th><th>Aufenthalt</th><th>Platz</th><th>Zahlung</th><th></th></tr></thead><tbody>' + liste.map(zeile).join('') + '</tbody></table>' : '<p class="leer">' + leer[gastAnsicht] + '</p>') + '</div>';
     $('#neu').addEventListener('click', () => gastForm({}));
     $('#plakat').addEventListener('click', () => oeffnen('drucken.html?art=plakat'));
+    main.querySelectorAll('[data-gans]').forEach((b) => b.addEventListener('click', () => { gastAnsicht = b.dataset.gans; zeige(tab, true); }));
     main.querySelectorAll('[data-zuw]').forEach((b) => b.addEventListener('click', () => gastForm(d.gaeste.find((x) => x.id === b.dataset.zuw))));
     main.querySelectorAll('[data-bearb]').forEach((b) => b.addEventListener('click', () => gastForm(d.gaeste.find((x) => x.id === b.dataset.bearb))));
     main.querySelectorAll('[data-quit]').forEach((b) => b.addEventListener('click', () => oeffnen('drucken.html?art=quittung&id=' + b.dataset.quit)));
     main.querySelectorAll('[data-zqr]').forEach((b) => b.addEventListener('click', () => zahlQr(d.gaeste.find((x) => x.id === b.dataset.zqr))));
+    main.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => {
+      const g = d.gaeste.find((x) => x.id === b.dataset.weg); g.status = 'abgereist';
+      speichern('„' + g.bootsname + '“ ist abgereist' + (g.bezahlt_am || g.zahlung_gemeldet ? '.' : ' – Zahlung ist noch offen.')); zeige(tab, true);
+    }));
     const wcb = $('#wc-aendern'); if (wcb) wcb.addEventListener('click', wcForm);
     main.querySelectorAll('[data-eingang]').forEach((b) => b.addEventListener('click', () => {
       const g = d.gaeste.find((x) => x.id === b.dataset.eingang);
@@ -891,7 +953,7 @@
     }));
   };
   // Toilettencode für Gäste: eigener Wert (der Hafenmeister wechselt ihn selbst), Regel wann Gäste ihn sehen
-  const WC_REGEL = { '': 'Gäste sehen keinen Code', gemeldet: 'Gäste sehen ihn, sobald sie „bezahlt“ melden', bestaetigt: 'Gäste sehen ihn erst, wenn der Eingang bestätigt ist' };
+  const WC_REGEL = { '': 'Gäste sehen keinen Code', gemeldet: 'Gäste sehen ihn, sobald sie „bezahlt“ melden – vom Gast gemeldet, noch nicht geprüft', bestaetigt: 'Gäste sehen ihn erst, wenn der Eingang bestätigt ist' };
   const wcPanel = () => { const t = d.toilette || {};
     return '<div class="panel wc-panel"><div><small>Toilettencode für Gäste</small><strong>' + (t.code ? esc(t.code) : '–') + '</strong></div><p>' + esc(t.code ? WC_REGEL[t.regel || ''] : 'Noch kein Code hinterlegt.') + (t.hinweis ? '<br><small>' + esc(t.hinweis) + '</small>' : '') + '</p>' +
       '<button class="btn klein" id="wc-aendern">Code ändern</button></div>'; };
@@ -1006,9 +1068,9 @@
     const winter = Q.belegungen(SAISON, 'winter');
     const gb = G.gebuehrenFuer(d, SAISON);
     main.innerHTML = kopf('Ein-/Auslagern & Kran', 'Gemeinschaftsarbeit nach Belegungsplan · Auslagern ' + H.datum(sd.auslagern) + ' · Einlagern ' + H.datum(sd.einlagern), '<button class="btn" id="druck">Belegungsplan drucken</button><button class="btn primaer" id="kran">+ Kran-Einsatz</button>') +
-      '<div class="zwei"><div class="panel"><h2>Belegungsplan Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) + '</h2><p class="hinweis">Boote über 10 t werden nicht gekrant. „Nicht kranen“ muss spätestens eine Woche vor dem Auslagern gemeldet sein.</p><table class="tab"><thead><tr><th>Landplatz</th><th>Boot</th><th class="r">Gewicht</th><th>Eigner</th><th></th></tr></thead><tbody>' +
+      '<div class="zwei"><div class="panel"><h2>Belegungsplan Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) + '</h2><p class="hinweis">Boote über ' + Q.maxTxt() + ' werden nicht gekrant. „Nicht kranen“ muss spätestens eine Woche vor dem Auslagern gemeldet sein.</p><table class="tab"><thead><tr><th>Landplatz</th><th>Boot</th><th class="r">Gewicht</th><th>Eigner</th><th></th></tr></thead><tbody>' +
       winter.slice().sort((a, b) => a.platz_id.localeCompare(b.platz_id)).map((bl) => { const b = Q.boot(bl.boot_id); const m = Q.mitglied(b.eigner_id);
-        return '<tr><td>' + esc(platzName(bl.platz_id)) + '</td><td>' + esc(b.name) + '</td><td class="r">' + H.zahl(b.gewicht_t, 1) + ' t' + (b.gewicht_t > 10 ? ' <span class="tag rot">!</span>' : '') + '</td><td>' + esc(Q.name(m)) + '</td><td>' + (bl.nicht_kranen ? '<span class="tag warn">nicht kranen</span>' : '') + '</td></tr>'; }).join('') +
+        return '<tr><td>' + esc(platzName(bl.platz_id)) + '</td><td>' + esc(b.name) + '</td><td class="r">' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">!</span>' : '') + '</td><td>' + esc(Q.name(m)) + '</td><td>' + (bl.nicht_kranen ? '<span class="tag warn">nicht kranen</span>' : '') + '</td></tr>'; }).join('') +
       '</tbody></table></div><div class="panel"><h2>Kran-Einsätze außerhalb der Termine</h2><p class="hinweis">Schiffskran ' + H.geld(gb.schiffskran_std) + ', Mastenkran ' + H.geld(gb.mastenkran_std) + ' je angefangene Stunde – laufen automatisch in die nächste Abrechnung.</p><table class="tab"><thead><tr><th>Datum</th><th>Boot</th><th>Kran</th><th class="r">Dauer</th><th>Abrechnung</th></tr></thead><tbody>' +
       d.kran.slice().sort((a, b) => b.datum.localeCompare(a.datum)).map((k) => { const b = Q.boot(k.boot_id);
         return '<tr><td>' + H.datum(k.datum) + '</td><td>' + esc(b ? b.name : '?') + '<br><small style="color:var(--muted)">' + esc(k.notiz || '') + '</small></td><td>' + (k.art === 'mast' ? 'Mast' : 'Schiff') + '</td><td class="r">' + k.minuten + ' Min.</td><td>' + (k.abgerechnet ? '<span class="tag ok">' + esc(k.abgerechnet) + '</span>' : '<span class="tag warn">offen</span>') + '</td></tr>'; }).join('') + '</tbody></table></div></div>';
@@ -1016,7 +1078,7 @@
     $('#kran').addEventListener('click', () => {
       const el = modal('<h2>Kran-Einsatz</h2><form id="f" class="form"><label class="feld voll">Boot<select name="boot_id" required>' + bOpt() + '</select></label><label class="feld">Datum<input name="datum" type="date" value="' + heute + '" required></label><label class="feld">Kran<select name="art"><option value="schiff">Schiffskran</option><option value="mast">Mastenkran</option></select></label><label class="feld">Dauer (Minuten)<input name="minuten" type="number" min="1" value="60" required></label><label class="feld">Anlass<input name="notiz"></label></form><p class="hinweis">Kran nur durch eingewiesene Personen (Hafenbetriebsordnung 3.1.4).</p><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Erfassen</button></div>');
       $('#ok', el).addEventListener('click', () => { const f = $('#f', el); if (!f.reportValidity()) return; const x = Object.fromEntries(new FormData(f)); const b = Q.boot(x.boot_id);
-        if (b.gewicht_t > 10 && x.art === 'schiff' && !confirm('Boot über 10 t – laut Hafenbetriebsordnung wird nicht gekrant. Trotzdem erfassen?')) return;
+        if (Q.zuSchwer(b) && x.art === 'schiff' && !confirm('Boot über ' + Q.maxTxt() + ' – laut Hafenbetriebsordnung wird nicht gekrant. Trotzdem erfassen?')) return;
         d.kran.push({ id: H.uid('K'), ...x, minuten: Number(x.minuten), abgerechnet: '' }); speichern('Kran-Einsatz erfasst.'); zu(); zeige(tab); });
     });
   };
@@ -1044,7 +1106,7 @@
       regeln +
       '<div class="panel"><h2>Arbeitseinsätze</h2>' + (einsaetze.length ? '<table class="tab"><tbody>' + einsaetze.map((x) => { const n = d.arbeitsdienst.filter((a) => a.einsatz_id === x.id && a.status !== 'abgelehnt').length;
         return '<tr' + (x.datum < heute ? ' class="blass"' : '') + '><td class="nw"><strong>' + H.datum(x.datum) + '</strong>' + (x.datum === heute ? ' <span class="tag gruen">heute</span>' : '') + '<br><small style="color:var(--muted)">' + esc([x.beginn, x.ende].filter(Boolean).join('–')) + '</small></td><td>' + esc(x.titel) + (x.bereich_id && bereichName(x.bereich_id) ? ' <span class="tag">' + esc(bereichName(x.bereich_id)) + '</span>' : '') + '<br><small style="color:var(--muted)">' + H.zahl(x.stunden, x.stunden % 1 ? 1 : 0) + ' Std. · Code ' + esc(codeVon(x.id)) + ' · ' + n + ' Check-in' + (n === 1 ? '' : 's') + '</small></td>' +
-          '<td class="r nw"><button class="btn klein" data-plakat="' + x.id + '">QR-Plakat</button> <button class="btn klein gefahr" data-einsatz-weg="' + x.id + '">Löschen</button></td></tr>'; }).join('') + '</tbody></table>' : '<p class="leer">Noch keine Arbeitseinsätze geplant.</p>') +
+          '<td class="r aktion"><button class="btn klein" data-plakat="' + x.id + '">QR-Plakat</button> ' + zeilenMenue(['<button class="zm-punkt gefahr" data-einsatz-weg="' + x.id + '">Einsatz löschen</button>']) + '</td></tr>'; }).join('') + '</tbody></table>' : '<p class="leer">Noch keine Arbeitseinsätze geplant.</p>') +
       '<p class="hinweis" style="margin-top:10px">Am Einsatztag das QR-Plakat aushängen: Mitglieder scannen, melden sich in „Mein SSV“ an und tragen ihre Stunden ein. Der Code gilt nur am Einsatztag; bestätigt wird hier oben.</p></div>' +
       '<div class="panel"><h2>Stundenstand</h2><table class="tab"><thead><tr><th>Mitglied</th><th class="r">bestätigt</th><th class="r">Soll</th>' + (e.arbeitsdienst_vorjahr ? '<th class="r">Rest Vorjahr</th>' : '') + '<th class="r">Fehlstunden</th>' + (satz ? '<th class="r">Ersatz</th>' : '') + '<th>Stand</th></tr></thead><tbody>' +
       liste.sort((x, y) => y.a.fehl - x.a.fehl || x.m.nachname.localeCompare(y.m.nachname, 'de')).map(({ m, a }) =>
@@ -1352,7 +1414,8 @@
         return '<tr' + (r.storniert_am ? ' class="blass"' : '') + '><td><strong style="white-space:nowrap">' + esc(r.nr) + '</strong></td><td>' + H.datum(r.datum) + '</td><td>' + esc(r.empfaenger.vorname + ' ' + r.empfaenger.nachname) + ' <small style="color:var(--muted)">' + esc(r.empfaenger.nr || '') + '</small></td><td>' + H.periodeText(r) + '</td>' +
           '<td class="r">' + H.geld(r.summe) + (rest > 0 && rest < r.summe ? '<br><small>offen ' + H.geld(rest) + '</small>' : '') + '</td><td>' + (r.sepa ? 'Lastschrift' + (r.sepa_lauf ? ' <small style="color:var(--muted)">' + esc(r.sepa_lauf) + '</small>' : '') : 'Überweisung') + '</td>' +
           '<td><span class="tag ' + RSTATUS[st][1] + '">' + RSTATUS[st][0] + '</span>' + (r.bezahlt_am ? ' <small style="color:var(--muted)">' + H.kurz(r.bezahlt_am) + '</small>' : '') + (z.length ? ' <small style="color:var(--muted)" title="' + esc(z.map((x) => H.datum(x.datum) + ' ' + (x.art === 'ruecklastschrift' ? 'Rücklastschrift' : 'Eingang') + ' ' + H.geld(x.betrag) + (x.notiz ? ' – ' + x.notiz : '')).join('\n')) + '">(' + z.length + ' Buchung' + (z.length > 1 ? 'en' : '') + ')</small>' : '') + '</td>' +
-          '<td class="r" style="white-space:nowrap"><button class="btn klein" data-zeige="' + r.id + '">Ansehen</button> ' + (!r.storniert_am ? '<button class="btn klein" data-zahl="' + r.id + '">Zahlung</button> ' : '') + (!r.storniert_am && !r.bezahlt_am && !Q.gezahlt(r) ? '<button class="btn klein gefahr" data-storno="' + r.id + '">Storno</button>' : '') + '</td></tr>'; }).join('') || '<tr><td colspan="8" class="leer">Keine Rechnung passt zu den Filtern.</td></tr>';
+          '<td class="r aktion">' + (r.storniert_am ? '<button class="btn klein" data-zeige="' + r.id + '">Ansehen</button>' : '<button class="btn klein' + (rest > 0 ? ' primaer' : '') + '" data-zahl="' + r.id + '">Zahlung</button> ' +
+            zeilenMenue(['<button class="zm-punkt" data-zeige="' + r.id + '">Rechnung ansehen</button>'].concat(!r.bezahlt_am && !Q.gezahlt(r) ? ['<button class="zm-punkt gefahr" data-storno="' + r.id + '">Stornieren</button>'] : []))) + '</td></tr>'; }).join('') || '<tr><td colspan="8" class="leer">Keine Rechnung passt zu den Filtern.</td></tr>';
       $('#r-mehr').innerHTML = l.length > zeig.length ? '<button class="btn klein" style="margin-top:10px">Alle ' + l.length + ' anzeigen</button>' : '';
       const mb = $('#r-mehr button'); if (mb) mb.addEventListener('click', () => { abrStand.mehr = true; rListe(); });
     };
@@ -1465,13 +1528,17 @@
       '<h3 class="voll" style="margin:14px 0 0">Saisontermine</h3>' + [SAISON, SAISON + 1].map((j) => { const s = (d.saisons || []).find((x) => x.jahr === j) || {};
         return '<label class="feld">Auslagern ' + j + '<input type="date" name="aus_' + j + '" value="' + esc(s.auslagern || '') + '"></label><label class="feld">Einlagern ' + j + '<input type="date" name="ein_' + j + '" value="' + esc(s.einlagern || '') + '"></label>'; }).join('') +
       (DB ? '<h3 class="voll" style="margin:14px 0 0">Push-Benachrichtigungen</h3><label class="feld check voll"><input type="checkbox" name="push_aktiv"' + (e.push_aktiv ? ' checked' : '') + '> In „Mein SSV“ anbieten, Mitteilungen auch als Push aufs Handy zu bekommen (iPhone: nur wenn „Mein SSV“ zum Home-Bildschirm hinzugefügt ist)</label>' : '') +
+      '<h3 class="voll" style="margin:14px 0 0">Gewichtsgrenze für Steg und Kran</h3><p class="hinweis voll" style="margin:0">Gilt überall: Bootsanmeldung, Belegung, Kranliste, Warnungen. Hafenbetriebsordnung 3.1.4: 10 t inkl. Zubehör – die Website nennt beim Kran 9 t.</p>' +
+      f('max_gewicht_t', 'Höchstgewicht (t)', 'number', ' step="0.1" min="1"') +
+      '<label class="feld check voll"><input type="checkbox" name="grenze_bestaetigt"' + (e.grenze_bestaetigt ? ' checked' : '') + '> Grenze ist vom Vorstand geklärt (Website und Hafenbetriebsordnung stimmen überein)</label>' +
       '<h3 class="voll" style="margin:14px 0 0">Hafenplan</h3>' +
       '<label class="feld check voll"><input type="checkbox" name="plan_bestaetigt"' + (e.plan_bestaetigt ? ' checked' : '') + '> Brückenzuordnung und Boxmaße unter „Liegeplätze“ sind geprüft und stimmen</label></form></div>' +
       (darf('verlauf') ? '<div class="panel"><h2>Datensicherung</h2><p class="hinweis">' + (DB ? 'Die Vereinsdatenbank wird beim Anbieter gesichert (Tarif prüfen: tägliche Sicherung). Zusätzlich kannst du hier jederzeit eine Kopie aller Hafen- und Mitgliederdaten herunterladen – z. B. einmal im Monat, sicher aufbewahren (enthält Bankdaten).' : 'In der Demo liegen die Daten nur in diesem Browser.') + '</p><button class="btn" id="sicherung">Datensicherung herunterladen</button></div>' : '') +
       (DB ? '' : '<div class="panel"><h2>Demo</h2><p class="hinweis">Setzt alle Daten auf die erfundenen Beispieldaten zurück.</p><button class="btn gefahr" id="reset">Demo zurücksetzen</button></div>');
     $('#ok').addEventListener('click', () => {
-      const x = Object.fromEntries(new FormData($('#f'))); ['stromumlage_ueber_hafen', 'arbeitsdienst_vorjahr', 'arbeitsdienst_bestaetigt', 'plan_bestaetigt'].concat(DB ? ['push_aktiv'] : []).forEach((k) => { x[k] = !!x[k]; });
-      ['zahlungsziel_tage', 'arbeitsdienst_soll', 'arbeitsdienst_mahnung_ab', 'arbeitsdienst_befreit_ab', 'arbeitsdienst_satz'].forEach((k) => { x[k] = Number(String(x[k]).replace(',', '.')) || 0; });
+      const x = Object.fromEntries(new FormData($('#f'))); ['stromumlage_ueber_hafen', 'arbeitsdienst_vorjahr', 'arbeitsdienst_bestaetigt', 'plan_bestaetigt', 'grenze_bestaetigt'].concat(DB ? ['push_aktiv'] : []).forEach((k) => { x[k] = !!x[k]; });
+      ['zahlungsziel_tage', 'arbeitsdienst_soll', 'arbeitsdienst_mahnung_ab', 'arbeitsdienst_befreit_ab', 'arbeitsdienst_satz', 'max_gewicht_t'].forEach((k) => { x[k] = Number(String(x[k]).replace(',', '.')) || 0; });
+      if (!(x.max_gewicht_t >= 1)) return toast('Bitte ein Höchstgewicht für Steg und Kran eintragen.', 'fehler');
       if (x.steuer_hinweis === 'frei' && !x.steuer_text.trim()) return toast('Bitte den eigenen Steuerhinweis eintragen.', 'fehler');
       for (const j of [SAISON, SAISON + 1]) {
         const aus = x['aus_' + j], ein = x['ein_' + j]; delete x['aus_' + j]; delete x['ein_' + j];
@@ -1654,6 +1721,21 @@
     // neuer Bereich/Reiter → eigener Verlaufseintrag, damit die Zurück-Taste funktioniert
     try { if (location.hash.slice(1) !== t) history[!ruhig && vorher && vorher !== t ? 'pushState' : 'replaceState'](null, '', '#' + t); } catch (e) { /* egal */ }
   }
+  // Zeilen-Menüs (⋯): fest positioniert, damit sie nicht im Panel abgeschnitten werden
+  const zmLegen = (zk, l) => { const r = zk.getBoundingClientRect(); const w = l.offsetWidth, h = l.offsetHeight;
+    l.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px'; l.style.top = (r.bottom + 4 + h > innerHeight ? Math.max(8, r.top - h - 4) : r.bottom + 4) + 'px'; };
+  const zuMenues = () => document.querySelectorAll('.zm-liste:not([hidden])').forEach((l) => { l.hidden = true; const k = l.previousElementSibling; if (k) k.setAttribute('aria-expanded', 'false'); });
+  document.addEventListener('click', (e) => {
+    const zk = e.target.closest('.zm-knopf');
+    if (zk) { const l = zk.nextElementSibling; const war = !l.hidden; zuMenues(); if (!war) { l.hidden = false; zk.setAttribute('aria-expanded', 'true'); zmLegen(zk, l);
+      const erst = l.querySelector('button'); if (erst && e.detail === 0) erst.focus(); } return; }
+    if (e.target.closest('.zm-liste')) setTimeout(zuMenues, 0); else zuMenues();
+  });
+  // Beim Scrollen folgt das Menü seinem Knopf; ist der Knopf nicht mehr zu sehen, geht es zu
+  window.addEventListener('scroll', () => document.querySelectorAll('.zm-liste:not([hidden])').forEach((l) => { const k = l.previousElementSibling; const r = k.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight) zuMenues(); else zmLegen(k, l); }), true);
+  window.addEventListener('resize', zuMenues);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.querySelector('.zm-liste:not([hidden])')) { e.stopPropagation(); zuMenues(); } }, true);
   document.addEventListener('click', (e) => {
     const auf = e.target.closest('#navauf');
     if (auf) { const nv = $('#nav'); const o = nv.classList.toggle('offen'); auf.setAttribute('aria-expanded', o); document.body.classList.toggle('nav-auf', o); return; }

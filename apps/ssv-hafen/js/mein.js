@@ -30,11 +30,13 @@
   sel.value = mid;
   sel.addEventListener('change', () => { mid = sel.value; try { sessionStorage.setItem('ssv-mein', mid); } catch (e) { /* egal */ } zeigen(); });
 
-  /* Aufklappbare Bereiche: am Handy zu (außer Rechnungen), am Rechner offen; Wahl wird gemerkt */
+  /* Kurze Startansicht: offen sind nur Rechnungen, Boot und Arbeitsdienst (am Handy nur die Rechnungen),
+     alles andere zeigt im Kopf eine Zusammenfassung und klappt bei Bedarf auf; die Wahl wird gemerkt */
   const AUF = {};
   const istHandy = () => window.matchMedia('(max-width: 860px)').matches;
+  const START_OFFEN = ['rechnungen', 'boot', 'arbeitsdienst', 'arbeitsbereiche'];
   function sektion(key, titel, info, inhalt, klasse, offenAmHandy) {
-    const offen = key in AUF ? AUF[key] : (istHandy() ? !!offenAmHandy : true);
+    const offen = key in AUF ? AUF[key] : (istHandy() ? !!offenAmHandy : START_OFFEN.includes(key));
     return '<details class="panel sek' + (klasse ? ' ' + klasse : '') + '" data-sek="' + key + '"' + (offen ? ' open' : '') + '><summary><h2>' + titel + '</h2>' +
       '<span class="sek-info" id="info-' + key + '">' + info + '</span></summary><div class="sek-inhalt">' + inhalt + '</div></details>';
   }

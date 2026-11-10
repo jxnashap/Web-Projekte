@@ -47,6 +47,8 @@
     plan_bestaetigt: false,             // Boxmaße und Brückenzuordnung vom Verein bestätigt?
     push_aktiv: false,                  // Push-Benachrichtigungen in „Mein SSV“ anbieten (nach dem ersten Test einschalten)
     flaeche_aufschlag_m: 0,
+    max_gewicht_t: 10,                  // Grenze für Steg und Kran (Hafenbetriebsordnung 3.1.4: 10 t inkl. Zubehör)
+    grenze_bestaetigt: false,           // Website nennt 9 t, Hafenbetriebsordnung 10 t – Vorstand klärt
     fusstext: 'Danke, dass du dabei bist – und allzeit gute Fahrt!'
   };
 
@@ -183,7 +185,7 @@
       belegungen.push({ id: uid('BL'), saison: 2026, periode: 'sommer', boot_id: bt.id, platz_typ: 'wasser', platz_id: p.id, art: art === 'gast' ? 'saisongast' : 'dauer', flaeche_m2: null, nicht_kranen: false, notiz: '' });
     });
     // Ein Boot über 10 t – zur Demonstration der Warnung
-    boote[3].gewicht_t = 10.4; boote[3].notiz = 'Gewicht über 10 t – laut Hafenbetriebsordnung nicht zulässig [BEISPIEL]';
+    boote[3].gewicht_t = 10.4; boote[3].notiz = 'Gewicht über der Grenze für Steg und Kran [BEISPIEL]';
     // Zwei Boote bleiben im Sommer an Land (Sommerlagerung, Verdopplungsregel)
     const landSommer = [mitglied('ausuebend'), mitglied('ausuebend')];
     const bLand1 = boot(landSommer[0], 'II'), bLand2 = boot(landSommer[1], 'III');
@@ -655,7 +657,11 @@
     BRUECKE: { ost: 'Ostbrücke', west: 'Westbrücke', schwimm: 'Schwimmbrücke', laengs: 'Längsseits' }
   };
 
+  // Gewichtsgrenze für Steg und Kran – einzige Stelle, aus den Einstellungen
+  const maxT = () => { const v = Number(d && d.einstellungen && d.einstellungen.max_gewicht_t); return v > 0 ? v : 10; };
+  const zuSchwer = (b) => !!b && Number(b.gewicht_t) > maxT();
   const Q = {
+    maxT, zuSchwer, maxTxt: () => maxT().toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' t',
     mitglied: (id) => d.mitglieder.find((m) => m.id === id),
     // Mitglied am Stichtag (kein Saison-Gast, eingetreten, nicht ausgetreten)
     istMitglied: (m, stichtag) => m.art !== 'gast' && (!m.eintritt || m.eintritt <= stichtag) && (!m.austritt || m.austritt > stichtag),
@@ -685,7 +691,7 @@
       const probleme = [];
       if (platz.max_laenge && boot.laenge > platz.max_laenge) probleme.push('Länge ' + H.zahl(boot.laenge) + ' m > ' + H.zahl(platz.max_laenge, 1) + ' m');
       if (platz.max_breite && boot.breite > platz.max_breite) probleme.push('Breite ' + H.zahl(boot.breite) + ' m > ' + H.zahl(platz.max_breite, 1) + ' m');
-      if (boot.gewicht_t > 10) probleme.push('Gewicht ' + H.zahl(boot.gewicht_t, 1) + ' t > 10 t');
+      if (zuSchwer(boot)) probleme.push('Gewicht ' + H.zahl(boot.gewicht_t, 1) + ' t > ' + Q.maxTxt());
       return probleme;
     },
     // Rechnungen: gezahlt, Rest und Status (Teilzahlung, Rücklastschrift)
