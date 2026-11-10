@@ -89,7 +89,7 @@ Eine Person kann mehrere Rollen haben (eine Zeile je Rolle).
 ## 4 · Stammdaten
 
 1. **Hafen-Manager** (`/ssv-hafen/`) als Vorstand oder Kassenwart anmelden →
-   **Einstellungen**: IBAN, BIC, Gläubiger-ID, Kassenwart, Hafenmeister. **Gebührenordnung** prüfen.
+   **Einstellungen**: IBAN, BIC, Gläubiger-ID, Kassenwart, Hafenmeister. **Gebührenordnung** prüfen (Fassung ab der laufenden Saison; neue Preise nach der JHV als neue Fassung ab der nächsten Saison anlegen).
 2. **Mitglieder importieren**: Mitglieder & Eigner → „Mitglieder importieren (CSV)“ mit dem
    easyVerein-Export (Mitgliedsnummer, Anschrift, Geburtsdatum, IBAN, Mandatsreferenz, Mandatsdatum).
    Die Getränkekasse nutzt automatisch denselben Mitgliederstamm.

@@ -624,8 +624,12 @@
     }
   };
   async function verlauf(opt = {}) {
-    if (!SB) { let l = (d.aenderungen || []).slice().reverse(); if (opt.tabelle) l = l.filter((x) => x.tabelle === opt.tabelle); if (opt.datensatz) l = l.filter((x) => x.datensatz === opt.datensatz); return l.slice(0, opt.limit || 300); }
-    return SB.req('/rest/v1/aenderungen?select=*&order=id.desc&limit=' + (opt.limit || 300) + (opt.tabelle ? '&tabelle=eq.' + opt.tabelle : '') + (opt.datensatz ? '&datensatz=eq.' + encodeURIComponent(opt.datensatz) : ''));
+    // opt.datensaetze: mehrere Datensätze auf einmal (Mitgliedsakte: Mitglied, Boote, Belegungen, Rechnungen …)
+    const ids = opt.datensaetze ? opt.datensaetze.filter(Boolean).map(String) : null;
+    if (!SB) { let l = (d.aenderungen || []).slice().reverse(); if (opt.tabelle) l = l.filter((x) => x.tabelle === opt.tabelle); if (opt.datensatz) l = l.filter((x) => x.datensatz === opt.datensatz); if (ids) l = l.filter((x) => ids.includes(String(x.datensatz))); return l.slice(0, opt.limit || 300); }
+    if (ids && !ids.length) return [];
+    return SB.req('/rest/v1/aenderungen?select=*&order=id.desc&limit=' + (opt.limit || 300) + (opt.tabelle ? '&tabelle=eq.' + opt.tabelle : '') + (opt.datensatz ? '&datensatz=eq.' + encodeURIComponent(opt.datensatz) : '') +
+      (ids ? '&datensatz=in.(' + ids.filter((x) => /^[\w-]+$/.test(x)).join(',') + ')' : ''));   // IDs sind UUIDs/Wortzeichen – ohne Anführungszeichen
   }
   async function meinDatenAendern(p) { await SB.rpc('mein_daten_aendern', { p }); }
 
