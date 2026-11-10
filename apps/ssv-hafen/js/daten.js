@@ -574,6 +574,34 @@
   // Nach einem abgelehnten Speichern (oder um Änderungen anderer zu sehen) den Stand neu aus der Datenbank holen
   async function neuLaden() { await schlange; return verbinden({ bereich: db.bereich === 'mitglied' ? 'mitglied' : undefined }); }
 
+  /* ------------------------------------------------------------ Datensicherung zurückspielen
+   * Die heruntergeladene Sicherung (JSON) wird mit dem aktuellen Stand verglichen und dann über den
+   * normalen Speicherweg zurückgeschrieben: Fehlendes kommt zurück, Geändertes wird auf den Stand der
+   * Sicherung gesetzt, später Hinzugekommenes wird entfernt. Mitglieder und Rechnungen werden nie
+   * gelöscht (nur ergänzt/zurückgesetzt) – genau wie beim normalen Speichern. */
+  const SICHER_TAB = ['mitglieder', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitseinsatz_codes',
+    'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'mitteilungen', 'rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben'];
+  function sicherungLesen(text) {
+    let j; try { j = JSON.parse(text); } catch (e) { throw new Error('Die Datei ist keine Datensicherung (kein gültiges JSON).'); }
+    const s = j && j.daten ? j.daten : j;
+    if (!s || !Array.isArray(s.mitglieder) || !Array.isArray(s.liegeplaetze) || !s.einstellungen) throw new Error('Die Datei ist keine Datensicherung des Hafen-Managers.');
+    const vergleich = SICHER_TAB.map((t) => ({ t, sicherung: (s[t] || []).length, jetzt: (d[t] || []).length }));
+    return { erstellt: j.erstellt || '', von: j.von || '', daten: s, vergleich };
+  }
+  async function zurueckspielen(s) {
+    if (SB) await neuLaden();   // frischer Stand der Datenbank als Vergleichsbasis
+    const kopie = (x) => JSON.parse(JSON.stringify(x));
+    SICHER_TAB.forEach((t) => { if (Array.isArray(s[t])) d[t] = kopie(s[t]); });
+    if (s.gebuehren) d.gebuehren = kopie(s.gebuehren);
+    if (s.einstellungen) d.einstellungen = { ...STANDARD_EINSTELLUNGEN, ...kopie(s.einstellungen) };
+    if (!SB) { ['zaehler', 'toilette', 'bereiche_v', 'version'].forEach((k) => { if (s[k] !== undefined) d[k] = kopie(s[k]); }); }
+    d.rechnungen.forEach((r) => { if (!r.zahlungen) r.zahlungen = []; });
+    const ok = await sichern();
+    if (ok === false) throw new Error('Zurückspielen abgebrochen – die Datenbank hat einen Teil abgelehnt (siehe Meldung).');
+    if (SB) await neuLaden();
+    return d;
+  }
+
   /* ------------------------------------------------------------ Dokumente und Änderungsverlauf */
   const dok = {
     async liste(filter) {   // filter: { boot_id } | { mitglied_id } | { aufgabe_id }
@@ -757,7 +785,7 @@
   const HF_wer = () => (window.HAFEN && window.HAFEN.wer) || '';
 
   window.HAFEN = { laden, sichern, zuruecksetzen, get d() { return d; }, H, Q, STANDARD_EINSTELLUNGEN, GEBUEHREN_2024, demoIban,
-    modus: SB ? 'supabase' : 'demo', verbinden, neuLaden, db, toiletteSetzen, meinDatenAendern, dok, datei, verlauf, wer: '',
+    modus: SB ? 'supabase' : 'demo', verbinden, neuLaden, db, sicherungLesen, zurueckspielen, toiletteSetzen, meinDatenAendern, dok, datei, verlauf, wer: '',
     // Laufende Saison: ab dem Auslagern gilt das neue Jahr, davor (Januar–April) noch das Winterlager des Vorjahres.
     // ?saison=2027 in der Adresse wählt eine andere.
     aktuelleSaison() {

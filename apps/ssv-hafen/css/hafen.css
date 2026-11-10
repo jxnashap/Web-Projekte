@@ -444,3 +444,28 @@ td.aktion { white-space: nowrap; }
   .zm-punkt { min-height: 44px; }
 }
 .zm-punkt.gefahr { color: var(--rot); }
+.sich-vergleich tr.anders td { font-weight: 700; color: var(--rot); }
+/* Rechnungskette: erstellt → zum Einzug → an Bank → bezahlt */
+.kette-kopf { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: stretch; margin: 0 0 10px; }
+.kette-weg { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kette-neben { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.kette-pfeil { color: var(--muted-2); font-weight: 700; }
+.kette-box { border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 8px 12px; min-width: 128px; text-align: left; font: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 1px; color: var(--navy); }
+.kette-box small { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-2); font-weight: 700; }
+.kette-box strong { font-size: 22px; line-height: 1.15; }
+.kette-box span { font-size: 12.5px; color: var(--muted); }
+.kette-box:hover { border-color: var(--navy); }
+.kette-box.aktiv { border-color: var(--navy); box-shadow: inset 0 0 0 1px var(--navy); background: rgba(14,27,69,.04); }
+.kette-box.bezahlt strong { color: var(--gruen); } .kette-box.klaeren strong { color: var(--rot); }
+.kette { display: inline-flex; gap: 3px; margin-right: 6px; vertical-align: middle; }
+.kette i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); display: block; }
+.kette i.an { background: var(--gruen); } .kette.rot i.an { background: var(--rot); }
+table.laeufe { margin: 6px 0 4px; }
+@media (max-width: 860px) {
+  .kette-box { min-width: 0; flex: 1 1 40%; } .kette-weg { width: 100%; } .kette-pfeil { display: none; } .kette-neben { margin-left: 0; width: 100%; }
+}
+/* Finanzübersicht */
+.fin-tab tfoot td, .fin-monate tfoot td { font-weight: 700; }
+.fin-monate .balken-sp { width: 28%; }
+.balken { display: block; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--navy), #4a5a86); min-width: 0; }
+@media (max-width: 860px) { .fin-monate .balken-sp { display: none; } }

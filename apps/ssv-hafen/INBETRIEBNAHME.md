@@ -50,6 +50,9 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    Zahlungsmeldung“ oder „erst nach bestätigtem Eingang“; Gast-Seite fragt den Stand über `gast_status` ab.
    Der Code steht nie in den öffentlichen Gast-Infos und erscheint nur während des eigenen Aufenthalts.
    Zahlen per **GiroCode** (EPC-QR) braucht keine Einrichtung – nur IBAN, BIC und Vereinsname unter Einstellungen.
+10. `apps/ssv-hafen/supabase/nachtrag-10.sql` – Schutz gegen doppelte Rechnungen: je Mitglied, Saison und Art
+   (Beitrag/Sommer/Winter) nur eine gültige Hafen-/Beitragsrechnung (eindeutiger Index `hafen_rechnungen_einmal`,
+   stornierte zählen nicht). Der Hafen-Manager holt vor „Rechnungen erstellen“ zusätzlich den neuesten Stand.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 
@@ -142,6 +145,12 @@ Sie legt beim ersten Aufruf ihr Schlüsselpaar selbst an – es gibt keine Gehei
   Tarif gibt es keine automatische Sicherung. Für den Echtbetrieb Pro empfehlen.
 - Zusätzlich: Hafen-Manager → Einstellungen → **Datensicherung herunterladen** (JSON, enthält Bankdaten –
   verschlüsselt aufbewahren), z. B. monatlich und vor jeder Jahresabrechnung.
+- **Zurückspielen** (nur Vorstand): Einstellungen → „Sicherung zurückspielen …“ → Datei wählen → Vergleich
+  Sicherung ↔ jetzt prüfen → `ZURÜCKSPIELEN` eintippen. Fehlendes kommt zurück, Geändertes wird auf den Stand
+  der Sicherung gesetzt, später Angelegtes entfernt; Mitglieder und Rechnungen werden dabei nie gelöscht.
+  Hochgeladene Dokumente, Toilettencode und Getränkekasse gehören nicht zu dieser Sicherung (dafür die
+  Supabase-Sicherung bzw. die Sicherung im Kassenwart-Bereich der Kasse). Einmal im Jahr testweise
+  zurückspielen (z. B. in der Vorschau), damit im Ernstfall jeder Handgriff sitzt.
 - Wer wann was geändert hat, steht im **Änderungsverlauf** (Vorstand und Kassenwart), 3 Jahre lang.
 
 ## 7a · Vor der Veröffentlichung prüfen

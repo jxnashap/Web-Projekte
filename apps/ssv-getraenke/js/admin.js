@@ -424,14 +424,16 @@
       const v = vorlagen()[ev.target.value]; if (!v) return; $('#a-von').value = v[1]; $('#a-bis').value = v[2]; neuLaden();
     });
     ['#a-von', '#a-bis', '#a-datum'].forEach((s) => $(s).addEventListener('change', neuLaden));
-    $('#a-los').addEventListener('click', async () => {
+    $('#a-los').addEventListener('click', async (ev) => {
+      const knopf = ev.currentTarget; if (knopf.disabled) return;   // Schutz gegen Doppelklick
       if (!confirm(vorschau.length + ' Rechnungen über ' + H.geld(H.eur(gesamt)) + ' erstellen?\nDie enthaltenen Buchungen gelten danach als abgerechnet.')) return;
+      knopf.disabled = true;
       try {
         const n = await S.rechnungenErstellen(aZeitraum.von, aZeitraum.bis, aZeitraum.datum);
         toast(n + ' Rechnungen erstellt.'); await abrechnungTab(main);
         const neu = (await S.rechnungen()).filter((r) => r.datum === aZeitraum.datum && !r.storniert_am && !r.bezahlt_am).slice(0, n);
         if (neu.length && confirm('Rechnungen jetzt zum Drucken / als PDF öffnen?')) drucken('rechnung', neu.map((r) => r.id));
-      } catch (err) { toast(err.message, 'fehler'); }
+      } catch (err) { toast(err.message, 'fehler'); knopf.disabled = false; }
     });
     const tbody = main.querySelectorAll('.a-panel')[1];
     tbody.addEventListener('click', async (ev) => {

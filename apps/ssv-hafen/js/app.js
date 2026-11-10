@@ -14,7 +14,7 @@
     vorstand: { name: 'Vorstand', tabs: '*', bank: true },
     brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'warteliste', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen'], bank: false },
     hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'abwesenheiten', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen'], bank: false },
-    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'einstellungen', 'verlauf'], bank: true }
+    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'finanzen', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'einstellungen', 'verlauf'], bank: true }
   };
   // Sieben Bereiche statt neunzehn Menüpunkte; innerhalb eines Bereichs wechseln Reiter oben auf der Seite
   const ICON = {
@@ -32,7 +32,7 @@
     ['gaeste', 'Gäste & Schild', [['gaeste', 'Gastlieger'], ['abwesenheiten', 'Grünes Schild']]],
     ['mitglieder', 'Mitglieder & Boote', [['eigner', 'Mitglieder'], ['boote', 'Boote'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
     ['betrieb', 'Betrieb', [['arbeitsdienst', 'Arbeitsdienst'], ['arbeitsbereiche', 'Arbeitsgruppen'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen']]],
-    ['finanzen', 'Finanzen', [['abrechnung', 'Abrechnung & Lastschrift'], ['gebuehren', 'Gebührenordnung']]],
+    ['finanzen', 'Finanzen', [['finanzen', 'Übersicht'], ['abrechnung', 'Abrechnung & Lastschrift'], ['gebuehren', 'Gebührenordnung']]],
     ['verwaltung', 'Verwaltung', [['einstellungen', 'Einstellungen'], ['verlauf', 'Änderungsverlauf']]]
   ];
   const TABS = BEREICHE.map(([, n, ts]) => [n, ts]);
@@ -1369,8 +1369,96 @@
   }
 
   /* ============================================================ Abrechnung */
-  const abrStand = { periode: imSommer ? 'sommer' : 'winter', datum: heute, beitragJahr: SAISON + 1, such: '', art: '', jahr: '', status: '', mehr: false };
+  const abrStand = { periode: imSommer ? 'sommer' : 'winter', datum: heute, beitragJahr: SAISON + 1, such: '', art: '', jahr: '', status: '', stufe: '', mehr: false };
+  // Weg einer Rechnung: Lastschrift = erstellt → zum Einzug vorgemerkt → an die Bank übergeben → bezahlt; Überweisung = erstellt → bezahlt
+  const STUFE = { einzug: ['Zum Einzug vorgemerkt', 'warn', 'wartet auf die Lastschrift-Datei'], bank: ['An Bank übergeben', 'gast', 'Einzug läuft – Gutschrift abwarten'], ueberweisung: ['Wartet auf Überweisung', 'warn', 'kein Lastschriftmandat'],
+    klaeren: ['Klären', 'rot', 'Rücklastschrift oder überfällig'], bezahlt: ['Bezahlt', 'ok', ''], storniert: ['Storniert', '', ''] };
+  function stufe(r) {
+    const st = Q.rstatus(r, heute);
+    if (st === 'storniert') return 'storniert'; if (st === 'bezahlt') return 'bezahlt'; if (st === 'ruecklastschrift') return 'klaeren';
+    if (r.sepa) return r.sepa_lauf ? 'bank' : 'einzug';
+    return st === 'ueberfaellig' ? 'klaeren' : 'ueberweisung';
+  }
+  // kleine Kette ●●○○ in der Tabelle
+  function kette(r) {
+    const k = stufe(r); if (k === 'storniert') return '';
+    const schritte = r.sepa ? ['erstellt', 'zum Einzug', 'an Bank', 'bezahlt'] : ['erstellt', 'Überweisung', 'bezahlt'];
+    const bis = k === 'bezahlt' ? schritte.length : r.sepa ? (k === 'einzug' ? 2 : 3) : 2;
+    return '<span class="kette' + (k === 'klaeren' ? ' rot' : '') + '" title="' + schritte.map((x, i) => (i < bis ? '✓ ' : '○ ') + x).join(' → ') + '">' + schritte.map((x, i) => '<i' + (i < bis ? ' class="an"' : '') + '></i>').join('') + '</span>';
+  }
+  let abrLaeuft = false;   // Schutz gegen doppeltes „Rechnungen erstellen“
   const RSTATUS = { offen: ['offen', 'warn'], ueberfaellig: ['überfällig', 'rot'], teilbezahlt: ['teilweise bezahlt', 'warn'], ruecklastschrift: ['Rücklastschrift', 'rot'], bezahlt: ['bezahlt', 'ok'], storniert: ['storniert', 'rot'] };
+  /* ============================================================ Finanzübersicht
+   * Alles Geld des Vereins auf einer Seite: Beiträge, Liegeplätze, Gastlieger und Getränkekasse –
+   * berechnet, eingegangen, offen; dazu Eingänge je Monat zum Abgleich mit dem Kontoauszug. */
+  const finStand = { jahr: Number(heute.slice(0, 4)) };
+  const KASSE = () => (window.SSV && window.SSV.speicher) || null;
+  function hafenGezahlt(r) {   // Eingänge einer Hafen-/Beitragsrechnung mit Datum (Rücklastschrift zieht ab)
+    const z = r.zahlungen || [];
+    if (z.length) return z.map((x) => ({ datum: x.datum, betrag: (x.art === 'ruecklastschrift' ? -1 : 1) * Number(x.betrag || 0) }));
+    return r.bezahlt_am ? [{ datum: r.bezahlt_am, betrag: Number(r.summe) }] : [];
+  }
+  V.finanzen = (main) => {
+    const J = String(finStand.jahr);
+    const jahre = [...new Set(d.rechnungen.map((r) => (r.datum || '').slice(0, 4)).concat(d.gaeste.map((g) => g.ankunft.slice(0, 4)), [heute.slice(0, 4)]))].filter(Boolean).sort().reverse();
+    const re = d.rechnungen.filter((r) => !r.storniert_am && (r.datum || '').startsWith(J));
+    const zeile = (titel, l, tab) => { const ber = l.reduce((x, r) => x + Number(r.summe), 0); const off = l.reduce((x, r) => x + Q.rest(r), 0);
+      const kl = l.filter((r) => ['ueberfaellig', 'ruecklastschrift'].includes(Q.rstatus(r, heute)));
+      return { titel, n: l.length, ber, ein: ber - off, off, kl: kl.length, klSum: kl.reduce((x, r) => x + Q.rest(r), 0), tab }; };
+    const gs = d.gaeste.filter((g) => g.status !== 'storniert' && g.ankunft.startsWith(J));
+    const gOff = gs.filter((g) => !g.bezahlt_am);
+    const zeilen = [zeile('Mitgliedsbeiträge', re.filter((r) => r.periode === 'beitrag'), 'abrechnung'), zeile('Sommerliegeplätze', re.filter((r) => r.periode === 'sommer'), 'abrechnung'), zeile('Winterlager', re.filter((r) => r.periode === 'winter'), 'abrechnung'),
+      { titel: 'Gastlieger', n: gs.length, ber: gs.reduce((x, g) => x + Number(g.betrag || 0), 0), ein: gs.filter((g) => g.bezahlt_am).reduce((x, g) => x + Number(g.betrag || 0), 0), off: gOff.reduce((x, g) => x + Number(g.betrag || 0), 0),
+        kl: gOff.filter((g) => g.zahlung_gemeldet).length, klSum: 0, klText: 'gemeldet, ungeprüft', klArt: 'gast', tab: 'gaeste' }];
+    // Eingänge je Monat (Hafen & Beiträge, Gäste); Getränke kommen nach dem Laden dazu
+    const monate = Array.from({ length: 12 }, () => ({ hafen: 0, gast: 0, getraenke: 0 }));
+    d.rechnungen.filter((r) => !r.storniert_am).forEach((r) => hafenGezahlt(r).forEach((z) => { if (String(z.datum).startsWith(J)) monate[Number(z.datum.slice(5, 7)) - 1].hafen += z.betrag; }));
+    d.gaeste.filter((g) => g.bezahlt_am && g.status !== 'storniert' && g.bezahlt_am.startsWith(J)).forEach((g) => { monate[Number(g.bezahlt_am.slice(5, 7)) - 1].gast += Number(g.betrag || 0); });
+    const kasse = KASSE();
+    const zeileHtml = (z) => '<tr' + (z.tab ? ' class="klickbar" data-gehe="' + z.tab + '"' : '') + '><td><strong>' + z.titel + '</strong>' + (z.unter ? '<br><small>' + z.unter + '</small>' : '') + '</td><td class="r">' + (z.n == null ? '–' : z.n) + '</td><td class="r">' + H.geld(z.ber) + '</td><td class="r">' + H.geld(z.ein) + '</td><td class="r">' + (z.off > 0 ? '<strong>' + H.geld(z.off) + '</strong>' : H.geld(0)) + '</td><td>' +
+      (z.kl ? '<span class="tag ' + (z.klArt || 'rot') + '">' + z.kl + ' ' + (z.klText || 'überfällig/Rücklastschrift') + '</span>' : z.off > 0 ? '<span class="tag warn">offen</span>' : z.n ? '<span class="tag ok">erledigt</span>' : '') + '</td></tr>';
+    const summen = (l) => l.reduce((a, z) => ({ ber: a.ber + z.ber, ein: a.ein + z.ein, off: a.off + z.off, kl: a.kl + (z.kl || 0) }), { ber: 0, ein: 0, off: 0, kl: 0 });
+    const zeichnen = (getr, getrInfo) => {
+      const alle = zeilen.concat(getr ? [getr] : []); const S = summen(alle);
+      const MN = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+      const mx = Math.max(1, ...monate.map((m) => m.hafen + m.gast + m.getraenke));
+      $('#fin-inhalt').innerHTML = '<div class="karten fin-karten"><div class="kz"><small>Eingegangen ' + J + '</small><strong style="color:var(--ok)">' + H.geld(S.ein) + '</strong><span>von ' + H.geld(S.ber) + ' berechnet</span></div>' +
+        '<div class="kz"><small>Noch offen</small><strong>' + H.geld(S.off) + '</strong><span>Rechnungen und Gäste</span></div>' +
+        '<div class="kz"><small>Klären</small><strong style="color:' + (S.kl ? 'var(--rot)' : 'inherit') + '">' + S.kl + '</strong><span>überfällig, Rücklastschrift, ungeprüft</span></div>' +
+        '<div class="kz"><small>Getränke laufend</small><strong>' + (getrInfo ? H.geld(getrInfo.offenBuch) : '–') + '</strong><span>' + (getrInfo ? getrInfo.nBuch + ' Buchungen noch nicht abgerechnet' : kasse ? 'wird geladen …' : 'Kasse nicht verbunden') + '</span></div></div>' +
+        '<div class="panel"><h2>Nach Bereich</h2><table class="tab fin-tab"><thead><tr><th>Bereich</th><th class="r">Anzahl</th><th class="r">Berechnet</th><th class="r">Eingegangen</th><th class="r">Offen</th><th>Stand</th></tr></thead><tbody>' +
+        alle.map(zeileHtml).join('') + (!getr ? '<tr><td><strong>Getränkekasse</strong><br><small>' + (kasse ? 'wird geladen …' : 'nicht verbunden') + '</small></td><td colspan="5"></td></tr>' : '') +
+        '</tbody><tfoot><tr><td>Summe</td><td></td><td class="r">' + H.geld(S.ber) + '</td><td class="r">' + H.geld(S.ein) + '</td><td class="r">' + H.geld(S.off) + '</td><td></td></tr></tfoot></table>' +
+        '<p class="hinweis" style="margin-top:10px">Rechnungen zählen im Jahr ihres Rechnungsdatums, Gastlieger im Jahr der Ankunft. Getränke: Monatsrechnungen der Kasse; was seit der letzten Abrechnung gebucht wurde, steht unter „Getränke laufend“. ' +
+        (kasse ? '<a href="../ssv-getraenke/kassenwart.html" target="_blank" rel="noopener">Getränkekasse öffnen ↗</a>' : '') + '</p></div>' +
+        '<div class="panel"><h2>Eingänge je Monat</h2><p class="hinweis" style="margin-top:0">Zum Abgleich mit dem Kontoauszug (Hafen & Beiträge nach Buchungsdatum der Zahlung, Gäste nach Zahlungseingang, Getränke nach „bezahlt am“).</p><table class="tab fin-monate"><thead><tr><th>Monat</th><th class="r">Hafen & Beiträge</th><th class="r">Gäste</th><th class="r">Getränke</th><th class="r">Summe</th><th class="balken-sp"></th></tr></thead><tbody>' +
+        monate.map((m, i) => { const sum = m.hafen + m.gast + m.getraenke; return '<tr' + (sum ? '' : ' class="blass"') + '><td>' + MN[i] + '</td><td class="r">' + (m.hafen ? H.geld(m.hafen) : '–') + '</td><td class="r">' + (m.gast ? H.geld(m.gast) : '–') + '</td><td class="r">' + (m.getraenke ? H.geld(m.getraenke) : '–') + '</td><td class="r"><strong>' + (sum ? H.geld(sum) : '–') + '</strong></td><td class="balken-sp"><span class="balken" style="width:' + Math.round(sum / mx * 100) + '%"></span></td></tr>'; }).join('') +
+        '</tbody></table></div>';
+    };
+    main.innerHTML = kopf('Finanzen ' + J, 'Alles auf einen Blick: Beiträge, Liegeplätze, Gastlieger und Getränkekasse.',
+      '<label class="feld" style="margin:0;min-width:110px">Jahr<select id="fin-jahr">' + jahre.map((j) => '<option' + (j === J ? ' selected' : '') + '>' + j + '</option>').join('') + '</select></label>') + '<div id="fin-inhalt"></div>';
+    $('#fin-jahr').addEventListener('change', (e) => { finStand.jahr = Number(e.target.value); zeige('finanzen', true); });
+    zeichnen(null, null);
+    if (!kasse) return;
+    const meinTab = tab;
+    Promise.all([kasse.rechnungen(), kasse.buchungen({ von: J + '-01-01', bis: J + '-12-31' })]).then(([kr, kb]) => {
+      if (tab !== meinTab || String(finStand.jahr) !== J || !$('#fin-inhalt')) return;   // inzwischen woanders
+      const l = (kr || []).filter((r) => !r.storniert_am && String(r.datum).startsWith(J));
+      const ber = l.reduce((x, r) => x + Number(r.summe), 0); const off = l.filter((r) => !r.bezahlt_am);
+      const kl = off.filter((r) => r.faellig && r.faellig < heute);
+      (kr || []).filter((r) => !r.storniert_am && r.bezahlt_am && String(r.bezahlt_am).startsWith(J)).forEach((r) => { monate[Number(String(r.bezahlt_am).slice(5, 7)) - 1].getraenke += Number(r.summe); });
+      const frei = (kb || []).filter((b) => !b.rechnung_id && !b.storniert_am);
+      zeichnen({ titel: 'Getränkekasse', unter: 'Monatsrechnungen', n: l.length, ber, ein: ber - off.reduce((x, r) => x + Number(r.summe), 0), off: off.reduce((x, r) => x + Number(r.summe), 0), kl: kl.length, klText: 'überfällig' },
+        { offenBuch: frei.reduce((x, b) => x + Number(b.betrag), 0), nBuch: frei.length });
+    }).catch((x) => { if (tab === meinTab) { const z = main.querySelector('.fin-tab tbody tr:last-child small'); if (z) z.textContent = 'nicht lesbar: ' + x.message; } });
+  };
+  function ketteKopf(res) {
+    const l = res.filter((r) => !r.storniert_am);
+    const box = (k) => { const rs = l.filter((r) => stufe(r) === k); const sum = rs.reduce((x, r) => x + (k === 'bezahlt' ? Number(r.summe) : Q.rest(r)), 0);
+      return '<button type="button" class="kette-box ' + k + (abrStand.stufe === k ? ' aktiv' : '') + '" data-stufe="' + k + '" aria-pressed="' + (abrStand.stufe === k) + '"><small>' + STUFE[k][0] + '</small><strong>' + rs.length + '</strong><span>' + H.geld(sum) + '</span></button>'; };
+    return '<div class="kette-kopf"><div class="kette-weg">' + ['einzug', 'bank', 'bezahlt'].map(box).join('<span class="kette-pfeil" aria-hidden="true">→</span>') + '</div><div class="kette-neben">' + ['ueberweisung', 'klaeren'].map(box).join('') + '</div></div>' +
+      '<p class="hinweis" style="margin:0 0 10px">Lastschrift: erstellt → zum Einzug vorgemerkt → mit der Lastschrift-Datei an die Bank → bezahlt (Knopf „Gutschrift ist da“ bei der Datei). Antippen filtert die Liste.</p>';
+  }
   V.abrechnung = (main) => {
     const per = abrStand.periode, e = d.einstellungen;
     const jahr = per === 'beitrag' ? abrStand.beitragJahr : SAISON;
@@ -1395,8 +1483,13 @@
         '<div class="filter" style="margin-top:14px"><label class="feld">Rechnungsdatum<input type="date" id="rdat" value="' + abrStand.datum + '"></label><button class="btn primaer" id="los">2 · ' + offen.length + ' Rechnungen erstellen</button></div>' : '') + '</div>' +
       '<div class="panel"><div class="kopf" style="margin-bottom:8px"><h2 style="margin:0">3 · Lastschrift an die Bank</h2><div class="aktionen"><button class="btn dunkel" id="sepa"' + (sepaBereit.length && sepaOk ? '' : ' disabled') + '>SEPA-Datei erzeugen (' + sepaBereit.length + ')</button><button class="btn" id="csvr">Rechnungsliste CSV</button></div></div>' +
       (!sepaOk ? '<p class="hinweis warn">Für die Lastschrift-Datei fehlen gültige Vereinsdaten (IBAN und Gläubiger-ID) unter Einstellungen.</p>' : '<p class="hinweis">Erzeugt eine Sammellastschrift im aktuellen Bankformat <strong>pain.008.001.08</strong> (Pflicht ab November 2026). Die Datei im Online-Banking des Vereins hochladen; Einzug am Fälligkeitstag der Rechnungen.</p>') +
-      (d.sepa_laeufe.length ? '<p style="font-size:13px;color:var(--muted)">Bisherige Dateien: ' + d.sepa_laeufe.map((l) => esc(l.id) + ' (' + l.anzahl + ' Posten, ' + H.geld(l.summe) + ')').join(' · ') + '</p>' : '') +
-      '<h3 style="margin:18px 0 8px">Rechnungen (' + res.length + ')</h3><div class="filter"><input class="suche" id="r-such" placeholder="Name, Mitgliedsnr. oder Rechnungsnr. …" value="' + esc(abrStand.such) + '">' +
+      (d.sepa_laeufe.length ? '<table class="tab laeufe"><thead><tr><th>Lastschrift-Datei</th><th>erzeugt</th><th>Einzug am</th><th class="r">Posten</th><th class="r">Summe</th><th>Stand</th><th></th></tr></thead><tbody>' +
+        d.sepa_laeufe.slice().sort((a, b) => (b.datum || '').localeCompare(a.datum || '') || b.id.localeCompare(a.id)).map((l) => { const rs = d.rechnungen.filter((r) => r.sepa_lauf === l.id && !r.storniert_am);
+          const offenL = rs.filter((r) => Q.rest(r) > 0 && Q.rstatus(r, heute) !== 'ruecklastschrift'); const rueckL = rs.filter((r) => Q.rstatus(r, heute) === 'ruecklastschrift').length;
+          const stand = !rs.length ? '<span class="tag">keine offenen Posten</span>' : !offenL.length ? '<span class="tag ok">gutgeschrieben</span>' : (l.faellig || l.datum) > heute ? '<span class="tag gast">Einzug am ' + H.kurz(l.faellig || l.datum) + '</span>' : '<span class="tag warn">Gutschrift prüfen</span>';
+          return '<tr><td><strong>' + esc(l.id) + '</strong></td><td>' + H.datum(l.datum) + '</td><td>' + H.datum(l.faellig || l.datum) + '</td><td class="r">' + l.anzahl + '</td><td class="r">' + H.geld(l.summe) + '</td><td>' + stand + (rueckL ? ' <span class="tag rot">' + rueckL + ' Rücklastschrift' + (rueckL > 1 ? 'en' : '') + '</span>' : '') + '</td>' +
+            '<td class="r aktion">' + (offenL.length ? '<button class="btn klein' + ((l.faellig || l.datum) <= heute ? ' primaer' : '') + '" data-gutschrift="' + esc(l.id) + '" title="Sammellastschrift ist auf dem Vereinskonto – alle Posten als bezahlt buchen">Gutschrift ist da</button>' : '') + '</td></tr>'; }).join('') + '</tbody></table>' : '') +
+      '<h3 style="margin:18px 0 8px">Rechnungen (' + res.length + ')</h3>' + ketteKopf(res) + '<div class="filter"><input class="suche" id="r-such" placeholder="Name, Mitgliedsnr. oder Rechnungsnr. …" value="' + esc(abrStand.such) + '">' +
       '<select class="suche" id="r-art" style="min-width:0"><option value="">alle Arten</option><option value="beitrag">Beitrag</option><option value="sommer">Sommer</option><option value="winter">Winter</option></select>' +
       '<select class="suche" id="r-jahr" style="min-width:0"><option value="">alle Jahre</option>' + jahre.map((j) => '<option>' + j + '</option>').join('') + '</select>' +
       '<select class="suche" id="r-status" style="min-width:0"><option value="">jeder Stand</option><option value="nicht_bezahlt">noch nicht bezahlt</option>' + Object.entries(RSTATUS).map(([k, [t]]) => '<option value="' + k + '">' + t + '</option>').join('') + '</select></div>' +
@@ -1407,13 +1500,13 @@
       const q = abrStand.such.trim().toLowerCase();
       const l = res.filter((r) => { const st = Q.rstatus(r, heute);
         return (!q || (r.nr + ' ' + r.empfaenger.nr + ' ' + r.empfaenger.vorname + ' ' + r.empfaenger.nachname).toLowerCase().includes(q)) && (!abrStand.art || r.periode === abrStand.art) &&
-          (!abrStand.jahr || String(r.saison) === abrStand.jahr) && (!abrStand.status || (abrStand.status === 'nicht_bezahlt' ? Q.rest(r) > 0 : st === abrStand.status)); });
+          (!abrStand.jahr || String(r.saison) === abrStand.jahr) && (!abrStand.status || (abrStand.status === 'nicht_bezahlt' ? Q.rest(r) > 0 : st === abrStand.status)) && (!abrStand.stufe || stufe(r) === abrStand.stufe); });
       const zeig = abrStand.mehr ? l : l.slice(0, 40);
       $('#r-summe').textContent = l.length + ' Rechnungen · ' + H.geld(l.reduce((s, r) => s + (r.storniert_am ? 0 : r.summe), 0)) + ' · davon offen ' + H.geld(l.reduce((s, r) => s + Q.rest(r), 0));
       $('#r-liste').innerHTML = zeig.map((r) => { const st = Q.rstatus(r, heute); const rest = Q.rest(r); const z = r.zahlungen || [];
         return '<tr' + (r.storniert_am ? ' class="blass"' : '') + '><td><strong style="white-space:nowrap">' + esc(r.nr) + '</strong></td><td>' + H.datum(r.datum) + '</td><td>' + esc(r.empfaenger.vorname + ' ' + r.empfaenger.nachname) + ' <small style="color:var(--muted)">' + esc(r.empfaenger.nr || '') + '</small></td><td>' + H.periodeText(r) + '</td>' +
           '<td class="r">' + H.geld(r.summe) + (rest > 0 && rest < r.summe ? '<br><small>offen ' + H.geld(rest) + '</small>' : '') + '</td><td>' + (r.sepa ? 'Lastschrift' + (r.sepa_lauf ? ' <small style="color:var(--muted)">' + esc(r.sepa_lauf) + '</small>' : '') : 'Überweisung') + '</td>' +
-          '<td><span class="tag ' + RSTATUS[st][1] + '">' + RSTATUS[st][0] + '</span>' + (r.bezahlt_am ? ' <small style="color:var(--muted)">' + H.kurz(r.bezahlt_am) + '</small>' : '') + (z.length ? ' <small style="color:var(--muted)" title="' + esc(z.map((x) => H.datum(x.datum) + ' ' + (x.art === 'ruecklastschrift' ? 'Rücklastschrift' : 'Eingang') + ' ' + H.geld(x.betrag) + (x.notiz ? ' – ' + x.notiz : '')).join('\n')) + '">(' + z.length + ' Buchung' + (z.length > 1 ? 'en' : '') + ')</small>' : '') + '</td>' +
+          '<td>' + kette(r) + '<span class="tag ' + STUFE[stufe(r)][1] + '">' + (st === 'ueberfaellig' || st === 'teilbezahlt' || st === 'ruecklastschrift' ? RSTATUS[st][0] : STUFE[stufe(r)][0]) + '</span>' + (r.bezahlt_am ? ' <small style="color:var(--muted)">' + H.kurz(r.bezahlt_am) + '</small>' : '') + (z.length > 1 ? ' <small style="color:var(--muted)" title="' + esc(z.map((x) => H.datum(x.datum) + ' ' + (x.art === 'ruecklastschrift' ? 'Rücklastschrift' : 'Eingang') + ' ' + H.geld(x.betrag) + (x.notiz ? ' – ' + x.notiz : '')).join('\n')) + '">(' + z.length + ' Buchung' + (z.length > 1 ? 'en' : '') + ')</small>' : '') + '</td>' +
           '<td class="r aktion">' + (r.storniert_am ? '<button class="btn klein" data-zeige="' + r.id + '">Ansehen</button>' : '<button class="btn klein' + (rest > 0 ? ' primaer' : '') + '" data-zahl="' + r.id + '">Zahlung</button> ' +
             zeilenMenue(['<button class="zm-punkt" data-zeige="' + r.id + '">Rechnung ansehen</button>'].concat(!r.bezahlt_am && !Q.gezahlt(r) ? ['<button class="zm-punkt gefahr" data-storno="' + r.id + '">Stornieren</button>'] : []))) + '</td></tr>'; }).join('') || '<tr><td colspan="8" class="leer">Keine Rechnung passt zu den Filtern.</td></tr>';
       $('#r-mehr').innerHTML = l.length > zeig.length ? '<button class="btn klein" style="margin-top:10px">Alle ' + l.length + ' anzeigen</button>' : '';
@@ -1422,6 +1515,16 @@
     $('#r-such').addEventListener('input', (e) => { abrStand.such = e.target.value; abrStand.mehr = false; rListe(); });
     ['art', 'jahr', 'status'].forEach((k) => $('#r-' + k).addEventListener('change', (e) => { abrStand[k] = e.target.value; abrStand.mehr = false; rListe(); }));
     rListe();
+    main.querySelectorAll('[data-stufe]').forEach((b) => b.addEventListener('click', () => { abrStand.stufe = abrStand.stufe === b.dataset.stufe ? '' : b.dataset.stufe; abrStand.mehr = false;
+      main.querySelectorAll('[data-stufe]').forEach((x) => { x.classList.toggle('aktiv', x.dataset.stufe === abrStand.stufe); x.setAttribute('aria-pressed', x.dataset.stufe === abrStand.stufe); }); rListe(); }));
+    main.querySelectorAll('[data-gutschrift]').forEach((b) => b.addEventListener('click', () => {
+      const l = d.sepa_laeufe.find((x) => x.id === b.dataset.gutschrift); const tagG = (l.faellig || l.datum) <= heute ? (l.faellig || l.datum) : heute;
+      const rs = d.rechnungen.filter((r) => r.sepa_lauf === l.id && !r.storniert_am && Q.rest(r) > 0 && Q.rstatus(r, heute) !== 'ruecklastschrift');
+      if (!rs.length) return;
+      if (!confirm('Ist die Sammellastschrift ' + l.id + ' auf dem Vereinskonto gutgeschrieben?\n\n' + rs.length + ' Rechnungen (' + H.geld(rs.reduce((x, r) => x + Q.rest(r), 0)) + ') werden als bezahlt am ' + H.datum(tagG) + ' gebucht. Kommt später eine Rücklastschrift, vermerkst du sie bei der einzelnen Rechnung unter „Zahlung“.')) return;
+      rs.forEach((r) => { r.zahlungen = (r.zahlungen || []).concat([{ datum: tagG, betrag: Q.rest(r), art: 'eingang', notiz: 'Lastschrift ' + l.id }]); r.bezahlt_am = tagG; });
+      speichern(rs.length + ' Rechnungen als bezahlt gebucht.'); zeige('abrechnung', true);
+    }));
     $('#r-liste').addEventListener('click', (e) => {
       const z = e.target.closest('[data-zeige]'); if (z) return oeffnen('drucken.html?art=rechnungen&ids=' + z.dataset.zeige);
       const zb = e.target.closest('[data-zahl]'); if (zb) return zahlungDialog(d.rechnungen.find((r) => r.id === zb.dataset.zahl));
@@ -1429,10 +1532,21 @@
     });
     main.querySelectorAll('[data-per]').forEach((b) => b.addEventListener('click', () => { abrStand.periode = b.dataset.per; if (b.dataset.jahr) abrStand.beitragJahr = Number(b.dataset.jahr); zeige('abrechnung'); }));
     const rdat = $('#rdat'); if (rdat) rdat.addEventListener('change', () => { abrStand.datum = rdat.value; });
-    const los = $('#los'); if (los) los.addEventListener('click', () => {
+    const los = $('#los'); if (los) los.addEventListener('click', async () => {
+      if (abrLaeuft) return;
       if (!confirm(offen.length + ' Rechnungen für ' + label + ' erstellen?')) return;
-      const neu = G.saisonAbrechnen(d, jahr, per, abrStand.datum); speichern(neu.length + ' Rechnungen erstellt.'); zeige('abrechnung');
-      if (neu.length && confirm('Rechnungen jetzt ansehen / als PDF sichern?')) oeffnen('drucken.html?art=rechnungen&ids=' + neu.map((r) => r.id).join(','));
+      abrLaeuft = true; los.disabled = true; los.textContent = 'Rechnungen werden erstellt …';
+      try {
+        // Vereinsdatenbank: erst den neuesten Stand holen – hat jemand anderes gerade abgerechnet, entstehen keine doppelten Rechnungen
+        if (DB) { await HF.neuLaden(); d = HF.d; }
+        const neu = G.saisonAbrechnen(d, jahr, per, abrStand.datum);
+        if (!neu.length) { toast('Keine neuen Rechnungen – ' + label + ' ist bereits abgerechnet.'); return zeige('abrechnung'); }
+        const ok = await speichern();
+        if (ok === false) return;   // Fehlermeldung kam schon, Stand wurde neu geladen
+        toast(neu.length + ' Rechnungen erstellt.'); zeige('abrechnung');
+        if (confirm('Rechnungen jetzt ansehen / als PDF sichern?')) oeffnen('drucken.html?art=rechnungen&ids=' + neu.map((r) => r.id).join(','));
+      } catch (x) { toast('Rechnungen nicht erstellt: ' + x.message, 'fehler', 7000); zeige('abrechnung'); }
+      finally { abrLaeuft = false; }
     });
     $('#sepa').addEventListener('click', () => {
       const ersterEinzug = sepaBereit.map((r) => r.faellig).sort()[0];
@@ -1533,7 +1647,8 @@
       '<label class="feld check voll"><input type="checkbox" name="grenze_bestaetigt"' + (e.grenze_bestaetigt ? ' checked' : '') + '> Grenze ist vom Vorstand geklärt (Website und Hafenbetriebsordnung stimmen überein)</label>' +
       '<h3 class="voll" style="margin:14px 0 0">Hafenplan</h3>' +
       '<label class="feld check voll"><input type="checkbox" name="plan_bestaetigt"' + (e.plan_bestaetigt ? ' checked' : '') + '> Brückenzuordnung und Boxmaße unter „Liegeplätze“ sind geprüft und stimmen</label></form></div>' +
-      (darf('verlauf') ? '<div class="panel"><h2>Datensicherung</h2><p class="hinweis">' + (DB ? 'Die Vereinsdatenbank wird beim Anbieter gesichert (Tarif prüfen: tägliche Sicherung). Zusätzlich kannst du hier jederzeit eine Kopie aller Hafen- und Mitgliederdaten herunterladen – z. B. einmal im Monat, sicher aufbewahren (enthält Bankdaten).' : 'In der Demo liegen die Daten nur in diesem Browser.') + '</p><button class="btn" id="sicherung">Datensicherung herunterladen</button></div>' : '') +
+      (darf('verlauf') ? '<div class="panel"><h2>Datensicherung</h2><p class="hinweis">' + (DB ? 'Die Vereinsdatenbank wird beim Anbieter gesichert (Tarif prüfen: tägliche Sicherung). Zusätzlich kannst du hier jederzeit eine Kopie aller Hafen- und Mitgliederdaten herunterladen – z. B. einmal im Monat, sicher aufbewahren (enthält Bankdaten).' : 'In der Demo liegen die Daten nur in diesem Browser.') + '</p><div class="aktionen"><button class="btn" id="sicherung">Datensicherung herunterladen</button>' + (rolle === 'vorstand' ? '<label class="btn" for="sich-datei">Sicherung zurückspielen …</label><input type="file" id="sich-datei" accept=".json,application/json" hidden>' : '') + '</div>' +
+        (rolle === 'vorstand' ? '<p class="hinweis" style="margin-top:10px">Zurückspielen zeigt zuerst einen Vergleich (Sicherung ↔ jetzt) und fragt dann nach. Mitglieder und Rechnungen werden dabei nie gelöscht, nur wiederhergestellt; hochgeladene Dokumente und die Getränkekasse sind nicht Teil dieser Sicherung.</p>' : '') + '</div>' : '') +
       (DB ? '' : '<div class="panel"><h2>Demo</h2><p class="hinweis">Setzt alle Daten auf die erfundenen Beispieldaten zurück.</p><button class="btn gefahr" id="reset">Demo zurücksetzen</button></div>');
     $('#ok').addEventListener('click', () => {
       const x = Object.fromEntries(new FormData($('#f'))); ['stromumlage_ueber_hafen', 'arbeitsdienst_vorjahr', 'arbeitsdienst_bestaetigt', 'plan_bestaetigt', 'grenze_bestaetigt'].concat(DB ? ['push_aktiv'] : []).forEach((k) => { x[k] = !!x[k]; });
@@ -1553,6 +1668,21 @@
       const { dokumente, ...rest } = d; const stand = new Date().toISOString().slice(0, 16).replace(':', '-');
       download('ssv-datensicherung-' + stand + '.json', JSON.stringify({ erstellt: new Date().toISOString(), von: ROLLEN[rolle].name, hinweis: 'Enthält personenbezogene Daten und Bankdaten – sicher aufbewahren.', daten: rest }, null, 1), 'application/json');
       toast('Datensicherung heruntergeladen.');
+    });
+    const sd2 = $('#sich-datei'); if (sd2) sd2.addEventListener('change', async () => {
+      const datei = sd2.files[0]; sd2.value = ''; if (!datei) return;
+      let info; try { info = HF.sicherungLesen(await datei.text()); } catch (x) { return toast(x.message, 'fehler', 6000); }
+      const NAME = { mitglieder: 'Mitglieder', boote: 'Boote', belegungen: 'Belegungen', abwesenheiten: 'Abwesenheiten (grünes Schild)', gaeste: 'Gastlieger', warteliste: 'Warteliste', kran: 'Kran', arbeitsdienst: 'Arbeitsstunden', arbeitseinsaetze: 'Arbeitseinsätze', arbeitseinsatz_codes: 'QR-Codes der Einsätze', arbeitsbereiche: 'Arbeitsgruppen', arbeitsbereich_mitglieder: 'Gruppen-Zuordnungen', mitteilungen: 'Mitteilungen', rechnungen: 'Hafen- und Beitragsrechnungen', sepa_laeufe: 'Lastschrift-Dateien', antraege: 'Aufnahmeanträge', liegeplaetze: 'Liegeplätze', landplaetze: 'Landplätze', saisons: 'Saisontermine', aufgaben: 'Schäden/Wartung' };
+      const el = modal('<h2>Sicherung zurückspielen</h2><p style="margin-top:0">Sicherung vom <strong>' + (info.erstellt ? new Date(info.erstellt).toLocaleString('de-DE') : 'unbekannten Datum') + '</strong>' + (info.von ? ' (' + esc(info.von) + ')' : '') + '. Alles, was danach geändert wurde, geht verloren.</p>' +
+        '<table class="tab sich-vergleich"><thead><tr><th>Bereich</th><th class="r">Sicherung</th><th class="r">jetzt</th></tr></thead><tbody>' + info.vergleich.map((v) => '<tr' + (v.sicherung !== v.jetzt ? ' class="anders"' : '') + '><td>' + NAME[v.t] + '</td><td class="r">' + v.sicherung + '</td><td class="r">' + v.jetzt + '</td></tr>').join('') + '</tbody></table>' +
+        '<label class="feld" style="margin-top:12px">Zur Bestätigung <strong>ZURÜCKSPIELEN</strong> eintippen<input id="sich-ok" autocomplete="off"></label>' +
+        '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn gefahr" id="sich-los" disabled>Jetzt zurückspielen</button></div>', true);
+      $('#sich-ok', el).addEventListener('input', (ev) => { $('#sich-los', el).disabled = ev.target.value.trim().toUpperCase() !== 'ZURÜCKSPIELEN'; });
+      $('#sich-los', el).addEventListener('click', async () => {
+        const k = $('#sich-los', el); if (k.disabled) return; k.disabled = true; k.textContent = 'Wird zurückgespielt …';
+        try { await HF.zurueckspielen(info.daten); d = HF.d; zu(); toast('Sicherung zurückgespielt.', '', 5000); zeige('einstellungen', true); }
+        catch (x) { k.disabled = false; k.textContent = 'Jetzt zurückspielen'; toast(x.message, 'fehler', 8000); }
+      });
     });
     if ($('#reset')) $('#reset').addEventListener('click', () => { if (confirm('Alle Demo-Daten zurücksetzen?')) { d = HF.zuruecksetzen(); toast('Zurückgesetzt.'); zeige('uebersicht'); } });
   };

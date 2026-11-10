@@ -1513,3 +1513,13 @@ $$;
 
 revoke execute on function public.gast_status(uuid), public.gast_zahlung_melden(uuid, text) from public;
 grant execute on function public.gast_info(), public.gast_status(uuid), public.gast_zahlung_melden(uuid, text) to anon, authenticated;
+
+-- ================================================================ Nachtrag 10 · keine doppelten Rechnungen --
+-- Je Mitglied, Saison und Art (Beitrag / Sommer / Winter) darf es nur EINE gültige Rechnung geben.
+-- Stornierte Rechnungen zählen nicht – nach einem Storno kann neu abgerechnet werden.
+-- Klicken zwei Personen gleichzeitig auf „Rechnungen erstellen“, lehnt die Datenbank die zweite
+-- Rechnung ab; der Hafen-Manager meldet das und lädt den aktuellen Stand neu.
+-- (Gäbe es schon doppelte Rechnungen, bricht der Befehl mit einer Meldung ab – dann erst eine stornieren.)
+create unique index if not exists hafen_rechnungen_einmal
+  on public.hafen_rechnungen (mitglied_id, saison, periode)
+  where storniert_am is null;
