@@ -53,6 +53,9 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
 10. `apps/ssv-hafen/supabase/nachtrag-10.sql` – Schutz gegen doppelte Rechnungen: je Mitglied, Saison und Art
    (Beitrag/Sommer/Winter) nur eine gültige Hafen-/Beitragsrechnung (eindeutiger Index `hafen_rechnungen_einmal`,
    stornierte zählen nicht). Der Hafen-Manager holt vor „Rechnungen erstellen“ zusätzlich den neuesten Stand.
+11. `apps/ssv-hafen/supabase/nachtrag-11.sql` – Lagerplätze nach dem echten Nordlager: P01–P36 im Norden (vorne schräg,
+   links eine Reihe, rechts zwei Reihen), Winterlager West wandert von P21–P40 nach P41–P60 (nur solange dort noch
+   nichts belegt ist).
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 

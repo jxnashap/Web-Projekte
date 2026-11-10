@@ -72,6 +72,7 @@
         }
       } else {
         const lp = d.landplaetze.find((x) => x.id === bel.platz_id);
+        if (!lp) return;   // Platz gibt es nicht mehr (z. B. nach Umbenennung) – erscheint unter „Belegung“ als Hinweis, nicht als Absturz
         const faktor = periode === 'sommer' ? Math.pow(2, Math.max(0, (bel.sommer_an_land_jahr || 1) - 1)) : 1;
         const zusatz = faktor > 1 ? ' (' + bel.sommer_an_land_jahr + '. Sommer an Land, ×' + faktor + ')' : '';
         const was = periode === 'sommer' ? 'Sommerstellplatz an Land' : 'Winterlager';

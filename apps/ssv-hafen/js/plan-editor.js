@@ -82,7 +82,7 @@
       const laengs = plan.laengs.map((l) => { const an = sel && sel.typ === 'laengs' && sel.id === l.id;
         return '<g transform="translate(' + l.x + ' ' + l.y + ') rotate(' + (Number(l.rot) || 0) + ')" class="pe-box pe-laengs' + (an ? ' pe-an' : '') + '" data-el="laengs:' + l.id + '"><rect x="' + (-l.w / 2) + '" y="-5" width="' + l.w + '" height="10" rx="2"/><text y="2.2" text-anchor="middle" font-size="6">' + esc(l.nr) + '</text></g>'; }).join('');
       const lager = plan.lager.map((L) => { const an = sel && sel.typ === 'lager' && sel.id === L.id; const zellen = PLAN.lagerVon({ lager: [L] });
-        return '<g transform="translate(' + L.x + ' ' + L.y + ') rotate(' + (Number(L.rot) || 0) + ')" class="pe-lager' + (an ? ' pe-an' : '') + '" data-el="lager:' + L.id + '">' + zellen.map((z) => '<rect x="' + r1(z.x) + '" y="' + r1(z.y) + '" width="' + z.w + '" height="' + z.h + '" rx="1"/><text x="' + r1(z.x + z.w / 2) + '" y="' + r1(z.y + z.h / 2 + 1.6) + '" text-anchor="middle" font-size="' + r1(Math.min(4.6, z.w * 0.42)) + '">' + esc(z.id) + '</text>').join('') + '</g>'; }).join('');
+        return '<g transform="translate(' + L.x + ' ' + L.y + ') rotate(' + (Number(L.rot) || 0) + ')" class="pe-lager' + (an ? ' pe-an' : '') + '" data-el="lager:' + L.id + '">' + zellen.map((z) => '<rect x="' + r1(z.x) + '" y="' + r1(z.y) + '" width="' + z.w + '" height="' + z.h + '" rx="1"' + (z.neig ? ' transform="rotate(' + z.neig + ' ' + r1(z.mx) + ' ' + r1(z.my) + ')"' : '') + '/><text x="' + r1(z.mx) + '" y="' + r1(z.my + 1.6) + '" text-anchor="middle" font-size="' + r1(Math.min(4.6, Math.min(z.w, z.h) * 0.6)) + '">' + esc(z.id) + '</text>').join('') + '</g>'; }).join('');
       const punkte = plan.punkte.map((p) => { const an = sel && sel.typ === 'punkt' && sel.id === p.id; const [z, n] = PLAN.PUNKT[p.art] || ['?', ''];
         return '<g transform="translate(' + p.x + ' ' + p.y + ')" class="pkt pkt-' + p.art + ' pe-punkt' + (an ? ' pe-an' : '') + '" data-el="punkt:' + p.id + '"><circle r="' + r1(Math.max(7, g)) + '"/><text y="2.6" text-anchor="middle" class="pkt-z">' + z + '</text><text y="' + r1(Math.max(7, g) + 8) + '" text-anchor="middle" class="pe-text" font-size="' + r1(Math.max(5, 10 * u)) + '">' + (mitText ? esc(p.name || n) : '') + '</text></g>'; }).join('');
       // Griffe der Auswahl
@@ -156,7 +156,8 @@
       } else if (sel.typ === 'lager') {
         h = '<h3>Lagerfeld</h3>' + feld('Name', 'name', x.name) + '<div class="pe-zwei">' + feld('Kürzel', 'praefix', x.praefix) + feld('erste Nummer', 'ab', x.ab, 'ganz') + '</div><div class="pe-zwei">' + feld('Anzahl Plätze', 'anzahl', x.anzahl, 'ganz') + feld('je Reihe', 'spalten', x.spalten, 'ganz') + '</div>' +
           '<div class="pe-zwei">' + feld('Feldbreite (m)', 'bw', r1(x.bw * M), 'me') + feld('Feldlänge (m)', 'bh', r1(x.bh * M), 'me') + '</div>' + feld('Drehung (°)', 'rot', x.rot, 'zahl') + feld('Ziffern (2 = P01)', 'stellen', x.stellen, 'ganz') +
-          '<p class="pe-leise">Die Nummern müssen zu den Landplätzen im Programm passen (P01–P40, H1–H4, A1–A6).</p>';
+          '<div class="pe-zwei">' + feld('Boote schräg (°)', 'neig', x.neig || 0, 'zahl') + feld('Bug (1 = zum Weg, −1 = weg)', 'bug', x.bug || 1, 'ganz') + '</div>' +
+          '<p class="pe-leise">Die Nummern müssen zu den Landplätzen im Programm passen (P01–P36 Nordlager, P41–P60 West, H1–H4, A1–A6). „Boote schräg“ dreht jedes Boot im Feld, z. B. 40° für die schrägen Reihen vorn links.</p>';
       } else if (sel.typ === 'laengs') {
         h = '<h3>Längsseits-Platz</h3>' + feld('Nummer', 'nr', x.nr) + '<div class="pe-zwei">' + feld('Länge (m)', 'w', r1(x.w * M), 'me') + feld('Drehung (°)', 'rot', x.rot, 'zahl') + '</div>';
       }

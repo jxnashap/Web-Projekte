@@ -103,3 +103,13 @@ ersetzt es nicht.
 - Software: corporate.dock24.com/hafenmanager · hafenverwaltung-yabook.de · marinaprofi.de · hafenmeister.app · ausguck.com · netxp-verein.de/funktionen/vereinsarten/segeln · wm-verein-system.de · harba.co · metarina.com
 - SEPA: Bundesbank, technische Spezifikationen SEPA-Lastschriften 11/2024 · Commerzbank/Deutsche Bank Formatübersichten
 - Lage: visit-luebeck.com · seame.com (Teerhofinsel) · marinas.com
+
+## Nordlager (Angabe des Vereins, Nov. 2026)
+- Im nördlichen Lager verläuft ein **Lagerweg in der Mitte**, er endet als **Sackgasse**.
+- **Links** (zur Bahn hin) stehen die Boote **in einer Reihe** nebeneinander – nicht in zwei Lagen.
+- **Rechts** stehen sie **in zwei Reihen** nebeneinander.
+- **Vorne links** stehen sie **schräg in zwei Reihen, mit dem Bug zur Messe** (Vereinsheim).
+- Umsetzung im Plan nach dem DOP20 vermessen (Lagerfläche ca. 20–23 m breit, ca. 100 m lang). Weil vorn zwischen Fußweg
+  und Lagerweg nur etwa 6 m frei wären, führt der Lagerweg vorn an der Messe vorbei und läuft dann mittig bis zum Ende.
+  Rechte Reihen: Boote längs zum Weg (je ca. 8,8 × 4 m). Platzzahl (36) und Lage der „Halle“ H1–H4 sind **[ANNAHME]**,
+  bis der Verein sie bestätigt – beides lässt sich im Lageplan-Editor ändern.

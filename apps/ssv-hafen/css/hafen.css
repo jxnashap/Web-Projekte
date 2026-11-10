@@ -127,6 +127,7 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .hafenplan.mit-bild .lp-nr { fill: #fff; paint-order: stroke; stroke: rgba(0,0,0,.7); stroke-width: 1.6px; }
 .hafenplan .quelle { font-size: 7px; }
 .plan-flaeche svg { width: 100%; height: 100%; display: block; touch-action: manipulation; }
+.plan-flaeche.mit-kamera svg { touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; } .plan-flaeche.mit-kamera svg.zieht { cursor: grabbing; }
 .legende { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 10px 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
 .legende i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(14,27,69,.3); }
 .pl-label { font-family: "Inter", sans-serif; font-size: 11px; fill: #5c5646; font-weight: 600; letter-spacing: .04em; pointer-events: none; }
@@ -148,7 +149,8 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .lp:hover rect, .land:hover rect, .lp:focus rect, .land:focus rect { stroke: var(--signal); stroke-width: 1.6; outline: none; }
 .lp:focus, .land:focus { outline: none; }
 .markiert rect { stroke: var(--signal) !important; stroke-width: 2.2 !important; }
-.markiert { animation: puls 1.6s ease-in-out infinite; }
+.markiert rect { animation: markiert 1.5s ease-in-out infinite; }
+@keyframes markiert { 50% { stroke-width: 3.6; stroke-opacity: .55; } }
 @keyframes puls { 50% { opacity: .55; } }
 
 /* Seitenleiste mit Platzdetails */
@@ -512,4 +514,56 @@ table.tab.kompakt td { padding: 5px 6px; font-size: 13.5px; }
   .akte table.kompakt tr { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
   .akte table.kompakt td { display: block; padding: 0; border: 0; }
   .akte table.kompakt td.r:last-child { margin-left: auto; }
+}
+
+/* ---------- Hafenplan: Kamera, Vollbild, Animationen ---------- */
+.plan-flaeche { position: relative; overflow: hidden; }
+@media (max-width: 860px) { .plan-flaeche { aspect-ratio: auto; height: min(68vh, 560px); } }
+.plan-ctl { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 6px; z-index: 3; }
+.plan-ctl button { width: 38px; height: 38px; border-radius: 10px; border: 0; background: rgba(255,255,255,.94); color: var(--navy); font: 700 18px/1 "Inter", sans-serif; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(14,27,69,.22); transition: transform .15s, background .15s; display: grid; place-items: center; }
+.plan-ctl button:hover { background: #fff; transform: translateY(-1px); } .plan-ctl button:active { transform: scale(.94); }
+.plan-ctl button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+@media (pointer: coarse) { .plan-ctl button { width: 44px; height: 44px; } }
+.plan-tipp { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: rgba(14,27,69,.86); color: #fff; font-size: 13px; padding: 8px 14px; border-radius: 99px;
+  pointer-events: none; white-space: nowrap; z-index: 3; animation: tipp 4.2s ease both; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
+@keyframes tipp { 0% { opacity: 0; transform: translate(-50%, 8px); } 10%, 82% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 4px); } }
+/* Vollbild */
+.plan-box.vollbild { position: fixed; inset: 0; z-index: 85; border-radius: 0; display: flex; flex-direction: column; }
+.plan-box.vollbild .plan-flaeche { flex: 1; aspect-ratio: auto; height: auto; min-height: 0; }
+body.plan-vollbild { overflow: hidden; }
+/* Beschriftung je nach Zoom */
+.lp-boot { font-family: "Inter", sans-serif; font-size: 2.6px; font-weight: 600; fill: #fff; pointer-events: none; opacity: 0; transition: opacity .25s; }
+.hafenplan.sehr-nah .lp-boot { opacity: .95; }
+.land .rumpf { fill: rgba(255,255,255,.88); pointer-events: none; }
+.land.st-belegt rect { fill: #4a5a86; }
+.lager-name { transition: opacity .25s; }
+/* Übergänge beim Hovern: Platz hebt sich leicht */
+.lp > rect, .land rect { transform-box: fill-box; transform-origin: center; transition: fill .25s, transform .2s cubic-bezier(.2,.8,.2,1), stroke-width .2s; }
+.lp:hover > rect, .land:hover rect { transform: scale(1.06); }
+/* Auftakt: Stege werden „gebaut“, Plätze tauchen von West nach Ost auf */
+.hafenplan.intro .steg { stroke-dasharray: 1; stroke-dashoffset: 1; animation: steg-bauen 1s cubic-bezier(.3,.7,.2,1) .05s forwards; }
+.hafenplan.intro .steg-planken, .hafenplan.intro .pfahl { opacity: 0; animation: einblenden .5s ease .7s forwards; }
+.hafenplan.intro .lp > rect, .hafenplan.intro .land rect { opacity: 0; animation: platz-auf .55s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(var(--i, 0) * 22ms + 150ms); }
+.hafenplan.intro .rumpf { opacity: 0; animation: einblenden .5s ease forwards; animation-delay: calc(var(--i, 0) * 22ms + 420ms); }
+.hafenplan.intro .pkt { opacity: 0; animation: einblenden .4s ease 1s forwards; }
+@keyframes steg-bauen { to { stroke-dashoffset: 0; } }
+@keyframes einblenden { to { opacity: 1; } }
+@keyframes platz-auf { 0% { opacity: 0; transform: scale(.4); } 70% { opacity: 1; transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
+/* Wasser: Wellen ziehen langsam, Boote schaukeln sanft */
+.wellen { animation: wellen 14s linear infinite; }
+@keyframes wellen { from { transform: translate(0, 0); } to { transform: translate(46px, 22px); } }
+.hafenplan.mit-bild .wellen-clip { display: none; }
+.lp .rumpf { transform-box: fill-box; transform-origin: center; animation: schaukeln 5.5s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -.43s); }
+@keyframes schaukeln { 0%, 100% { transform: rotate(-1.6deg) translateY(-.15px); } 50% { transform: rotate(1.6deg) translateY(.15px); } }
+.hafenplan.intro .lp .rumpf { animation: einblenden .5s ease forwards, schaukeln 5.5s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 22ms + 420ms), calc(var(--i, 0) * -.43s); }
+.hafenplan.zieht .wellen, .hafenplan.zieht .lp .rumpf { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .wellen, .lp .rumpf, .markiert rect, .plan-tipp { animation: none !important; }
+  .lp > rect, .land rect { transition: none; } .lp:hover > rect, .land:hover rect { transform: none; }
+}
+@media (max-width: 860px) {
+  .plan-leiste { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .plan-leiste::-webkit-scrollbar { display: none; }
+  .plan-leiste > * { flex: none; }
 }

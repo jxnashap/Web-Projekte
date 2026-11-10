@@ -248,14 +248,26 @@
       (darf('einstellungen') ? '<button class="btn klein" id="plan-edit">Lageplan bearbeiten</button>' : '') +
       '</div><div class="plan-flaeche" id="plan"></div><div class="legende">' + legende + (planStand.luftbild ? '<span class="quelle-zeile">' + esc(PLAN.QUELLE) + '</span>' : '') + '</div></div><aside class="detail" id="detail"></aside></div>' +
       '<p class="hinweis" style="margin-top:12px">Maßstäblicher Plan nach amtlichem Luftbild (DOP20)' + (d.einstellungen.lageplan ? ', vom Verein nachgezeichnet. ' : '. ') + (planAnnahme() ? 'Zuordnung, Nummerierung und Boxmaße sind eine <strong>Annahme</strong>, bis der Verein sie unter „Liegeplätze“ bestätigt – die Platzempfehlung für Gäste ist bis dahin nur eine Orientierung. ' : '') + 'Tippe auf einen Platz für Details; mit „Ost / West / Schwimm“ zoomst du heran und siehst die Platznummern.</p>';
-    const zh = $('#zu-heute'); if (zh) zh.addEventListener('click', () => { if (imSommer) planStand.datum = heute; else { planStand.modus = 'winter'; planStand.ansicht = 'land'; } planStand.markiere = null; zeige('plan'); });
-    const svg = PLAN.zeichnen($('#plan'), { namen: true, luftbild: planStand.luftbild, modus: planStand.modus, saison: SAISON, datum: planStand.datum, ansicht: planStand.ansicht, markiere: planStand.markiere, onKlick: (id) => { planStand.markiere = id; detail(id); markieren(id); } });
+    const zh = $('#zu-heute'); if (zh) zh.addEventListener('click', () => { if (imSommer) planStand.datum = heute; else { planStand.modus = 'winter'; planStand.ansicht = 'land'; planStand.vb = null; } planStand.markiere = null; zeige('plan'); });
+    const svg = PLAN.zeichnen($('#plan'), { namen: true, luftbild: planStand.luftbild, modus: planStand.modus, saison: SAISON, datum: planStand.datum, ansicht: planStand.vb || planStand.ansicht, intro: !planStand.vb, markiere: planStand.markiere, onKlick: (id) => { planStand.markiere = id; detail(id); markieren(id); } });
+    // Verschieben/Zoomen wie in einer Karten-App, dazu Vollbild (Esc beendet)
+    const box = main.querySelector('.plan-box');
+    const vollbild = (an) => { const v = an == null ? !box.classList.contains('vollbild') : an; box.classList.toggle('vollbild', v); document.body.classList.toggle('plan-vollbild', v); planStand.voll = v;
+      const k = box.querySelector('[data-k=voll]'); if (k) { k.textContent = v ? '✕' : '⛶'; k.setAttribute('aria-label', v ? 'Vollbild beenden' : 'Vollbild'); } };
+    const kam = PLAN.kamera(svg, { vollbild: () => vollbild(), onAnsicht: (v) => { planStand.vb = v.slice(); } }); if (planStand.voll) vollbild(true);
+    // Von anderer Stelle „im Plan zeigen“: Kamera gleitet zum markierten Platz
+    if (planStand.fokus && planStand.markiere) { planStand.fokus = false; setTimeout(() => { const g = svg.querySelector('[data-platz="' + planStand.markiere + '"]'); if (!g) return;
+      const r = g.getBoundingClientRect(), sr = svg.getBoundingClientRect(), vb = kam.ansicht; if (!sr.width) return;
+      const cx = vb[0] + (r.left + r.width / 2 - sr.left) / sr.width * vb[2], cy = vb[1] + (r.top + r.height / 2 - sr.top) / sr.height * vb[3]; kam.zu([cx - 95, cy - 60, 190, 120]); }, 450); }
+    const escVoll = (e) => { if (!box.isConnected) return document.removeEventListener('keydown', escVoll, true);
+      if (e.key === 'Escape' && box.classList.contains('vollbild') && !$('#modal').firstChild) { e.stopPropagation(); vollbild(false); } };
+    document.addEventListener('keydown', escVoll, true);
     function markieren(id) { svg.querySelectorAll('.markiert').forEach((x) => x.classList.remove('markiert')); const g = svg.querySelector('[data-platz="' + id + '"]'); if (g) g.classList.add('markiert'); }
     main.querySelectorAll('[data-ansicht]').forEach((b) => b.addEventListener('click', () => {
       planStand.ansicht = b.dataset.ansicht; PLAN.zoomen(svg, planStand.ansicht);
       main.querySelectorAll('[data-ansicht]').forEach((x) => x.classList.toggle('aktiv', x === b));
     }));
-    main.querySelectorAll('[data-modus]').forEach((b) => b.addEventListener('click', () => { planStand.modus = b.dataset.modus; planStand.markiere = null; if (planStand.modus === 'winter' && planStand.ansicht === 'gesamt') planStand.ansicht = 'land'; if (planStand.modus === 'sommer' && planStand.ansicht === 'land') planStand.ansicht = 'gesamt'; zeige('plan'); }));
+    main.querySelectorAll('[data-modus]').forEach((b) => b.addEventListener('click', () => { planStand.modus = b.dataset.modus; planStand.markiere = null; planStand.vb = null; if (planStand.modus === 'winter' && planStand.ansicht === 'gesamt') planStand.ansicht = 'land'; if (planStand.modus === 'sommer' && planStand.ansicht === 'land') planStand.ansicht = 'gesamt'; zeige('plan'); }));
     const dat = $('#plan-datum'); if (dat) dat.addEventListener('change', () => { planStand.datum = dat.value || planStand.datum; zeige('plan'); });
     $('#plan-bild').addEventListener('click', () => { planStand.luftbild = !planStand.luftbild; zeige('plan', true); });
     const pe = $('#plan-edit'); if (pe) pe.addEventListener('click', () => window.HAFEN_PLAN_EDITOR.oeffnen({
@@ -284,7 +296,7 @@
       '<dl>' + frei.map((p) => '<dt><span class="tag">frei</span></dt><dd><a href="#" data-platz-link="' + p.id + '">' + platzName(p.id) + '</a> · Box ' + p.box + ' · bis ' + H.zahl(p.max_laenge, 1) + ' m</dd>').join('') +
       gruen.map((p) => { const a = Q.abwesendAm(p.id, tagX); return '<dt><span class="tag gruen">grün</span></dt><dd><a href="#" data-platz-link="' + p.id + '">' + platzName(p.id) + '</a> · bis ' + H.kurz(a.bis) + '</dd>'; }).join('') + '</dl>' +
       (darf('gaeste') && planStand.modus === 'sommer' ? '<div class="aktionen"><button class="btn primaer" data-neuer-gast>+ Gastlieger einweisen</button></div>' : '');
-    el.querySelectorAll('[data-platz-link]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); planStand.markiere = a.dataset.platzLink; zeige('plan'); }));
+    el.querySelectorAll('[data-platz-link]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); planStand.markiere = a.dataset.platzLink; planStand.fokus = true; planStand.vb = null; zeige('plan'); }));
     const ng = el.querySelector('[data-neuer-gast]'); if (ng) ng.addEventListener('click', () => gastForm({}));
   }
 
@@ -356,7 +368,7 @@
     };
     render(); $('#such').addEventListener('input', render); $('#br').addEventListener('change', render);
     const ma = $('#masse-alle'); if (ma) ma.addEventListener('click', () => { masseModus = true; zeige('plaetze'); });
-    $('#tb').addEventListener('click', (e) => { const m = e.target.closest('[data-masse]'); if (m) { e.stopPropagation(); return platzForm(Q.platz(m.dataset.masse)); } const r = e.target.closest('[data-p]'); if (r) { planStand.markiere = r.dataset.p; zeige('plan'); } });
+    $('#tb').addEventListener('click', (e) => { const m = e.target.closest('[data-masse]'); if (m) { e.stopPropagation(); return platzForm(Q.platz(m.dataset.masse)); } const r = e.target.closest('[data-p]'); if (r) { planStand.markiere = r.dataset.p; planStand.fokus = true; planStand.vb = null; zeige('plan'); } });
     $('#csv').addEventListener('click', () => download('liegeplaetze.csv', csv([['Platz', 'Brücke', 'Box', 'max. Länge', 'max. Breite', 'Strom', 'Boot', 'Eigner', 'Mitgliedsart']].concat(d.liegeplaetze.map((p) => {
       const bel = Q.belegungPlatz(SAISON, 'sommer', p.id); const b = bel && Q.boot(bel.boot_id); const m = b && Q.mitglied(b.eigner_id);
       return [p.nr, H.BRUECKE[p.bruecke], p.box, H.zahl(p.max_laenge, 1), H.zahl(p.max_breite, 1), p.strom ? 'ja' : 'nein', b ? b.name : '', m ? Q.name(m) : '', m ? H.ART[m.art] : ''];
@@ -1960,6 +1972,7 @@
   }
   function zeige(t, ruhig) {
     if (!darf(t)) t = 'uebersicht';
+    document.body.classList.remove('plan-vollbild'); if (t !== 'plan') planStand.voll = false;
     const y = window.scrollY; const vorher = tab; tab = t; zuletzt[bereichVon(t)] = t; nav(); V[t]($('#main'));
     const r = unterNav(); if (r) $('#main').insertAdjacentHTML('afterbegin', r);
     window.scrollTo(0, ruhig ? y : 0); schnellknopf();
