@@ -49,6 +49,7 @@ Repo für alle Website-Projekte. Struktur:
   Sicherung zurückspielen: `HAFEN.sicherungLesen()/zurueckspielen()` (nur Vorstand, über den normalen Speicherweg – Mitglieder/Rechnungen werden nie gelöscht).
   Mitgliedsakte `mitgliedAkte(m)` (Zeilenklick; Verlauf über `HAFEN.verlauf({ datensaetze })` für Mitglied+Boote+Belegungen+Rechnungen+Stunden), Bearbeiten → `mitgliedForm` → zurück zur Akte;
   Gebührenordnung in Fassungen (`d.gebuehren[jahr]` = gültig ab Saison, `fassungen()`), Abrechnung als 5-Schritte-Ablauf (Prüfliste, Zustell-Vermerk `einstellungen.abrechnung_zugestellt['periode-jahr']`).
+  Gestaltung: dezenter Nautik-Stil am Ende von `css/hafen.css` (nur `@media screen`: Seekarten-Gradnetz, Tau-Linien in Messing `--tau`, Kompassrose `--kompass`, Wellenkanten `--wellen-hell`; Druck/PDF unberührt).
   Tabellen: eine Hauptaktion je Zeile, Rest im ⋯-Menü (`zeilenMenue()`, fest positioniert); Übersicht max. 5 Punkte je Gruppe, Etikett = Thema.
   **Alle Druck-/PDF-Seiten im SSV-Briefkopf: Flagge oben links + Vereinsadresse rechts** (`kopf` in `js/drucken.js`, `druckKopf()` in app.js für direkt gedruckte Seiten) – Vorgabe des Nutzers.
   Recherche/Annahmen: `RECHERCHE.md`, `PLAN.md`.

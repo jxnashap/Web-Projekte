@@ -567,3 +567,119 @@ body.plan-vollbild { overflow: hidden; }
   .plan-leiste::-webkit-scrollbar { display: none; }
   .plan-leiste > * { flex: none; }
 }
+
+/* =====================================================================
+   Nautik-Stil (dezent): Seekarten-Gradnetz, Tau-Linien in Messing, Kompassrose,
+   Wellenkanten. Nur Bildschirm – Rechnungen und PDFs bleiben unverändert.
+   ===================================================================== */
+:root {
+  --messing: #A8854D; --messing-hell: #C9AE7C; --see: #2E5A7A; --see-hell: #E7EEF3; --segeltuch: #F5F2EB;
+  --tau: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 5.2 L5 .8 M6 5.2 L10 .8' stroke='%23A8854D' stroke-width='1.5' stroke-linecap='round' opacity='.75'/%3E%3Cpath d='M-.5 4.6 L3 .9 M4.5 4.6 L8 .9' stroke='%23E8D9B8' stroke-width='.7' stroke-linecap='round' opacity='.9'/%3E%3C/svg%3E");
+  --wellen-hell: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='12' viewBox='0 0 80 12'%3E%3Cpath d='M0 6 Q10 1 20 6 T40 6 T60 6 T80 6' fill='none' stroke='white' stroke-opacity='.10' stroke-width='1.2'/%3E%3C/svg%3E");
+  --kompass: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-50 -50 100 100'%3E%3Cg fill='none' stroke='white' stroke-width='.8'%3E%3Ccircle r='46'/%3E%3Ccircle r='38' stroke-dasharray='1 3'/%3E%3Ccircle r='20'/%3E%3C/g%3E%3Cg fill='white'%3E%3Cpath d='M0-44 L5-5 L0 0 L-5-5Z'/%3E%3Cpath d='M0 44 L-5 5 L0 0 L5 5Z' opacity='.5'/%3E%3Cpath d='M44 0 L5 5 L0 0 L5-5Z' opacity='.5'/%3E%3Cpath d='M-44 0 L-5-5 L0 0 L-5 5Z' opacity='.5'/%3E%3Cpath d='M28-28 L4-1 L0 0 L1-4Z' opacity='.35'/%3E%3Cpath d='M-28 28 L-4 1 L0 0 L-1 4Z' opacity='.35'/%3E%3Cpath d='M28 28 L1 4 L0 0 L4 1Z' opacity='.35'/%3E%3Cpath d='M-28-28 L-1-4 L0 0 L-4-1Z' opacity='.35'/%3E%3C/g%3E%3C/svg%3E");
+}
+@media screen {
+  /* Hintergrund: ganz feines Gradnetz wie auf einer Seekarte */
+  body { background-color: var(--segeltuch);
+    background-image: linear-gradient(rgba(46,90,122,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(46,90,122,.045) 1px, transparent 1px),
+      linear-gradient(rgba(46,90,122,.022) 1px, transparent 1px), linear-gradient(90deg, rgba(46,90,122,.022) 1px, transparent 1px);
+    background-size: 160px 160px, 160px 160px, 32px 32px, 32px 32px; background-attachment: fixed; }
+
+  /* Seitenleiste: Nachtblau mit Kompassrose und Wellen am Fuß */
+  .nav { background-color: var(--navy); background-image: var(--wellen-hell), var(--wellen-hell), linear-gradient(180deg, #0E1B45 0%, #10204f 70%, #13285c 100%);
+    background-repeat: repeat-x, repeat-x, no-repeat; background-position: 0 calc(100% - 22px), 40px calc(100% - 8px), 0 0; position: sticky; }
+  .nav::after { content: ''; position: absolute; right: -46px; bottom: 70px; width: 190px; height: 190px; background: var(--kompass) center / contain no-repeat; opacity: .06; pointer-events: none; }
+  .nav > * { position: relative; z-index: 1; }
+  .nav .marke strong { letter-spacing: .01em; }
+  .nav-bereiche button.aktiv { background: rgba(255,255,255,.1); box-shadow: inset 3px 0 0 var(--messing-hell); }
+  .nav-bereiche button.aktiv::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 3px; height: 4px; background: var(--tau) repeat-x 0 0 / 8px 4px; opacity: .45; }
+  .nav-bereiche button { position: relative; }
+  .rolle-chip { border: 1px solid rgba(201,174,124,.22); }
+  .nav-unten { border-top: 1px solid rgba(201,174,124,.2); }
+
+  /* Seitenkopf: Überschrift mit Tau-Linie in Messing */
+  .kopf { position: relative; padding-bottom: 14px; margin-bottom: 22px; }
+  .kopf::after { content: ''; position: absolute; left: 0; bottom: 0; width: min(220px, 50%); height: 6px; background: var(--tau) repeat-x 0 0 / 10px 6px; opacity: .85; }
+  .kopf h1 { color: var(--navy); }
+
+  /* Karten und Kacheln: Segeltuch-Weiß, feine Kante, Messing-Strich oben */
+  .panel, .kz, details.panel, .akte-teil { border: 1px solid rgba(14,27,69,.07); }
+  .panel, .kz { box-shadow: 0 1px 2px rgba(14,27,69,.05), 0 12px 28px -18px rgba(14,27,69,.28); }
+  .kz { position: relative; overflow: hidden; }
+  .kz::before { content: ''; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--messing), var(--messing-hell) 60%, transparent); opacity: .8; }
+  .kz small, .tab th, .akte-teil h3 { color: var(--see); }
+  .panel > h2:first-child, details.todo-gruppe > summary h2 { position: relative; }
+  .panel > h2:first-child { border-bottom: 0; padding-bottom: 12px; }
+  .panel > h2:first-child::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, rgba(168,133,77,.55), rgba(168,133,77,.12) 40%, rgba(14,27,69,.08)); }
+
+  /* Tabellen: ruhige Linien, beim Überfahren ein Hauch Seewasser */
+  .tab th { border-bottom: 1px solid rgba(46,90,122,.18); }
+  .tab tr.klickbar:hover td { background: rgba(46,90,122,.055); }
+
+  /* Knöpfe: Navy und Messing, der rote Stander bleibt für die Hauptaktion */
+  .btn { transition: background .15s, box-shadow .15s, transform .1s; }
+  .btn:active { transform: translateY(1px); }
+  .btn.dunkel, .btn.aktiv { background: var(--navy); }
+  .btn.dunkel:hover { background: var(--navy-2); }
+  .btn:focus-visible { outline: 2px solid var(--messing); outline-offset: 2px; }
+  .btn:not(.primaer):not(.dunkel):not(.aktiv):not(.gruen):hover { box-shadow: inset 0 0 0 1px rgba(168,133,77,.55); background: #fff; }
+
+  /* Reiter und Umschalter */
+  .reiter { border-bottom: 0; position: relative; }
+  .reiter::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, rgba(168,133,77,.5), rgba(14,27,69,.08) 50%); }
+  .reiter-titel { color: var(--see); }
+  .reiter-liste, .ab-modus { background: rgba(46,90,122,.08); }
+
+  /* Hinweise: Seekarten-Blau statt Grau */
+  .hinweis { background: var(--see-hell); color: #36506a; }
+
+  /* Dialoge: Kopf mit Tau-Linie */
+  .modal { background: rgba(10,20,52,.55); backdrop-filter: blur(2px); }
+  .modal-karte { border-top: 3px solid var(--navy); }
+  .modal-karte > h2:first-of-type, .akte-kopf { position: relative; padding-bottom: 12px; }
+  .modal-karte > h2:first-of-type::after, .akte-kopf::after { content: ''; position: absolute; left: 0; bottom: 2px; width: 140px; height: 6px; background: var(--tau) repeat-x 0 0 / 10px 6px; opacity: .7; }
+  .toast { box-shadow: inset 4px 0 0 var(--messing-hell), 0 10px 30px rgba(14,27,69,.3); }
+
+  /* Anmeldung: Nachtblau mit Gradnetz und Kompassrose */
+  .login { background-color: var(--navy); position: relative; overflow: hidden;
+    background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px; }
+  .login::before { content: ''; position: absolute; width: min(80vh, 680px); aspect-ratio: 1; right: -12vh; bottom: -18vh; background: var(--kompass) center / contain no-repeat; opacity: .06; pointer-events: none; }
+  .login::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: var(--wellen-hell) repeat-x 0 10px, var(--wellen-hell) repeat-x 40px 34px; pointer-events: none; }
+  .login .karte-login { border-top: 3px solid var(--messing); position: relative; z-index: 1; }
+  .login h1 { position: relative; padding-bottom: 10px; }
+  .login h1::after { content: ''; position: absolute; left: 0; bottom: 0; width: 120px; height: 6px; background: var(--tau) repeat-x 0 0 / 10px 6px; }
+
+  /* Mein SSV und Gast-Seite: Kopf mit Wellenkante */
+  html .mein-kopf { position: relative; padding-bottom: 30px; background-color: var(--navy);
+    background-image: var(--wellen-hell), linear-gradient(180deg, #0E1B45, #13285c); background-repeat: repeat-x, no-repeat; background-position: 0 calc(100% - 14px), 0 0; }
+  html .mein-kopf::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 14px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='14' viewBox='0 0 120 14' preserveAspectRatio='none'%3E%3Cpath d='M0 8 Q15 0 30 8 T60 8 T90 8 T120 8 V14 H0Z' fill='%23F5F2EB'/%3E%3C/svg%3E") repeat-x 0 100% / 120px 14px; }
+  .gast-kopf { position: relative; }
+  .gast-kopf::after { content: ''; display: block; width: 120px; height: 6px; margin: 12px auto 0; background: var(--tau) repeat-x 0 0 / 10px 6px; opacity: .9; }
+  html .sek > summary h2 { color: var(--navy); }
+  html .blick button { border: 1px solid rgba(14,27,69,.07); position: relative; overflow: hidden; }
+  html .blick button::before { content: ''; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--messing), var(--messing-hell) 60%, transparent); opacity: .7; }
+
+  /* Hafenplan-Rahmen passend dazu */
+  .plan-box { border: 1px solid rgba(14,27,69,.08); }
+  .plan-ctl button { color: var(--navy); }
+  .plan-ctl button:hover { box-shadow: 0 2px 8px rgba(14,27,69,.22), inset 0 0 0 1px rgba(168,133,77,.6); }
+}
+@media screen and (max-width: 860px) {
+  .nav { background-image: var(--wellen-hell), linear-gradient(180deg, #0E1B45, #13285c); background-repeat: repeat-x, no-repeat; background-position: 0 100%, 0 0; }
+  .nav::after { display: none; }
+  .kopf::after { width: 160px; }
+}
+@media (prefers-reduced-transparency: reduce) { .modal { backdrop-filter: none; } }
+/* Touch: kein „klebender“ Hover; Übersicht-Zeilen kompakt (Etikett + Pfeil oben, Text darunter) */
+@media (hover: none) { .tab tr.klickbar:hover td { background: transparent !important; } .tab tr.klickbar:active td { background: rgba(46,90,122,.08) !important; } }
+@media screen and (max-width: 860px) {
+  .panel table.tab.todo tr { display: grid !important; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 11px 0; }
+  .panel table.tab.todo td { padding: 0 !important; }
+  .panel table.tab.todo td:first-child { grid-column: 1; grid-row: 1; }
+  .panel table.tab.todo td:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+  .panel table.tab.todo td.r { grid-column: 2; grid-row: 1; margin: 0; align-self: center; color: var(--see); }
+  .gast-kopf::after { opacity: 1; filter: brightness(1.25); }
+}
+@media screen { .modal-x { z-index: 5; } }
