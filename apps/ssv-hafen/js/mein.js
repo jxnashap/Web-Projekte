@@ -273,7 +273,7 @@
     $('#adok', el).addEventListener('click', async () => {
       const fm = $('#adf', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); const info = $('#adf-info', el);
       try {
-        if (DBM) await window.SSV_SB.rpc('mein_arbeitsdienst_melden', { p: { code, stunden: x.stunden, taetigkeit: x.taetigkeit, datum: x.datum } });
+        if (DBM) await window.SSV_SB.rpc('mein_arbeitsdienst_melden', { p: { code, stunden: String(x.stunden).replace(',', '.'), taetigkeit: x.taetigkeit, datum: x.datum } });
         else {
           let einsatz = null;
           if (code) {

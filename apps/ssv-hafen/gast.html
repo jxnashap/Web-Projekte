@@ -161,7 +161,7 @@
     try {
       if (SB) r = await SB.rpc('gast_anmelden', { p: { platz: x.platz, bootsname: x.bootsname, skipper: x.skipper, herkunft: x.herkunft, tel: x.tel, laenge: x.laenge, breite: x.breite, tiefgang: x.tiefgang, ankunft: x.ankunft, naechte: n } }, true);
       else {
-        const g = { id: H.uid('G'), bootsname: x.bootsname.trim(), skipper: x.skipper.trim(), herkunft: x.herkunft.trim(), tel: x.tel.trim(), email: '', laenge: Number(x.laenge), breite: Number(x.breite) || 0, tiefgang: Number(x.tiefgang) || null,
+        const g = { id: H.uid('G'), bootsname: x.bootsname.trim(), skipper: x.skipper.trim(), herkunft: x.herkunft.trim(), tel: x.tel.trim(), email: '', laenge: H.dez(x.laenge), breite: H.dez(x.breite) || 0, tiefgang: H.dez(x.tiefgang) || null,
           ankunft: x.ankunft, naechte: n, platz_id: '', platz_angabe: x.platz.trim(), platz_hinweis: '', betrag: n * gb.gast_nacht, zahlung: 'offen', bezahlt_am: '', zahlung_gemeldet: '', quittung_nr: '', status: 'angemeldet', quelle: 'qr', erstellt: new Date().toISOString() };
         const p = platzFinden(x.platz); const grund = p ? demoPruefen(p, g) : 'Platz „' + x.platz.trim() + '“ gibt es laut Hafenplan nicht';
         if (p && !grund) { g.platz_id = p.id; g.status = 'eingewiesen'; } else g.platz_hinweis = grund;

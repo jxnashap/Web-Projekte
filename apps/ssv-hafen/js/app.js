@@ -361,7 +361,8 @@
       '<div class="aktionen" style="justify-content:flex-end"><button class="btn primaer" id="m-ok2">Speichern</button></div>';
     const felder = [...main.querySelectorAll('.masse')];
     const markieren = (el) => { const p = Q.platz(el.dataset.id); const alt = el.dataset.k === 'strom' ? !!p.strom : el.dataset.k === 'box' ? p.box : (p[el.dataset.k] == null ? '' : String(p[el.dataset.k]));
-      const neu = el.type === 'checkbox' ? el.checked : el.value; el.classList.toggle('geaendert', String(neu) !== String(alt)); };
+      const zahlK = !['strom', 'box'].includes(el.dataset.k);   // Zahlen vergleichen, damit „9,5“ = 9.5 nicht als Änderung gilt
+      const neu = el.type === 'checkbox' ? el.checked : el.value; el.classList.toggle('geaendert', zahlK ? (neu.trim() === '' ? alt !== '' : H.dez(neu) !== Number(alt) || alt === '') : String(neu) !== String(alt)); };
     felder.forEach((el) => el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', () => markieren(el)));
     // Enter springt wie Tab ins nächste Feld derselben Spalte
     main.querySelector('.masse-tab').addEventListener('keydown', (e) => {
@@ -378,9 +379,9 @@
     const sichern = () => {
       const geaendert = felder.filter((el) => el.classList.contains('geaendert'));
       if (!geaendert.length) return ende();
-      for (const el of geaendert) { if (['max_laenge', 'max_breite'].includes(el.dataset.k) && !(Number(el.value) > 0)) { el.focus(); return toast(platzName(el.dataset.id) + ': bitte eine Zahl über 0 eintragen.', 'fehler'); } }
+      for (const el of geaendert) { if (['max_laenge', 'max_breite'].includes(el.dataset.k) && !(H.dez(el.value) > 0)) { el.focus(); return toast(platzName(el.dataset.id) + ': bitte eine Zahl über 0 eintragen.', 'fehler'); } }
       geaendert.forEach((el) => { const p = Q.platz(el.dataset.id); const k = el.dataset.k;
-        p[k] = k === 'strom' ? el.checked : k === 'box' ? el.value : (el.value === '' ? null : Number(el.value)); });
+        p[k] = k === 'strom' ? el.checked : k === 'box' ? el.value : (el.value.trim() === '' ? null : H.dez(el.value)); });
       speichern(new Set(geaendert.map((el) => el.dataset.id)).size + ' Plätze gespeichert.'); ende();
     };
     $('#m-ok').addEventListener('click', sichern); $('#m-ok2').addEventListener('click', sichern);
@@ -398,7 +399,7 @@
       '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>');
     $('#ok', el).addEventListener('click', () => {
       const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm));
-      Object.assign(p, { box: x.box, bruecke: x.bruecke, max_laenge: Number(x.max_laenge), max_breite: Number(x.max_breite), tiefe: x.tiefe ? Number(x.tiefe) : null, strom: !!x.strom, notiz: x.notiz });
+      Object.assign(p, { box: x.box, bruecke: x.bruecke, max_laenge: H.dez(x.max_laenge), max_breite: H.dez(x.max_breite), tiefe: x.tiefe ? H.dez(x.tiefe) : null, strom: !!x.strom, notiz: x.notiz });
       speichern('Maße gespeichert.'); zu(); zeige(tab);
     });
   }
@@ -443,7 +444,7 @@
       '<div class="modal-fuss">' + (neu ? '' : '<button class="btn gefahr links" id="weg">Abmelden</button>') + '<button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>');
     $('#ok', el).addEventListener('click', () => {
       const f = $('#f', el); if (!f.reportValidity()) return;
-      const x = Object.fromEntries(new FormData(f)); ['laenge', 'breite', 'tiefgang', 'gewicht_t'].forEach((k) => { x[k] = Number(x[k]) || 0; });
+      const x = Object.fromEntries(new FormData(f)); ['laenge', 'breite', 'tiefgang', 'gewicht_t'].forEach((k) => { x[k] = H.dez(x[k]) || 0; });
       if (x.gewicht_t > 10 && !confirm('Das Boot wiegt mehr als 10 t. Laut Hafenbetriebsordnung ist das für Steg und Kran nicht zulässig. Trotzdem speichern?')) return;
       if (!neu && (x.versicherung !== (b.versicherung || '') || x.vers_bis !== (b.vers_bis || '')) && b.vers_status === 'geprueft') x.vers_status = null;   // neue Angaben → neu prüfen
       if (neu) d.boote.push({ id: H.uid('B'), vers_status: null, ...x }); else Object.assign(b, x);
@@ -804,7 +805,7 @@
     const el = modal('<h2>' + esc(platzName(platzId)) + ' – ' + (per === 'sommer' ? 'Sommer ' + SAISON : 'Winter ' + SAISON + '/' + String(SAISON + 1).slice(2)) + '</h2>' +
       (p.bez ? '' : '<p class="hinweis">Box ' + p.box + ' · max. ' + H.zahl(p.max_laenge, 1) + ' × ' + H.zahl(p.max_breite, 1) + ' m</p>') +
       '<form id="f" class="form"><label class="feld voll">Boot<select name="boot_id"><option value="">– Platz frei –</option>' + bOpt(bel && bel.boot_id) + '</select></label>' +
-      (p.bez ? (p.art !== 'palette' ? '<label class="feld">Fläche (m²)<input name="flaeche_m2" type="number" min="1" value="' + (bel && bel.flaeche_m2 || '') + '" placeholder="automatisch L × B"></label>' : '') +
+      (p.bez ? (p.art !== 'palette' ? '<label class="feld">Fläche (m²)<input name="flaeche_m2" type="number" step="0.1" min="1" value="' + (bel && bel.flaeche_m2 || '') + '" placeholder="automatisch L × B"></label>' : '') +
         '<label class="feld check"><input type="checkbox" name="nicht_kranen"' + (bel && bel.nicht_kranen ? ' checked' : '') + '> beim Auslagern nicht kranen</label>' +
         (per === 'sommer' ? '<label class="feld">Wievielter Sommer an Land?<input name="sommer_an_land_jahr" type="number" min="1" value="' + (bel && bel.sommer_an_land_jahr || 1) + '"><small>ab dem 2. verdoppelt sich die Gebühr</small></label>' : '')
         : '<label class="feld">Art<select name="art"><option value="dauer"' + (bel && bel.art === 'dauer' ? ' selected' : '') + '>Dauerlieger</option><option value="saisongast"' + (bel && bel.art === 'saisongast' ? ' selected' : '') + '>Saison-Gastlieger</option></select></label>') +
@@ -816,7 +817,7 @@
       const x = Object.fromEntries(new FormData($('#f', el)));
       d.belegungen = d.belegungen.filter((y) => !(y.saison === SAISON && y.periode === per && (y.platz_id === platzId || (x.boot_id && y.boot_id === x.boot_id))));
       if (x.boot_id) d.belegungen.push({ id: H.uid('BL'), saison: SAISON, periode: per, boot_id: x.boot_id, platz_typ: p.bez ? 'land' : 'wasser', platz_id: platzId, art: x.art || 'dauer',
-        flaeche_m2: x.flaeche_m2 ? Number(x.flaeche_m2) : null, nicht_kranen: !!x.nicht_kranen, sommer_an_land_jahr: x.sommer_an_land_jahr ? Number(x.sommer_an_land_jahr) : undefined, notiz: '' });
+        flaeche_m2: x.flaeche_m2 ? H.dez(x.flaeche_m2) : null, nicht_kranen: !!x.nicht_kranen, sommer_an_land_jahr: x.sommer_an_land_jahr ? Number(x.sommer_an_land_jahr) : undefined, notiz: '' });
       speichern('Belegung gespeichert.'); zu(); zeige(tab);
     });
   }
@@ -896,7 +897,7 @@
       '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok"></button></div>', true);
     const f = $('#f', el);
     let wahl = x0.status === 'storniert' ? '' : (x0.platz_id || '');
-    const werte = () => ({ von: f.ankunft.value || x0.ankunft, n: Math.max(1, Number(f.naechte.value) || 1), l: Number(f.laenge.value) || 0, b: Number(f.breite.value) || 0, t: Number(f.tiefgang.value) || 0 });
+    const werte = () => ({ von: f.ankunft.value || x0.ankunft, n: Math.max(1, Number(f.naechte.value) || 1), l: H.dez(f.laenge.value) || 0, b: H.dez(f.breite.value) || 0, t: H.dez(f.tiefgang.value) || 0 });
     const knopf = () => { const st = f.status ? f.status.value : 'angemeldet'; $('#ok', el).textContent = st === 'storniert' ? 'Stornieren' : wahl ? ((neu || g.status === 'angemeldet') ? 'Einweisen' : 'Speichern') : (neu ? 'Ohne Platz speichern' : 'Speichern (ohne Platz)'); };
     const aktualisieren = () => {
       const w = werte(); $('#betrag', el).value = H.geld(w.n * gb.gast_nacht);
@@ -941,7 +942,7 @@
           '<td class="r"><button class="btn klein gefahr" data-weg="' + x.id + '">Entfernen</button></td></tr>'; }).join('') + '</tbody></table></div>';
     $('#neu').addEventListener('click', () => {
       const el = modal('<h2>Warteliste</h2><form id="f" class="form"><label class="feld voll">Mitglied<select name="mitglied_id" required>' + mOpt() + '</select></label><label class="feld">Bootslänge (m)<input name="boot_laenge" type="number" step="0.1" required></label><label class="feld">Bootsbreite (m)<input name="boot_breite" type="number" step="0.1" required></label><label class="feld">Wunsch-Box<select name="wunsch_box"><option>I</option><option selected>II</option><option>III</option></select></label><label class="feld">eingegangen am<input name="datum" type="date" value="' + heute + '"></label></form><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Eintragen</button></div>');
-      $('#ok', el).addEventListener('click', () => { const f = $('#f', el); if (!f.reportValidity()) return; const x = Object.fromEntries(new FormData(f)); d.warteliste.push({ id: H.uid('W'), ...x, boot_laenge: Number(x.boot_laenge), boot_breite: Number(x.boot_breite), notiz: '', status: 'wartend' }); speichern('Eingetragen.'); zu(); zeige(tab); });
+      $('#ok', el).addEventListener('click', () => { const f = $('#f', el); if (!f.reportValidity()) return; const x = Object.fromEntries(new FormData(f)); d.warteliste.push({ id: H.uid('W'), ...x, boot_laenge: H.dez(x.boot_laenge), boot_breite: H.dez(x.boot_breite), notiz: '', status: 'wartend' }); speichern('Eingetragen.'); zu(); zeige(tab); });
     });
     main.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => { if (confirm('Eintrag entfernen?')) { d.warteliste = d.warteliste.filter((x) => x.id !== b.dataset.weg); speichern('Entfernt.'); zeige(tab); } }));
     main.querySelectorAll('[data-vergeben]').forEach((b) => b.addEventListener('click', () => {
@@ -1029,7 +1030,7 @@
       $('#ok', el).addEventListener('click', () => {
         const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm));
         const id = H.uid('E'); const zeichen = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code = ''; const zz = crypto.getRandomValues(new Uint32Array(6)); zz.forEach((n) => { code += zeichen[n % zeichen.length]; });
-        d.arbeitseinsaetze.push({ id, datum: x.datum, titel: x.titel, beginn: x.beginn, ende: x.ende, stunden: Number(x.stunden), notiz: x.notiz, erstellt_von: ROLLEN[rolle].name });
+        d.arbeitseinsaetze.push({ id, datum: x.datum, titel: x.titel, beginn: x.beginn, ende: x.ende, stunden: H.dez(x.stunden), notiz: x.notiz, erstellt_von: ROLLEN[rolle].name });
         d.arbeitseinsatz_codes.push({ einsatz_id: id, code });
         speichern('Arbeitseinsatz angelegt – QR-Plakat drucken und am Einsatztag aushängen.'); zu(); zeige(tab);
       });
@@ -1037,7 +1038,7 @@
     main.querySelectorAll('[data-m]').forEach((r) => r.addEventListener('click', () => mitgliedForm(Q.mitglied(r.dataset.m))));
     $('#neu').addEventListener('click', () => {
       const el = modal('<h2>Arbeitsstunden</h2><form id="f" class="form"><label class="feld voll">Mitglied<select name="mitglied_id" required>' + mOpt(null, (m) => m.art === 'ausuebend' || m.art === 'probe') + '</select></label><label class="feld">Datum<input name="datum" type="date" required value="' + heute + '"></label><label class="feld">Stunden<input name="stunden" type="number" step="0.5" min="0.5" required value="4"></label><label class="feld voll">Tätigkeit<input name="taetigkeit" placeholder="z. B. Einlagern, Steg-Wartung"></label></form><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Erfassen</button></div>');
-      $('#ok', el).addEventListener('click', () => { const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); d.arbeitsdienst.push({ id: H.uid('AD'), ...x, stunden: Number(x.stunden), status: 'bestaetigt', einsatz_id: null, gemeldet: null, geprueft_von: ROLLEN[rolle].name }); speichern('Erfasst.'); zu(); zeige(tab); });
+      $('#ok', el).addEventListener('click', () => { const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); d.arbeitsdienst.push({ id: H.uid('AD'), ...x, stunden: H.dez(x.stunden), status: 'bestaetigt', einsatz_id: null, gemeldet: null, geprueft_von: ROLLEN[rolle].name }); speichern('Erfasst.'); zu(); zeige(tab); });
     });
   };
 
@@ -1140,7 +1141,7 @@
       '<div class="modal-fuss">' + (r.sepa && r.sepa_lauf && st !== 'ruecklastschrift' ? '<button class="btn gefahr links" id="rueck">Rücklastschrift</button>' : '') + (st === 'ruecklastschrift' && r.sepa ? '<button class="btn links" id="erneut">Erneut einziehen</button>' : '') +
       '<button class="btn" data-zu>Schließen</button>' + (rest > 0 ? '<button class="btn primaer" id="ok">Zahlung buchen</button>' : '') + '</div>');
     const ok = $('#ok', el); if (ok) ok.addEventListener('click', () => {
-      const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); const betrag = Math.round(Number(x.betrag) * 100) / 100;
+      const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); const betrag = Math.round(H.dez(x.betrag) * 100) / 100;
       if (betrag > rest + 0.001 && !confirm('Der Betrag ist höher als der offene Rest (' + H.geld(rest) + '). Trotzdem buchen?')) return;
       r.zahlungen = r.zahlungen.concat([{ datum: x.datum, betrag, art: 'eingang', notiz: x.notiz || '' }]);
       if (Q.gezahlt(r) >= r.summe - 0.001) r.bezahlt_am = x.datum;

@@ -606,6 +606,8 @@
     kurz: (s) => s ? new Date(s + 'T12:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) : '',
     esc: (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
     zahl: (v, n = 2) => Number(v).toLocaleString('de-DE', { minimumFractionDigits: n, maximumFractionDigits: n }),
+    // Dezimalzahl aus einem Eingabefeld: „8,5“ und „8.5“ gelten beide; leer/ungültig → NaN
+    dez: (v) => { const t = String(v == null ? '' : v).trim().replace(/\s/g, '').replace(',', '.'); return t === '' || !/^-?\d*\.?\d+$|^-?\d+\.$/.test(t) ? NaN : Number(t); },
     ART: { ausuebend: 'ausübend', probe: 'Probemitglied', foerdernd: 'fördernd', partner: 'Ehe-/Lebenspartner', jugend: 'Jugend',
       jugend_geschwister: 'Jugend (Geschwister)', ausbildung: 'in Ausbildung (ab 18)', gast: 'Saison-Gast (kein Mitglied)' },
     GESCHLECHT: { w: 'weiblich', m: 'männlich', d: 'divers' },
@@ -663,6 +665,40 @@
       return boot.vers_bis <= in30 ? 'bald' : 'ok';
     }
   };
+
+  // Kommazahlen: <input type="number" step="0.1"> verschluckt im Browser das Komma („8,5“ → 85).
+  // Solche Felder werden darum zu Textfeldern mit Zahlentastatur; Komma und Punkt gelten, min/max prüfen wir selbst.
+  const DEZ_TXT = {
+    de: (a, z) => 'Bitte eine Zahl ' + (z == null ? 'ab ' + a : a == null ? 'bis ' + z : 'zwischen ' + a + ' und ' + z) + ' eingeben (z. B. 8,5).',
+    en: (a, z) => 'Please enter a number ' + (z == null ? 'from ' + a : a == null ? 'up to ' + z : 'between ' + a + ' and ' + z) + ' (e.g. 8.5).',
+    da: (a, z) => 'Indtast et tal ' + (z == null ? 'fra ' + a : a == null ? 'op til ' + z : 'mellem ' + a + ' og ' + z) + ' (f.eks. 8,5).'
+  };
+  function dezPruefen(el) {
+    const t = el.value.trim(); if (t === '') { el.setCustomValidity(''); return; }
+    const v = H.dez(t); const a = el.dataset.dmin === undefined ? null : Number(el.dataset.dmin); const z = el.dataset.dmax === undefined ? null : Number(el.dataset.dmax);
+    const lang = (document.documentElement.lang || 'de').slice(0, 2); const de = (a2, z2) => String(a2 == null ? '' : a2).replace('.', ',') ;
+    const fmt = (x) => x == null ? null : (lang === 'en' ? String(x) : de(x));
+    el.setCustomValidity(isNaN(v) || (a != null && v < a) || (z != null && v > z) ? (DEZ_TXT[lang] || DEZ_TXT.de)(fmt(a), fmt(z)) : '');
+  }
+  function dezUmbauen(wurzel) {
+    if (!wurzel.querySelectorAll) return;
+    const liste = wurzel.matches && wurzel.matches('input[type=number]') ? [wurzel] : wurzel.querySelectorAll('input[type=number]');
+    liste.forEach((el) => {
+      const st = el.getAttribute('step') || ''; if (!(st.includes('.') || st === 'any')) return;   // ganze Zahlen (Nächte, Minuten) bleiben
+      const wert = el.value;
+      if (el.hasAttribute('min')) el.dataset.dmin = el.getAttribute('min'); if (el.hasAttribute('max')) el.dataset.dmax = el.getAttribute('max');
+      ['min', 'max', 'step'].forEach((k) => el.removeAttribute(k));
+      el.type = 'text'; el.setAttribute('inputmode', 'decimal'); el.setAttribute('autocomplete', 'off'); el.dataset.dez = '1';
+      // vorhandene Werte deutsch mit Komma zeigen (nicht auf der mehrsprachigen Gast-Seite in Englisch)
+      if (wert !== '' && (document.documentElement.lang || 'de').startsWith('de')) el.value = wert.replace('.', ',');
+    });
+  }
+  if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') {
+    const los = () => { dezUmbauen(document.body); new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1) dezUmbauen(n); }))).observe(document.body, { childList: true, subtree: true }); };
+    if (document.body) los(); else document.addEventListener('DOMContentLoaded', los);
+    document.addEventListener('input', (e) => { if (e.target.dataset && e.target.dataset.dez) dezPruefen(e.target); }, true);
+    document.addEventListener('change', (e) => { if (e.target.dataset && e.target.dataset.dez) dezPruefen(e.target); }, true);
+  }
 
   window.HAFEN = { laden, sichern, zuruecksetzen, get d() { return d; }, H, Q, STANDARD_EINSTELLUNGEN, GEBUEHREN_2024, demoIban,
     modus: SB ? 'supabase' : 'demo', verbinden, neuLaden, db, meinDatenAendern, dok, datei, verlauf, wer: '',

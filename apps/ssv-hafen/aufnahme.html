@@ -181,7 +181,7 @@
       vorname: x.vorname.trim(), nachname: x.nachname.trim(), geburtsdatum: x.geburtsdatum, geschlecht: x.geschlecht,
       strasse: x.strasse.trim(), plz: x.plz.trim(), ort: x.ort.trim(), email: x.email.trim(), tel: (x.tel || '').trim(), erziehungsberechtigt: (x.erziehungsberechtigt || '').trim(),
       eltern_einverstanden: !!x.eltern_einverstanden,
-      boot: hatBoot ? { name: (x.boot_name || '').trim() || 'noch ohne Namen', typ: (x.boot_typ || '').trim(), laenge: Number(x.boot_laenge) || 0, breite: Number(x.boot_breite) || 0 } : null,
+      boot: hatBoot ? { name: (x.boot_name || '').trim() || 'noch ohne Namen', typ: (x.boot_typ || '').trim(), laenge: H.dez(x.boot_laenge) || 0, breite: H.dez(x.boot_breite) || 0 } : null,
       warteliste: !!(hatBoot && x.warteliste), kontoinhaber: (x.kontoinhaber || (x.vorname + ' ' + x.nachname)).trim(), iban: ibanNr, bic: '',
       mandat: !!x.mandat && !!ibanNr, satzung: !!x.satzung, datenschutz: !!x.datenschutz, nachricht: (x.nachricht || '').trim()
     };
