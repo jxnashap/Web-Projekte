@@ -12,9 +12,9 @@
   /* ------------------------------------------------------------ Rollen */
   const ROLLEN = {
     vorstand: { name: 'Vorstand', tabs: '*', bank: true },
-    brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'warteliste', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen'], bank: false },
+    brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'warteliste', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen'], bank: false },
     hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'abwesenheiten', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen'], bank: false },
-    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'finanzen', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'einstellungen', 'verlauf'], bank: true }
+    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'finanzen', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen', 'einstellungen', 'verlauf'], bank: true }
   };
   // Sieben Bereiche statt neunzehn Menüpunkte; innerhalb eines Bereichs wechseln Reiter oben auf der Seite
   const ICON = {
@@ -31,7 +31,7 @@
     ['hafen', 'Hafen', [['plan', 'Hafenplan'], ['plaetze', 'Liegeplätze'], ['belegung', 'Belegung'], ['warteliste', 'Warteliste']]],
     ['gaeste', 'Gäste & Schild', [['gaeste', 'Gastlieger'], ['abwesenheiten', 'Grünes Schild']]],
     ['mitglieder', 'Mitglieder & Boote', [['eigner', 'Mitglieder'], ['boote', 'Boote'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
-    ['betrieb', 'Betrieb', [['arbeitsdienst', 'Arbeitsdienst'], ['arbeitsbereiche', 'Arbeitsgruppen'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen']]],
+    ['betrieb', 'Betrieb', [['arbeitsdienst', 'Arbeitsdienst'], ['arbeitsbereiche', 'Arbeitsgruppen'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen'], ['veranstaltungen', 'Veranstaltungen']]],
     ['finanzen', 'Finanzen', [['finanzen', 'Übersicht'], ['abrechnung', 'Abrechnung & Lastschrift'], ['gebuehren', 'Gebührenordnung']]],
     ['verwaltung', 'Verwaltung', [['einstellungen', 'Einstellungen'], ['verlauf', 'Änderungsverlauf']]]
   ];
@@ -183,6 +183,8 @@
     if (dringend.length && darf('aufgaben')) add(heuteL, 'aufgaben', dringend.length + (dringend.length === 1 ? ' dringender oder überfälliger Schaden' : ' dringende oder überfällige Schäden/Wartungen') + ': ' + dringend.slice(0, 2).map((t) => esc(t.titel)).join(', '), 'rot');
     if (rueck.length && darf('abrechnung')) add(heuteL, 'abrechnung', rueck.length + ' Rücklastschrift' + (rueck.length > 1 ? 'en' : '') + ' – Mitglied ansprechen oder erneut einziehen', 'rot');
     (d.arbeitseinsaetze || []).filter((x) => x.datum === heute).forEach((x) => { if (darf('arbeitsdienst')) add(heuteL, 'arbeitsdienst', 'Heute Arbeitseinsatz „' + esc(x.titel) + '“ – QR-Plakat aushängen', 'gast'); });
+    if (darf('veranstaltungen')) (d.veranstaltungen || []).filter((v) => !v.abgesagt && v.datum >= heute && v.datum <= tagVor(heute, -21)).sort((a, b) => a.datum.localeCompare(b.datum)).forEach((v) => {
+      const s2 = verStand(v); add(anst, 'veranstaltungen', esc(v.titel) + ' am ' + H.kurz(v.datum) + ': ' + s2.pers + (s2.pers === 1 ? ' Person' : ' Personen') + ' zugesagt' + (v.max_personen ? ' von ' + v.max_personen : '') + (v.anmeldung_bis && v.anmeldung_bis >= heute ? ' · Anmeldung bis ' + H.kurz(v.anmeldung_bis) : ''), 'gast', 'data-ver-oeffnen="' + v.id + '"'); });
     const gemeldetAD = d.arbeitsdienst.filter((a) => a.status === 'eingereicht');
     if (gemeldetAD.length && darf('arbeitsdienst')) add(anst, 'arbeitsdienst', gemeldetAD.length + ' gemeldete Arbeitsstunden bestätigen', 'gast');
     const neueAntraege = (d.antraege || []).filter((a) => a.status === 'neu');
@@ -211,7 +213,7 @@
         '<div class="kz"><small>Nächstes Auslagern</small><strong style="font-size:20px">' + (naechste ? H.datum(naechste.auslagern) : 'Termin offen') + '</strong><span>' + (naechste ? 'Saison ' + (SAISON + 1) : 'noch nicht eingetragen') + '</span></div>';
     const handy = window.matchMedia('(max-width: 860px)').matches;
     // Etikett = Thema (nicht Farbe): Gäste, Arbeitsdienst, Boote …; Farbe zeigt die Dringlichkeit
-    const THEMA = { gaeste: 'Gäste', arbeitsdienst: 'Arbeitsdienst', boote: 'Boote', abrechnung: 'Geld', antraege: 'Anträge', aufgaben: 'Schäden', einstellungen: 'Einrichtung', plaetze: 'Liegeplätze' };
+    const THEMA = { gaeste: 'Gäste', arbeitsdienst: 'Arbeitsdienst', boote: 'Boote', abrechnung: 'Geld', antraege: 'Anträge', aufgaben: 'Schäden', einstellungen: 'Einrichtung', plaetze: 'Liegeplätze', veranstaltungen: 'Termine' };
     const MAX = 5;
     const zeilen = (l) => '<table class="tab todo"><tbody>' + l.map((x, i) => '<tr class="klickbar' + (i >= MAX ? ' todo-mehr' : '') + '" data-gehe="' + x.tab + '" ' + x.extra + (i >= MAX ? ' hidden' : '') + '><td><span class="tag ' + x.art + '">' + (THEMA[x.tab] || 'offen') + '</span></td><td>' + x.txt + '</td><td class="r">' + (darf(x.tab) ? '→' : '') + '</td></tr>').join('') + '</tbody></table>' +
       (l.length > MAX ? '<button class="btn klein todo-weitere" type="button">+ ' + (l.length - MAX) + ' weitere anzeigen</button>' : '');
@@ -227,6 +229,7 @@
       '<div class="kz"><small>Warteliste</small><strong>' + warte + '</strong><span>Mitglieder warten</span></div>' +
       (darf('abrechnung') ? '<div class="kz"><small>Offene Rechnungen · Hafen & Beiträge</small><strong>' + H.geld(offeneRe.reduce((s, r) => s + Q.rest(r), 0)) + '</strong><span>' + offeneRe.length + (offeneRe.length === 1 ? ' Rechnung' : ' Rechnungen') + ' · Getränke siehe Kasse</span></div>' : '') + '</div>';
     main.querySelectorAll('[data-gast]').forEach((z) => z.addEventListener('click', (ev) => { ev.stopPropagation(); gastForm(d.gaeste.find((g) => g.id === z.dataset.gast)); }, true));
+    main.querySelectorAll('[data-ver-oeffnen]').forEach((z) => z.addEventListener('click', () => { verAuswahl = z.dataset.verOeffnen; }, true));   // danach führt data-gehe zur Teilnehmerliste
     main.querySelectorAll('.todo-weitere').forEach((k) => k.addEventListener('click', () => { k.previousElementSibling.querySelectorAll('.todo-mehr').forEach((z) => { z.hidden = false; }); k.remove(); }));
   };
 
@@ -1799,7 +1802,7 @@
     const sd2 = $('#sich-datei'); if (sd2) sd2.addEventListener('change', async () => {
       const datei = sd2.files[0]; sd2.value = ''; if (!datei) return;
       let info; try { info = HF.sicherungLesen(await datei.text()); } catch (x) { return toast(x.message, 'fehler', 6000); }
-      const NAME = { mitglieder: 'Mitglieder', boote: 'Boote', belegungen: 'Belegungen', abwesenheiten: 'Abwesenheiten (grünes Schild)', gaeste: 'Gastlieger', warteliste: 'Warteliste', kran: 'Kran', arbeitsdienst: 'Arbeitsstunden', arbeitseinsaetze: 'Arbeitseinsätze', arbeitseinsatz_codes: 'QR-Codes der Einsätze', arbeitsbereiche: 'Arbeitsgruppen', arbeitsbereich_mitglieder: 'Gruppen-Zuordnungen', mitteilungen: 'Mitteilungen', rechnungen: 'Hafen- und Beitragsrechnungen', sepa_laeufe: 'Lastschrift-Dateien', antraege: 'Aufnahmeanträge', liegeplaetze: 'Liegeplätze', landplaetze: 'Landplätze', saisons: 'Saisontermine', aufgaben: 'Schäden/Wartung' };
+      const NAME = { mitglieder: 'Mitglieder', boote: 'Boote', belegungen: 'Belegungen', abwesenheiten: 'Abwesenheiten (grünes Schild)', gaeste: 'Gastlieger', warteliste: 'Warteliste', kran: 'Kran', arbeitsdienst: 'Arbeitsstunden', arbeitseinsaetze: 'Arbeitseinsätze', arbeitseinsatz_codes: 'QR-Codes der Einsätze', arbeitsbereiche: 'Arbeitsgruppen', arbeitsbereich_mitglieder: 'Gruppen-Zuordnungen', mitteilungen: 'Mitteilungen', veranstaltungen: 'Veranstaltungen', zusagen: 'Zu-/Absagen', rechnungen: 'Hafen- und Beitragsrechnungen', sepa_laeufe: 'Lastschrift-Dateien', antraege: 'Aufnahmeanträge', liegeplaetze: 'Liegeplätze', landplaetze: 'Landplätze', saisons: 'Saisontermine', aufgaben: 'Schäden/Wartung' };
       const el = modal('<h2>Sicherung zurückspielen</h2><p style="margin-top:0">Sicherung vom <strong>' + (info.erstellt ? new Date(info.erstellt).toLocaleString('de-DE') : 'unbekannten Datum') + '</strong>' + (info.von ? ' (' + esc(info.von) + ')' : '') + '. Alles, was danach geändert wurde, geht verloren.</p>' +
         '<table class="tab sich-vergleich"><thead><tr><th>Bereich</th><th class="r">Sicherung</th><th class="r">jetzt</th></tr></thead><tbody>' + info.vergleich.map((v) => '<tr' + (v.sicherung !== v.jetzt ? ' class="anders"' : '') + '><td>' + NAME[v.t] + '</td><td class="r">' + v.sicherung + '</td><td class="r">' + v.jetzt + '</td></tr>').join('') + '</tbody></table>' +
         '<label class="feld" style="margin-top:12px">Zur Bestätigung <strong>ZURÜCKSPIELEN</strong> eintippen<input id="sich-ok" autocomplete="off"></label>' +
@@ -1895,10 +1898,142 @@
     });
   };
 
+  /* ============================================================ Veranstaltungen
+   * Einladungen an alle Mitglieder; sie sagen in „Mein SSV“ zu oder ab (bis zur Anmeldefrist, höchstens so viele wie Plätze).
+   * Antworten per Telefon oder Zettel trägt der Verein hier nach. */
+  let verAuswahl = null;   // offene Teilnehmerliste
+  const verStand = (v) => { const z = (d.zusagen || []).filter((x) => x.veranstaltung_id === v.id); const ja = z.filter((x) => x.antwort === 'ja');
+    return { z, ja, nein: z.filter((x) => x.antwort === 'nein'), pers: ja.reduce((s2, x) => s2 + (Number(x.personen) || 0), 0) }; };
+  const verZeit = (v) => [v.beginn ? v.beginn + (v.ende ? '–' + v.ende : '') + ' Uhr' : '', v.ort].filter(Boolean).join(' · ');
+  const verFrist = (v) => v.anmeldung_bis || v.datum;
+  V.veranstaltungen = (main) => {
+    const v0 = verAuswahl && (d.veranstaltungen || []).find((x) => x.id === verAuswahl);
+    if (v0) return verTeilnehmer(main, v0);
+    verAuswahl = null;
+    const alle = d.veranstaltungen || [];
+    const kommend = alle.filter((v) => v.datum >= heute).sort((a, b) => a.datum.localeCompare(b.datum) || String(a.beginn || '').localeCompare(String(b.beginn || '')));
+    const vorbei = alle.filter((v) => v.datum < heute).sort((a, b) => b.datum.localeCompare(a.datum)).slice(0, 12);
+    const zeile = (v) => { const st = verStand(v); const offen = !v.abgesagt && heute <= verFrist(v);
+      return '<tr class="klickbar" data-ver-zeile="' + v.id + '"><td class="nw">' + H.datum(v.datum) + (v.beginn ? '<br><small style="color:var(--muted)">' + esc(v.beginn) + ' Uhr</small>' : '') + '</td>' +
+        '<td><strong>' + esc(v.titel) + '</strong>' + (v.abgesagt ? ' <span class="tag rot">abgesagt</span>' : '') + (v.ort ? '<br><small style="color:var(--muted)">' + esc(v.ort) + '</small>' : '') + '</td>' +
+        '<td>' + (v.abgesagt ? '–' : offen ? '<span class="tag ok">offen</span><br><small style="color:var(--muted)">bis ' + H.datum(verFrist(v)) + '</small>' : '<span class="tag">geschlossen</span>') + '</td>' +
+        '<td class="r"><strong>' + st.pers + '</strong>' + (v.max_personen ? ' / ' + v.max_personen : '') + '<br><small style="color:var(--muted)">' + st.ja.length + ' Zusage' + (st.ja.length === 1 ? '' : 'n') + ' · ' + st.nein.length + ' Absage' + (st.nein.length === 1 ? '' : 'n') + '</small></td>' +
+        '<td class="r aktion"><button class="btn klein" data-ver-liste="' + v.id + '">Teilnehmer</button> ' + zeilenMenue([
+          '<button class="zm-punkt" data-ver-bearb="' + v.id + '">Bearbeiten</button>',
+          v.datum >= heute ? '<button class="zm-punkt" data-ver-absagen="' + v.id + '">' + (v.abgesagt ? 'Wieder ansetzen' : 'Absagen') + '</button>' : '',
+          '<button class="zm-punkt gefahr" data-ver-weg="' + v.id + '">Löschen</button>'].filter(Boolean)) + '</td></tr>'; };
+    const tabelle = (l) => '<table class="tab"><thead><tr><th>Datum</th><th>Veranstaltung</th><th>Anmeldung</th><th class="r">Personen</th><th></th></tr></thead><tbody>' + l.map(zeile).join('') + '</tbody></table>';
+    main.innerHTML = kopf('Veranstaltungen', 'Einladungen an alle Mitglieder – sie sagen in „Mein SSV“ zu oder ab. Hier steht, wer kommt.', '<button class="btn primaer" id="neu">+ Veranstaltung</button>') +
+      '<div class="panel"><h2>Kommende</h2>' + (kommend.length ? tabelle(kommend) : '<p class="leer">Noch keine Veranstaltung geplant.</p>') + '</div>' +
+      (vorbei.length ? '<div class="panel"><h2>Vergangene</h2>' + tabelle(vorbei) + '</div>' : '') +
+      '<p class="hinweis">Mitglieder sehen Titel, Zeit, Ort, Kosten und wie viele Plätze noch frei sind – aber nicht, wer sonst kommt. Kosten sind nur ein Hinweis (z. B. „bar vor Ort“); abgerechnet wird darüber nichts.</p>';
+    main.querySelectorAll('[data-ver-zeile]').forEach((tr) => tr.addEventListener('click', (e) => { if (e.target.closest('button, .zm')) return; verAuswahl = tr.dataset.verZeile; zeige('veranstaltungen'); }));
+    main.querySelectorAll('[data-ver-liste]').forEach((b) => b.addEventListener('click', () => { verAuswahl = b.dataset.verListe; zeige('veranstaltungen'); }));
+    main.querySelectorAll('[data-ver-bearb]').forEach((b) => b.addEventListener('click', () => verForm(alle.find((v) => v.id === b.dataset.verBearb))));
+    main.querySelectorAll('[data-ver-absagen]').forEach((b) => b.addEventListener('click', async () => {
+      const v = alle.find((x) => x.id === b.dataset.verAbsagen);
+      if (!v.abgesagt && !confirm('„' + v.titel + '“ absagen? Die Mitglieder sehen das in „Mein SSV“; zusätzlich erscheint dort eine Mitteilung.')) return;
+      v.abgesagt = !v.abgesagt;
+      if (v.abgesagt) d.mitteilungen.push({ id: H.uid('N'), titel: 'Abgesagt: ' + v.titel + ' am ' + H.kurz(v.datum), text: 'Die Veranstaltung fällt aus.', wichtig: false, zielgruppe: 'alle', gueltig_bis: v.datum, erstellt: new Date().toISOString(), erstellt_von: ROLLEN[rolle].name, push_gesendet: null });
+      await speichern(v.abgesagt ? 'Abgesagt.' : 'Wieder angesetzt.'); zeige('veranstaltungen');
+    }));
+    main.querySelectorAll('[data-ver-weg]').forEach((b) => b.addEventListener('click', () => {
+      const v = alle.find((x) => x.id === b.dataset.verWeg); const n = verStand(v).z.length;
+      if (!confirm('„' + v.titel + '“ endgültig löschen?' + (n ? ' Die ' + n + ' Antworten der Mitglieder werden mit gelöscht.' : ''))) return;
+      d.zusagen = (d.zusagen || []).filter((z) => z.veranstaltung_id !== v.id); d.veranstaltungen = alle.filter((x) => x.id !== v.id);
+      speichern('Gelöscht.'); zeige('veranstaltungen');
+    }));
+    $('#neu').addEventListener('click', () => verForm(null));
+  };
+  function verForm(v) {
+    const neu = !v; v = v || { datum: '', beginn: '', ende: '', titel: '', ort: 'Messe (Vereinsheim)', text: '', anmeldung_bis: '', max_personen: null, begleitung: 0, kosten: null, kosten_hinweis: '' };
+    const push = DB && d.einstellungen.push_aktiv;
+    const el = modal('<h2>' + (neu ? 'Neue Veranstaltung' : 'Veranstaltung bearbeiten') + '</h2><form id="f" class="form">' +
+      '<label class="feld voll">Titel<input name="titel" required maxlength="90" value="' + esc(v.titel) + '" placeholder="z. B. Wintertreffen mit Grünkohl"></label>' +
+      '<label class="feld">Datum<input name="datum" type="date" required value="' + esc(v.datum) + '"></label><label class="feld">Ort<input name="ort" maxlength="80" value="' + esc(v.ort || '') + '"></label>' +
+      '<label class="feld">Beginn<input name="beginn" type="time" value="' + esc(v.beginn || '') + '"></label><label class="feld">Ende (optional)<input name="ende" type="time" value="' + esc(v.ende || '') + '"></label>' +
+      '<label class="feld voll">Beschreibung<textarea name="text" rows="3" maxlength="1500" placeholder="Was erwartet die Mitglieder? Was mitbringen?">' + esc(v.text || '') + '</textarea></label>' +
+      '<label class="feld">Anmeldung bis<input name="anmeldung_bis" type="date" value="' + esc(v.anmeldung_bis || '') + '"><small>leer = bis zum Tag selbst</small></label>' +
+      '<label class="feld">Plätze höchstens<input name="max_personen" type="number" min="1" max="2000" value="' + (v.max_personen || '') + '"><small>leer = unbegrenzt; Begleitung zählt mit</small></label>' +
+      '<label class="feld">Begleitung je Mitglied<select name="begleitung">' + [0, 1, 2, 3, 4, 5].map((n) => '<option value="' + n + '"' + (Number(v.begleitung) === n ? ' selected' : '') + '>' + (n === 0 ? 'keine' : n === 1 ? '1 Person' : 'bis zu ' + n + ' Personen') + '</option>').join('') + '</select></label>' +
+      '<label class="feld">Kosten je Person (€)<input name="kosten" type="number" min="0" step="0.5" value="' + (v.kosten == null ? '' : v.kosten) + '"><small>leer = kostenlos</small></label>' +
+      '<label class="feld voll">Hinweis zu den Kosten<input name="kosten_hinweis" maxlength="80" value="' + esc(v.kosten_hinweis || '') + '" placeholder="z. B. bar vor Ort"></label>' +
+      (neu ? '<label class="feld check voll"><input type="checkbox" name="ankuendigen" checked> in „Mein SSV“ zusätzlich als Mitteilung ankündigen (oben auf der Seite)</label>' +
+        (push ? '<label class="feld check voll"><input type="checkbox" name="push"> dazu als Push-Nachricht aufs Handy senden</label>' : '') : '') +
+      '</form><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">' + (neu ? 'Einladen' : 'Speichern') + '</button></div>', true);
+    $('#ok', el).addEventListener('click', async () => {
+      const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm));
+      if (x.anmeldung_bis && x.anmeldung_bis > x.datum) return toast('Die Anmeldefrist liegt nach der Veranstaltung.', 'fehler');
+      if (x.ende && x.beginn && x.ende < x.beginn) return toast('Das Ende liegt vor dem Beginn.', 'fehler');
+      const felder = { titel: x.titel.trim(), datum: x.datum, beginn: x.beginn, ende: x.ende, ort: x.ort.trim(), text: x.text.trim(), anmeldung_bis: x.anmeldung_bis, max_personen: x.max_personen ? Number(x.max_personen) : null,
+        begleitung: Number(x.begleitung) || 0, kosten: x.kosten === '' ? null : Number(x.kosten), kosten_hinweis: x.kosten_hinweis.trim() };
+      if (!neu && felder.max_personen && verStand(v).pers > felder.max_personen && !confirm('Es haben schon ' + verStand(v).pers + ' Personen zugesagt – mehr als die neue Grenze. Trotzdem speichern?')) return;
+      let m = null;
+      if (neu) {
+        v = { id: H.uid('V'), ...felder, abgesagt: false, erstellt: new Date().toISOString(), erstellt_von: ROLLEN[rolle].name }; if (!d.veranstaltungen) d.veranstaltungen = []; d.veranstaltungen.push(v);
+        if (x.ankuendigen) { m = { id: H.uid('N'), titel: 'Einladung: ' + v.titel + ' am ' + H.kurz(v.datum), text: 'Bitte in „Mein SSV“ unter „Veranstaltungen“ zu- oder absagen' + (v.anmeldung_bis ? ' – bis ' + H.datum(v.anmeldung_bis) : '') + '.', wichtig: false, zielgruppe: 'alle', gueltig_bis: verFrist(v), erstellt: new Date().toISOString(), erstellt_von: ROLLEN[rolle].name, push_gesendet: null }; d.mitteilungen.push(m); }
+      } else Object.assign(v, felder);
+      zu(); const ok = await speichern(neu ? 'Eingeladen – die Mitglieder sehen es in „Mein SSV“.' : 'Gespeichert.');
+      if (m && x.push && ok !== false) {
+        try { const r = await window.SSV_SB.req('/functions/v1/push', { method: 'POST', body: { aktion: 'senden', mitteilung_id: m.id } }); toast('Push gesendet an ' + (r.gesendet || 0) + ' Gerät' + (r.gesendet === 1 ? '' : 'e') + '.'); m.push_gesendet = new Date().toISOString(); }
+        catch (er) { toast('Push nicht gesendet: ' + er.message, 'fehler', 6000); }
+      }
+      zeige('veranstaltungen');
+    });
+  }
+  // Teilnehmerliste: Zusagen mit Personen und Hinweisen, Absagen, Druck (SSV-Briefkopf) und CSV
+  function verTeilnehmer(main, v) {
+    const st = verStand(v); const name = (id) => { const m = Q.mitglied(id); return m ? m.nachname + ', ' + m.vorname : '(nicht mehr Mitglied)'; };
+    const sort = (l) => l.slice().sort((a, b) => name(a.mitglied_id).localeCompare(name(b.mitglied_id), 'de'));
+    const ja = sort(st.ja), nein = sort(st.nein); const frei = v.max_personen ? v.max_personen - st.pers : null;
+    const wann = (z) => z.geaendert ? new Date(z.geaendert).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) : '';
+    const menue = (z) => zeilenMenue(['<button class="zm-punkt" data-z-bearb="' + z.id + '">Ändern</button>', '<button class="zm-punkt gefahr" data-z-weg="' + z.id + '">Antwort löschen</button>']);
+    main.innerHTML = druckKopf() + kopf(esc(v.titel) + (v.abgesagt ? ' <span class="tag rot">abgesagt</span>' : ''), H.datum(v.datum) + (verZeit(v) ? ' · ' + esc(verZeit(v)) : '') + (v.anmeldung_bis ? ' · Anmeldung bis ' + H.datum(v.anmeldung_bis) : ''),
+        '<button class="btn" id="v-zurueck">← Alle Veranstaltungen</button><button class="btn" id="v-eintragen">+ Antwort eintragen</button><button class="btn" id="v-csv">CSV</button><button class="btn primaer" id="v-druck">Drucken</button>') +
+      '<div class="karten ver-karten"><div class="kz"><small>Personen zugesagt</small><strong>' + st.pers + (v.max_personen ? ' / ' + v.max_personen : '') + '</strong><span>' + ja.length + ' Mitglied' + (ja.length === 1 ? '' : 'er') + (st.pers > ja.length ? ' + ' + (st.pers - ja.length) + ' Begleitung' : '') + '</span></div>' +
+        (frei !== null ? '<div class="kz"><small>Plätze frei</small><strong>' + Math.max(0, frei) + '</strong><span>' + (frei <= 0 ? 'ausgebucht' : 'Mitglieder sehen nur diese Zahl') + '</span></div>' : '') +
+        '<div class="kz"><small>Absagen</small><strong>' + nein.length + '</strong><span>' + (d.mitglieder.length ? 'noch keine Antwort: ' + Math.max(0, d.mitglieder.filter((m) => m.art !== 'gast' && !(m.austritt && m.austritt <= heute)).length - st.z.length) : '') + '</span></div>' +
+        (v.kosten ? '<div class="kz"><small>Kosten</small><strong>' + H.geld(v.kosten * st.pers) + '</strong><span>' + st.pers + ' × ' + H.geld(v.kosten) + (v.kosten_hinweis ? ' ' + esc(v.kosten_hinweis) : '') + '</span></div>' : '') + '</div>' +
+      '<div class="panel"><h2>Zusagen</h2>' + (ja.length ? '<table class="tab"><thead><tr><th class="r">#</th><th>Name</th><th class="r">Personen</th><th>Hinweis</th><th>Antwort</th><th class="kein-druck"></th></tr></thead><tbody>' +
+        ja.map((z, i) => '<tr><td class="r">' + (i + 1) + '</td><td>' + esc(name(z.mitglied_id)) + '</td><td class="r">' + z.personen + '</td><td>' + esc(z.bemerkung || '') + '</td><td><small>' + wann(z) + (z.quelle === 'verein' ? ' · vom Verein eingetragen' : '') + '</small></td><td class="r aktion kein-druck">' + menue(z) + '</td></tr>').join('') +
+        '<tr class="summe"><td></td><td><strong>Zusammen</strong></td><td class="r"><strong>' + st.pers + '</strong></td><td colspan="3"></td></tr></tbody></table>' : '<p class="leer">Noch keine Zusagen.</p>') + '</div>' +
+      (nein.length ? '<div class="panel"><h2>Absagen</h2><table class="tab"><tbody>' + nein.map((z) => '<tr><td>' + esc(name(z.mitglied_id)) + '</td><td>' + esc(z.bemerkung || '') + '</td><td><small>' + wann(z) + (z.quelle === 'verein' ? ' · vom Verein eingetragen' : '') + '</small></td><td class="r aktion kein-druck">' + menue(z) + '</td></tr>').join('') + '</tbody></table></div>' : '') +
+      (v.text ? '<p class="hinweis kein-druck">' + esc(v.text) + '</p>' : '');
+    $('#v-zurueck').addEventListener('click', () => { verAuswahl = null; zeige('veranstaltungen'); });
+    $('#v-druck').addEventListener('click', () => window.print());
+    $('#v-csv').addEventListener('click', () => download('ssv-teilnehmer-' + v.datum + '.csv', csv([['Veranstaltung', v.titel, H.datum(v.datum)], ['Mitgliedsnr', 'Name', 'Antwort', 'Personen', 'Hinweis', 'geantwortet am', 'eingetragen']].concat(
+      ja.concat(nein).map((z) => { const m = Q.mitglied(z.mitglied_id) || {}; return [m.nr || '', name(z.mitglied_id), z.antwort === 'ja' ? 'Zusage' : 'Absage', z.personen, z.bemerkung || '', z.geaendert ? new Date(z.geaendert).toLocaleString('de-DE') : '', z.quelle === 'verein' ? 'vom Verein' : 'Mein SSV']; }))), 'text/csv'));
+    $('#v-eintragen').addEventListener('click', () => zusageForm(v, null));
+    main.querySelectorAll('[data-z-bearb]').forEach((b) => b.addEventListener('click', () => zusageForm(v, st.z.find((z) => z.id === b.dataset.zBearb))));
+    main.querySelectorAll('[data-z-weg]').forEach((b) => b.addEventListener('click', () => {
+      const z = st.z.find((x) => x.id === b.dataset.zWeg); if (!confirm('Antwort von ' + name(z.mitglied_id) + ' löschen?')) return;
+      d.zusagen = d.zusagen.filter((x) => x.id !== z.id); speichern('Gelöscht.'); zeige('veranstaltungen');
+    }));
+  }
+  // Antwort für ein Mitglied eintragen (Telefon, Zettel an der Messe) – der Verein darf auch nach der Frist und über die Grenze
+  function zusageForm(v, z) {
+    const st = verStand(v); const schon = new Set(st.z.map((x) => x.mitglied_id));
+    const el = modal('<h2>' + (z ? 'Antwort ändern' : 'Antwort eintragen') + '</h2><p style="margin-top:0">' + esc(v.titel) + ' · ' + H.datum(v.datum) + '</p><form id="f" class="form">' +
+      (z ? '<p class="voll" style="margin:0"><strong>' + esc(Q.name(Q.mitglied(z.mitglied_id))) + '</strong></p>' : '<label class="feld voll">Mitglied<select name="mitglied_id" required><option value="">– bitte wählen –</option>' + mOpt('', (m) => m.art !== 'gast' && !schon.has(m.id)) + '</select></label>') +
+      '<label class="feld">Antwort<select name="antwort"><option value="ja"' + (!z || z.antwort === 'ja' ? ' selected' : '') + '>kommt</option><option value="nein"' + (z && z.antwort === 'nein' ? ' selected' : '') + '>kommt nicht</option></select></label>' +
+      '<label class="feld">Personen (mit Begleitung)<input name="personen" type="number" min="1" max="10" value="' + (z && z.antwort === 'ja' ? z.personen : 1) + '"></label>' +
+      '<label class="feld voll">Hinweis<input name="bemerkung" maxlength="200" value="' + esc((z && z.bemerkung) || '') + '" placeholder="z. B. vegetarisch"></label></form>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>');
+    $('#ok', el).addEventListener('click', () => {
+      const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm));
+      const pers = x.antwort === 'ja' ? Math.max(1, Math.min(10, Number(x.personen) || 1)) : 0;
+      const andere = st.pers - (z && z.antwort === 'ja' ? z.personen : 0);
+      if (pers && v.max_personen && andere + pers > v.max_personen && !confirm('Damit wären es ' + (andere + pers) + ' Personen bei ' + v.max_personen + ' Plätzen. Trotzdem eintragen?')) return;
+      const felder = { antwort: x.antwort, personen: pers, bemerkung: x.bemerkung.trim(), quelle: 'verein', geaendert: new Date().toISOString() };
+      if (z) Object.assign(z, felder); else { if (!d.zusagen) d.zusagen = []; d.zusagen.push({ id: H.uid('Z'), veranstaltung_id: v.id, mitglied_id: x.mitglied_id, ...felder }); }
+      zu(); speichern('Gespeichert.'); zeige('veranstaltungen');
+    });
+  }
+
   /* ============================================================ Änderungsverlauf */
   const verlaufErlaubt = () => darf('verlauf');
   const BEREICH = { mitglieder: 'Mitglied', mitglieder_bank: 'Bankdaten', boote: 'Boot', belegungen: 'Belegung', abwesenheiten: 'Abwesenheit', gaeste: 'Gastlieger', warteliste: 'Warteliste', kran: 'Kran', arbeitsdienst: 'Arbeitsdienst',
-    hafen_rechnungen: 'Rechnung', sepa_laeufe: 'Lastschrift-Lauf', arbeitseinsaetze: 'Arbeitseinsatz', mitteilungen: 'Mitteilung', antraege: 'Aufnahmeantrag', liegeplaetze: 'Liegeplatz', gebuehren: 'Gebühren', hafen_einstellungen: 'Einstellungen', funktionen: 'Zugang/Rolle', aufgaben: 'Schaden/Wartung', dokumente: 'Dokument' };
+    hafen_rechnungen: 'Rechnung', sepa_laeufe: 'Lastschrift-Lauf', arbeitseinsaetze: 'Arbeitseinsatz', mitteilungen: 'Mitteilung', veranstaltungen: 'Veranstaltung', zusagen: 'Zu-/Absage', antraege: 'Aufnahmeantrag', liegeplaetze: 'Liegeplatz', gebuehren: 'Gebühren', hafen_einstellungen: 'Einstellungen', funktionen: 'Zugang/Rolle', aufgaben: 'Schaden/Wartung', dokumente: 'Dokument' };
   const AKTION = { neu: ['neu', 'ok'], geaendert: ['geändert', ''], geloescht: ['gelöscht', 'rot'] };
   const wertText = (v) => v == null || v === '' ? '–' : typeof v === 'object' ? JSON.stringify(v).slice(0, 60) : String(v);
   const aenderungText = (x) => {
@@ -1973,6 +2108,7 @@
   function zeige(t, ruhig) {
     if (!darf(t)) t = 'uebersicht';
     document.body.classList.remove('plan-vollbild'); if (t !== 'plan') planStand.voll = false;
+    if (t !== 'veranstaltungen') verAuswahl = null;
     const y = window.scrollY; const vorher = tab; tab = t; zuletzt[bereichVon(t)] = t; nav(); V[t]($('#main'));
     const r = unterNav(); if (r) $('#main').insertAdjacentHTML('afterbegin', r);
     window.scrollTo(0, ruhig ? y : 0); schnellknopf();

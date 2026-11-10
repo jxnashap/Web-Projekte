@@ -351,6 +351,8 @@ table.todo tr[hidden] { display: none !important; }
   .druck-kopf .stander { width: 26mm; height: 13mm; }
   .druck-kopf div { text-align: right; font-size: 9pt; color: #444; } .druck-kopf strong { display: block; font-size: 13pt; color: var(--navy); }
   .reiter { display: none !important; }
+  .kein-druck, .zm { display: none !important; }
+  .ver-karten { grid-template-columns: repeat(4, 1fr); }
 }
 /* Gastlieger: Toilettencode und Zahl-QR */
 .wc-panel { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 18px; }

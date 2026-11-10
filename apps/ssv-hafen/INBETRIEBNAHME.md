@@ -59,6 +59,9 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
 12. `apps/ssv-hafen/supabase/nachtrag-12.sql` – 54 statt 79 Liegeplätze (Angabe Verein, Luftbild 2025): Ost 1–16,
    West 25–56, Schwimmbrücke 71–76 (+ L1/L2). Die übrigen Nummern werden nicht gelöscht, sondern als
    „nicht vorhanden“ markiert (`vorhanden = false`, gesperrt) und im Hafen-Manager ausgeblendet.
+13. `apps/ssv-hafen/supabase/nachtrag-13.sql` – Veranstaltungen mit Zu-/Absage: Tabellen `veranstaltungen` und
+   `zusagen`; Mitglieder antworten in „Mein SSV“ über `meine_zusage` (prüft Frist, Begleitpersonen und freie Plätze),
+   sehen über `meine_veranstaltungen` nur die Zahl der Zusagen, keine Namen. Pflege im Hafen-Manager unter Betrieb → Veranstaltungen.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 

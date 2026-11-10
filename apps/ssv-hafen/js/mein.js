@@ -36,7 +36,7 @@
   const istHandy = () => window.matchMedia('(max-width: 860px)').matches;
   const START_OFFEN = ['rechnungen', 'boot', 'arbeitsdienst', 'arbeitsbereiche'];
   function sektion(key, titel, info, inhalt, klasse, offenAmHandy) {
-    const offen = key in AUF ? AUF[key] : (istHandy() ? !!offenAmHandy : START_OFFEN.includes(key));
+    const offen = key in AUF ? AUF[key] : (istHandy() ? !!offenAmHandy : START_OFFEN.includes(key) || offenAmHandy === 'immer');
     return '<details class="panel sek' + (klasse ? ' ' + klasse : '') + '" data-sek="' + key + '"' + (offen ? ' open' : '') + '><summary><h2>' + titel + '</h2>' +
       '<span class="sek-info" id="info-' + key + '">' + info + '</span></summary><div class="sek-inhalt">' + inhalt + '</div></details>';
   }
@@ -52,6 +52,62 @@
       '<small>' + new Date(x.erstellt).toLocaleDateString('de-DE') + (x.erstellt_von ? ' · ' + esc(x.erstellt_von) : '') + '</small></div><button class="btn klein" data-mweg="' + x.id + '" aria-label="Mitteilung ausblenden">Gelesen</button></div>').join('');
   }
   document.addEventListener('click', (e) => { const b = e.target.closest('[data-mweg]'); if (!b) return; try { localStorage.setItem(WEG, JSON.stringify(ausgeblendet().concat([b.dataset.mweg]).slice(-50))); } catch (x) { /* egal */ } b.closest('.mitteilung').remove(); });
+  /* Veranstaltungen: zu- oder absagen bis zur Anmeldefrist (Regeln wie in der Datenbank, siehe HAFEN.zusageSetzen) */
+  const vOffen = (v) => !v.abgesagt && heute <= (v.anmeldung_bis || v.datum);
+  const vZeit = (v) => [v.beginn ? v.beginn + (v.ende ? '–' + v.ende : '') + ' Uhr' : '', v.ort].filter(Boolean).join(' · ');
+  const vTag = (s) => new Date(s + 'T12:00:00');
+  function vKarte(v) {
+    const me = v.meine; const frei = v.max_personen ? Math.max(0, v.max_personen - (Number(v.belegt) || 0)) : null; const offen = vOffen(v);
+    const stand = v.abgesagt ? '<span class="tag rot">abgesagt</span>'
+      : me && me.antwort === 'ja' ? '<span class="tag ok">Du hast zugesagt' + (me.personen > 1 ? ' · ' + me.personen + ' Personen' : '') + '</span>'
+      : me ? '<span class="tag">Du hast abgesagt</span>'
+      : offen ? '<span class="tag warn">Bitte zu- oder absagen' + (v.anmeldung_bis ? ' bis ' + H.kurz(v.anmeldung_bis) : '') + '</span>' : '<span class="tag">Anmeldung geschlossen</span>';
+    const fakten = [
+      v.kosten ? 'Kosten: ' + H.geld(v.kosten) + (v.kosten_hinweis ? ' ' + esc(v.kosten_hinweis) : '') : '',
+      v.begleitung ? (v.begleitung === 1 ? 'eine Begleitperson willkommen' : 'bis zu ' + v.begleitung + ' Begleitpersonen') : '',
+      frei !== null && !v.abgesagt ? (frei > 0 ? 'noch ' + frei + (frei === 1 ? ' Platz' : ' Plätze') + ' frei' : 'ausgebucht') : '',
+      v.anmeldung_bis && offen ? 'Anmeldung bis ' + H.datum(v.anmeldung_bis) : ''
+    ].filter(Boolean);
+    const knoepfe = !offen ? (me && !v.abgesagt ? '<p class="ver-klein">Änderungen jetzt bitte direkt beim Vorstand.</p>' : '')
+      : !me ? '<div class="aktionen"><button class="btn primaer" data-ver-ja="' + v.id + '"' + (frei === 0 ? ' disabled' : '') + '>Ich komme</button><button class="btn" data-ver-nein="' + v.id + '">Ich komme nicht</button></div>'
+      : me.antwort === 'ja' ? '<div class="aktionen"><button class="btn klein" data-ver-ja="' + v.id + '">Zusage ändern</button></div>'
+      : '<div class="aktionen"><button class="btn klein" data-ver-ja="' + v.id + '"' + (frei === 0 ? ' disabled' : '') + '>Doch zusagen</button></div>';
+    return '<article class="ver-karte' + (v.abgesagt ? ' abgesagt' : '') + '" data-ver="' + v.id + '"><div class="ver-datum" aria-hidden="true"><small>' + vTag(v.datum).toLocaleDateString('de-DE', { weekday: 'short' }) + '</small><strong>' + vTag(v.datum).getDate() + '</strong><small>' +
+      vTag(v.datum).toLocaleDateString('de-DE', { month: 'short' }) + '</small></div><div class="ver-text"><h3>' + esc(v.titel) + '</h3><p class="ver-zeit">' + H.datum(v.datum) + (vZeit(v) ? ' · ' + esc(vZeit(v)) : '') + '</p>' +
+      '<p class="ver-stand">' + stand + (me && me.bemerkung ? ' <small>„' + esc(me.bemerkung) + '“</small>' : '') + '</p>' +
+      (v.text ? '<p>' + esc(v.text) + '</p>' : '') + (fakten.length ? '<p class="ver-fakten">' + fakten.map((f) => '<span>' + f + '</span>').join('') + '</p>' : '') + knoepfe + '</div></article>';
+  }
+  function zusageDialog(v) {
+    const me = v.meine && v.meine.antwort === 'ja' ? v.meine : null;
+    const frei = v.max_personen ? v.max_personen - (Number(v.belegt) || 0) + (me ? me.personen : 0) : 99;
+    const maxP = Math.max(1, Math.min(1 + (Number(v.begleitung) || 0), frei));
+    const el = modal('<h2>' + esc(v.titel) + '</h2><p style="margin-top:0">' + H.datum(v.datum) + (vZeit(v) ? ' · ' + esc(vZeit(v)) : '') + '</p><form id="vzf" class="form">' +
+      (v.begleitung ? '<label class="feld">Wie viele kommen?<select name="personen">' + Array.from({ length: maxP }, (_, i) => i + 1).map((n) => '<option value="' + n + '"' + (me && me.personen === n ? ' selected' : '') + '>' + (n === 1 ? 'nur ich' : 'ich + ' + (n - 1) + (n === 2 ? ' Begleitung' : ' Begleitpersonen')) + '</option>').join('') + '</select></label>' : '') +
+      '<label class="feld voll">Hinweis an den Verein (optional)<input name="bemerkung" maxlength="200" value="' + esc((me && me.bemerkung) || '') + '" placeholder="z. B. vegetarisch, komme später"></label></form>' +
+      (v.kosten ? '<p class="hinweis">Kosten: ' + H.geld(v.kosten) + (v.kosten_hinweis ? ' ' + esc(v.kosten_hinweis) : ' je Person') + '.</p>' : '') + '<p class="hinweis" id="vzf-info" hidden></p>' +
+      '<div class="modal-fuss">' + (me ? '<button class="btn gefahr" id="vz-nein">Doch absagen</button>' : '<button class="btn" data-zu>Abbrechen</button>') + '<button class="btn primaer" id="vz-ja">' + (me ? 'Speichern' : 'Zusagen') + '</button></div>');
+    const senden = async (antwort) => {
+      const x = Object.fromEntries(new FormData($('#vzf', el))); const info = $('#vzf-info', el);
+      el.querySelectorAll('.modal-fuss .btn').forEach((b) => { b.disabled = true; });
+      try { await antworten(v, antwort, x.personen || 1, x.bemerkung); $('#modal').innerHTML = ''; }
+      catch (er) { info.textContent = er.message; info.className = 'hinweis warn'; info.hidden = false; el.querySelectorAll('.modal-fuss .btn').forEach((b) => { b.disabled = false; }); }
+    };
+    $('#vz-ja', el).addEventListener('click', () => senden('ja'));
+    const n = $('#vz-nein', el); if (n) n.addEventListener('click', () => senden('nein'));
+  }
+  async function antworten(v, antwort, personen, bemerkung) {
+    await HF.zusageSetzen(mid, { veranstaltung_id: v.id, antwort, personen: Number(personen) || 1, bemerkung: bemerkung || '' });
+    d = HF.d; AUF.veranstaltungen = true;
+    toast(antwort === 'ja' ? 'Schön, dass du kommst! Deine Zusage ist gespeichert.' : 'Schade – deine Absage ist gespeichert.');
+    zeigen();
+  }
+  document.addEventListener('click', (e) => {
+    const ja = e.target.closest('[data-ver-ja]'); const nein = e.target.closest('[data-ver-nein]'); if (!ja && !nein) return;
+    const v = HF.meineVeranstaltungen(mid).find((x) => x.id === (ja || nein).dataset[ja ? 'verJa' : 'verNein']); if (!v) return;
+    if (ja) return zusageDialog(v);
+    nein.disabled = true; antworten(v, 'nein', 0, '').catch((er) => { nein.disabled = false; toast(er.message); });
+  });
+
   function zeigen() {
     const m = Q.mitglied(mid); const boote = Q.booteVon(mid);
     const b = boote[0]; const sommer = b && Q.belegungBoot(SAISON, 'sommer', b.id); const winter = b && Q.belegungBoot(SAISON, 'winter', b.id);
@@ -83,6 +139,10 @@
     (d.arbeitseinsaetze || []).filter((x) => x.datum >= heute).forEach((x) => termine.push([x.datum, 'Arbeitseinsatz: ' + x.titel, [x.beginn && x.beginn + (x.ende ? '–' + x.ende : '') + ' Uhr', x.notiz].filter(Boolean).join(' · ')]));
     if (b && auslagernNeu && auslagernNeu >= heute) termine.push([auslagernNeu, 'Auslagern', 'Gemeinschaftsarbeit nach Belegungsplan']);
     if (b && b.vers_bis && b.vers_bis >= heute) termine.push([b.vers_bis, 'Versicherung läuft ab', 'vorher neuen Nachweis hochladen']);
+    const vers = HF.meineVeranstaltungen ? HF.meineVeranstaltungen(mid) : [];
+    const vUnbeantwortet = vers.filter((v) => !v.meine && vOffen(v));
+    vers.filter((v) => v.meine && v.meine.antwort === 'ja' && !v.abgesagt).forEach((v) => termine.push([v.datum, v.titel, [vZeit(v), 'du hast zugesagt'].filter(Boolean).join(' · ')]));
+    vUnbeantwortet.filter((v) => v.anmeldung_bis).forEach((v) => termine.push([v.anmeldung_bis, 'Zu- oder absagen: ' + v.titel, 'Anmeldefrist']));
     termine.sort((x, y) => x[0].localeCompare(y[0])); termine.splice(5);
     // Arbeitsdienst: eigener Stundenstand nach den Regeln des Vereins
     const ad = G.arbeitsdienst && (m.art === 'ausuebend' || m.art === 'probe') ? G.arbeitsdienst(d, SAISON, m) : null;
@@ -145,6 +205,8 @@
         '<p class="hinweis" style="margin-top:12px">Neue Bankverbindung oder Fragen zu Rechnungen? Schreib an <a href="mailto:' + esc(d.einstellungen.verein_email) + '">' + esc(d.einstellungen.verein_email) + '</a> – für ein neues Konto braucht es ein neues Lastschriftmandat.</p>') +
       '</div><div>' +
       (wasser ? sektion('schild', 'Grünes Schild', awAktuell ? 'unterwegs ' + H.kurz(awAktuell.von) + '–' + H.kurz(awAktuell.bis) : 'Platz frei melden', schildInhalt, 'gruen-box') : '') +
+      (vers.length ? sektion('veranstaltungen', 'Veranstaltungen', vUnbeantwortet.length ? '<span class="tag warn">' + (vUnbeantwortet.length === 1 ? '1 Einladung' : vUnbeantwortet.length + ' Einladungen') + ' offen</span>' : esc(vers[0].titel) + ' ' + H.kurz(vers[0].datum),
+        vers.map(vKarte).join('') + '<p class="hinweis" style="margin-top:12px">Zu- und Absagen gehen bis zur Anmeldefrist. Der Verein sieht, wer kommt; andere Mitglieder sehen nur die Zahl.</p>', '', vUnbeantwortet.length ? 'immer' : false) : '') +
       sektion('rechnungen', 'Meine Rechnungen', '', '<div id="rechnungen"></div><p class="hinweis" style="margin-top:12px">Mit Lastschriftmandat wird alles eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p>', '', true) +
       (termine.length ? sektion('termine', 'Meine Termine', esc(termine[0][1]) + ' ' + H.kurz(termine[0][0]), '<table class="tab"><tbody>' + termine.map(([t, txt, zus]) => '<tr><td class="nw">' + H.datum(t) + '</td><td>' + esc(txt) + (zus ? '<br><small style="color:var(--muted)">' + esc(zus) + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>') : '') +
       (ad ? sektion('arbeitsdienst', 'Arbeitsdienst ' + SAISON, ad.befreit ? 'befreit' : H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' von ' + ad.soll + ' Std.', adInhalt) : '') +
@@ -309,6 +371,7 @@
       } catch (er) { info.textContent = er.message; info.className = 'hinweis warn'; info.hidden = false; }
     });
   }
+  if (location.hash === '#veranstaltungen') setTimeout(() => { const el = document.querySelector('details.sek[data-sek=veranstaltungen]'); if (el) { el.open = true; AUF.veranstaltungen = true; el.scrollIntoView({ block: 'start' }); } }, 300);
   const einsatzCode = new URLSearchParams(location.search).get('einsatz');
   if (einsatzCode) { try { history.replaceState(null, '', location.pathname); } catch (e) { /* egal */ } setTimeout(() => stundenDialog(einsatzCode), 300); }
 

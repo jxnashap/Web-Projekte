@@ -248,7 +248,7 @@
     const bereicheDemo = demoBereiche(mitglieder);
     const steg = bereicheDemo.arbeitsbereiche.find((x) => /Brücken/.test(x.name)); if (steg) arbeitseinsaetze[0].bereich_id = steg.id;   // Einsatz „Steg und Gelände“
     const arbeitseinsatz_codes = [{ einsatz_id: arbeitseinsaetze[0].id, code: 'STEG26' }, { einsatz_id: arbeitseinsaetze[1].id, code: 'PUTZ27' }];
-    const mitteilungen = [{ id: uid('N'), titel: 'Wintertreffen am 28.11. in der Messe', text: 'Ab 18 Uhr – Rückblick auf die Saison, Grünkohl und Planung für 2027. Bitte bis 25.11. anmelden.', wichtig: false, zielgruppe: 'alle', gueltig_bis: '2026-11-28', erstellt: '2026-11-05T10:00:00', erstellt_von: 'Vorstand', push_gesendet: null }];
+    const mitteilungen = [{ id: uid('N'), titel: 'Wintertreffen am 28.11. in der Messe', text: 'Ab 18 Uhr – Rückblick auf die Saison, Grünkohl und Planung für 2027. Bitte bis 25.11. unten bei „Veranstaltungen“ zu- oder absagen.', wichtig: false, zielgruppe: 'alle', gueltig_bis: '2026-11-28', erstellt: '2026-11-05T10:00:00', erstellt_von: 'Vorstand', push_gesendet: null }];
 
     // Warteliste (Anspruch laut Satzung § 10 I)
     const warteliste = [];
@@ -309,7 +309,7 @@
     return { version: 3, antraege, einstellungen: { ...STANDARD_EINSTELLUNGEN, glaeubiger_id: 'DE98ZZZ09999999999', iban: demoIban('23050101', 1234567), bic: 'NOLADE21SPL', bank: 'Demo-Sparkasse [PLATZHALTER]' },
       gebuehren: { 2026: { ...GEBUEHREN_2024 } }, saisons: [{ jahr: 2026, auslagern: '2026-04-11', einlagern: '2026-10-24' }],
       liegeplaetze: lp, landplaetze: landplaetze(), mitglieder, boote, belegungen, abwesenheiten, gaeste, warteliste, kran, arbeitsdienst, rechnungen: [], sepa_laeufe: [], zaehler: { quittung: 42 },
-      aufgaben, dokumente: [], aenderungen: [], arbeitseinsaetze, arbeitseinsatz_codes, mitteilungen, ...bereicheDemo, toilette: { ...TOILETTE_DEMO } };
+      aufgaben, dokumente: [], aenderungen: [], arbeitseinsaetze, arbeitseinsatz_codes, mitteilungen, ...bereicheDemo, ...demoVeranstaltungen(mitglieder, boote), toilette: { ...TOILETTE_DEMO } };
   }
 
   /* ------------------------------------------------------------ Speicher */
@@ -359,7 +359,8 @@
       (d.arbeitsdienst || []).forEach((x) => { if (alt.has(x.bereich_id)) x.bereich_id = null; }); (d.arbeitseinsaetze || []).forEach((x) => { if (alt.has(x.bereich_id)) x.bereich_id = null; });
       sichern();
     }
-    if (!d.toilette) { d.toilette = { ...TOILETTE_DEMO }; sichern(); }   // ältere Demo-Daten um Beispiel-Bereiche ergänzen
+    if (!d.toilette) { d.toilette = { ...TOILETTE_DEMO }; sichern(); }
+    if (!d.veranstaltungen) { Object.assign(d, demoVeranstaltungen(d.mitglieder, d.boote)); sichern(); }   // ältere Demo-Daten um Beispiel-Bereiche ergänzen
     d.einstellungen = { ...STANDARD_EINSTELLUNGEN, ...d.einstellungen };
     d.rechnungen.forEach((r) => { if (!r.zahlungen) r.zahlungen = []; });
     if (!demoSchnapp) demoSchnapp = schnappschuss(zeilen(true));
@@ -367,7 +368,7 @@
   }
   // Demo: Änderungsverlauf wie in der Datenbank mitschreiben (wer, wann, was)
   let demoSchnapp = null;
-  const TAB_DEMO = ['mitglieder', 'mitglieder_bank', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'mitteilungen', 'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'gebuehren', 'hafen_einstellungen', 'aufgaben'];
+  const TAB_DEMO = ['mitglieder', 'mitglieder_bank', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'mitteilungen', 'veranstaltungen', 'zusagen', 'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'gebuehren', 'hafen_einstellungen', 'aufgaben'];
   function demoVerlauf() {
     const neu = schnappschuss(zeilen(true));
     if (demoSchnapp) {
@@ -414,6 +415,8 @@
     arbeitsbereich_mitglieder: ['id', 'bereich_id', 'mitglied_id', 'rolle'],
     arbeitseinsatz_codes: ['einsatz_id', 'code'],
     mitteilungen: ['id', 'titel', 'text', 'wichtig', 'zielgruppe', 'gueltig_bis', 'erstellt', 'erstellt_von', 'push_gesendet'],
+    veranstaltungen: ['id', 'datum', 'beginn', 'ende', 'titel', 'ort', 'text', 'anmeldung_bis', 'max_personen', 'begleitung', 'kosten', 'kosten_hinweis', 'abgesagt', 'erstellt', 'erstellt_von'],
+    zusagen: ['id', 'veranstaltung_id', 'mitglied_id', 'antwort', 'personen', 'bemerkung', 'quelle', 'geaendert'],
     hafen_rechnungen: ['id', 'nr', 'mitglied_id', 'datum', 'saison', 'periode', 'faellig', 'positionen', 'summe', 'empfaenger', 'sepa', 'mandat_ref', 'mandat_datum', 'bezahlt_am', 'storniert_am', 'sepa_lauf', 'zahlungen'],
     sepa_laeufe: ['id', 'datum', 'faellig', 'anzahl', 'summe'],
     antraege: ['id', 'eingang', 'status', 'art', 'vorname', 'nachname', 'geburtsdatum', 'geschlecht', 'strasse', 'plz', 'ort', 'email', 'tel', 'erziehungsberechtigt', 'boot', 'warteliste',
@@ -428,7 +431,7 @@
   const PK = { mitglieder_bank: 'mitglied_id', saisons: 'jahr', gebuehren: 'jahr', arbeitseinsatz_codes: 'einsatz_id' };
   // Reihenfolge: erst Eltern, dann Kinder (beim Löschen umgekehrt)
   const REIHE = ['mitglieder', 'mitglieder_bank', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'arbeitsdienst',
-    'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'gebuehren', 'hafen_einstellungen', 'aufgaben', 'mitteilungen'];
+    'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'gebuehren', 'hafen_einstellungen', 'aufgaben', 'mitteilungen', 'veranstaltungen', 'zusagen'];
   const db = { rollen: [], bereich: null, finanz: false, schnapp: {}, schreibbar: new Set(), warteplatz: null, mitgliedId: null, onFehler: null };
 
   // Datenbankzeile ← → Oberflächen-Objekt
@@ -440,7 +443,7 @@
     z.mitglieder = d.mitglieder.map((m) => pick({ ...m, mandatsreferenz: m.mandat_ref, aktiv: !(m.austritt && m.austritt <= heute) }, SP.mitglieder));
     if (finanz) z.mitglieder.forEach((r, i) => { const m = d.mitglieder[i]; r.sepa = !!(m.iban && m.mandat_ref && m.mandat_datum); });
     z.mitglieder_bank = finanz ? d.mitglieder.filter((m) => m.iban || m.kontoinhaber || m.bic || m.mandat_datum).map((m) => pick({ ...m, mitglied_id: m.id }, SP.mitglieder_bank)) : [];
-    ['boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'mitteilungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben'].forEach((t) => { z[t] = (d[t] || []).map((o) => pick(o, SP[t])); });
+    ['boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'mitteilungen', 'veranstaltungen', 'zusagen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben'].forEach((t) => { z[t] = (d[t] || []).map((o) => pick(o, SP[t])); });
     z.hafen_rechnungen = d.rechnungen.map((o) => pick(o, SP.hafen_rechnungen));
     z.gebuehren = Object.entries(d.gebuehren || {}).map(([jahr, daten]) => ({ jahr: Number(jahr), daten }));
     const { zaehler, ...einst } = d.einstellungen; // Zähler leben in den Daten selbst
@@ -500,14 +503,16 @@
       personal ? hol('mitteilungen', '*', '&order=erstellt.desc').catch(() => []) : leer(),
       personal ? hol('arbeitsbereiche', '*', '&order=sort,name').catch(() => []) : leer(),
       personal ? hol('arbeitsbereich_mitglieder').catch(() => []) : leer(),
-      personal ? hol('gast_toilette').catch(() => []) : leer()
+      personal ? hol('gast_toilette').catch(() => []) : leer(),
+      personal ? hol('veranstaltungen', '*', '&order=datum.desc').catch(() => []) : leer(),
+      personal ? hol('zusagen').catch(() => []) : leer()
     ]);
-    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc] = daten;
-    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc }, null);
+    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc, ver, zus] = daten;
+    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc, ver, zus }, null);
   }
   async function fertig(mitgliedsbereich, x, ich) {
     const personal = !mitgliedsbereich;
-    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc } = x;
+    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc, ver, zus } = x;
     const bankVon = new Map(bank.map((b) => [b.mitglied_id, b]));
     const zahl = (o, felder) => { felder.forEach((f) => { if (o[f] != null) o[f] = Number(o[f]); }); return o; };
     d = {
@@ -527,6 +532,7 @@
       arbeitseinsaetze: (eins || []).map((e) => zahl(e, ['stunden'])), arbeitseinsatz_codes: codes || [], mitteilungen: mitt || [],
       toilette: (wc && wc[0]) || { code: '', regel: '', hinweis: '' },
       arbeitsbereiche: (abr || []).map((b) => ({ ...b, aufgaben: (b.aufgaben || []).map((a) => zahl({ ...a }, ['stunden'])) })), arbeitsbereich_mitglieder: abm || [],
+      veranstaltungen: (ver || []).map((v) => zahl(v, ['kosten'])), zusagen: zus || [],
       zaehler: { quittung: 0 }
     };
     d.mitglieder.forEach((m) => { delete m.mandatsreferenz; delete m.sepa; delete m.aktiv; });
@@ -538,10 +544,11 @@
       db.warteplatz = await SB.rpc('mein_wartelistenplatz').catch(() => null);
       d.arbeitsdienst = ((await SB.rpc('mein_arbeitsdienst').catch(() => [])) || []).map((a) => ({ ...a, stunden: Number(a.stunden) }));
       d.meine_bereiche = (await SB.rpc('meine_arbeitsbereiche').catch(() => [])) || [];
+      d.meine_veranstaltungen = (await SB.rpc('meine_veranstaltungen').catch(() => [])) || [];
     }
     // Was diese Person zurückschreiben darf (der Rest ist für sie nur lesbar)
     db.schreibbar = new Set(personal
-      ? ['mitglieder', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'mitteilungen', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben']
+      ? ['mitglieder', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'mitteilungen', 'veranstaltungen', 'zusagen', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben']
         .concat(db.finanz ? ['mitglieder_bank', 'hafen_rechnungen', 'sepa_laeufe', 'antraege', 'gebuehren', 'hafen_einstellungen'] : [])
       : ['abwesenheiten']);
     db.schnapp = schnappschuss(zeilen());
@@ -593,7 +600,7 @@
    * Sicherung gesetzt, später Hinzugekommenes wird entfernt. Mitglieder und Rechnungen werden nie
    * gelöscht (nur ergänzt/zurückgesetzt) – genau wie beim normalen Speichern. */
   const SICHER_TAB = ['mitglieder', 'boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitseinsatz_codes',
-    'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'mitteilungen', 'rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben'];
+    'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'mitteilungen', 'veranstaltungen', 'zusagen', 'rechnungen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben'];
   function sicherungLesen(text) {
     let j; try { j = JSON.parse(text); } catch (e) { throw new Error('Die Datei ist keine Datensicherung (kein gültiges JSON).'); }
     const s = j && j.daten ? j.daten : j;
@@ -645,6 +652,34 @@
       (ids ? '&datensatz=in.(' + ids.filter((x) => /^[\w-]+$/.test(x)).join(',') + ')' : ''));   // IDs sind UUIDs/Wortzeichen – ohne Anführungszeichen
   }
   async function meinDatenAendern(p) { await SB.rpc('mein_daten_aendern', { p }); }
+
+  /* ------------------------------------------------------------ Veranstaltungen */
+  // Zugesagte Personen (Mitglieder plus Begleitung)
+  const belegt = (vid, ohne) => (d.zusagen || []).filter((z) => z.veranstaltung_id === vid && z.antwort === 'ja' && z.mitglied_id !== ohne).reduce((s, z) => s + (Number(z.personen) || 0), 0);
+  const fristEnde = (v) => v.anmeldung_bis || v.datum;
+  // Kommende Veranstaltungen aus Sicht eines Mitglieds: Datenbank liefert sie fertig (ohne Namen anderer), die Demo rechnet selbst
+  function meineVeranstaltungen(mid) {
+    const heute = tag(new Date());
+    if (d.meine_veranstaltungen) return d.meine_veranstaltungen.map((v) => ({ ...v, kosten: v.kosten == null ? null : Number(v.kosten) }));
+    return (d.veranstaltungen || []).filter((v) => v.datum >= heute).sort((a, b) => a.datum.localeCompare(b.datum) || String(a.beginn || '').localeCompare(String(b.beginn || '')))
+      .map((v) => ({ ...v, belegt: belegt(v.id), meine: (d.zusagen || []).find((z) => z.veranstaltung_id === v.id && z.mitglied_id === mid) || null }));
+  }
+  async function zusageSetzen(mid, p) {
+    if (SB) { await SB.rpc('meine_zusage', { p }); return neuLaden(); }
+    const heute = tag(new Date()); const v = (d.veranstaltungen || []).find((x) => x.id === p.veranstaltung_id);
+    if (p.antwort !== 'ja' && p.antwort !== 'nein') throw new Error('Bitte zu- oder absagen.');
+    if (!v) throw new Error('Diese Veranstaltung gibt es nicht mehr.');
+    if (v.abgesagt) throw new Error('Die Veranstaltung wurde abgesagt.');
+    if (v.datum < heute || heute > fristEnde(v)) throw new Error('Die Anmeldefrist ist vorbei – bitte direkt beim Vorstand melden.');
+    const pers = p.antwort === 'ja' ? Number(p.personen || 1) : 0; const bg = Number(v.begleitung) || 0;
+    if (p.antwort === 'ja' && (!(pers >= 1) || pers > 1 + bg)) throw new Error(bg === 0 ? 'Zu dieser Veranstaltung kannst du nur dich selbst anmelden.' : bg === 1 ? 'Du kannst eine Begleitperson mitbringen.' : 'Du kannst bis zu ' + bg + ' Begleitpersonen mitbringen.');
+    if (p.antwort === 'ja' && v.max_personen) { const frei = v.max_personen - belegt(v.id, mid); if (pers > frei) throw new Error(frei <= 0 ? 'Leider ist die Veranstaltung schon ausgebucht.' : frei === 1 ? 'Es ist nur noch 1 Platz frei.' : 'Es sind nur noch ' + frei + ' Plätze frei.'); }
+    if (!d.zusagen) d.zusagen = [];
+    const alt = d.zusagen.find((z) => z.veranstaltung_id === v.id && z.mitglied_id === mid);
+    const neu = { antwort: p.antwort, personen: pers, bemerkung: String(p.bemerkung || '').trim().slice(0, 200), quelle: 'mein-ssv', geaendert: new Date().toISOString() };
+    if (alt) Object.assign(alt, neu); else d.zusagen.push({ id: uid('Z'), veranstaltung_id: v.id, mitglied_id: mid, ...neu });
+    return sichern();
+  }
 
   /* ------------------------------------------------------------ Dateien (Nachweise, Fotos) */
   const datei = {
@@ -701,6 +736,27 @@
     periodeText: (r) => r.periode === 'beitrag' ? 'Beitrag ' + r.saison : r.periode === 'sommer' ? 'Sommer ' + r.saison : 'Winter ' + r.saison + '/' + String(r.saison + 1).slice(2),
     BRUECKE: { ost: 'Ostbrücke', west: 'Westbrücke', schwimm: 'Schwimmbrücke', laengs: 'Längsseits' }
   };
+
+  // Veranstaltungen mit Zu-/Absagen (Demo). Das Mitglied, das „Mein SSV“ zuerst zeigt, hat noch nicht geantwortet.
+  function demoVeranstaltungen(mitglieder, boote) {
+    const v = [
+      { id: uid('V'), datum: '2026-11-28', beginn: '18:00', ende: '', titel: 'Wintertreffen mit Grünkohl', ort: 'Messe (Vereinsheim)', text: 'Rückblick auf die Saison, Grünkohl und Planung für 2027. Partnerinnen und Partner sind herzlich willkommen.',
+        anmeldung_bis: '2026-11-25', max_personen: 60, begleitung: 1, kosten: 22, kosten_hinweis: 'je Person, bar vor Ort', abgesagt: false, erstellt: '2026-11-05T10:00:00', erstellt_von: 'Vorstand' },
+      { id: uid('V'), datum: '2027-02-20', beginn: '15:00', ende: '', titel: 'Jahreshauptversammlung', ort: 'Messe (Vereinsheim)', text: 'Die Einladung mit Tagesordnung kommt satzungsgemäß per Post bzw. E-Mail. Die Zusage hilft uns bei der Planung von Stühlen und Kaffee.',
+        anmeldung_bis: '', max_personen: null, begleitung: 0, kosten: null, kosten_hinweis: '', abgesagt: false, erstellt: '2026-11-05T10:05:00', erstellt_von: 'Vorstand' },
+      { id: uid('V'), datum: '2027-05-01', beginn: '11:00', ende: '16:00', titel: 'Ansegeln 2027', ort: 'Hafen, danach Grillen an der Messe', text: 'Gemeinsam raus auf die Trave – Mitsegler finden sich vor Ort. Grillgut bitte selbst mitbringen.',
+        anmeldung_bis: '2027-04-28', max_personen: null, begleitung: 3, kosten: null, kosten_hinweis: '', abgesagt: false, erstellt: '2026-11-05T10:10:00', erstellt_von: 'Vorstand' }
+    ];
+    const alle = mitglieder.filter((m) => m.art !== 'gast').sort((a, b) => a.nachname.localeCompare(b.nachname, 'de') || a.vorname.localeCompare(b.vorname, 'de'));
+    const erster = alle.find((m) => boote.some((b) => b.eigner_id === m.id)) || alle[0];
+    const andere = alle.filter((m) => m !== erster);
+    const z = [];
+    const BEM = ['', '', 'vegetarisch', '', '', 'ohne Fleisch, bitte', '', ''];
+    andere.slice(0, 17).forEach((m, i) => z.push({ id: uid('Z'), veranstaltung_id: v[0].id, mitglied_id: m.id, antwort: i % 6 === 5 ? 'nein' : 'ja', personen: i % 6 === 5 ? 0 : (i % 3 === 0 ? 2 : 1),
+      bemerkung: i % 6 === 5 ? '' : BEM[i % BEM.length], quelle: i === 4 ? 'verein' : 'mein-ssv', geaendert: '2026-11-0' + (6 + (i % 4)) + 'T19:' + String(10 + i).padStart(2, '0') + ':00' }));
+    andere.slice(3, 9).forEach((m, i) => z.push({ id: uid('Z'), veranstaltung_id: v[1].id, mitglied_id: m.id, antwort: 'ja', personen: 1, bemerkung: '', quelle: 'mein-ssv', geaendert: '2026-11-08T08:3' + i + ':00' }));
+    return { veranstaltungen: v, zusagen: z };
+  }
 
   // Gewichtsgrenze für Steg und Kran – einzige Stelle, aus den Einstellungen
   // Zwei Grenzen: Kran (Standard 9 t) und Steg/Wasserliegeplatz (Standard 10 t) – nur hier, aus den Einstellungen
@@ -803,7 +859,7 @@
   const HF_wer = () => (window.HAFEN && window.HAFEN.wer) || '';
 
   window.HAFEN = { laden, sichern, zuruecksetzen, get d() { return d; }, H, Q, STANDARD_EINSTELLUNGEN, GEBUEHREN_2024, demoIban,
-    modus: SB ? 'supabase' : 'demo', verbinden, neuLaden, db, sicherungLesen, zurueckspielen, toiletteSetzen, meinDatenAendern, dok, datei, verlauf, wer: '',
+    modus: SB ? 'supabase' : 'demo', verbinden, neuLaden, db, sicherungLesen, zurueckspielen, toiletteSetzen, meinDatenAendern, meineVeranstaltungen, zusageSetzen, veranstaltungBelegt: (vid) => belegt(vid), dok, datei, verlauf, wer: '',
     // Laufende Saison: ab dem Auslagern gilt das neue Jahr, davor (Januar–April) noch das Winterlager des Vorjahres.
     // ?saison=2027 in der Adresse wählt eine andere.
     aktuelleSaison() {
