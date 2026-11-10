@@ -103,6 +103,29 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .plan-leiste .trenn { width: 1px; height: 24px; background: var(--line); margin: 0 4px; }
 .plan-leiste input[type=date] { padding: 6px 8px; border: 1px solid #8A8FA3; border-radius: 8px; font-size: 13px; }
 .plan-flaeche { aspect-ratio: 1000 / 640; }
+/* Lageplan: Flächen, Linien, Stege, Punkte (js/plan.js) */
+.pf { stroke-linejoin: round; stroke-linecap: round; }
+.pf-muster { pointer-events: none; stroke: none; }
+.pf-gruen { fill: #d3dfbd; stroke: none; } .pf-natur { fill: #cfd8bd; stroke: #b7c3a2; stroke-width: .8; }
+.pf-wasser { fill: url(#wasser); stroke: #8fb0cc; stroke-width: 1.4; }
+.pf-strasse { fill: #cfcfd4; stroke: #b3b3ba; stroke-width: 1; }
+.pf-hof, .pf-lagerfl { fill: #e6dfcc; stroke: #cfc6ad; stroke-width: .8; } .pf-parken { fill: #e2dccb; stroke: #cfc6ad; stroke-width: .8; }
+.pf-bahn { fill: none; stroke: #8d877a; stroke-width: 6; } .pf-bahn2 { fill: none; stroke: #ece6d6; stroke-width: 3; stroke-dasharray: 2 5; stroke-linecap: butt; }
+.pf-weg0 { fill: none; stroke: #cbc3ae; stroke-width: 7; } .pf-weg { fill: none; stroke: #f5f1e6; stroke-width: 5; }
+.pf-zaun { fill: none; stroke: #6d6656; stroke-width: 1; stroke-dasharray: 4 3; }
+.pf-gebaeude { fill: #41485c; stroke: #2c3244; stroke-width: 1; } .pf-dach { fill: #8a90a3; stroke: #6d7387; stroke-width: .8; }
+.pf-slipfl { fill: #c9c2ae; stroke: #a59d86; stroke-width: .8; }
+.steg { stroke: #9b8763; stroke-width: 5; stroke-linecap: round; } .steg-planken { stroke: rgba(70,55,30,.35); stroke-width: 5; stroke-dasharray: .6 2.4; stroke-linecap: butt; }
+.pfahl { fill: #6b5a3e; }
+.pkt circle { fill: #e0a526; stroke: #0E1B45; stroke-width: 1; } .pkt-z { font: 700 7px "Inter", sans-serif; fill: #0E1B45; pointer-events: none; }
+.pkt-wc circle, .pkt-info circle { fill: #fff; } .pkt-rettung circle, .pkt-feuer circle { fill: #e2574c; } .pkt-strom circle { fill: #ffe066; } .pkt-wasser circle { fill: #8ec5ee; }
+.pl-label.natur-text { fill: rgba(60,90,50,.7); } .pl-label.strasse-text { fill: #6f6f78; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; }
+.ms-bg { fill: rgba(255,255,255,.75); } .ms-a { fill: #0E1B45; } .ms-b { fill: #fff; stroke: #0E1B45; stroke-width: .6; }
+.hafenplan.mit-bild .lp rect, .hafenplan.mit-bild .land rect { fill-opacity: .72; stroke: #fff; stroke-width: .8; }
+.hafenplan.mit-bild .steg { stroke: #ffd94a; stroke-width: 2; opacity: .9; } .hafenplan.mit-bild .steg-planken { display: none; } .hafenplan.mit-bild .pfahl { display: none; }
+.hafenplan.mit-bild .pl-label { fill: #fff; paint-order: stroke; stroke: rgba(0,0,0,.65); stroke-width: 2.4px; }
+.hafenplan.mit-bild .lp-nr { fill: #fff; paint-order: stroke; stroke: rgba(0,0,0,.7); stroke-width: 1.6px; }
+.hafenplan .quelle { font-size: 7px; }
 .plan-flaeche svg { width: 100%; height: 100%; display: block; touch-action: manipulation; }
 .legende { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 10px 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
 .legende i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(14,27,69,.3); }
@@ -332,3 +355,54 @@ table.todo td:first-child { width: 1%; white-space: nowrap; }
 .wc-panel p { margin: 0; flex: 1; min-width: 200px; font-size: 14px; color: var(--muted); }
 .zqr { width: min(280px, 100%); margin: 6px auto; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 4px; } .zqr svg { display: block; width: 100%; height: auto; }
 .zqr-unter { text-align: center; font-size: 14px; color: var(--muted); margin: 4px 0; } .zqr-unter strong { color: var(--navy); font-size: 18px; letter-spacing: .1em; }
+/* Lageplan-Editor (js/plan-editor.js) */
+.pe { position: fixed; inset: 0; z-index: 90; background: #1c2233; display: flex; flex-direction: column; color: #fff; font-family: "Inter", sans-serif; }
+.pe button, .pe .pe-laden { font: inherit; font-size: 13.5px; font-weight: 600; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: #fff; border-radius: 9px; padding: 8px 12px; min-height: 38px; cursor: pointer; white-space: nowrap; }
+.pe button:hover { background: rgba(255,255,255,.18); } .pe button:disabled { opacity: .45; cursor: default; }
+.pe-leiste { display: flex; gap: 8px 12px; align-items: center; padding: 8px 12px; background: var(--navy); flex-wrap: wrap; padding-top: max(8px, env(safe-area-inset-top)); }
+.pe-leiste > strong { font-family: "Playfair Display", serif; font-size: 18px; }
+.pe-wz { display: flex; gap: 4px; overflow-x: auto; flex: 1 1 320px; scrollbar-width: none; } .pe-wz::-webkit-scrollbar { display: none; }
+.pe-wz button.aktiv { background: #fff; color: var(--navy); border-color: #fff; }
+.pe-rechts { display: flex; gap: 4px; flex-wrap: wrap; } .pe .pe-prim { background: var(--rot); border-color: var(--rot); }
+.pe-mitte { flex: 1; display: flex; min-height: 0; }
+.pe-flaeche { flex: 1; position: relative; min-width: 0; min-height: 0; }
+#pe-svg { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.pe-hinweis { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--navy); border: 1px solid rgba(255,255,255,.3); border-radius: 12px; padding: 8px 12px; font-size: 14px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 20px); box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+.pe-hinweis[hidden] { display: none; } .pe-hinweis button { min-height: 34px; padding: 6px 10px; }
+.pe-quelle { position: absolute; left: 8px; bottom: 6px; font-size: 10.5px; color: rgba(255,255,255,.8); text-shadow: 0 1px 2px #000; pointer-events: none; }
+.pe-panel { width: 330px; flex: none; background: #fff; color: var(--ink, #1a2238); overflow-y: auto; padding: 14px 14px calc(14px + env(safe-area-inset-bottom)); }
+.pe-panel h3 { margin: 14px 0 8px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-2); } .pe-panel h3:first-child { margin-top: 0; }
+.pe-panel button, .pe-panel .pe-laden { color: var(--navy); border-color: var(--line); background: #fff; display: inline-flex; align-items: center; } .pe-panel button:hover { background: var(--sand, #f3efe6); }
+.pe-panel .pe-gefahr { color: var(--rot); }
+.pe-feld { display: block; margin-bottom: 9px; } .pe-feld > span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+.pe-feld input:not([type=range]), .pe-feld select { width: 100%; padding: 8px 10px; border: 1px solid #8A8FA3; border-radius: 8px; font: inherit; font-size: 16px; background: #fff; color: inherit; }
+.pe-feld input[type=range] { width: 100%; }
+.pe-zwei { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; }
+.pe-check { display: flex; gap: 8px; align-items: center; font-size: 14px; margin-bottom: 8px; }
+.pe-knoepfe { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.pe-liste { display: flex; flex-direction: column; gap: 3px; max-height: 260px; overflow-y: auto; } .pe-liste button { justify-content: space-between; text-align: left; min-height: 36px; padding: 6px 10px; font-weight: 500; } .pe-liste small { color: var(--muted); font-weight: 400; }
+.pe-hilfe { margin: 0 0 12px; padding-left: 18px; font-size: 13.5px; line-height: 1.45; } .pe-hilfe li { margin-bottom: 5px; }
+.pe-leise { font-size: 12.5px; color: var(--muted); margin: 6px 0; } .pe-info { font-size: 13.5px; background: var(--sand, #f3efe6); border-radius: 8px; padding: 8px 10px; margin: 8px 0; }
+.pe-pruef { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; } .pe-gut { color: #17714a; font-weight: 600; } .pe-warn { color: #8a5a00; font-weight: 600; }
+.pe-form { fill-opacity: var(--pe-deck, .42); cursor: pointer; } .pe-linie { fill: none !important; } .pe-form.pe-an { stroke: #ff7a1a !important; stroke-width: 3px; vector-effect: non-scaling-stroke; }
+.pe-steg { stroke: #ffd94a; stroke-width: 3px; stroke-linecap: round; vector-effect: non-scaling-stroke; pointer-events: none; } .pe-steg.pe-an { stroke: #ff7a1a; stroke-width: 4.5px; }
+.pe-treffer { stroke: transparent; cursor: pointer; } .pe-start { fill: #fff; stroke: #0E1B45; stroke-width: 1px; vector-effect: non-scaling-stroke; pointer-events: none; }
+.pe-box { pointer-events: none; } .pe-box rect { fill: rgba(255,255,255,.26); stroke: #fff; stroke-width: 1px; vector-effect: non-scaling-stroke; } .pe-box.pe-an rect { stroke: #ff7a1a; fill: rgba(255,122,26,.28); }
+.pe-box text, .pe-lager text { fill: #fff; font-weight: 700; font-family: "Inter", sans-serif; paint-order: stroke; stroke: rgba(0,0,0,.65); stroke-width: .22em; pointer-events: none; }
+.pe-laengs { pointer-events: all; cursor: pointer; }
+.pe-lager { cursor: pointer; } .pe-lager rect { fill: rgba(255,255,255,.3); stroke: #fff; stroke-width: 1px; vector-effect: non-scaling-stroke; } .pe-lager.pe-an rect { stroke: #ff7a1a; fill: rgba(255,122,26,.28); }
+.pe-punkt { cursor: pointer; } .pe-punkt.pe-an circle { stroke: #ff7a1a; stroke-width: 3px; vector-effect: non-scaling-stroke; }
+.pe-text { fill: #fff; font-weight: 700; font-family: "Inter", sans-serif; paint-order: stroke; stroke: rgba(0,0,0,.7); stroke-width: .24em; pointer-events: none; }
+.pe-griff { fill: #fff; stroke: #ff7a1a; stroke-width: 2.5px; vector-effect: non-scaling-stroke; cursor: move; } .pe-griff.pe-an { fill: #ff7a1a; stroke: #fff; }
+.pe-mitte-griff { fill: rgba(255,255,255,.6); stroke: #ff7a1a; stroke-width: 1.5px; vector-effect: non-scaling-stroke; cursor: copy; }
+.pe-entwurf { fill: none; stroke: #ff7a1a; stroke-width: 2.5px; vector-effect: non-scaling-stroke; stroke-dasharray: 7 5; pointer-events: none; } .pe-entwurf-p { fill: #ff7a1a; pointer-events: none; } .pe-erster { fill: #fff; stroke: #ff7a1a; stroke-width: 2px; vector-effect: non-scaling-stroke; }
+.quelle-zeile { margin-left: auto; font-size: 11px; }
+@media (max-width: 860px) {
+  .pe-mitte { flex-direction: column; } .pe-panel { width: auto; max-height: 40vh; border-top: 3px solid var(--navy); }
+  .pe-leiste > strong { display: none; } .pe-leiste { gap: 6px; padding: 6px 8px; } .pe-wz { flex-basis: 100%; order: 2; } .pe-rechts { flex: 1; justify-content: space-between; flex-wrap: nowrap; }
+  .pe-leiste button { font-size: 12.5px; padding: 6px 8px; min-height: 36px; } .pe-panel { max-height: 36vh; }
+}
+.pe-mass { position: absolute; right: 10px; bottom: 8px; display: flex; flex-direction: column; align-items: flex-end; font-size: 11px; color: #fff; text-shadow: 0 1px 2px #000; pointer-events: none; }
+.pe-mass i { display: block; height: 6px; border: 2px solid #fff; border-top: 0; box-shadow: 0 1px 2px rgba(0,0,0,.6); max-width: 60vw; }
+.steg.steg-schwimm { stroke: #3f7fc4; } .hafenplan.mit-bild .steg.steg-schwimm { stroke: #6fc3ff; }
+.pe-steg.pe-schwimm { stroke: #6fc3ff; }

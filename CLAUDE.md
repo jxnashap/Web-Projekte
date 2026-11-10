@@ -28,7 +28,7 @@ Repo für alle Website-Projekte. Struktur:
   Datenbankschema `supabase/schema.sql` lokal getestet, **nichts deployt** – auf
   Wunsch des Nutzers keine Verknüpfung mit bestehenden Supabase-/Vercel-Projekten.
 - `apps/ssv-hafen/` – Hafen-Manager für den SSV (Prototyp, Demo-Modus): SVG-Hafenplan nach
-  Luftbild (Ost 1–24, West 25–70, Schwimm 71–79, L1/L2 – Zuordnung = Annahme), Belegung
+  amtlichem Luftbild (Ost 1–24, West 25–70, Schwimm 71–79, L1/L2 – Zuordnung = Annahme), Belegung
   Sommer/Winter, grünes Schild, Gastlieger + QR-Anmeldung, Warteliste, Kran, Arbeitsdienst,
   Abrechnung nach Gebührenordnung 2024, SEPA-XML pain.008.001.08 (XSD-geprüft), „Mein SSV“ für jedes
   Mitglied (Hafen- + Getränkerechnungen, grünes Schild, Getränke-Code ändern; lädt `../ssv-getraenke/js/store.js`).
@@ -36,6 +36,9 @@ Repo für alle Website-Projekte. Struktur:
   Online-Aufnahmeantrag `aufnahme.html` → Vorstand nimmt auf, Beitragseinzug (Gebührenordnung 2024, `SSV-B-…`),
   Verbandsmeldung (Bestandserhebung 1.1.). Website verlinkt Antrag + Mein SSV (`../ssv-hafen/`).
   Menü: 7 Bereiche (`BEREICHE` in `js/app.js`) mit Reitern oben, Zurück-Taste über `#tab`-Verlauf.
+  Hafenplan maßstäblich (1000 × 750 Einheiten = 400 × 300 m) aus einem Lageplan-Datensatz (`STANDARD` in `js/plan.js`, eigener Plan des Vereins in
+  `einstellungen.lageplan`, Zeichenfenster `js/plan-editor.js`); Luftbild `img/luftbild-dop20.jpg` = amtliches DOP20, Quellenvermerk
+  „© GeoBasis-DE/LVermGeo SH/CC BY 4.0“ muss sichtbar bleiben (Details `RECHERCHE.md`).
   **Alle Druck-/PDF-Seiten im SSV-Briefkopf: Flagge oben links + Vereinsadresse rechts** (`kopf` in `js/drucken.js`, `druckKopf()` in app.js für direkt gedruckte Seiten) – Vorgabe des Nutzers.
   Recherche/Annahmen: `RECHERCHE.md`, `PLAN.md`.
   **Echtbetrieb-Konten (nur SSV, getrennt von allen anderen Projekten):**

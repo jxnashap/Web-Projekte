@@ -49,7 +49,7 @@
   // Bezugszeitpunkt: im Sommer immer „heute“; in der Winterpause zeigt der Sommerplan einen deutlich gekennzeichneten Rückblick
   const tagVor = (t, n) => H.tag(new Date(new Date(t + 'T12:00:00').getTime() - n * 864e5));
   const rueckblick = HF.modus !== 'supabase' ? '2026-08-15' : heute < sd.auslagern ? sd.auslagern : tagVor(sd.einlagern, 1);
-  let planStand = { modus: imSommer ? 'sommer' : 'winter', datum: imSommer ? heute : rueckblick, ansicht: imSommer ? 'gesamt' : 'land', markiere: null };
+  let planStand = { modus: imSommer ? 'sommer' : 'winter', datum: imSommer ? heute : rueckblick, ansicht: imSommer ? 'gesamt' : 'land', markiere: null, luftbild: false };
   const stichtagText = (t) => t === heute ? 'heute' : (t < heute ? 'Rückblick' : 'Vorschau');
 
   /* ------------------------------------------------------------ Helfer */
@@ -235,10 +235,12 @@
       (planStand.modus === 'sommer' ? '<input type="date" id="plan-datum" value="' + planStand.datum + '" min="' + sd.auslagern + '" max="' + sd.einlagern + '" aria-label="Stichtag">' : '') +
       '<span class="trenn"></span>' + [['gesamt', 'Gesamt'], ['ost', 'Ost'], ['west', 'West'], ['schwimm', 'Schwimm'], ['land', 'Land']].map(([k, n]) =>
         '<button class="btn klein' + (planStand.ansicht === k ? ' aktiv' : '') + '" data-ansicht="' + k + '">' + n + '</button>').join('') +
-      '</div><div class="plan-flaeche" id="plan"></div><div class="legende">' + legende + '</div></div><aside class="detail" id="detail"></aside></div>' +
-      '<p class="hinweis" style="margin-top:12px">Schematischer Plan nach Luftbild. ' + (planAnnahme() ? 'Zuordnung, Nummerierung und Boxmaße sind eine <strong>Annahme</strong>, bis der Verein sie unter „Liegeplätze“ bestätigt – die Platzempfehlung für Gäste ist bis dahin nur eine Orientierung. ' : '') + 'Tippe auf einen Platz für Details; mit „Ost / West / Schwimm“ zoomst du heran und siehst die Platznummern.</p>';
+      '<span class="trenn"></span><button class="btn klein' + (planStand.luftbild ? ' aktiv' : '') + '" id="plan-bild" aria-pressed="' + planStand.luftbild + '">Luftbild</button>' +
+      (darf('einstellungen') ? '<button class="btn klein" id="plan-edit">Lageplan bearbeiten</button>' : '') +
+      '</div><div class="plan-flaeche" id="plan"></div><div class="legende">' + legende + (planStand.luftbild ? '<span class="quelle-zeile">' + esc(PLAN.QUELLE) + '</span>' : '') + '</div></div><aside class="detail" id="detail"></aside></div>' +
+      '<p class="hinweis" style="margin-top:12px">Maßstäblicher Plan nach amtlichem Luftbild (DOP20)' + (d.einstellungen.lageplan ? ', vom Verein nachgezeichnet. ' : '. ') + (planAnnahme() ? 'Zuordnung, Nummerierung und Boxmaße sind eine <strong>Annahme</strong>, bis der Verein sie unter „Liegeplätze“ bestätigt – die Platzempfehlung für Gäste ist bis dahin nur eine Orientierung. ' : '') + 'Tippe auf einen Platz für Details; mit „Ost / West / Schwimm“ zoomst du heran und siehst die Platznummern.</p>';
     const zh = $('#zu-heute'); if (zh) zh.addEventListener('click', () => { if (imSommer) planStand.datum = heute; else { planStand.modus = 'winter'; planStand.ansicht = 'land'; } planStand.markiere = null; zeige('plan'); });
-    const svg = PLAN.zeichnen($('#plan'), { namen: true, modus: planStand.modus, saison: SAISON, datum: planStand.datum, ansicht: planStand.ansicht, markiere: planStand.markiere, onKlick: (id) => { planStand.markiere = id; detail(id); markieren(id); } });
+    const svg = PLAN.zeichnen($('#plan'), { namen: true, luftbild: planStand.luftbild, modus: planStand.modus, saison: SAISON, datum: planStand.datum, ansicht: planStand.ansicht, markiere: planStand.markiere, onKlick: (id) => { planStand.markiere = id; detail(id); markieren(id); } });
     function markieren(id) { svg.querySelectorAll('.markiert').forEach((x) => x.classList.remove('markiert')); const g = svg.querySelector('[data-platz="' + id + '"]'); if (g) g.classList.add('markiert'); }
     main.querySelectorAll('[data-ansicht]').forEach((b) => b.addEventListener('click', () => {
       planStand.ansicht = b.dataset.ansicht; PLAN.zoomen(svg, planStand.ansicht);
@@ -246,6 +248,12 @@
     }));
     main.querySelectorAll('[data-modus]').forEach((b) => b.addEventListener('click', () => { planStand.modus = b.dataset.modus; planStand.markiere = null; if (planStand.modus === 'winter' && planStand.ansicht === 'gesamt') planStand.ansicht = 'land'; if (planStand.modus === 'sommer' && planStand.ansicht === 'land') planStand.ansicht = 'gesamt'; zeige('plan'); }));
     const dat = $('#plan-datum'); if (dat) dat.addEventListener('change', () => { planStand.datum = dat.value || planStand.datum; zeige('plan'); });
+    $('#plan-bild').addEventListener('click', () => { planStand.luftbild = !planStand.luftbild; zeige('plan', true); });
+    const pe = $('#plan-edit'); if (pe) pe.addEventListener('click', () => window.HAFEN_PLAN_EDITOR.oeffnen({
+      plan: d.einstellungen.lageplan || PLAN.STANDARD, eigen: !!d.einstellungen.lageplan, daten: d,
+      onSpeichern: (neu) => { d.einstellungen.lageplan = neu; speichern('Lageplan gespeichert – er gilt jetzt für alle.'); zeige('plan', true); },
+      onVorlage: () => { delete d.einstellungen.lageplan; speichern('Vorlage wiederhergestellt.'); zeige('plan', true); }
+    }));
     if (planStand.markiere) detail(planStand.markiere); else detailLeer();
   };
 

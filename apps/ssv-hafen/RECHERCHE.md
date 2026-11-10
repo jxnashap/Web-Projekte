@@ -55,6 +55,13 @@ Bootsgröße steht, steht nicht in den Unterlagen.
 
 - Zur Teerhofsinsel 5B, 23554 Lübeck, nördlicher Travearm („Altes Fahrwasser“), 53°54'41" N, 10°42'04" O. In einigen Verzeichnissen wird die Adresse auch Bad Schwartau zugeordnet.
 - Luftbild-Auswertung: `recherche/luftbild-zuordnung-entwurf.jpg`. Zu erkennen sind ein langer Steg westlich des Vereinsheims, ein Steg östlich davon und ein kurzes Stück am Westende. Die Zuordnung zu Ost-, West- und Schwimmbrücke ist **geschätzt** und muss vom Verein bestätigt werden.
+- **Stand 10.11.2026 – maßstäblicher Lageplan:** Grundlage ist das amtliche Luftbild DOP20 (20 cm Bodenauflösung) des LVermGeo SH,
+  WMS `service.gdi-sh.de/WMS_SH_DOP20col_OpenGBD`, Layer `sh_dop20_rgb`, ETRS89/UTM32N, BBOX 611544.1,5974837.6 – 611944.1,5975137.6
+  (400 × 300 m, Gitternord oben). Lizenz CC BY 4.0, Quellenvermerk **„© GeoBasis-DE/LVermGeo SH/CC BY 4.0“** – steht im Plan (Luftbild-Ansicht)
+  und im Editor. Datei: `img/luftbild-dop20.jpg`. Abgelesene Stegmaße: Westbrücke 121 m + 50 m (Knick am Bootsschuppen), Ostbrücke 106 m,
+  blauer Schwimmsteg quer 19 m – deckt sich mit dem Arbeitsentwurf des Vereins (A 120 m, B 52 m, C 107 m, D 18 m).
+  Vom Verein bestätigt: Kran an der Kaimauer am Parkplatz; Slip zwischen Vereinsheim und Opti-Schuppen am Schwimmsteg; Gebäude östlich = Mastenlager + Trecker.
+  Offen (Annahme): Platznummern je Steg, Lage „Halle“ H1–H4, Winterlager-Felder, Längsseits-Plätze – der Verein zeichnet das im Lageplan-Editor nach.
 - Für die App zeichne ich einen eigenen, schematischen Hafenplan (SVG). Das Luftbild dient nur als Zeichenvorlage. „Anfahrt“ und „Route“ laufen wie vereinbart über Google Maps und Apple Karten.
 
 ## 3. Was vergleichbare Programme können (Marktüberblick)
