@@ -36,6 +36,18 @@
   .kopier { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--sand, #f3efe6); border-radius: 10px; padding: 7px 8px 7px 12px; margin: 6px 0; }
   .kopier span { min-width: 0; } .kopier small { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
   .kopier b { font-size: 15px; font-weight: 600; color: var(--navy); overflow-wrap: anywhere; } .kopier button { flex: none; border: 0; background: #fff; border-radius: 8px; padding: 8px 10px; min-height: 40px; font-weight: 600; cursor: pointer; }
+  .giro { border-color: var(--navy); }
+  .epc { background: #fff; border: 1px solid var(--line); border-radius: 12px; width: min(260px, 100%); margin: 8px auto 4px; padding: 4px; }
+  .epc svg { display: block; width: 100%; height: auto; }
+  .epc-unter { text-align: center; font-size: 13.5px; color: var(--muted); } .epc-unter strong { color: var(--navy); font-size: 16px; }
+  .epc-tipp { font-size: 12.5px !important; color: var(--muted); text-align: center; margin-top: 2px !important; }
+  .manuell { margin: 8px 0 0; } .manuell summary { cursor: pointer; font-size: 14px; color: var(--navy); font-weight: 600; padding: 6px 0; min-height: 32px; }
+  .wc-vorher { background: rgba(29,138,90,.08); color: #155f3f; border-radius: 12px; padding: 9px 12px; font-size: 14px; margin: 0 0 14px; }
+  .wc { background: #0E1B45; color: #fff; border-radius: 16px; padding: 14px; margin: 12px 0; text-align: center; }
+  .wc small { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+  .wc strong { display: block; font-size: 40px; letter-spacing: .18em; font-variant-numeric: tabular-nums; margin: 2px 0; }
+  .wc p { margin: 4px 0 0; font-size: 13.5px; opacity: .9; }
+  .wc.warten { background: rgba(214,154,31,.14); color: #6b4b06; } .wc.warten p { opacity: 1; }
   .platz-ok { background: rgba(29,138,90,.1); color: #155f3f; border-radius: 12px; padding: 10px 12px; text-align: center; font-weight: 600; }
   .platz-pruef { background: rgba(214,154,31,.14); color: #6b4b06; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
   .gast { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
@@ -77,6 +89,8 @@
 <script src="js/sb.js"></script>
 <script src="js/daten.js"></script>
 <script src="js/gebuehren.js"></script>
+<script src="js/qrcode.js"></script>
+<script src="js/qrcode_UTF8.js"></script>
 <script>
 (function () {
   'use strict';
@@ -84,7 +98,7 @@
   // Vereinsdatenbank: Preis/Zahlwege über gast_info, Anmeldung über gast_anmelden (prüft den Platz selbst),
   // „habe bezahlt“ über gast_zahlung_melden. Den Eingang bestätigt der Verein im Hafen-Manager.
   const HF = window.HAFEN, SB = window.SSV_SB, H = HF.H;
-  const d = SB ? null : HF.laden();
+  let d = SB ? null : HF.laden();
   const LS = 'ssv-gast-anmeldung';
   let e = d ? d.einstellungen : { hafenmeister_name: 'Hafenmeister', hafenmeister_tel: '' };
   let gb = d ? window.HAFEN_GEBUEHREN.gebuehrenFuer(d, new Date().getFullYear()) : { gast_nacht: 15 };
@@ -95,6 +109,10 @@
       nacht: 'pro Nacht', naechteK: 'Nächte', angemeldet: 'Du bist angemeldet', platzOk: 'Platz {p} ist für dich eingetragen.', platzPruef: 'Danke! Platz {p} prüfen wir noch – du kannst liegen bleiben. Passt etwas nicht, meldet sich der Hafenmeister bei dir.', platzOhne: 'Danke! Den Platz trägt der Hafenmeister nach – du kannst liegen bleiben.',
       gebuehr: 'Liegegebühr', wie: 'Wie möchtest du bezahlen?', paypal: 'PayPal', paypalT: 'Öffnet PayPal mit dem Betrag. Danach hier bestätigen.', paypalK: 'Mit PayPal zahlen', ueb: 'Überweisung', uebT: 'Am besten als Echtzeit-Überweisung in deiner Banking-App.', empf: 'Empfänger', zweck: 'Verwendungszweck', betragK: 'Betrag', kopieren: 'Kopieren', kopiert: 'Kopiert',
       bar: 'Bar', barT: 'Betrag mit Bootsname in einen Umschlag und in den Briefkasten am Vereinsheim – oder direkt beim Hafenmeister.', bezahlt: 'Erledigt – ich habe bezahlt', barK: 'Ich zahle bar',
+      giro: 'Überweisung mit GiroCode', giroT: 'Code mit der Banking-App scannen (z. B. Sparkasse, Volksbank, ING) – IBAN, Betrag und Verwendungszweck sind schon ausgefüllt. Am besten als Echtzeit-Überweisung.',
+      bild: 'Als Bild speichern', bildT: 'Nur ein Handy? Bild speichern und in der Banking-App bei „QR-Code/Foto-Überweisung“ aus den Fotos wählen.', manuell: 'Lieber von Hand eintippen',
+      wcVor: 'Nach dem Bezahlen bekommst du hier den Code für WC & Duschen.', wcVorB: 'Sobald deine Zahlung bestätigt ist, bekommst du hier den Code für WC & Duschen.',
+      wcCode: 'Code für WC & Duschen', wcWarten: 'Den Code für WC & Duschen siehst du hier, sobald der Hafenmeister deine Zahlung bestätigt hat – meist am selben Tag.', pruefen: 'Neu prüfen',
       fertig: 'Danke – gute Zeit bei uns!', fertigT: 'Wir haben deine Zahlung vermerkt ({a}). Eine Quittung bekommst du beim Hafenmeister.', fragen: 'Fragen?', neu: 'Neue Anmeldung', wa: { paypal: 'PayPal', ueberweisung: 'Überweisung', bar: 'bar' } },
     en: { titel: 'Welcome aboard!', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', s1: 'Green sign? Just moor up.', s2: 'Register here – the berth number is on the sign.', s3: 'Pay right away. Done – no need to wait for anyone.',
       platz: 'Berth number (on the sign)', ph: 'e.g. 27 or L1', boot: 'Boat name', skipper: 'Skipper', hafen: 'Home port', tel: 'Phone', laenge: 'Length (m)', breite: 'Beam (m)', tiefgang: 'Draught (m)', ankunft: 'Arrival', naechte: 'Nights', senden: 'Register & pay',
@@ -102,6 +120,10 @@
       nacht: 'per night', naechteK: 'nights', angemeldet: 'You are registered', platzOk: 'Berth {p} is booked for you.', platzPruef: 'Thank you! We still need to check berth {p} – you can stay. If anything is wrong, the harbour master will contact you.', platzOhne: 'Thank you! The harbour master will note your berth – you can stay.',
       gebuehr: 'Harbour fee', wie: 'How would you like to pay?', paypal: 'PayPal', paypalT: 'Opens PayPal with the amount. Confirm here afterwards.', paypalK: 'Pay with PayPal', ueb: 'Bank transfer', uebT: 'Ideally as an instant transfer in your banking app.', empf: 'Recipient', zweck: 'Reference', betragK: 'Amount', kopieren: 'Copy', kopiert: 'Copied',
       bar: 'Cash', barT: 'Put the amount with your boat name in an envelope into the letterbox at the clubhouse – or pay the harbour master.', bezahlt: 'Done – I have paid', barK: 'I will pay cash',
+      giro: 'Bank transfer with QR code', giroT: 'Scan the code with your banking app – IBAN, amount and reference are filled in automatically (EPC/GiroCode, works with most European banks).',
+      bild: 'Save as image', bildT: 'Only one phone? Save the image and open it in your banking app’s QR/photo transfer.', manuell: 'Type it in manually',
+      wcVor: 'After paying you will see the code for toilets & showers here.', wcVorB: 'Once your payment is confirmed you will see the code for toilets & showers here.',
+      wcCode: 'Code for toilets & showers', wcWarten: 'You will see the code for toilets & showers here as soon as the harbour master has confirmed your payment.', pruefen: 'Check again',
       fertig: 'Thank you – enjoy your stay!', fertigT: 'We have noted your payment ({a}). Ask the harbour master for a receipt.', fragen: 'Questions?', neu: 'New registration', wa: { paypal: 'PayPal', ueberweisung: 'bank transfer', bar: 'cash' } },
     da: { titel: 'Velkommen!', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', s1: 'Grønt skilt? Bare fortøj.', s2: 'Tilmeld dig her – pladsnummeret står på skiltet.', s3: 'Betal med det samme. Færdig – du skal ikke vente på nogen.',
       platz: 'Pladsnummer (på skiltet)', ph: 'f.eks. 27 eller L1', boot: 'Bådens navn', skipper: 'Skipper', hafen: 'Hjemhavn', tel: 'Telefon', laenge: 'Længde (m)', breite: 'Bredde (m)', tiefgang: 'Dybgang (m)', ankunft: 'Ankomst', naechte: 'Nætter', senden: 'Tilmeld & betal',
@@ -109,6 +131,10 @@
       nacht: 'pr. nat', naechteK: 'nætter', angemeldet: 'Du er tilmeldt', platzOk: 'Plads {p} er noteret til dig.', platzPruef: 'Tak! Vi tjekker plads {p} – du kan blive liggende. Passer noget ikke, kontakter havnefogeden dig.', platzOhne: 'Tak! Havnefogeden noterer din plads – du kan blive liggende.',
       gebuehr: 'Havnepenge', wie: 'Hvordan vil du betale?', paypal: 'PayPal', paypalT: 'Åbner PayPal med beløbet. Bekræft her bagefter.', paypalK: 'Betal med PayPal', ueb: 'Bankoverførsel', uebT: 'Helst som straksoverførsel i din bank-app.', empf: 'Modtager', zweck: 'Tekst', betragK: 'Beløb', kopieren: 'Kopiér', kopiert: 'Kopieret',
       bar: 'Kontant', barT: 'Læg beløbet med bådens navn i en kuvert i postkassen ved klubhuset – eller betal havnefogeden.', bezahlt: 'Færdig – jeg har betalt', barK: 'Jeg betaler kontant',
+      giro: 'Bankoverførsel med QR-kode', giroT: 'Scan koden med din bank-app – IBAN, beløb og tekst er udfyldt (EPC/GiroCode, virker med de fleste europæiske banker).',
+      bild: 'Gem som billede', bildT: 'Kun én telefon? Gem billedet og åbn det i bank-appens QR/foto-overførsel.', manuell: 'Indtast manuelt',
+      wcVor: 'Efter betalingen får du her koden til toiletter & bad.', wcVorB: 'Når din betaling er bekræftet, får du her koden til toiletter & bad.',
+      wcCode: 'Kode til toiletter & bad', wcWarten: 'Koden til toiletter & bad vises her, så snart havnefogeden har bekræftet din betaling.', pruefen: 'Tjek igen',
       fertig: 'Tak – god fornøjelse!', fertigT: 'Vi har noteret din betaling ({a}). Kvittering får du hos havnefogeden.', fragen: 'Spørgsmål?', neu: 'Ny tilmelding', wa: { paypal: 'PayPal', ueberweisung: 'bankoverførsel', bar: 'kontant' } }
   };
   // Sprache des Handys übernehmen (dänische und andere Gäste sehen nicht zuerst Deutsch)
@@ -175,43 +201,85 @@
   const haken = '<svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="rgba(29,138,90,.1)" stroke="#1d8a5a" stroke-width="4"/><path d="M24 41l11 11 22-24" fill="none" stroke="#1d8a5a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const kopier = (label, wert, anzeige) => '<div class="kopier"><span><small>' + label + '</small><b>' + esc(anzeige || wert) + '</b></span><button type="button" data-kopie="' + esc(wert) + '">' + T[lang].kopieren + '</button></div>';
   const kontakt = () => '<p style="text-align:center;margin-top:14px">' + T[lang].fragen + ' <strong>' + esc(e.hafenmeister_name) + '</strong>' + (e.hafenmeister_tel ? ' · <a href="tel:' + esc(telLink(e.hafenmeister_tel)) + '">' + esc(e.hafenmeister_tel) + '</a>' : '') + '</p>';
+  // ---------- Toilettencode (Demo rechnet wie die Datenbank-Funktion _gast_code)
+  const toiletteRegel = () => SB ? (e.toilette || '') : ((d.toilette && d.toilette.code && d.toilette.regel) || '');
+  function demoStatus() {
+    d = HF.laden();   // frisch lesen: der Hafen-Manager kann inzwischen bestätigt haben (gleiches Objekt wie beim Speichern)
+    const g = d.gaeste.find((x) => x.id === anm.id); const t = d.toilette || {}; if (!g) return {};
+    const heute = H.tag(new Date()); const ab = H.tag(new Date(new Date(g.ankunft + 'T12:00:00').getTime() + g.naechte * 864e5)); const vor = H.tag(new Date(new Date(g.ankunft + 'T12:00:00').getTime() - 864e5));
+    const darf = t.code && g.status !== 'storniert' && heute >= vor && heute <= ab && ((t.regel === 'gemeldet' && (g.zahlung_gemeldet || g.bezahlt_am)) || (t.regel === 'bestaetigt' && g.bezahlt_am));
+    return { code: darf ? t.code : null, regel: t.regel || '', hinweis: t.hinweis || null, bezahlt: !!g.bezahlt_am };
+  }
+  async function statusHolen() {
+    const id = anm && anm.id; if (!id) return;
+    try { const st = SB ? await SB.rpc('gast_status', { p_id: id }, true) : demoStatus();
+      if (!anm || anm.id !== id) return;   // inzwischen neue Anmeldung begonnen – alte Antwort verwerfen
+      const vorher = anm.code; anm.code = st.code || null; anm.hinweis = st.hinweis || null; anm.regel = st.regel || ''; merken(anm);
+      if (anm.code !== vorher || !document.getElementById('wc')) zahlen();
+    } catch (x) { /* offline o. Ä. – später erneut */ }
+  }
+  let abfrage = null;
+  const wcBox = (a, t) => a.code ? '<div class="wc" id="wc"><small>' + t.wcCode + '</small><strong>' + esc(a.code) + '</strong>' + (a.hinweis ? '<p>' + esc(a.hinweis) + '</p>' : '') + '</div>'
+    : a.regel === 'bestaetigt' ? '<div class="wc warten" id="wc"><p>' + t.wcWarten + '</p><button class="btn klein" type="button" id="wc-neu">' + t.pruefen + '</button></div>' : '';
+  // ---------- GiroCode (EPC-QR) für genau diesen Betrag
+  function giroQr(a, zweck) {
+    const qr = qrcode(0, 'M'); qr.addData(H.epc({ name: e.verein_name || 'Schwartauer Segler-Verein e.V.', iban: e.iban, bic: e.bic, betrag: a.betrag, zweck }), 'Byte'); qr.make(); return qr;
+  }
+  async function bildSpeichern(qr, name) {
+    const img = new Image(); img.src = qr.createDataURL(10, 4); await img.decode();
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height + 70; const x = c.getContext('2d');
+    x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0); x.fillStyle = '#0E1B45'; x.font = 'bold 24px sans-serif'; x.textAlign = 'center';
+    x.fillText(H.geld(anm.betrag) + ' · SSV Liegegebühr', c.width / 2, img.height + 40);
+    const blob = await new Promise((r) => c.toBlob(r, 'image/png')); const file = new File([blob], name, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'SSV Liegegebühr' }); return; } catch (err) { if (err.name === 'AbortError') return; } }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
   function zahlen() {
     const t = T[lang], a = anm;
+    clearInterval(abfrage); abfrage = null;
     if (a.gemeldet) {
-      karte.innerHTML = '<div class="danke">' + haken + '<h2 style="margin:8px 0 6px">' + t.fertig + '</h2><p>„' + esc(a.boot) + '“ · ' + (a.platz ? 'Platz ' + esc(a.platz) + ' · ' : '') + H.geld(a.betrag) + '</p><p>' + t.fertigT.replace('{a}', t.wa[a.gemeldet]) + '</p>' + kontakt() +
-        '<p style="margin-top:14px"><button class="btn" id="neu-anm" type="button">' + t.neu + '</button></p></div>';
-      document.getElementById('neu-anm').addEventListener('click', () => { anm = null; merken(null); formular(); });
+      karte.innerHTML = '<div class="danke">' + haken + '<h2 style="margin:8px 0 6px">' + t.fertig + '</h2><p>„' + esc(a.boot) + '“ · ' + (a.platz ? 'Platz ' + esc(a.platz) + ' · ' : '') + H.geld(a.betrag) + '</p>' + wcBox(a, t) +
+        '<p>' + t.fertigT.replace('{a}', t.wa[a.gemeldet]) + '</p>' + kontakt() + '<p style="margin-top:14px"><button class="btn" id="neu-anm" type="button">' + t.neu + '</button></p></div>';
+      document.getElementById('neu-anm').addEventListener('click', () => { clearInterval(abfrage); anm = null; merken(null); formular(); });
+      const wn = document.getElementById('wc-neu'); if (wn) wn.addEventListener('click', statusHolen);
+      if (!a.code && a.regel === 'bestaetigt') abfrage = setInterval(statusHolen, 60000);   // Code erscheint von selbst, sobald bestätigt
       return;
     }
     const zweck = 'Gast ' + a.boot + (a.platz ? ' P' + a.platz : '') + ' ' + H.kurz(a.ankunft);
     const pp = String(e.paypal_me || '').replace(/^https?:\/\/(www\.)?paypal\.me\//i, '').replace(/[^A-Za-z0-9_.-]/g, '');
     const iban = String(e.iban || '').replace(/\s/g, '');
-    const wege = [];
+    const wege = []; let qr = null;
+    if (iban) { qr = giroQr(a, zweck);
+      wege.push('<div class="zahlweg giro"><h3>' + t.giro + '</h3><p>' + t.giroT + '</p><div class="epc" aria-label="GiroCode">' + qr.createSvgTag({ cellSize: 4, margin: 4, scalable: true }) + '</div>' +
+        '<p class="epc-unter"><strong>' + H.geld(a.betrag) + '</strong> · ' + esc(zweck) + '</p><button class="btn" type="button" id="epc-bild">' + t.bild + '</button><p class="epc-tipp">' + t.bildT + '</p>' +
+        '<details class="manuell"><summary>' + t.manuell + '</summary>' + kopier(t.empf, e.verein_name || 'Schwartauer Segler-Verein e.V.') +
+        kopier('IBAN', iban, iban.replace(/(.{4})/g, '$1 ').trim()) + (e.bic ? kopier('BIC', e.bic) : '') + kopier(t.betragK, a.betrag.toFixed(2).replace('.', ','), H.geld(a.betrag)) + kopier(t.zweck, zweck) + '</details>' +
+        '<button class="btn primaer" type="button" data-bezahlt="ueberweisung">' + t.bezahlt + '</button></div>'); }
     if (pp) wege.push('<div class="zahlweg"><h3>' + t.paypal + '</h3><p>' + t.paypalT + '</p><a class="btn primaer" id="pp-los" target="_blank" rel="noopener" href="https://www.paypal.com/paypalme/' + encodeURIComponent(pp) + '/' + a.betrag.toFixed(2) + 'EUR">' + t.paypalK + ' · ' + H.geld(a.betrag) + '</a><button class="btn" type="button" data-bezahlt="paypal">' + t.bezahlt + '</button></div>');
-    if (iban) wege.push('<details class="zahlweg"' + (pp ? '' : ' open') + '><summary>' + t.ueb + '</summary><p>' + t.uebT + '</p>' + kopier(t.empf, e.verein_name || 'Schwartauer Segler-Verein e.V.') +
-      kopier('IBAN', iban, iban.replace(/(.{4})/g, '$1 ').trim()) + (e.bic ? kopier('BIC', e.bic) : '') + kopier(t.betragK, a.betrag.toFixed(2).replace('.', ','), H.geld(a.betrag)) +
-      kopier(t.zweck, zweck) + '<button class="btn" type="button" data-bezahlt="ueberweisung">' + t.bezahlt + '</button></details>');
     wege.push('<div class="zahlweg"><h3>' + t.bar + '</h3><p>' + (lang === 'de' && e.gast_bar_hinweis ? esc(e.gast_bar_hinweis) : t.barT) + '</p><button class="btn" type="button" data-bezahlt="bar">' + t.barK + '</button></div>');
+    const regel = toiletteRegel();
     karte.innerHTML = '<div class="' + (a.platz_ok ? 'platz-ok' : 'platz-pruef') + '" role="status">' + (a.platz_ok ? '✓ ' + t.angemeldet + ' · ' + t.platzOk.replace('{p}', esc(a.platz)) : (a.platz ? t.platzPruef.replace('{p}', esc(a.platz)) : t.platzOhne)) + '</div>' +
       '<div class="betrag"><p style="margin:14px 0 0">' + t.gebuehr + ' „' + esc(a.boot) + '“ · ' + a.naechte + ' × ' + H.geld(a.betrag / a.naechte) + '</p><strong>' + H.geld(a.betrag) + '</strong></div>' +
+      (regel ? '<p class="wc-vorher">🔑 ' + (regel === 'bestaetigt' ? t.wcVorB : t.wcVor) + '</p>' : '') +
       '<h2 style="font-size:19px;margin:0 0 10px">' + t.wie + '</h2><div class="zahlwege">' + wege.join('') + '</div><p class="hinweis fehler" id="zahl-fehler" role="alert" hidden></p>' + kontakt();
     karte.querySelectorAll('[data-kopie]').forEach((b) => b.addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(b.dataset.kopie); } catch (x) { const ta = document.createElement('textarea'); ta.value = b.dataset.kopie; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (y) { /* egal */ } ta.remove(); }
       b.textContent = T[lang].kopiert; setTimeout(() => { b.textContent = T[lang].kopieren; }, 1500);
     }));
+    const eb = document.getElementById('epc-bild'); if (eb && qr) eb.addEventListener('click', () => bildSpeichern(qr, 'ssv-liegegebuehr-' + a.betrag.toFixed(2).replace('.', '-') + '.png').catch(() => {}));
     karte.querySelectorAll('[data-bezahlt]').forEach((b) => b.addEventListener('click', () => gemeldet(b.dataset.bezahlt, b)));
   }
   async function gemeldet(art, knopf) {
-    knopf.disabled = true;
+    knopf.disabled = true; let r = {};
     try {
-      if (SB) await SB.rpc('gast_zahlung_melden', { p_id: anm.id, p_art: art }, true);
-      else { const g = d.gaeste.find((x) => x.id === anm.id); if (!g) throw new Error('Anmeldung nicht gefunden'); g.zahlung = art; g.zahlung_gemeldet = new Date().toISOString(); HF.sichern(); }
+      if (SB) r = await SB.rpc('gast_zahlung_melden', { p_id: anm.id, p_art: art }, true) || {};
+      else { const g = d.gaeste.find((x) => x.id === anm.id); if (!g) throw new Error('Anmeldung nicht gefunden'); g.zahlung = art; g.zahlung_gemeldet = new Date().toISOString(); HF.sichern(); r = demoStatus(); }
     } catch (err) { knopf.disabled = false; const fe = document.getElementById('zahl-fehler'); fe.textContent = T[lang].fehler + ' (' + err.message + ')'; fe.hidden = false; return; }
-    anm.gemeldet = art; merken(anm); zahlen(); window.scrollTo(0, 0);
+    anm.gemeldet = art; anm.code = r.code || null; anm.hinweis = r.hinweis || null; anm.regel = r.regel || toiletteRegel(); merken(anm); zahlen(); window.scrollTo(0, 0);
   }
 
   document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => { lang = b.dataset.lang; setze(); }));
-  if (anm) zahlen(); else formular();
+  if (anm) { zahlen(); if (anm.gemeldet) statusHolen(); } else formular();
   if (SB) SB.rpc('gast_info', {}, true).then((i) => { gb = { gast_nacht: Number(i.gast_nacht) }; e = { ...i, hafenmeister_name: i.hafenmeister_name || 'Hafenmeister', hafenmeister_tel: i.hafenmeister_tel || '' }; setze(); }).catch(() => {});
   setze();
 })();

@@ -69,7 +69,7 @@
     return '<section class="blatt plakat">' + kopf +
       '<h1>Moin und willkommen!</h1><p class="unter">Grünes Schild? Einfach festmachen – dann hier anmelden und gleich bezahlen:</p>' +
       '<div class="qr">' + qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }) + '</div>' +
-      '<p class="preis">' + H.geld(gb.gast_nacht) + ' pro Nacht</p><p>Platznummer steht am Schild · bezahlen per ' + (e.paypal_me ? 'PayPal, ' : '') + 'Überweisung oder bar · niemand muss kommen<br>Fragen: Hafenmeister ' + esc(e.hafenmeister_name) + ' · ' + esc(e.hafenmeister_tel) + '</p>' +
+      '<p class="preis">' + H.geld(gb.gast_nacht) + ' pro Nacht</p><p>Platznummer steht am Schild · bezahlen per GiroCode (Banking-App)' + (e.paypal_me ? ', PayPal' : '') + ' oder bar · niemand muss kommen<br>Fragen: Hafenmeister ' + esc(e.hafenmeister_name) + ' · ' + esc(e.hafenmeister_tel) + '</p>' +
       '<div class="sprachen"><p><strong>English:</strong> Welcome! Green sign = free berth. Moor up, scan the code, register with the berth number and pay right away. ' + H.geld(gb.gast_nacht) + ' per night.</p>' +
       '<p><strong>Dansk:</strong> Velkommen! Grønt skilt = ledig plads. Fortøj, scan koden, tilmeld dig med pladsnummeret og betal med det samme. ' + H.geld(gb.gast_nacht) + ' pr. nat.</p></div></section>';
   }

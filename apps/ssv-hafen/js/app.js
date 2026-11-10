@@ -858,7 +858,7 @@
     const anfragen = d.gaeste.filter((x) => x.status === 'angemeldet');
     const gb = G.gebuehrenFuer(d, SAISON);
     main.innerHTML = kopf('Gastlieger', 'Tageslieger: ' + H.geld(gb.gast_nacht) + ' pro Nacht · Hafenmeister ' + esc(d.einstellungen.hafenmeister_name), '<button class="btn" id="plakat">QR-Plakat für den Steg</button><a class="btn" href="gast.html" target="_blank">Gast-Anmeldung ansehen</a><button class="btn primaer" id="neu">+ Gast einweisen</button>') +
-      '<p class="hinweis">So läuft es: Gast sieht ein grünes Schild, macht fest, meldet sich per QR-Code mit der Platznummer an und bezahlt sofort (PayPal, Überweisung oder bar). Passt der Platz laut Plan, steht der Gast direkt „im Hafen“ – hier landet nur, was zu prüfen ist.</p>' +
+      '<p class="hinweis">So läuft es: Gast sieht ein grünes Schild, macht fest, meldet sich per QR-Code mit der Platznummer an und bezahlt sofort (PayPal, Überweisung oder bar). Passt der Platz laut Plan, steht der Gast direkt „im Hafen“ – hier landet nur, was zu prüfen ist.</p>' + wcPanel() +
       (anfragen.length ? '<div class="panel" style="border:2px solid var(--gast)"><h2>Platz prüfen (' + anfragen.length + ')</h2><p class="hinweis" style="margin-top:0">Diese Gäste liegen schon – der angegebene Platz passt laut Plan nicht oder fehlt.</p><table class="tab"><tbody>' + anfragen.map((x) =>
         '<tr><td><strong>„' + esc(x.bootsname) + '“</strong> · ' + H.zahl(x.laenge, 1) + (x.breite ? ' × ' + H.zahl(x.breite, 1) : '') + ' m' + (x.tiefgang ? ' · Tg. ' + H.zahl(x.tiefgang, 1) + ' m' : '') + ' · ' + esc(x.skipper) + (x.tel ? ' · <a href="tel:' + esc(x.tel) + '">' + esc(x.tel) + '</a>' : '') +
         '<br><small>' + (x.platz_angabe ? 'liegt laut Gast an <strong>' + esc(angabe(x.platz_angabe)) + '</strong>' + (x.platz_hinweis ? ' – ' + esc(x.platz_hinweis) : '') : 'keine Platznummer angegeben') + '</small></td><td>' + H.datum(x.ankunft) + ', ' + x.naechte + ' N. · ' + zahlungText(x) + '</td><td class="r"><button class="btn klein primaer" data-zuw="' + x.id + '">Platz eintragen</button></td></tr>').join('') + '</tbody></table></div>' : '') +
@@ -867,12 +867,14 @@
         '<tr' + (x.status === 'abgereist' || x.status === 'storniert' ? ' class="blass"' : '') + '><td>' + H.datum(x.ankunft) + '</td><td><strong>' + esc(x.bootsname) + '</strong> <small style="color:var(--muted)">' + H.zahl(x.laenge, 1) + ' m</small></td><td>' + esc(x.skipper) + '</td><td>' + (x.platz_id ? esc(platzName(x.platz_id)) : '<span class="tag gast">offen</span>') + '</td>' +
         '<td class="r">' + x.naechte + '</td><td class="r">' + H.geld(x.betrag) + '</td><td>' + (x.status === 'storniert' ? '–' : zahlungText(x)) + '</td>' +
         '<td>' + ({ angemeldet: '<span class="tag gast">angemeldet</span>', eingewiesen: '<span class="tag ok">im Hafen</span>', abgereist: 'abgereist', storniert: '<span class="tag">storniert</span>' })[x.status] + (x.quelle === 'qr' ? ' <small style="color:var(--muted)">QR</small>' : '') + '</td>' +
-        '<td class="r" style="white-space:nowrap">' + (x.zahlung_gemeldet && !x.bezahlt_am && x.status !== 'storniert' ? '<button class="btn klein primaer" data-eingang="' + x.id + '" title="Geld ist da – als bezahlt verbuchen, Quittungsnummer vergeben">Eingang bestätigen</button> ' : '') + (x.status !== 'angemeldet' ? '<button class="btn klein" data-bearb="' + x.id + '">Bearbeiten</button> ' : '') + (x.quittung_nr && x.bezahlt_am ? '<button class="btn klein" data-quit="' + x.id + '">Quittung</button>' : '') + '</td></tr>').join('') + '</tbody></table></div>';
+        '<td class="r" style="white-space:nowrap">' + (!x.bezahlt_am && !x.zahlung_gemeldet && x.status !== 'storniert' && x.status !== 'abgereist' ? '<button class="btn klein" data-zqr="' + x.id + '" title="GiroCode mit Betrag zum Scannen zeigen">Zahl-QR</button> ' : '') + (x.zahlung_gemeldet && !x.bezahlt_am && x.status !== 'storniert' ? '<button class="btn klein primaer" data-eingang="' + x.id + '" title="Geld ist da – als bezahlt verbuchen, Quittungsnummer vergeben">Eingang bestätigen</button> ' : '') + (x.status !== 'angemeldet' ? '<button class="btn klein" data-bearb="' + x.id + '">Bearbeiten</button> ' : '') + (x.quittung_nr && x.bezahlt_am ? '<button class="btn klein" data-quit="' + x.id + '">Quittung</button>' : '') + '</td></tr>').join('') + '</tbody></table></div>';
     $('#neu').addEventListener('click', () => gastForm({}));
     $('#plakat').addEventListener('click', () => oeffnen('drucken.html?art=plakat'));
     main.querySelectorAll('[data-zuw]').forEach((b) => b.addEventListener('click', () => gastForm(d.gaeste.find((x) => x.id === b.dataset.zuw))));
     main.querySelectorAll('[data-bearb]').forEach((b) => b.addEventListener('click', () => gastForm(d.gaeste.find((x) => x.id === b.dataset.bearb))));
     main.querySelectorAll('[data-quit]').forEach((b) => b.addEventListener('click', () => oeffnen('drucken.html?art=quittung&id=' + b.dataset.quit)));
+    main.querySelectorAll('[data-zqr]').forEach((b) => b.addEventListener('click', () => zahlQr(d.gaeste.find((x) => x.id === b.dataset.zqr))));
+    const wcb = $('#wc-aendern'); if (wcb) wcb.addEventListener('click', wcForm);
     main.querySelectorAll('[data-eingang]').forEach((b) => b.addEventListener('click', () => {
       const g = d.gaeste.find((x) => x.id === b.dataset.eingang);
       if (!confirm(H.geld(g.betrag) + ' von „' + g.bootsname + '“ per ' + (ZAHLART[g.zahlung] || g.zahlung) + ' eingegangen?')) return;
@@ -880,6 +882,37 @@
       speichern('Zahlung verbucht – Quittung ' + g.quittung_nr + '.'); zeige(tab, true);
     }));
   };
+  // Toilettencode für Gäste: eigener Wert (der Hafenmeister wechselt ihn selbst), Regel wann Gäste ihn sehen
+  const WC_REGEL = { '': 'Gäste sehen keinen Code', gemeldet: 'Gäste sehen ihn, sobald sie „bezahlt“ melden', bestaetigt: 'Gäste sehen ihn erst, wenn der Eingang bestätigt ist' };
+  const wcPanel = () => { const t = d.toilette || {};
+    return '<div class="panel wc-panel"><div><small>Toilettencode für Gäste</small><strong>' + (t.code ? esc(t.code) : '–') + '</strong></div><p>' + esc(t.code ? WC_REGEL[t.regel || ''] : 'Noch kein Code hinterlegt.') + (t.hinweis ? '<br><small>' + esc(t.hinweis) + '</small>' : '') + '</p>' +
+      '<button class="btn klein" id="wc-aendern">Code ändern</button></div>'; };
+  function wcForm() {
+    const t = d.toilette || {};
+    const el = modal('<h2>Toilettencode für Gäste</h2><form id="f" class="form"><label class="feld">Code<input name="code" value="' + esc(t.code || '') + '" maxlength="12" autocomplete="off" inputmode="numeric" placeholder="z. B. 2580"></label>' +
+      '<label class="feld">Wann sehen Gäste den Code?<select name="regel">' + Object.entries(WC_REGEL).map(([k, v]) => '<option value="' + k + '"' + ((t.regel || '') === k ? ' selected' : '') + '>' + (k === '' ? 'gar nicht (aus)' : k === 'gemeldet' ? 'sofort nach Zahlungsmeldung' : 'erst nach bestätigtem Eingang') + '</option>').join('') + '</select></label>' +
+      '<label class="feld voll">Hinweis für Gäste<input name="hinweis" value="' + esc(t.hinweis || '') + '" maxlength="160" placeholder="z. B. WC & Duschen im Vereinsheim, Tastenfeld neben der Tür"></label></form>' +
+      '<p class="hinweis">„Sofort nach Zahlungsmeldung“ ist das Vertrauensprinzip wie bei einer Kasse des Vertrauens – der Gast muss nicht warten. Code regelmäßig wechseln (z. B. monatlich); neue Gäste sehen dann automatisch den neuen Code. Der Code erscheint nur während des eigenen Aufenthalts.</p>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>');
+    $('#ok', el).addEventListener('click', async () => {
+      const f = $('#f', el); if (f.regel.value && !f.code.value.trim()) return toast('Bitte einen Code eintragen – oder „gar nicht“ wählen.', 'fehler');
+      try { await HF.toiletteSetzen({ code: f.code.value, regel: f.regel.value, hinweis: f.hinweis.value }); toast('Toilettencode gespeichert.'); zu(); zeige(tab, true); }
+      catch (err) { toast('Speichern fehlgeschlagen: ' + err.message, 'fehler', 6000); }
+    });
+  }
+  // GiroCode mit Betrag für einen Gast – am Steg zeigen, der Gast scannt mit seiner Banking-App
+  function zahlQr(g) {
+    const e = d.einstellungen; const iban = String(e.iban || '').replace(/\s/g, '');
+    const zweck = 'Gast ' + g.bootsname + (g.platz_id ? ' P' + (Q.platz(g.platz_id) || {}).nr : '') + ' ' + H.kurz(g.ankunft);
+    let qrHtml = '<p class="hinweis warn">Für den GiroCode fehlt die IBAN des Vereins (Verwaltung → Einstellungen).</p>';
+    if (iban && window.qrcode) { const qr = qrcode(0, 'M'); qr.addData(H.epc({ name: e.verein_name, iban, bic: e.bic, betrag: g.betrag, zweck }), 'Byte'); qr.make(); qrHtml = '<div class="zqr">' + qr.createSvgTag({ cellSize: 4, margin: 4, scalable: true }) + '</div>'; }
+    const t = d.toilette || {};
+    const el = modal('<h2>„' + esc(g.bootsname) + '“ · ' + H.geld(g.betrag) + '</h2><p style="margin-top:0">Gast scannt mit seiner Banking-App – IBAN, Betrag und Verwendungszweck sind ausgefüllt.</p>' + qrHtml +
+      '<p class="zqr-unter">' + esc(zweck) + '</p>' + (t.code && t.regel ? '<p class="zqr-unter">Toilettencode nach Zahlung: <strong>' + esc(t.code) + '</strong></p>' : '') +
+      '<div class="modal-fuss"><button class="btn" data-zu>Schließen</button><button class="btn" id="zq-bar">Bar erhalten</button><button class="btn primaer" id="zq-ueb">Überweisung ist da</button></div>');
+    const buchen = (art) => { g.zahlung = art; g.bezahlt_am = heute; if (!g.quittung_nr) g.quittung_nr = 'Q-' + g.ankunft.slice(0, 4) + '-' + String(++d.zaehler.quittung).padStart(3, '0'); speichern('Zahlung verbucht – Quittung ' + g.quittung_nr + '.'); zu(); zeige(tab, true); };
+    $('#zq-bar', el).addEventListener('click', () => buchen('bar')); $('#zq-ueb', el).addEventListener('click', () => buchen('ueberweisung'));
+  }
   function gastForm(g) {
     const neu = !g.id; const gb = G.gebuehrenFuer(d, SAISON);
     const x0 = { ankunft: imSommer ? heute : planStand.datum, naechte: 1, laenge: '', breite: '', tiefgang: '', zahlung: 'bar', bezahlt_am: '', ...g };

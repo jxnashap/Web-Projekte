@@ -7,7 +7,7 @@ freigibt.
 
 ## 1 · Datenbank-Nachträge einspielen (einmalig, in dieser Reihenfolge)
 
-Bereits eingespielt: 01–07. Neu: 08.
+Bereits eingespielt: 01–08. Neu: 09.
 
 Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inhalt einfügen → **Run**:
 
@@ -42,6 +42,11 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    Aufgabenliste, Mitglieder mit Rolle „Leitung“/„Mitglied“, Stunden und Arbeitseinsätze je Bereich, PDF je Bereich,
    „Deine Arbeitsbereiche“ in Mein SSV. Nach dem Einspielen ist die Liste leer – Bereiche unter Betrieb →
    Arbeitsbereiche anlegen (die Demo zeigt Beispiele mit typischen Aufgaben).
+9. `apps/ssv-hafen/supabase/nachtrag-09.sql` – Toilettencode für Gastlieger: eigene Tabelle `gast_toilette`
+   (der Hafenmeister ändert den Code selbst unter Gäste & Schild → „Code ändern“), Regel „sofort nach
+   Zahlungsmeldung“ oder „erst nach bestätigtem Eingang“; Gast-Seite fragt den Stand über `gast_status` ab.
+   Der Code steht nie in den öffentlichen Gast-Infos und erscheint nur während des eigenen Aufenthalts.
+   Zahlen per **GiroCode** (EPC-QR) braucht keine Einrichtung – nur IBAN, BIC und Vereinsname unter Einstellungen.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 

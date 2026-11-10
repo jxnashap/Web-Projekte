@@ -325,3 +325,10 @@ table.todo td:first-child { width: 1%; white-space: nowrap; }
   .druck-kopf div { text-align: right; font-size: 9pt; color: #444; } .druck-kopf strong { display: block; font-size: 13pt; color: var(--navy); }
   .reiter { display: none !important; }
 }
+/* Gastlieger: Toilettencode und Zahl-QR */
+.wc-panel { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 18px; }
+.wc-panel small { display: block; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-2); font-weight: 700; }
+.wc-panel strong { font-size: 26px; letter-spacing: .14em; color: var(--navy); font-variant-numeric: tabular-nums; }
+.wc-panel p { margin: 0; flex: 1; min-width: 200px; font-size: 14px; color: var(--muted); }
+.zqr { width: min(280px, 100%); margin: 6px auto; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 4px; } .zqr svg { display: block; width: 100%; height: auto; }
+.zqr-unter { text-align: center; font-size: 14px; color: var(--muted); margin: 4px 0; } .zqr-unter strong { color: var(--navy); font-size: 18px; letter-spacing: .1em; }

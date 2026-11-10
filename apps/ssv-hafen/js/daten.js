@@ -302,11 +302,13 @@
     return { version: 2, antraege, einstellungen: { ...STANDARD_EINSTELLUNGEN, glaeubiger_id: 'DE98ZZZ09999999999', iban: demoIban('23050101', 1234567), bic: 'NOLADE21SPL', bank: 'Demo-Sparkasse [PLATZHALTER]' },
       gebuehren: { 2026: { ...GEBUEHREN_2024 } }, saisons: [{ jahr: 2026, auslagern: '2026-04-11', einlagern: '2026-10-24' }],
       liegeplaetze: lp, landplaetze: landplaetze(), mitglieder, boote, belegungen, abwesenheiten, gaeste, warteliste, kran, arbeitsdienst, rechnungen: [], sepa_laeufe: [], zaehler: { quittung: 42 },
-      aufgaben, dokumente: [], aenderungen: [], arbeitseinsaetze, arbeitseinsatz_codes, mitteilungen, ...bereicheDemo };
+      aufgaben, dokumente: [], aenderungen: [], arbeitseinsaetze, arbeitseinsatz_codes, mitteilungen, ...bereicheDemo, toilette: { ...TOILETTE_DEMO } };
   }
 
   /* ------------------------------------------------------------ Speicher */
   let d;
+  // Toilettencode für Gastlieger (Demo); in der Datenbank eigene Tabelle gast_toilette
+  const TOILETTE_DEMO = { code: '2580', regel: 'gemeldet', hinweis: 'WC & Duschen im Vereinsheim – Tastenfeld neben der Tür [PLATZHALTER]' };
   // Beispiel-Arbeitsbereiche mit typischen Aufgaben eines Vereinshafens (vom Vorstand anzupassen)
   function demoBereiche(mitglieder) {
     const A = (titel, zeitraum, stunden, hinweis) => ({ titel, zeitraum, stunden, hinweis: hinweis || '' });
@@ -345,7 +347,8 @@
     }
     if (!d.antraege) d.antraege = [];
     ['aufgaben', 'dokumente', 'aenderungen', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'mitteilungen'].forEach((k) => { if (!d[k]) d[k] = []; });
-    if (!d.arbeitsbereiche) { Object.assign(d, demoBereiche(d.mitglieder)); sichern(); }   // ältere Demo-Daten um Beispiel-Bereiche ergänzen
+    if (!d.arbeitsbereiche) { Object.assign(d, demoBereiche(d.mitglieder)); sichern(); }
+    if (!d.toilette) { d.toilette = { ...TOILETTE_DEMO }; sichern(); }   // ältere Demo-Daten um Beispiel-Bereiche ergänzen
     d.einstellungen = { ...STANDARD_EINSTELLUNGEN, ...d.einstellungen };
     d.rechnungen.forEach((r) => { if (!r.zahlungen) r.zahlungen = []; });
     if (!demoSchnapp) demoSchnapp = schnappschuss(zeilen(true));
@@ -485,14 +488,15 @@
       personal ? hol('arbeitseinsatz_codes').catch(() => []) : leer(),
       personal ? hol('mitteilungen', '*', '&order=erstellt.desc').catch(() => []) : leer(),
       personal ? hol('arbeitsbereiche', '*', '&order=sort,name').catch(() => []) : leer(),
-      personal ? hol('arbeitsbereich_mitglieder').catch(() => []) : leer()
+      personal ? hol('arbeitsbereich_mitglieder').catch(() => []) : leer(),
+      personal ? hol('gast_toilette').catch(() => []) : leer()
     ]);
-    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm] = daten;
-    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm }, null);
+    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc] = daten;
+    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc }, null);
   }
   async function fertig(mitgliedsbereich, x, ich) {
     const personal = !mitgliedsbereich;
-    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm } = x;
+    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc } = x;
     const bankVon = new Map(bank.map((b) => [b.mitglied_id, b]));
     const zahl = (o, felder) => { felder.forEach((f) => { if (o[f] != null) o[f] = Number(o[f]); }); return o; };
     d = {
@@ -509,6 +513,7 @@
       rechnungen: re.map((r) => zahl({ ...r, zahlungen: r.zahlungen || [] }, ['summe'])), sepa_laeufe: sl.map((x) => zahl(x, ['summe'])), antraege: an,
       aufgaben: auf || [], dokumente: [], aenderungen: [],
       arbeitseinsaetze: (eins || []).map((e) => zahl(e, ['stunden'])), arbeitseinsatz_codes: codes || [], mitteilungen: mitt || [],
+      toilette: (wc && wc[0]) || { code: '', regel: '', hinweis: '' },
       arbeitsbereiche: (abr || []).map((b) => ({ ...b, aufgaben: (b.aufgaben || []).map((a) => zahl({ ...a }, ['stunden'])) })), arbeitsbereich_mitglieder: abm || [],
       zaehler: { quittung: 0 }
     };
@@ -641,6 +646,9 @@
     kurz: (s) => s ? new Date(s + 'T12:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) : '',
     esc: (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
     zahl: (v, n = 2) => Number(v).toLocaleString('de-DE', { minimumFractionDigits: n, maximumFractionDigits: n }),
+    // GiroCode / EPC-QR-Code (EPC069-12, Version 002, UTF-8): Banking-Apps füllen damit IBAN, Betrag und Verwendungszweck aus
+    epc: ({ name, iban, bic, betrag, zweck }) => ['BCD', '002', '1', 'SCT', String(bic || '').replace(/\s/g, '').toUpperCase(), String(name || '').trim().slice(0, 70),
+      String(iban || '').replace(/\s/g, '').toUpperCase(), Number(betrag) > 0 ? 'EUR' + Number(betrag).toFixed(2) : '', '', '', String(zweck || '').trim().slice(0, 140)].join('\n'),
     // Dezimalzahl aus einem Eingabefeld: „8,5“ und „8.5“ gelten beide; leer/ungültig → NaN
     dez: (v) => { const t = String(v == null ? '' : v).trim().replace(/\s/g, '').replace(',', '.'); return t === '' || !/^-?\d*\.?\d+$|^-?\d+\.$/.test(t) ? NaN : Number(t); },
     ART: { ausuebend: 'ausübend', probe: 'Probemitglied', foerdernd: 'fördernd', partner: 'Ehe-/Lebenspartner', jugend: 'Jugend',
@@ -735,8 +743,18 @@
     document.addEventListener('change', (e) => { if (e.target.dataset && e.target.dataset.dez) dezPruefen(e.target); }, true);
   }
 
+  // Toilettencode ändern: Demo im Browser, Datenbank direkt in gast_toilette (Hafenmeister darf das ohne Zugriff auf die Einstellungen)
+  async function toiletteSetzen(neu) {
+    const daten = { code: String(neu.code || '').trim(), regel: neu.regel || '', hinweis: String(neu.hinweis || '').trim() };
+    if (SB && db.bereich === 'personal') await SB.req('/rest/v1/gast_toilette?id=eq.1', { method: 'PATCH', body: { ...daten, geaendert: new Date().toISOString(), geaendert_von: HF_wer() }, prefer: 'return=minimal' });
+    d.toilette = { ...(d.toilette || {}), ...daten };
+    if (!SB) sichern();
+    return d.toilette;
+  }
+  const HF_wer = () => (window.HAFEN && window.HAFEN.wer) || '';
+
   window.HAFEN = { laden, sichern, zuruecksetzen, get d() { return d; }, H, Q, STANDARD_EINSTELLUNGEN, GEBUEHREN_2024, demoIban,
-    modus: SB ? 'supabase' : 'demo', verbinden, neuLaden, db, meinDatenAendern, dok, datei, verlauf, wer: '',
+    modus: SB ? 'supabase' : 'demo', verbinden, neuLaden, db, toiletteSetzen, meinDatenAendern, dok, datei, verlauf, wer: '',
     // Laufende Saison: ab dem Auslagern gilt das neue Jahr, davor (Januar–April) noch das Winterlager des Vorjahres.
     // ?saison=2027 in der Adresse wählt eine andere.
     aktuelleSaison() {
