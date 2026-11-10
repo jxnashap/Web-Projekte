@@ -292,3 +292,36 @@ table.todo td:first-child { width: 1%; white-space: nowrap; }
   .panel table.tab:not(:has(thead)) td:first-child { flex: 1 1 100%; }
   .panel table.tab:not(:has(thead)) td.r { margin-left: auto; text-align: right; }
 }
+/* Arbeitsbereiche */
+.ab-karten { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.main > .ab-karten > .panel { margin: 0; }
+.ab-karte { display: flex; flex-direction: column; gap: 8px; }
+.ab-karte.blass { opacity: .7; }
+.ab-kopf { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.panel.ab-karte > .ab-kopf h2 { margin: 0; padding: 0; border: 0; font-size: 21px; }
+.ab-text { margin: 0; color: var(--muted); font-size: 14px; }
+.ab-zahlen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 12px; margin: 4px 0; padding: 10px 12px; background: var(--sand, #f3efe6); border-radius: 12px; }
+.ab-zahlen dt { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted-2); font-weight: 700; }
+.ab-zahlen dd { margin: 0; font-weight: 600; color: var(--navy); font-size: 14px; }
+.ab-zahlen > div:first-child { grid-column: 1 / -1; }
+.ab-aufgaben { margin: 0; padding-left: 18px; font-size: 14px; } .ab-aufgaben li { margin: 2px 0; } .ab-aufgaben small { color: var(--muted); } .ab-aufgaben .mehr { list-style: none; margin-left: -18px; color: var(--muted); font-size: 13px; }
+.ab-karte .aktionen { margin-top: auto; padding-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; }
+.ab-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-btn { border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 7px 12px; font: inherit; font-size: 13.5px; cursor: pointer; color: var(--navy); min-height: 36px; }
+.chip-btn:hover { border-color: var(--navy); }
+.ab-scroll { overflow-x: auto; } .ab-auf-tab input { width: 100%; min-width: 90px; }
+.ab-auf-tab td { padding: 4px; } .ab-auf-tab td:first-child input { min-width: 180px; }
+.ab-suche { position: relative; margin-bottom: 12px; } .ab-suche .suche { width: 100%; }
+.ab-treffer { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+.ab-treffer button { text-align: left; border: 0; background: var(--sand, #f3efe6); border-radius: 8px; padding: 9px 12px; font: inherit; cursor: pointer; min-height: 40px; }
+.ab-treffer button:hover, .ab-treffer button:focus { background: #e7e1d3; } .ab-treffer small { color: var(--muted); }
+.ab-wahl { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 12px; margin: 8px 0; }
+@media (max-width: 860px) { .ab-karten { grid-template-columns: 1fr; } }
+/* Druck aus dem Programm: SSV-Briefkopf (Flagge oben links) */
+.druck-kopf { display: none; }
+@media print {
+  .druck-kopf { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--navy); padding-bottom: 4mm; margin-bottom: 6mm; }
+  .druck-kopf .stander { width: 26mm; height: 13mm; }
+  .druck-kopf div { text-align: right; font-size: 9pt; color: #444; } .druck-kopf strong { display: block; font-size: 13pt; color: var(--navy); }
+  .reiter { display: none !important; }
+}

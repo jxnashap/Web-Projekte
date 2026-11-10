@@ -7,7 +7,7 @@ freigibt.
 
 ## 1 · Datenbank-Nachträge einspielen (einmalig, in dieser Reihenfolge)
 
-Bereits eingespielt: 01–06. Neu: 07.
+Bereits eingespielt: 01–07. Neu: 08.
 
 Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inhalt einfügen → **Run**:
 
@@ -38,6 +38,10 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    bestätigt der Hafenmeister mit einem Klick. Behebt außerdem: leere Breite/Tiefgang wurden als Höchstmaß gespeichert.
    Danach in Verwaltung → Einstellungen den **PayPal.me-Namen** des Vereins und den **Hinweis für Barzahlung** eintragen
    (ohne PayPal-Namen sehen Gäste nur Überweisung und bar).
+8. `apps/ssv-hafen/supabase/nachtrag-08.sql` – Arbeitsbereiche (z. B. Kran, Boote fahren, Lager, Steg): Bereiche mit
+   Aufgabenliste, Mitglieder mit Rolle „Leitung“/„Mitglied“, Stunden und Arbeitseinsätze je Bereich, PDF je Bereich,
+   „Deine Arbeitsbereiche“ in Mein SSV. Nach dem Einspielen ist die Liste leer – Bereiche unter Betrieb →
+   Arbeitsbereiche anlegen (die Demo zeigt Beispiele mit typischen Aufgaben).
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 

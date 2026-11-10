@@ -12,9 +12,9 @@
   /* ------------------------------------------------------------ Rollen */
   const ROLLEN = {
     vorstand: { name: 'Vorstand', tabs: '*', bank: true },
-    brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'warteliste', 'lagern', 'aufgaben', 'arbeitsdienst', 'mitteilungen'], bank: false },
-    hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'abwesenheiten', 'lagern', 'aufgaben', 'arbeitsdienst', 'mitteilungen'], bank: false },
-    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'mitteilungen', 'einstellungen', 'verlauf'], bank: true }
+    brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'warteliste', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen'], bank: false },
+    hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'abwesenheiten', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen'], bank: false },
+    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'abrechnung', 'gebuehren', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'einstellungen', 'verlauf'], bank: true }
   };
   // Sieben Bereiche statt neunzehn Menüpunkte; innerhalb eines Bereichs wechseln Reiter oben auf der Seite
   const ICON = {
@@ -31,7 +31,7 @@
     ['hafen', 'Hafen', [['plan', 'Hafenplan'], ['plaetze', 'Liegeplätze'], ['belegung', 'Belegung'], ['warteliste', 'Warteliste']]],
     ['gaeste', 'Gäste & Schild', [['gaeste', 'Gastlieger'], ['abwesenheiten', 'Grünes Schild']]],
     ['mitglieder', 'Mitglieder & Boote', [['eigner', 'Mitglieder'], ['boote', 'Boote'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
-    ['betrieb', 'Betrieb', [['arbeitsdienst', 'Arbeitsdienst'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen']]],
+    ['betrieb', 'Betrieb', [['arbeitsdienst', 'Arbeitsdienst'], ['arbeitsbereiche', 'Arbeitsbereiche'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen']]],
     ['finanzen', 'Finanzen', [['abrechnung', 'Abrechnung & Lastschrift'], ['gebuehren', 'Gebührenordnung']]],
     ['verwaltung', 'Verwaltung', [['einstellungen', 'Einstellungen'], ['verlauf', 'Änderungsverlauf']]]
   ];
@@ -114,6 +114,8 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
   const csv = (zeilen) => '﻿' + zeilen.map((z) => z.map((v) => { const s = v == null ? '' : String(v); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(';')).join('\r\n');
+  // Briefkopf für Seiten, die direkt aus dem Programm gedruckt werden (nur im Druck sichtbar) – Flagge oben links wie auf allen Vereinsdokumenten
+  const druckKopf = () => { const e = d.einstellungen; return '<div class="druck-kopf"><svg class="stander" aria-hidden="true"><use href="#stander"/></svg><div><strong>' + esc(e.verein_name) + '</strong>' + esc(e.verein_strasse) + '<br>' + esc(e.verein_ort) + '<br>' + esc(e.verein_email) + '</div></div>'; };
   function oeffnen(url) { if (!window.open(url, '_blank')) location.href = url; }
 
   /* Gastlieger: passt ein Platz für den ganzen Aufenthalt? Gleiche Regeln wie in der Datenbank:
@@ -752,7 +754,7 @@
     const gb = G.gebuehrenFuer(d, jahr); const B = gb.beitraege || HF.GEBUEHREN_2024.beitraege;
     const nachArt = Object.keys(H.ART).filter((k) => k !== 'gast').map((k) => { const n = liste.filter((m) => m.art === k).length; return [H.ART[k], n, B[k] ? B[k].verband : 0, n * (B[k] ? B[k].verband : 0)]; }).filter((z) => z[1]);
     const luecken = liste.filter((m) => !m.geburtsdatum || !m.geschlecht);
-    main.innerHTML = kopf('Verbandsmeldung ' + jahr, 'Bestandserhebung zum Stichtag ' + H.datum(stichtag) + ' · ' + liste.length + ' Mitglieder (ohne Saison-Gäste)',
+    main.innerHTML = druckKopf() + kopf('Verbandsmeldung ' + jahr, 'Bestandserhebung zum Stichtag ' + H.datum(stichtag) + ' · ' + liste.length + ' Mitglieder (ohne Saison-Gäste)',
       [SAISON, SAISON + 1].map((j) => '<button class="btn' + (j === jahr ? ' aktiv' : '') + '" data-vj="' + j + '">' + j + '</button>').join('') + '<button class="btn" id="vcsv">CSV</button><button class="btn" id="vdruck">Drucken</button>') +
       '<div class="panel"><h2>Nach Alter und Geschlecht</h2><table class="tab"><thead><tr><th>Altersgruppe</th><th class="r">männlich</th><th class="r">weiblich</th><th class="r">divers</th><th class="r">ohne Angabe</th><th class="r">gesamt</th></tr></thead><tbody>' +
       tabelle.map((z) => '<tr><td>' + z[0] + '</td>' + z.slice(1).map((v, i) => '<td class="r">' + (i === 4 ? '<strong>' + v + '</strong>' : v || '–') + '</td>').join('') + '</tr>').join('') +
@@ -1000,19 +1002,20 @@
           '<td class="r nw"><button class="btn klein gruen" data-ok="' + a.id + '">Bestätigen</button> <button class="btn klein gefahr" data-ab="' + a.id + '">Ablehnen</button></td></tr>'; }).join('') + '</tbody></table></div>' : '') +
       regeln +
       '<div class="panel"><h2>Arbeitseinsätze</h2>' + (einsaetze.length ? '<table class="tab"><tbody>' + einsaetze.map((x) => { const n = d.arbeitsdienst.filter((a) => a.einsatz_id === x.id && a.status !== 'abgelehnt').length;
-        return '<tr' + (x.datum < heute ? ' class="blass"' : '') + '><td class="nw"><strong>' + H.datum(x.datum) + '</strong>' + (x.datum === heute ? ' <span class="tag gruen">heute</span>' : '') + '<br><small style="color:var(--muted)">' + esc([x.beginn, x.ende].filter(Boolean).join('–')) + '</small></td><td>' + esc(x.titel) + '<br><small style="color:var(--muted)">' + H.zahl(x.stunden, x.stunden % 1 ? 1 : 0) + ' Std. · Code ' + esc(codeVon(x.id)) + ' · ' + n + ' Check-in' + (n === 1 ? '' : 's') + '</small></td>' +
+        return '<tr' + (x.datum < heute ? ' class="blass"' : '') + '><td class="nw"><strong>' + H.datum(x.datum) + '</strong>' + (x.datum === heute ? ' <span class="tag gruen">heute</span>' : '') + '<br><small style="color:var(--muted)">' + esc([x.beginn, x.ende].filter(Boolean).join('–')) + '</small></td><td>' + esc(x.titel) + (x.bereich_id && bereichName(x.bereich_id) ? ' <span class="tag">' + esc(bereichName(x.bereich_id)) + '</span>' : '') + '<br><small style="color:var(--muted)">' + H.zahl(x.stunden, x.stunden % 1 ? 1 : 0) + ' Std. · Code ' + esc(codeVon(x.id)) + ' · ' + n + ' Check-in' + (n === 1 ? '' : 's') + '</small></td>' +
           '<td class="r nw"><button class="btn klein" data-plakat="' + x.id + '">QR-Plakat</button> <button class="btn klein gefahr" data-einsatz-weg="' + x.id + '">Löschen</button></td></tr>'; }).join('') + '</tbody></table>' : '<p class="leer">Noch keine Arbeitseinsätze geplant.</p>') +
       '<p class="hinweis" style="margin-top:10px">Am Einsatztag das QR-Plakat aushängen: Mitglieder scannen, melden sich in „Mein SSV“ an und tragen ihre Stunden ein. Der Code gilt nur am Einsatztag; bestätigt wird hier oben.</p></div>' +
       '<div class="panel"><h2>Stundenstand</h2><table class="tab"><thead><tr><th>Mitglied</th><th class="r">bestätigt</th><th class="r">Soll</th>' + (e.arbeitsdienst_vorjahr ? '<th class="r">Rest Vorjahr</th>' : '') + '<th class="r">Fehlstunden</th>' + (satz ? '<th class="r">Ersatz</th>' : '') + '<th>Stand</th></tr></thead><tbody>' +
       liste.sort((x, y) => y.a.fehl - x.a.fehl || x.m.nachname.localeCompare(y.m.nachname, 'de')).map(({ m, a }) =>
-        '<tr class="klickbar" data-m="' + m.id + '"><td>' + esc(Q.name(m)) + '</td><td class="r">' + H.zahl(a.ist, a.ist % 1 ? 1 : 0) + ' Std.' + (a.gemeldet ? '<br><small style="color:var(--muted)">+' + H.zahl(a.gemeldet, a.gemeldet % 1 ? 1 : 0) + ' gemeldet</small>' : '') + '</td><td class="r">' + (a.befreit ? '–' : a.soll) + '</td>' + (e.arbeitsdienst_vorjahr ? '<td class="r">' + (a.vorjahr || '–') + '</td>' : '') +
+        '<tr class="klickbar" data-m="' + m.id + '"><td>' + esc(Q.name(m)) + (bereicheVon(m.id).length ? '<br><small style="color:var(--muted)">' + esc(bereicheVon(m.id).map((x) => x.b.name + (x.z.rolle === 'leitung' ? ' (Leitung)' : '')).join(', ')) + '</small>' : '') + '</td><td class="r">' + H.zahl(a.ist, a.ist % 1 ? 1 : 0) + ' Std.' + (a.gemeldet ? '<br><small style="color:var(--muted)">+' + H.zahl(a.gemeldet, a.gemeldet % 1 ? 1 : 0) + ' gemeldet</small>' : '') + '</td><td class="r">' + (a.befreit ? '–' : a.soll) + '</td>' + (e.arbeitsdienst_vorjahr ? '<td class="r">' + (a.vorjahr || '–') + '</td>' : '') +
         '<td class="r">' + (a.befreit ? '–' : H.zahl(a.fehl, a.fehl % 1 ? 1 : 0)) + '</td>' + (satz ? '<td class="r">' + (a.fehl && !a.befreit ? H.geld(a.fehl * satz) : '') + '</td>' : '') +
         '<td>' + (a.befreit ? '<span class="tag">befreit: ' + esc(a.befreit) + '</span>' : mahn && a.fehl >= mahn ? '<span class="tag rot">Aufforderung</span>' : a.fehl > 0 ? '<span class="tag warn">offen</span>' : '<span class="tag ok">erfüllt</span>') + '</td></tr>').join('') + '</tbody></table>' +
       '<p class="hinweis" style="margin-top:10px">Befreiung je Mitglied: in der Zeile tippen und unter „Arbeitsdienst befreit“ den Grund eintragen.</p></div>';
     main.querySelectorAll('[data-ok],[data-ab]').forEach((bt) => bt.addEventListener('click', () => {
       const a = d.arbeitsdienst.find((x) => x.id === (bt.dataset.ok || bt.dataset.ab)); const std = Number(bt.closest('tr').querySelector('input.std').value);
       if (bt.dataset.ok && !(std > 0 && std <= 12)) return toast('Bitte 0,5 bis 12 Stunden.', 'fehler');
-      Object.assign(a, { status: bt.dataset.ok ? 'bestaetigt' : 'abgelehnt', stunden: bt.dataset.ok ? std : a.stunden, geprueft_von: ROLLEN[rolle].name });
+      const ein = a.einsatz_id && (d.arbeitseinsaetze || []).find((x) => x.id === a.einsatz_id);
+      Object.assign(a, { status: bt.dataset.ok ? 'bestaetigt' : 'abgelehnt', stunden: bt.dataset.ok ? std : a.stunden, geprueft_von: ROLLEN[rolle].name, bereich_id: a.bereich_id || (ein && ein.bereich_id) || null });
       speichern(bt.dataset.ok ? 'Bestätigt.' : 'Abgelehnt.'); zeige(tab);
     }));
     main.querySelectorAll('[data-plakat]').forEach((bt) => bt.addEventListener('click', () => oeffnen('drucken.html?art=einsatz&id=' + bt.dataset.plakat)));
@@ -1025,22 +1028,144 @@
     $('#einsatz-neu').addEventListener('click', () => {
       const el = modal('<h2>Arbeitseinsatz planen</h2><form id="f" class="form"><label class="feld voll">Was?<input name="titel" required maxlength="100" placeholder="z. B. Winterarbeitsdienst: Steg und Gelände"></label>' +
         '<label class="feld">Datum<input name="datum" type="date" required value="' + heute + '"></label><label class="feld">Stunden (Vorschlag)<input name="stunden" type="number" step="0.5" min="0.5" max="12" required value="4"></label>' +
-        '<label class="feld">Beginn<input name="beginn" type="time" value="09:00"></label><label class="feld">Ende<input name="ende" type="time" value="13:00"></label><label class="feld voll">Hinweis<input name="notiz" placeholder="z. B. Treffpunkt Messe, Arbeitshandschuhe mitbringen"></label></form>' +
+        '<label class="feld">Beginn<input name="beginn" type="time" value="09:00"></label><label class="feld">Ende<input name="ende" type="time" value="13:00"></label><label class="feld voll">Hinweis<input name="notiz" placeholder="z. B. Treffpunkt Messe, Arbeitshandschuhe mitbringen"></label>' +
+        ((d.arbeitsbereiche || []).length ? '<label class="feld voll">Arbeitsbereich<select name="bereich_id">' + bereichOpt('') + '</select><small>Stunden aus diesem Einsatz zählen dann für den Bereich.</small></label>' : '') + '</form>' +
         '<p class="hinweis">Mitglieder sehen den Termin in „Mein SSV“. Zum Check-in gibt es ein QR-Plakat mit Code, der nur am Einsatztag gilt.</p><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Anlegen</button></div>');
       $('#ok', el).addEventListener('click', () => {
         const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm));
         const id = H.uid('E'); const zeichen = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let code = ''; const zz = crypto.getRandomValues(new Uint32Array(6)); zz.forEach((n) => { code += zeichen[n % zeichen.length]; });
-        d.arbeitseinsaetze.push({ id, datum: x.datum, titel: x.titel, beginn: x.beginn, ende: x.ende, stunden: H.dez(x.stunden), notiz: x.notiz, erstellt_von: ROLLEN[rolle].name });
+        d.arbeitseinsaetze.push({ id, datum: x.datum, titel: x.titel, beginn: x.beginn, ende: x.ende, stunden: H.dez(x.stunden), notiz: x.notiz, erstellt_von: ROLLEN[rolle].name, bereich_id: x.bereich_id || null });
         d.arbeitseinsatz_codes.push({ einsatz_id: id, code });
         speichern('Arbeitseinsatz angelegt – QR-Plakat drucken und am Einsatztag aushängen.'); zu(); zeige(tab);
       });
     });
     main.querySelectorAll('[data-m]').forEach((r) => r.addEventListener('click', () => mitgliedForm(Q.mitglied(r.dataset.m))));
     $('#neu').addEventListener('click', () => {
-      const el = modal('<h2>Arbeitsstunden</h2><form id="f" class="form"><label class="feld voll">Mitglied<select name="mitglied_id" required>' + mOpt(null, (m) => m.art === 'ausuebend' || m.art === 'probe') + '</select></label><label class="feld">Datum<input name="datum" type="date" required value="' + heute + '"></label><label class="feld">Stunden<input name="stunden" type="number" step="0.5" min="0.5" required value="4"></label><label class="feld voll">Tätigkeit<input name="taetigkeit" placeholder="z. B. Einlagern, Steg-Wartung"></label></form><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Erfassen</button></div>');
-      $('#ok', el).addEventListener('click', () => { const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); d.arbeitsdienst.push({ id: H.uid('AD'), ...x, stunden: H.dez(x.stunden), status: 'bestaetigt', einsatz_id: null, gemeldet: null, geprueft_von: ROLLEN[rolle].name }); speichern('Erfasst.'); zu(); zeige(tab); });
+      const el = modal('<h2>Arbeitsstunden</h2><form id="f" class="form"><label class="feld voll">Mitglied<select name="mitglied_id" required>' + mOpt(null, (m) => m.art === 'ausuebend' || m.art === 'probe') + '</select></label><label class="feld">Datum<input name="datum" type="date" required value="' + heute + '"></label><label class="feld">Stunden<input name="stunden" type="number" step="0.5" min="0.5" required value="4"></label><label class="feld voll">Tätigkeit<input name="taetigkeit" placeholder="z. B. Einlagern, Steg-Wartung"></label>' +
+        ((d.arbeitsbereiche || []).length ? '<label class="feld voll">Arbeitsbereich<select name="bereich_id" id="ad-bereich">' + bereichOpt('') + '</select></label>' : '') + '</form><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Erfassen</button></div>');
+      // Bereich des Mitglieds vorschlagen (bei mehreren den ersten)
+      const mw = $('[name=mitglied_id]', el), bw = $('#ad-bereich', el);
+      const vorschlag = () => { if (!bw) return; const b0 = bereicheVon(mw.value)[0]; bw.value = b0 ? b0.b.id : ''; };
+      if (mw) { mw.addEventListener('change', vorschlag); vorschlag(); }
+      $('#ok', el).addEventListener('click', () => { const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm)); d.arbeitsdienst.push({ id: H.uid('AD'), ...x, stunden: H.dez(x.stunden), bereich_id: x.bereich_id || null, status: 'bestaetigt', einsatz_id: null, gemeldet: null, geprueft_von: ROLLEN[rolle].name }); speichern('Erfasst.'); zu(); zeige(tab); });
     });
   };
+
+  /* ============================================================ Arbeitsbereiche (Kran, Boote fahren, Lager, Steg …) */
+  // Jeder Bereich hat eine Leitung, Mitglieder und eine Aufgabenliste; Stunden und Einsätze können einem Bereich zugeordnet werden.
+  const bereiche = () => (d.arbeitsbereiche || []).slice().sort((a, b) => (a.sort || 0) - (b.sort || 0) || a.name.localeCompare(b.name, 'de'));
+  const teamVon = (bid) => (d.arbeitsbereich_mitglieder || []).filter((z) => z.bereich_id === bid && Q.mitglied(z.mitglied_id))
+    .sort((a, b) => (a.rolle === 'leitung' ? 0 : 1) - (b.rolle === 'leitung' ? 0 : 1) || Q.name(Q.mitglied(a.mitglied_id)).localeCompare(Q.name(Q.mitglied(b.mitglied_id)), 'de'));
+  const bereichName = (bid) => { const b = (d.arbeitsbereiche || []).find((x) => x.id === bid); return b ? b.name : ''; };
+  const bereicheVon = (mid) => (d.arbeitsbereich_mitglieder || []).filter((z) => z.mitglied_id === mid).map((z) => ({ z, b: (d.arbeitsbereiche || []).find((x) => x.id === z.bereich_id) })).filter((x) => x.b);
+  const bereichOpt = (sel) => '<option value="">– ohne Bereich –</option>' + bereiche().filter((b) => b.aktiv !== false || b.id === sel).map((b) => '<option value="' + b.id + '"' + (b.id === sel ? ' selected' : '') + '>' + esc(b.name) + '</option>').join('');
+  const stdBereich = (bid) => d.arbeitsdienst.filter((a) => a.bereich_id === bid && a.status !== 'abgelehnt' && a.status !== 'eingereicht' && String(a.datum).startsWith(String(SAISON))).reduce((s, a) => s + Number(a.stunden || 0), 0);
+  V.arbeitsbereiche = (main) => {
+    const liste = bereiche();
+    const pflichtig = d.mitglieder.filter((m) => (m.art === 'ausuebend' || m.art === 'probe') && Q.istMitglied(m, heute));
+    const ohne = pflichtig.filter((m) => !bereicheVon(m.id).length && !G.arbeitsdienst(d, SAISON, m).befreit);
+    main.innerHTML = kopf('Arbeitsbereiche', 'Wer kümmert sich um was? Bereiche mit Leitung, Mitgliedern und Aufgaben – je Bereich als PDF zum Aushängen oder Mitgeben.',
+      (liste.length ? '<button class="btn" id="ab-alle">Alle als PDF</button>' : '') + '<button class="btn primaer" id="ab-neu">+ Bereich</button>') +
+      (liste.length ? '<div class="ab-karten">' + liste.map((b) => {
+        const team = teamVon(b.id); const leit = team.filter((z) => z.rolle === 'leitung').map((z) => Q.name(Q.mitglied(z.mitglied_id)));
+        const std = stdBereich(b.id);
+        return '<div class="panel ab-karte' + (b.aktiv === false ? ' blass' : '') + '"><div class="ab-kopf"><h2>' + esc(b.name) + (b.aktiv === false ? ' <span class="tag">ruht</span>' : '') + '</h2>' +
+          '<button class="btn klein" data-ab-pdf="' + b.id + '" title="Bereichsblatt als PDF">PDF</button></div>' +
+          (b.beschreibung ? '<p class="ab-text">' + esc(b.beschreibung) + '</p>' : '') +
+          '<dl class="ab-zahlen"><div><dt>Leitung</dt><dd>' + (leit.length ? esc(leit.join(', ')) : '<span class="tag warn">fehlt</span>') + '</dd></div><div><dt>Mitglieder</dt><dd>' + team.length + '</dd></div>' +
+          '<div><dt>Aufgaben</dt><dd>' + (b.aufgaben || []).length + '</dd></div><div><dt>Stunden ' + SAISON + '</dt><dd>' + H.zahl(std, std % 1 ? 1 : 0) + '</dd></div></dl>' +
+          ((b.aufgaben || []).length ? '<ul class="ab-aufgaben">' + b.aufgaben.slice(0, 4).map((a) => '<li>' + esc(a.titel) + (a.zeitraum ? ' <small>· ' + esc(a.zeitraum) + '</small>' : '') + '</li>').join('') + (b.aufgaben.length > 4 ? '<li class="mehr">+ ' + (b.aufgaben.length - 4) + ' weitere</li>' : '') + '</ul>' : '') +
+          '<div class="aktionen"><button class="btn klein" data-ab-team="' + b.id + '">Mitglieder</button><button class="btn klein" data-ab-edit="' + b.id + '">Bereich & Aufgaben</button></div></div>';
+      }).join('') + '</div>' : '<div class="panel"><p class="leer">Noch keine Arbeitsbereiche. Lege z. B. „Kran“, „Boote fahren“, „Lager“ und „Steg“ an.</p></div>') +
+      '<div class="panel"><h2>Noch ohne Bereich (' + ohne.length + ')</h2>' + (ohne.length ? '<p class="hinweis" style="margin-top:0">Arbeitspflichtige Mitglieder, die noch keinem Bereich zugeordnet sind – antippen, um zuzuordnen.</p><div class="ab-chips">' +
+        ohne.sort((a, b) => a.nachname.localeCompare(b.nachname, 'de')).map((m) => '<button class="chip-btn" data-ab-ohne="' + m.id + '">' + esc(Q.name(m)) + '</button>').join('') + '</div>' : '<p class="leer">Alle arbeitspflichtigen Mitglieder sind einem Bereich zugeordnet.</p>') + '</div>';
+    $('#ab-neu').addEventListener('click', () => bereichForm(null));
+    const alle = $('#ab-alle'); if (alle) alle.addEventListener('click', () => oeffnen('drucken.html?art=bereiche'));
+    main.querySelectorAll('[data-ab-pdf]').forEach((x) => x.addEventListener('click', () => oeffnen('drucken.html?art=bereiche&id=' + x.dataset.abPdf)));
+    main.querySelectorAll('[data-ab-edit]').forEach((x) => x.addEventListener('click', () => bereichForm(d.arbeitsbereiche.find((b) => b.id === x.dataset.abEdit))));
+    main.querySelectorAll('[data-ab-team]').forEach((x) => x.addEventListener('click', () => teamForm(d.arbeitsbereiche.find((b) => b.id === x.dataset.abTeam))));
+    main.querySelectorAll('[data-ab-ohne]').forEach((x) => x.addEventListener('click', () => zuordnenForm(Q.mitglied(x.dataset.abOhne))));
+  };
+  // Bereich anlegen/bearbeiten mit Aufgabenliste (Aufgabe · Zeitraum · Richtwert Stunden · Hinweis)
+  function bereichForm(b) {
+    const neu = !b; const x0 = b || { name: '', beschreibung: '', treffpunkt: '', aufgaben: [], aktiv: true, sort: (d.arbeitsbereiche || []).length };
+    const zeile = (a) => '<tr><td><input name="a_titel" value="' + esc(a.titel || '') + '" placeholder="z. B. Stege prüfen" aria-label="Aufgabe" maxlength="120"></td><td><input name="a_zeitraum" value="' + esc(a.zeitraum || '') + '" placeholder="z. B. April" aria-label="Zeitraum" maxlength="40"></td>' +
+      '<td><input name="a_stunden" type="number" step="0.5" min="0" max="99" value="' + (a.stunden == null || a.stunden === '' ? '' : a.stunden) + '" aria-label="Richtwert Stunden" style="width:70px"></td><td><input name="a_hinweis" value="' + esc(a.hinweis || '') + '" placeholder="optional" aria-label="Hinweis" maxlength="160"></td>' +
+      '<td class="r"><button type="button" class="btn klein gefahr" data-a-weg title="Aufgabe entfernen" aria-label="Aufgabe entfernen">✕</button></td></tr>';
+    const el = modal('<h2>' + (neu ? 'Neuer Arbeitsbereich' : esc(x0.name)) + '</h2><form id="f" class="form">' +
+      '<label class="feld">Name<input name="name" required maxlength="60" value="' + esc(x0.name) + '" placeholder="z. B. Kran"></label>' +
+      '<label class="feld">Treffpunkt / Hinweise<input name="treffpunkt" maxlength="160" value="' + esc(x0.treffpunkt || '') + '" placeholder="z. B. Kranplatz, nur eingewiesene Kranführer"></label>' +
+      '<label class="feld voll">Worum geht es?<input name="beschreibung" maxlength="240" value="' + esc(x0.beschreibung || '') + '" placeholder="Ein Satz für das Bereichsblatt"></label>' +
+      '<label class="feld check voll"><input type="checkbox" name="aktiv"' + (x0.aktiv !== false ? ' checked' : '') + '> Bereich ist aktiv (ruhende Bereiche erscheinen nicht in „Mein SSV“)</label></form>' +
+      '<h3 style="margin:16px 0 6px">Aufgaben</h3><div class="ab-scroll"><table class="tab ab-auf-tab"><thead><tr><th>Aufgabe</th><th>Wann</th><th>Std.</th><th>Hinweis</th><th></th></tr></thead><tbody id="a-liste">' +
+      (x0.aufgaben || []).map(zeile).join('') + '</tbody></table></div><button type="button" class="btn klein" id="a-neu" style="margin-top:8px">+ Aufgabe</button>' +
+      '<p class="hinweis" style="margin-top:10px">„Std.“ ist ein Richtwert für die Planung. Geleistete Stunden werden wie gewohnt unter Arbeitsdienst erfasst und können dort dem Bereich zugeordnet werden.</p>' +
+      '<div class="modal-fuss">' + (neu ? '' : '<button class="btn gefahr links" id="weg">Bereich löschen</button>') + '<button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>', true);
+    const liste = $('#a-liste', el);
+    $('#a-neu', el).addEventListener('click', () => { liste.insertAdjacentHTML('beforeend', zeile({})); liste.lastElementChild.querySelector('input').focus(); });
+    liste.addEventListener('click', (e) => { const w = e.target.closest('[data-a-weg]'); if (w) w.closest('tr').remove(); });
+    if (neu) $('#a-neu', el).click();
+    const weg = $('#weg', el);
+    if (weg) weg.addEventListener('click', () => {
+      const n = teamVon(b.id).length; if (!confirm('Bereich „' + b.name + '“ löschen?' + (n ? ' Die Zuordnung von ' + n + ' Mitgliedern entfällt.' : '') + ' Erfasste Stunden bleiben erhalten (ohne Bereich).')) return;
+      d.arbeitsbereich_mitglieder = d.arbeitsbereich_mitglieder.filter((z) => z.bereich_id !== b.id);
+      d.arbeitsdienst.forEach((a) => { if (a.bereich_id === b.id) a.bereich_id = null; }); (d.arbeitseinsaetze || []).forEach((a) => { if (a.bereich_id === b.id) a.bereich_id = null; });
+      d.arbeitsbereiche = d.arbeitsbereiche.filter((x) => x.id !== b.id); speichern('Bereich gelöscht.'); zu(); zeige(tab);
+    });
+    $('#ok', el).addEventListener('click', () => {
+      const f = $('#f', el); if (!f.reportValidity()) return;
+      const felder = [...liste.querySelectorAll('input')]; if (felder.some((i) => !i.checkValidity())) { const i = felder.find((x) => !x.checkValidity()); i.reportValidity(); return; }
+      const aufgaben = [...liste.querySelectorAll('tr')].map((tr) => { const g = (n) => tr.querySelector('[name="' + n + '"]').value.trim(); const st = H.dez(g('a_stunden'));
+        return { titel: g('a_titel'), zeitraum: g('a_zeitraum'), stunden: isNaN(st) ? null : st, hinweis: g('a_hinweis') }; }).filter((a) => a.titel);
+      const name = f.name.value.trim();
+      if ((d.arbeitsbereiche || []).some((x) => x.name.toLowerCase() === name.toLowerCase() && (!b || x.id !== b.id))) return toast('Einen Bereich „' + name + '“ gibt es schon.', 'fehler');
+      const daten = { name, beschreibung: f.beschreibung.value.trim(), treffpunkt: f.treffpunkt.value.trim(), aufgaben, aktiv: f.aktiv.checked };
+      if (neu) { const nb = { id: H.uid('AB'), sort: x0.sort, ...daten }; d.arbeitsbereiche.push(nb); speichern('Bereich angelegt – jetzt Mitglieder zuordnen.'); zu(); zeige(tab); teamForm(nb); }
+      else { Object.assign(b, daten); speichern('Gespeichert.'); zu(); zeige(tab); }
+    });
+  }
+  // Mitglieder eines Bereichs: hinzufügen (Suche), Leitung festlegen, entfernen
+  function teamForm(b) {
+    const zeichnen = () => {
+      const team = teamVon(b.id); const drin = new Set(team.map((z) => z.mitglied_id));
+      const kandidaten = d.mitglieder.filter((m) => !drin.has(m.id) && Q.istMitglied(m, heute) && m.art !== 'foerdernd' && m.art !== 'gast').sort((x, y) => x.nachname.localeCompare(y.nachname, 'de'));
+      el.querySelector('#t-inhalt').innerHTML =
+        '<div class="ab-suche"><input id="t-such" class="suche" placeholder="Mitglied suchen und hinzufügen …" autocomplete="off" aria-label="Mitglied suchen"><div id="t-treffer" class="ab-treffer" role="listbox"></div></div>' +
+        (team.length ? '<table class="tab"><tbody>' + team.map((z) => { const m = Q.mitglied(z.mitglied_id); const andere = bereicheVon(m.id).filter((x) => x.b.id !== b.id).map((x) => x.b.name);
+          return '<tr><td><strong>' + esc(Q.name(m)) + '</strong>' + (m.tel ? '<br><small style="color:var(--muted)">' + esc(m.tel) + '</small>' : '') + (andere.length ? '<br><small style="color:var(--muted)">auch: ' + esc(andere.join(', ')) + '</small>' : '') + '</td>' +
+            '<td><select data-t-rolle="' + z.id + '" aria-label="Rolle"><option value="mitglied"' + (z.rolle !== 'leitung' ? ' selected' : '') + '>Mitglied</option><option value="leitung"' + (z.rolle === 'leitung' ? ' selected' : '') + '>Leitung</option></select></td>' +
+            '<td class="r"><button class="btn klein gefahr" data-t-weg="' + z.id + '">Entfernen</button></td></tr>'; }).join('') + '</tbody></table>' : '<p class="leer">Noch niemand in diesem Bereich.</p>');
+      const such = el.querySelector('#t-such'), treffer = el.querySelector('#t-treffer');
+      const zeigeTreffer = () => { const q = such.value.trim().toLowerCase(); if (!q) { treffer.innerHTML = ''; return; }
+        const t = kandidaten.filter((m) => (m.vorname + ' ' + m.nachname + ' ' + m.nachname + ' ' + (m.nr || '')).toLowerCase().includes(q)).slice(0, 8);
+        treffer.innerHTML = t.length ? t.map((m) => '<button type="button" data-t-neu="' + m.id + '">' + esc(Q.name(m)) + ' <small>' + esc(H.ART[m.art] || '') + (bereicheVon(m.id).length ? ' · ' + esc(bereicheVon(m.id).map((x) => x.b.name).join(', ')) : '') + '</small></button>').join('') : '<p class="leer" style="margin:6px 0">Niemand gefunden.</p>'; };
+      such.addEventListener('input', zeigeTreffer);
+      such.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); const t = treffer.querySelector('[data-t-neu]'); if (t) t.click(); } });
+      setTimeout(() => such.focus(), 0);
+    };
+    const el = modal('<h2>' + esc(b.name) + ': Mitglieder</h2><div id="t-inhalt"></div><p class="hinweis" style="margin-top:12px">Ein Mitglied kann in mehreren Bereichen sein. Die Leitung steht mit Telefonnummer auf dem Bereichsblatt und in „Mein SSV“ der Bereichsmitglieder.</p>' +
+      '<div class="modal-fuss"><button class="btn" data-ab-pdf-m>PDF</button><button class="btn primaer" data-zu>Fertig</button></div>', true);
+    el.addEventListener('click', (e) => {
+      const n = e.target.closest('[data-t-neu]'); if (n) { d.arbeitsbereich_mitglieder.push({ id: H.uid('AM'), bereich_id: b.id, mitglied_id: n.dataset.tNeu, rolle: teamVon(b.id).length ? 'mitglied' : 'leitung' }); speichern('Hinzugefügt.'); zeichnen(); zeige(tab, true); return; }
+      const w = e.target.closest('[data-t-weg]'); if (w) { d.arbeitsbereich_mitglieder = d.arbeitsbereich_mitglieder.filter((z) => z.id !== w.dataset.tWeg); speichern('Entfernt.'); zeichnen(); zeige(tab, true); return; }
+      if (e.target.closest('[data-ab-pdf-m]')) oeffnen('drucken.html?art=bereiche&id=' + b.id);
+    });
+    el.addEventListener('change', (e) => { const r = e.target.closest('[data-t-rolle]'); if (!r) return; const z = d.arbeitsbereich_mitglieder.find((x) => x.id === r.dataset.tRolle); z.rolle = r.value; speichern(r.value === 'leitung' ? 'Als Leitung eingetragen.' : 'Gespeichert.'); zeichnen(); zeige(tab, true); });
+    zeichnen();
+  }
+  // Ein Mitglied einem oder mehreren Bereichen zuordnen (aus „Noch ohne Bereich“ oder der Mitgliederkarte)
+  function zuordnenForm(m) {
+    const meine = new Set(bereicheVon(m.id).map((x) => x.b.id));
+    const el = modal('<h2>' + esc(Q.name(m)) + '</h2><p>In welchen Bereichen hilft ' + esc(m.vorname) + ' mit?</p><div class="ab-wahl">' +
+      bereiche().filter((b) => b.aktiv !== false).map((b) => '<label class="feld check"><input type="checkbox" value="' + b.id + '"' + (meine.has(b.id) ? ' checked' : '') + '> ' + esc(b.name) + '</label>').join('') + '</div>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="ok">Speichern</button></div>');
+    $('#ok', el).addEventListener('click', () => {
+      const wahl = new Set([...el.querySelectorAll('.ab-wahl input:checked')].map((i) => i.value));
+      d.arbeitsbereich_mitglieder = d.arbeitsbereich_mitglieder.filter((z) => z.mitglied_id !== m.id || wahl.has(z.bereich_id));
+      wahl.forEach((bid) => { if (!meine.has(bid)) d.arbeitsbereich_mitglieder.push({ id: H.uid('AM'), bereich_id: bid, mitglied_id: m.id, rolle: teamVon(bid).length ? 'mitglied' : 'leitung' }); });
+      speichern('Zugeordnet.'); zu(); zeige(tab);
+    });
+  }
 
   /* ============================================================ Abrechnung */
   const abrStand = { periode: imSommer ? 'sommer' : 'winter', datum: heute, beitragJahr: SAISON + 1, such: '', art: '', jahr: '', status: '', mehr: false };

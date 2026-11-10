@@ -1,4 +1,4 @@
-/* SSV Hafen-Manager – Druckansichten: Rechnungen, Quittung, Belegungsplan, QR-Plakat */
+/* SSV Hafen-Manager – Druckansichten im SSV-Briefkopf (Flagge oben links): Rechnungen, Quittung, Belegungsplan, QR-Plakate, Arbeitsbereiche */
 (function () {
   'use strict';
   const HF = window.HAFEN; const { H, Q } = HF; const esc = H.esc;
@@ -66,7 +66,7 @@
     const url = new URL('gast.html', location.href).href;
     const qr = qrcode(0, 'M'); qr.addData(url, 'Byte'); qr.make();
     const gb = window.HAFEN_GEBUEHREN.gebuehrenFuer(d, HF.aktuelleSaison());
-    return '<section class="blatt plakat">' + STANDER.replace('class="stander"', 'class="stander" style="width:56mm;height:28mm;color:#0E1B45"') +
+    return '<section class="blatt plakat">' + kopf +
       '<h1>Moin und willkommen!</h1><p class="unter">Grünes Schild? Einfach festmachen – dann hier anmelden und gleich bezahlen:</p>' +
       '<div class="qr">' + qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }) + '</div>' +
       '<p class="preis">' + H.geld(gb.gast_nacht) + ' pro Nacht</p><p>Platznummer steht am Schild · bezahlen per ' + (e.paypal_me ? 'PayPal, ' : '') + 'Überweisung oder bar · niemand muss kommen<br>Fragen: Hafenmeister ' + esc(e.hafenmeister_name) + ' · ' + esc(e.hafenmeister_tel) + '</p>' +
@@ -78,11 +78,53 @@
     const code = ((d.arbeitseinsatz_codes || []).find((c) => c.einsatz_id === x.id) || {}).code || '';
     const url = new URL('mein-ssv.html?einsatz=' + encodeURIComponent(code), location.href).href;
     const qr = qrcode(0, 'M'); qr.addData(url, 'Byte'); qr.make();
-    return '<section class="blatt plakat">' + STANDER.replace('class="stander"', 'class="stander" style="width:56mm;height:28mm;color:#0E1B45"') +
+    return '<section class="blatt plakat">' + kopf +
       '<h1>Arbeitseinsatz</h1><p class="unter"><strong>' + esc(x.titel) + '</strong><br>' + H.datum(x.datum) + (x.beginn ? ' · ' + esc(x.beginn) + (x.ende ? '–' + esc(x.ende) : '') + ' Uhr' : '') + '</p>' +
       '<div class="qr">' + qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }) + '</div>' +
       '<p class="preis">Scannen · in „Mein SSV“ anmelden · Stunden eintragen</p><p>Kein Handy dabei? Einfach beim Vorstand melden. Code für die Eingabe von Hand: <strong>' + esc(code) + '</strong></p>' +
       (x.notiz ? '<p>' + esc(x.notiz) + '</p>' : '') + '<p style="font-size:10pt;color:#555">Danke fürs Mitmachen! Der Verein bestätigt die Stunden, danach erscheinen sie in „Mein SSV“.</p></section>';
+  }
+
+
+  // Arbeitsbereich-Blatt: Leitung, Aufgaben zum Abhaken, Team mit Stundenstand, nächste Einsätze
+  function bereichBlatt(b, kontakt) {
+    const saison = HF.aktuelleSaison(); const G = window.HAFEN_GEBUEHREN; const heute = H.tag(new Date());
+    const team = (d.arbeitsbereich_mitglieder || []).filter((z) => z.bereich_id === b.id).map((z) => ({ z, m: Q.mitglied(z.mitglied_id) })).filter((x) => x.m)
+      .sort((x, y) => (x.z.rolle === 'leitung' ? 0 : 1) - (y.z.rolle === 'leitung' ? 0 : 1) || Q.name(x.m).localeCompare(Q.name(y.m), 'de'));
+    const leitung = team.filter((x) => x.z.rolle === 'leitung');
+    const std = (mid, nurBereich) => (d.arbeitsdienst || []).filter((a) => a.mitglied_id === mid && a.status !== 'abgelehnt' && a.status !== 'eingereicht' && String(a.datum).startsWith(String(saison)) && (!nurBereich || a.bereich_id === b.id)).reduce((s, a) => s + Number(a.stunden || 0), 0);
+    const z1 = (v) => H.zahl(v, v % 1 ? 1 : 0);
+    const einsaetze = (d.arbeitseinsaetze || []).filter((x) => x.datum >= heute && (x.bereich_id === b.id || !x.bereich_id)).sort((x, y) => x.datum.localeCompare(y.datum)).slice(0, 5);
+    const aufgaben = b.aufgaben || [];
+    const summe = aufgaben.reduce((s, a) => s + (Number(a.stunden) || 0), 0);
+    return '<section class="blatt bereich">' + kopf +
+      '<p class="b-ober">Arbeitsdienst ' + saison + '</p><h1>Arbeitsbereich ' + esc(b.name) + '</h1>' +
+      (b.beschreibung ? '<p class="b-lead">' + esc(b.beschreibung) + '</p>' : '') +
+      '<div class="b-info"><div><span>Leitung</span>' + (leitung.length ? leitung.map((x) => '<strong>' + esc(Q.name(x.m)) + '</strong>' + (kontakt && x.m.tel ? ' · ' + esc(x.m.tel) : '')).join('<br>') : '<em>noch nicht festgelegt</em>') + '</div>' +
+        (b.treffpunkt ? '<div><span>Treffpunkt / Hinweise</span>' + esc(b.treffpunkt) + '</div>' : '') +
+        '<div><span>Team</span>' + team.length + ' Mitglieder</div></div>' +
+      '<h2>Aufgaben</h2>' + (aufgaben.length ? '<table class="r-tab b-tab"><thead><tr><th style="width:6mm">Nr.</th><th>Aufgabe</th><th style="width:28mm">Wann</th><th class="r" style="width:10mm">Std.*</th><th style="width:22mm">erledigt am</th><th style="width:16mm">von</th></tr></thead><tbody>' +
+        aufgaben.map((a, i) => '<tr><td>' + (i + 1) + '</td><td><strong>' + esc(a.titel) + '</strong>' + (a.hinweis ? '<br><small>' + esc(a.hinweis) + '</small>' : '') + '</td><td>' + esc(a.zeitraum || '') + '</td><td class="r">' + (a.stunden ? z1(Number(a.stunden)) : '') + '</td><td class="b-feld"></td><td class="b-feld"></td></tr>').join('') +
+        '</tbody>' + (summe ? '<tfoot><tr><td></td><td colspan="2">Richtwert gesamt</td><td class="r">' + z1(summe) + '</td><td colspan="2"></td></tr></tfoot>' : '') + '</table><p class="b-klein">* Richtwert für die Planung. Geleistete Stunden bitte wie gewohnt melden (QR-Code beim Einsatz oder „Mein SSV“).</p>'
+        : '<p class="b-klein">Noch keine Aufgaben eingetragen.</p>') +
+      '<h2>Team</h2>' + (team.length ? '<table class="r-tab b-tab"><thead><tr><th>Name</th><th>Rolle</th>' + (kontakt ? '<th>Telefon</th><th>E-Mail</th>' : '') + '<th class="r">Std. hier</th><th class="r">Std. gesamt</th></tr></thead><tbody>' +
+        team.map(({ z, m }) => { const a = G && G.arbeitsdienst && (m.art === 'ausuebend' || m.art === 'probe') ? G.arbeitsdienst(d, saison, m) : null;
+          return '<tr><td>' + esc(Q.name(m)) + '</td><td>' + (z.rolle === 'leitung' ? '<strong>Leitung</strong>' : 'Mitglied') + '</td>' + (kontakt ? '<td>' + esc(m.tel || '') + '</td><td>' + esc(m.email || '') + '</td>' : '') +
+            '<td class="r">' + z1(std(m.id, true)) + '</td><td class="r">' + z1(std(m.id, false)) + (a && !a.befreit && a.soll ? ' / ' + a.soll : a && a.befreit ? ' (befreit)' : '') + '</td></tr>'; }).join('') + '</tbody></table>'
+        : '<p class="b-klein">Noch niemand zugeordnet.</p>') +
+      (einsaetze.length ? '<h2>Nächste Arbeitseinsätze</h2><table class="r-tab b-tab"><tbody>' + einsaetze.map((x) => '<tr><td style="width:28mm"><strong>' + H.datum(x.datum) + '</strong></td><td>' + esc(x.titel) + (x.bereich_id ? '' : ' <small>(für alle)</small>') + (x.notiz ? '<br><small>' + esc(x.notiz) + '</small>' : '') + '</td><td class="r">' + esc([x.beginn, x.ende].filter(Boolean).join('–')) + (x.beginn ? ' Uhr' : '') + '</td></tr>').join('') + '</tbody></table>' : '') +
+      '<div class="r-fuss"><span>' + (kontakt ? 'Enthält Kontaktdaten – nur für den Vereinsgebrauch, bitte nicht öffentlich aushängen.' : esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort)) + '</span><span>Stand ' + H.datum(heute) + '</span></div></section>';
+  }
+  function bereicheDrucken() {
+    const id = q.get('id'); const kontakt = q.get('kontakt') !== '0';
+    const liste = (d.arbeitsbereiche || []).filter((b) => id ? b.id === id : b.aktiv !== false).sort((a, b) => (a.sort || 0) - (b.sort || 0) || a.name.localeCompare(b.name, 'de'));
+    titel(liste.length === 1 ? 'Arbeitsbereich ' + liste[0].name : 'Arbeitsbereiche (' + liste.length + ')');
+    ziel.innerHTML = liste.map((b) => bereichBlatt(b, kontakt)).join('') || '<p style="padding:40px;text-align:center">Kein Arbeitsbereich gefunden.</p>';
+    // Schalter in der Leiste: mit/ohne Telefon und E-Mail (ohne = zum Aushängen am Schwarzen Brett)
+    const l = document.querySelector('.leiste'); if (l && !l.querySelector('#kontakt')) {
+      l.insertAdjacentHTML('beforeend', '<label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="kontakt"' + (kontakt ? ' checked' : '') + '> Telefon/E-Mail mitdrucken</label>');
+      l.querySelector('#kontakt').addEventListener('change', (ev) => { const u = new URL(location.href); u.searchParams.set('kontakt', ev.target.checked ? '1' : '0'); location.replace(u.href); });
+    }
   }
 
   const art = q.get('art');
@@ -93,5 +135,6 @@
     const g = d.gaeste.find((x) => x.id === q.get('id')); titel('Quittung ' + (g ? g.quittung_nr : '')); ziel.innerHTML = g ? quittung(g) : '';
   } else if (art === 'belegungsplan') { titel('Belegungsplan Winterlager'); ziel.innerHTML = belegungsplan(); }
   else if (art === 'plakat') { titel('QR-Plakat Gastlieger'); ziel.innerHTML = plakat(); }
+  else if (art === 'bereiche') bereicheDrucken();
   else if (art === 'einsatz') { const x = (d.arbeitseinsaetze || []).find((y) => y.id === q.get('id')); titel('QR-Plakat Arbeitseinsatz'); ziel.innerHTML = x ? einsatzPlakat(x) : ''; }
 })();

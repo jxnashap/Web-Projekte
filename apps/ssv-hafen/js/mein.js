@@ -87,11 +87,24 @@
     const meineStunden = (d.arbeitsdienst || []).filter((a) => a.mitglied_id === mid && String(a.datum).startsWith(String(SAISON))).sort((x, y) => y.datum.localeCompare(x.datum));
     const kommend = (d.arbeitseinsaetze || []).filter((x) => x.datum >= heute).sort((x, y) => x.datum.localeCompare(y.datum));
     const STAND = { eingereicht: ['wird geprüft', 'gast'], abgelehnt: ['nicht anerkannt', 'rot'] };
+    // Eigene Arbeitsbereiche (Kran, Steg …) mit Aufgaben und Ansprechpartner – Datenbank liefert sie fertig, die Demo rechnet selbst
+    const meineBereiche = d.meine_bereiche || (d.arbeitsbereich_mitglieder || []).filter((z) => z.mitglied_id === mid).map((z) => {
+      const b = (d.arbeitsbereiche || []).find((x) => x.id === z.bereich_id); if (!b || b.aktiv === false) return null;
+      const leitung = d.arbeitsbereich_mitglieder.filter((y) => y.bereich_id === b.id && y.rolle === 'leitung').map((y) => Q.mitglied(y.mitglied_id)).filter(Boolean).map((x) => ({ name: x.vorname + ' ' + x.nachname, tel: x.tel }));
+      return { ...b, rolle: z.rolle, leitung };
+    }).filter(Boolean);
+    const telLink = (t) => { t = String(t || '').replace(/[^\d+]/g, ''); return t.startsWith('0') ? '+49' + t.slice(1) : t; };
+    const bereicheHtml = meineBereiche.length ? '<h3 style="margin:14px 0 6px;font-size:15px">Deine Arbeitsbereiche</h3>' + meineBereiche.map((b) =>
+      '<div class="mein-bereich"><div class="mein-bereich-kopf"><strong>' + esc(b.name) + '</strong>' + (b.rolle === 'leitung' ? ' <span class="tag ok">du leitest</span>' : '') + '</div>' +
+      ((b.leitung || []).length && b.rolle !== 'leitung' ? '<p>Ansprechpartner: ' + b.leitung.map((l) => esc(l.name) + (l.tel ? ' · <a href="tel:' + esc(telLink(l.tel)) + '">' + esc(l.tel) + '</a>' : '')).join(', ') + '</p>' : '') +
+      (b.treffpunkt ? '<p><small>' + esc(b.treffpunkt) + '</small></p>' : '') +
+      ((b.aufgaben || []).length ? '<ul>' + b.aufgaben.map((a) => '<li>' + esc(a.titel) + (a.zeitraum ? ' <small>· ' + esc(a.zeitraum) + '</small>' : '') + '</li>').join('') + '</ul>' : '') + '</div>').join('') : '';
     const adInhalt = ad ? (ad.befreit ? '<p style="margin:0">Du bist vom Arbeitsdienst befreit (' + esc(ad.befreit) + ').</p>'
       : '<div class="kasse-zahlen"><div><small>bestätigt</small><strong>' + H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' Std.</strong></div><div><small>noch offen</small><strong>' + H.zahl(ad.fehl, ad.fehl % 1 ? 1 : 0) + ' Std.</strong></div></div>' +
         (ad.gemeldet ? '<p style="margin:0 0 8px;font-size:13px;color:var(--muted)">Dazu ' + H.zahl(ad.gemeldet, ad.gemeldet % 1 ? 1 : 0) + ' Std. gemeldet – der Verein bestätigt sie noch.</p>' : '') +
         (meineStunden.length ? '<table class="tab"><tbody>' + meineStunden.map((a) => '<tr><td class="nw">' + H.datum(a.datum) + '</td><td>' + esc(a.taetigkeit || 'Arbeitseinsatz') + (STAND[a.status] ? ' <span class="tag ' + STAND[a.status][1] + '">' + STAND[a.status][0] + '</span>' : '') + '</td><td class="r">' + H.zahl(a.stunden, a.stunden % 1 ? 1 : 0) + ' Std.</td></tr>').join('') + '</tbody></table>' : '<p class="leer">Noch keine Stunden erfasst.</p>') +
         '<div class="aktionen" style="margin-top:10px"><button class="btn" id="ad-melden">Stunden melden</button></div>' +
+        bereicheHtml +
         (kommend.length ? '<h3 style="margin:14px 0 6px;font-size:15px">Nächste Arbeitseinsätze</h3><table class="tab"><tbody>' + kommend.slice(0, 3).map((x) => '<tr><td class="nw">' + H.datum(x.datum) + '</td><td>' + esc(x.titel) + (x.beginn ? '<br><small style="color:var(--muted)">' + esc(x.beginn) + (x.ende ? '–' + esc(x.ende) : '') + ' Uhr' + (x.notiz ? ' · ' + esc(x.notiz) : '') + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') +
         '<p class="hinweis" style="margin-top:10px">Soll: ' + ad.soll + ' Stunden im Jahr' + (ad.vorjahr ? ' (dazu ' + ad.vorjahr + ' aus dem Vorjahr)' : '') + '. Beim Arbeitseinsatz einfach den QR-Code am Vereinsheim scannen – oder hier Stunden melden; der Verein bestätigt sie.' + (d.einstellungen.arbeitsdienst_bestaetigt ? '' : ' Die genauen Regeln legt der Vorstand noch fest.') + '</p>') : '';
 
@@ -131,6 +144,7 @@
       sektion('rechnungen', 'Meine Rechnungen', '', '<div id="rechnungen"></div><p class="hinweis" style="margin-top:12px">Mit Lastschriftmandat wird alles eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p>', '', true) +
       (termine.length ? sektion('termine', 'Meine Termine', esc(termine[0][1]) + ' ' + H.kurz(termine[0][0]), '<table class="tab"><tbody>' + termine.map(([t, txt, zus]) => '<tr><td class="nw">' + H.datum(t) + '</td><td>' + esc(txt) + (zus ? '<br><small style="color:var(--muted)">' + esc(zus) + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>') : '') +
       (ad ? sektion('arbeitsdienst', 'Arbeitsdienst ' + SAISON, ad.befreit ? 'befreit' : H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' von ' + ad.soll + ' Std.', adInhalt) : '') +
+      (!ad && meineBereiche.length ? sektion('arbeitsbereiche', 'Meine Arbeitsbereiche', meineBereiche.map((b) => b.name).join(', '), bereicheHtml.replace('<h3 style="margin:14px 0 6px;font-size:15px">Deine Arbeitsbereiche</h3>', '')) : '') +
       sektion('schaden', 'Schaden melden', 'Steg, Strom, Kran …', '<p style="margin-top:0">Etwas kaputt im Hafen? Kurz melden – die Funktionsträger sehen es sofort und kümmern sich.</p><div class="aktionen"><button class="btn" id="schaden">Schaden melden</button></div>') +
       '</div></div>';
 
