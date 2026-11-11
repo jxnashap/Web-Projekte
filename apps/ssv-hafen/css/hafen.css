@@ -982,3 +982,5 @@ body.plan-vollbild { overflow: hidden; }
 .plan-mass .pm-n { display: grid; justify-items: center; gap: 1px; font-size: 11px; } .plan-mass .pm-n svg { width: 14px; height: 17px; }
 .plan-mass .pm-leiste { display: grid; gap: 3px; } .plan-mass .pm-leiste i { display: block; height: 6px; border: 1.5px solid var(--navy); border-top: 0; min-width: 20px; } .plan-mass .pm-leiste b { font-weight: 600; text-align: center; }
 @media print { .plan-mass { display: none; } }
+/* Zeichenfenster am Handy: die Knöpfe rechts dürfen umbrechen – „Schließen“ bleibt immer erreichbar */
+@media (max-width: 860px) { .pe-rechts { flex-wrap: wrap !important; justify-content: flex-start !important; } .pe-rechts #pe-planung { order: 5; } }
