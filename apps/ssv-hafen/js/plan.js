@@ -49,6 +49,8 @@
       { id: 'g3', art: 'dach', name: 'Mastenlager · Trecker', p: [[576, 257], [604, 249], [614, 280], [587, 289]] },
       { id: 'g4', art: 'dach', name: '', p: [[433, 396], [447, 393], [450, 402], [438, 407]] }
     ],
+    // Fahrrinne (für das kleine Boot, das über die Karte zieht)
+    route: [[232, 760], [300, 650], [390, 560], [480, 490], [600, 412], [740, 340], [880, 282], [1010, 238]],
     punkte: [{ id: 'p1', art: 'kran', name: 'Kran', x: 462, y: 377 }, { id: 'p2', art: 'slip', name: 'Slip', x: 551, y: 318 }],
     // Nordlager laut Verein: Lagerweg in der Mitte (Sackgasse), links eine Reihe, rechts zwei Reihen nebeneinander,
     // vorne links zwei Reihen schräg mit dem Bug zur Messe (Vereinsheim). neig = Schräge je Boot, bug = Bugrichtung (1 = zur Straße/nach vorn)
@@ -94,32 +96,52 @@
       f0: ((s.frei && Number(s.frei[0])) || 0) / m, f1: ((s.frei && Number(s.frei[1])) || 0) / m };
   }
   const hatPlaetze = (s) => s.von != null && s.bis != null && s.von !== '' && s.bis !== '' && !isNaN(Number(s.von)) && !isNaN(Number(s.bis));
+  const drehen = (x, y, rot) => { const r = rot * Math.PI / 180; return [x * Math.cos(r) - y * Math.sin(r), x * Math.sin(r) + y * Math.cos(r)]; };
+  /* Boxen an den Stegen. Je Steg verteilen sich die Boxen gleichmäßig; einzelne Boxen können abweichen (s.aus[Nr]):
+   *   b / t = eigene Breite / Tiefe in Metern (die übrigen teilen sich den Rest), l / q = frei gesetzt (Lage längs / quer zum Steg
+   *   in Plan-Einheiten, gemessen ab Steg-Anfang – wandert mit dem Steg), w = Drehung in Grad, weg = Box entfernt.
+   * Ergebnis je Platz: Mittelpunkt x/y, breite (gezeichnet), voll (Raster), tiefe, winkel (Steg), dreh (Richtung vom Steg ins Wasser). */
   function plaetzeVon(plan) {
-    const plaetze = [], pfaehle = [];
+    const plaetze = [], pfaehle = [], gesehen = new Set();
+    const pfahl = (x, y) => { const k = Math.round(x * 2) + ':' + Math.round(y * 2); if (!gesehen.has(k)) { gesehen.add(k); pfaehle.push([x, y]); } };
     plan.stege.forEach((s) => {
       if (!hatPlaetze(s)) return;
-      const g = stegGeo(s, plan.m); const von = Number(s.von), bis = Number(s.bis); const n = Math.abs(bis - von) + 1; const dir = bis >= von ? 1 : -1;
-      const nutz = Math.max(1, g.len - g.f0 - g.f1); const schritt = nutz / n;
-      for (let i = 0; i < n; i++) {
-        const t = g.f0 + (i + 0.5) * schritt; const cx = s.a[0] + g.ux * t, cy = s.a[1] + g.uy * t;
-        plaetze.push({ nr: String(von + dir * i), steg: s.id, bruecke: s.bruecke || '', x: cx + g.nx * g.tiefe / 2, y: cy + g.ny * g.tiefe / 2, breite: schritt * 0.9, tiefe: g.tiefe, winkel: g.winkel });
-      }
-      for (let i = 0; i <= n; i++) { const t = g.f0 + i * schritt; pfaehle.push([s.a[0] + g.ux * t + g.nx * (g.tiefe + 1.5), s.a[1] + g.uy * t + g.ny * (g.tiefe + 1.5)]); }
+      const g = stegGeo(s, plan.m); const von = Number(s.von), bis = Number(s.bis); const n = Math.abs(bis - von) + 1; const dir = bis >= von ? 1 : -1; const aus = s.aus || {};
+      const nrn = []; for (let i = 0; i < n; i++) { const nr = String(von + dir * i); if (!(aus[nr] && aus[nr].weg)) nrn.push(nr); }
+      const nutz = Math.max(1, g.len - g.f0 - g.f1);
+      let fest = 0, nFest = 0; nrn.forEach((nr) => { const b = aus[nr] && Number(aus[nr].b); if (b > 0) { fest += b / plan.m; nFest++; } });
+      const auto = nrn.length > nFest ? Math.max(2, (nutz - fest) / (nrn.length - nFest)) : 0;
+      const nw = Math.atan2(g.ny, g.nx) * 180 / Math.PI;
+      let t = g.f0;
+      nrn.forEach((nr) => {
+        const a = aus[nr] || {}; const voll = Number(a.b) > 0 ? Number(a.b) / plan.m : auto; const tiefe = Number(a.t) > 0 ? Number(a.t) / plan.m : g.tiefe;
+        const frei = a.l != null && a.l !== ''; const l = frei ? Number(a.l) : t + voll / 2, q = frei ? Number(a.q) || 0 : 0; t += voll;
+        const w = Number(a.w) || 0; const fx = s.a[0] + g.ux * l + g.nx * q, fy = s.a[1] + g.uy * l + g.ny * q;   // Fußpunkt am Steg
+        const [dx, dy] = drehen(g.nx, g.ny, w);   // Richtung ins Wasser
+        plaetze.push({ nr, steg: s.id, bruecke: s.bruecke || '', x: fx + dx * tiefe / 2, y: fy + dy * tiefe / 2, breite: Math.max(1.5, voll - Math.min(1.3, voll * 0.1)), voll, tiefe,
+          winkel: g.winkel + w, dreh: nw + w, l, q, frei, eigen: !!(a.b || a.t || frei || a.w) });
+        const [sx, sy] = drehen(g.ux, g.uy, w);   // seitlich (längs des Stegs)
+        [-1, 1].forEach((k) => pfahl(fx + sx * k * voll / 2 + dx * (tiefe + 1.5), fy + sy * k * voll / 2 + dy * (tiefe + 1.5)));
+      });
     });
     return { plaetze, pfaehle };
   }
-  // Lagerfelder: Raster aus Reihen; je Platz Mittelpunkt (mx, my im Lager-Koordinatensystem), Bootsfläche fw × fh,
-  // optional schräg (neig°) und mit Bugrichtung (bug: 1 = zur +y-/+x-Seite, -1 = Gegenseite)
+  // Lagerfelder: Raster aus Reihen; je Platz Mittelpunkt (mx, my im Lager-Koordinatensystem), Bootsfläche w × h,
+  // optional schräg (neig°) und mit Bugrichtung (bug: 1 = zur +y-/+x-Seite, -1 = Gegenseite).
+  // Einzelne Plätze können abweichen (L.aus[Index]): mx / my = verschoben, w / h = eigene Größe, neig, weg = entfernt.
   function lagerVon(plan) {
     const out = [];
     (plan.lager || []).forEach((L) => {
       const sp = Math.max(1, Number(L.spalten) || 1), n = Math.max(0, Number(L.anzahl) || 0), zeilen = Math.ceil(n / sp);
       const bw = Number(L.bw) || 10, bh = Number(L.bh) || 20; const w = sp * bw, h = zeilen * bh;
-      const fw = Number(L.lw) || bw - 1, fh = Number(L.lh) || bh - 1;
+      const fw = Number(L.lw) || bw - 1, fh = Number(L.lh) || bh - 1; const aus = L.aus || {};
       for (let i = 0; i < n; i++) {
-        const mx = -w / 2 + (i % sp) * bw + bw / 2, my = -h / 2 + Math.floor(i / sp) * bh + bh / 2;
+        const a = aus[i] || {}; if (a.weg) continue;
+        const mx = a.mx != null ? Number(a.mx) : -w / 2 + (i % sp) * bw + bw / 2, my = a.my != null ? Number(a.my) : -h / 2 + Math.floor(i / sp) * bh + bh / 2;
+        const zw = Number(a.w) || fw, zh = Number(a.h) || fh;
         out.push({ id: (L.praefix || '') + String((Number(L.ab) || 1) + i).padStart(Number(L.stellen) || 0, '0'), lager: L.id, nr: i,
-          mx, my, x: mx - fw / 2, y: my - fh / 2, w: fw, h: fh, neig: Number(L.neig) || 0, bug: Number(L.bug) === -1 ? -1 : 1, cx: L.x, cy: L.y, rot: Number(L.rot) || 0 });
+          mx, my, x: mx - zw / 2, y: my - zh / 2, w: zw, h: zh, neig: a.neig != null ? Number(a.neig) || 0 : Number(L.neig) || 0, bug: Number(L.bug) === -1 ? -1 : 1, cx: L.x, cy: L.y, rot: Number(L.rot) || 0,
+          eigen: !!(a.mx != null || a.my != null || a.w || a.h || a.neig != null) });
       }
     });
     return out;
@@ -129,16 +151,26 @@
     return [[-g.w / 2, -g.h / 2], [g.w / 2, -g.h / 2], [g.w / 2, g.h / 2], [-g.w / 2, g.h / 2]].map(([x, y]) => {
       const [a, b] = drehen(x, y, g.neig); const [c, e] = drehen(g.mx + a, g.my + b, g.rot); return [g.cx + c, g.cy + e]; });
   }
-  const drehen = (x, y, rot) => { const r = rot * Math.PI / 180; return [x * Math.cos(r) - y * Math.sin(r), x * Math.sin(r) + y * Math.cos(r)]; };
-  // Bootsrumpf (Spiegelheck hinten, spitzer Bug) entlang der langen Seite eines Lagerplatzes, Bug in Richtung g.bug
+
+  /* ---------- Boote (Draufsicht, Bug in +x-Richtung, Maße in Plan-Einheiten) ---------- */
+  const f2 = (z) => (Math.round(z * 100) / 100).toString();
   function rumpfPfad(L, B) {
     const h = -L / 2, v = L / 2, b = B / 2;
-    return `M${h.toFixed(2)} ${(-b * .72).toFixed(2)} Q${h.toFixed(2)} ${(-b).toFixed(2)} ${(h + L * .22).toFixed(2)} ${(-b).toFixed(2)} L${(L * .08).toFixed(2)} ${(-b).toFixed(2)} Q${(v - L * .08).toFixed(2)} ${(-b * .78).toFixed(2)} ${v.toFixed(2)} 0 Q${(v - L * .08).toFixed(2)} ${(b * .78).toFixed(2)} ${(L * .08).toFixed(2)} ${b.toFixed(2)} L${(h + L * .22).toFixed(2)} ${b.toFixed(2)} Q${h.toFixed(2)} ${b.toFixed(2)} ${h.toFixed(2)} ${(b * .72).toFixed(2)} Z`;
+    return `M${f2(h)} ${f2(-b * .72)} Q${f2(h)} ${f2(-b)} ${f2(h + L * .2)} ${f2(-b)} L${f2(L * .06)} ${f2(-b)} Q${f2(v - L * .1)} ${f2(-b * .8)} ${f2(v)} 0 Q${f2(v - L * .1)} ${f2(b * .8)} ${f2(L * .06)} ${f2(b)} L${f2(h + L * .2)} ${f2(b)} Q${f2(h)} ${f2(b)} ${f2(h)} ${f2(b * .72)} Z`;
   }
-  function rumpfLand(g) {
-    const lang = g.h >= g.w; const L = (lang ? g.h : g.w) - 1.6, B = (lang ? g.w : g.h) - 1.8;
-    const w = lang ? (g.bug === -1 ? -90 : 90) : (g.bug === -1 ? 180 : 0);
-    return `<path class="rumpf" d="${rumpfPfad(L, B)}"${w ? ` transform="rotate(${w})"` : ''}/>`;
+  const hash = (s) => { let h = 7; s = String(s || ''); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
+  const istMotor = (typ) => /motor|linssen|sport|kaj[üu]t|cruiser|schlauch|\brib\b|trawler|angel/i.test(String(typ || ''));
+  // farbe: 0–5 = Rumpfvariante (aus dem Boot abgeleitet), 'gast' | 'saison' = Gäste, 'plane' = Winterplane
+  function bootSvg(L, B, o = {}) {
+    const k = typeof o.farbe === 'number' ? 'bf' + (o.farbe % 6) : 'b-' + (o.farbe || 'bf0'); const motor = !!o.motor;
+    const deck = rumpfPfad(L * .9, B * .78);
+    let auf;
+    if (o.farbe === 'plane') auf = `<path class="b-deck" d="${deck}"/><line class="b-first" x1="${f2(-L * .42)}" y1="0" x2="${f2(L * .4)}" y2="0"/>`;
+    else if (motor) auf = `<path class="b-deck" d="${deck}"/><rect class="b-plicht" x="${f2(-L * .4)}" y="${f2(-B * .27)}" width="${f2(L * .24)}" height="${f2(B * .54)}" rx="${f2(B * .08)}"/>` +
+      `<rect class="b-kajuete" x="${f2(-L * .16)}" y="${f2(-B * .3)}" width="${f2(L * .36)}" height="${f2(B * .6)}" rx="${f2(B * .16)}"/><path class="b-scheibe" d="M${f2(L * .16)} ${f2(-B * .26)} Q${f2(L * .25)} 0 ${f2(L * .16)} ${f2(B * .26)}"/>`;
+    else auf = `<path class="b-deck" d="${deck}"/><rect class="b-plicht" x="${f2(-L * .4)}" y="${f2(-B * .24)}" width="${f2(L * .22)}" height="${f2(B * .48)}" rx="${f2(B * .1)}"/>` +
+      `<rect class="b-kajuete" x="${f2(-L * .17)}" y="${f2(-B * .25)}" width="${f2(L * .3)}" height="${f2(B * .5)}" rx="${f2(B * .18)}"/><line class="b-baum" x1="${f2(L * .13)}" y1="0" x2="${f2(-L * .27)}" y2="${f2(B * .05)}"/><circle class="b-mast" cx="${f2(L * .13)}" cy="0" r="${f2(Math.max(.35, B * .07))}"/>`;
+    return `<g class="boot ${k}${motor ? ' motor' : ''}"><path class="b-schatten" d="${rumpfPfad(L, B)}" transform="translate(.9 1.2)"/><path class="b-rumpf" d="${rumpfPfad(L, B)}"/>${auf}</g>`;
   }
 
   /* ---------- Ansichten (Zoomstufen) aus der Geometrie ---------- */
@@ -151,7 +183,7 @@
     if (w / h < v) w = h * v; else h = w / v;
     return [cx - w / 2, cy - h / 2, w, h].map((z) => Math.round(z * 10) / 10);
   }
-  const stegPunkte = (s, m) => { const g = stegGeo(s, m); const o = hatPlaetze(s) ? g.tiefe + 6 : 0; return [s.a, s.b, [s.a[0] + g.nx * o, s.a[1] + g.ny * o], [s.b[0] + g.nx * o, s.b[1] + g.ny * o]]; };
+  const stegPunkte = (s, m) => { const g = stegGeo(s, m); const o = hatPlaetze(s) ? g.tiefe + 10 : 0; return [s.a, s.b, [s.a[0] + g.nx * o, s.a[1] + g.ny * o], [s.b[0] + g.nx * o, s.b[1] + g.ny * o]]; };
   function ansichten(plan) {
     const alle = [], je = {};
     plan.stege.forEach((s) => { const pk = stegPunkte(s, plan.m); alle.push(...pk); if (s.bruecke) (je[s.bruecke] = je[s.bruecke] || []).push(...pk); });
@@ -172,25 +204,53 @@
     for (let i = 0; i < p.length; i++) { const [x0, y0] = p[i], [x1, y1] = p[(i + 1) % p.length]; const k = x0 * y1 - x1 * y0; a += k; cx += (x0 + x1) * k; cy += (y0 + y1) * k; }
     if (Math.abs(a) < 1e-6) return p[0]; return [cx / (3 * a), cy / (3 * a)];
   }
+  const innen = (x, y, p) => { let drin = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) { const [xi, yi] = p[i], [xj, yj] = p[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) drin = !drin; } return drin; };
+  const wuerfel = (seed) => { let s = seed % 2147483647 || 1; return () => ((s = (s * 16807) % 2147483647) / 2147483647); };
   function svgDefs() {
     return `<defs>
-      <pattern id="schraffur" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="rgba(14,27,69,.35)" stroke-width="2"/></pattern>
-      <pattern id="schilf" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M3 12 L5 5 M8 13 L9 6 M11 12 L13 7" stroke="rgba(70,110,60,.35)" stroke-width="1" fill="none"/></pattern>
-      <pattern id="baeume" width="22" height="20" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="4.2" fill="rgba(86,128,72,.22)"/><circle cx="17" cy="14" r="3.4" fill="rgba(86,128,72,.18)"/></pattern>
+      <pattern id="schraffur" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="rgba(255,255,255,.55)" stroke-width="2"/></pattern>
+      <pattern id="schilf" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M3 12 L4.6 5 M3 12 L1.6 6.5 M9 13 L10 6.2 M9 13 L11.4 7.5 M12 5 L12.6 1.5" stroke="rgba(74,110,58,.5)" stroke-width=".9" stroke-linecap="round" fill="none"/></pattern>
+      <pattern id="baeume" width="26" height="22" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="5" fill="rgba(70,118,62,.16)"/><circle cx="19" cy="15" r="4.2" fill="rgba(70,118,62,.13)"/><circle cx="20" cy="4" r="2.4" fill="rgba(255,255,255,.1)"/></pattern>
       <pattern id="schotter" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r=".6" fill="rgba(120,108,84,.35)"/><circle cx="6.5" cy="5.5" r=".5" fill="rgba(120,108,84,.3)"/></pattern>
-      <linearGradient id="wasser" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe0ee"/><stop offset="1" stop-color="#b6cfe4"/></linearGradient>
-      <pattern id="wellen" width="46" height="22" patternUnits="userSpaceOnUse"><path d="M2 8 q5 -3 10 0 t10 0" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".9" stroke-linecap="round"/><path d="M25 18 q4 -2.4 8 0 t8 0" fill="none" stroke="rgba(255,255,255,.4)" stroke-width=".8" stroke-linecap="round"/></pattern>
+      <linearGradient id="wasser" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3f86ad"/><stop offset=".55" stop-color="#2f709a"/><stop offset="1" stop-color="#27628b"/></linearGradient>
+      <pattern id="wellen" width="46" height="22" patternUnits="userSpaceOnUse"><path d="M2 8 q5 -3 10 0 t10 0" fill="none" stroke="rgba(255,255,255,.26)" stroke-width=".9" stroke-linecap="round"/><path d="M25 18 q4 -2.4 8 0 t8 0" fill="none" stroke="rgba(255,255,255,.18)" stroke-width=".8" stroke-linecap="round"/></pattern>
+      <pattern id="wellen2" width="74" height="38" patternUnits="userSpaceOnUse"><path d="M6 12 q7 -4 14 0 t14 0" fill="none" stroke="rgba(190,230,245,.2)" stroke-width="1.1" stroke-linecap="round"/><path d="M40 30 q6 -3.4 12 0 t12 0" fill="none" stroke="rgba(10,40,80,.16)" stroke-width="1.1" stroke-linecap="round"/></pattern>
+      <radialGradient id="halo-gruen"><stop offset="0" stop-color="#b9ffd6" stop-opacity=".95"/><stop offset=".3" stop-color="#3ee58a" stop-opacity=".55"/><stop offset="1" stop-color="#22c66f" stop-opacity="0"/></radialGradient>
+      <radialGradient id="halo-rot"><stop offset="0" stop-color="#ffd0c8" stop-opacity=".9"/><stop offset=".3" stop-color="#ff5a4a" stop-opacity=".5"/><stop offset="1" stop-color="#e2392c" stop-opacity="0"/></radialGradient>
+      <radialGradient id="halo-warm"><stop offset="0" stop-color="#fff3c4" stop-opacity=".95"/><stop offset=".35" stop-color="#ffcf66" stop-opacity=".45"/><stop offset="1" stop-color="#ffb52e" stop-opacity="0"/></radialGradient>
+      <radialGradient id="boje-gruen" cx=".35" cy=".3"><stop offset="0" stop-color="#d6ffe6"/><stop offset=".5" stop-color="#2ed47c"/><stop offset="1" stop-color="#128a4b"/></radialGradient>
+      <radialGradient id="boje-rot" cx=".35" cy=".3"><stop offset="0" stop-color="#ffd9d2"/><stop offset=".5" stop-color="#ee4a3b"/><stop offset="1" stop-color="#a51f17"/></radialGradient>
+      <radialGradient id="boje-aus" cx=".35" cy=".3"><stop offset="0" stop-color="#f1f3f7"/><stop offset=".6" stop-color="#a9b0bf"/><stop offset="1" stop-color="#737b8d"/></radialGradient>
+      <symbol id="baum" overflow="visible"><ellipse cx="2.2" cy="2.8" rx="5.2" ry="4.8" fill="rgba(30,55,35,.22)"/><circle r="5" fill="#6f9d5c"/><circle cx="-1.4" cy="-1.6" r="3.1" fill="#8db875"/><circle cx="-2.2" cy="-2.4" r="1.2" fill="#a9cf8f"/></symbol>
+      <symbol id="funke" overflow="visible"><path d="M0 -2.2 L.5 -.5 L2.2 0 L.5 .5 L0 2.2 L-.5 .5 L-2.2 0 L-.5 -.5 Z" fill="#fff"/></symbol>
     </defs>`;
+  }
+  // Uferlinie einer Wasserfläche: alle Kanten, die nicht auf dem Blattrand liegen (dort endet nur der Ausschnitt)
+  function uferPfad(f, plan) {
+    const rand = ([x, y]) => x <= 0.5 || y <= 0.5 || x >= plan.breite - 0.5 || y >= plan.hoehe - 0.5; let dd = '', offen = false;
+    for (let i = 0; i < f.p.length; i++) { const a = f.p[i], b = f.p[(i + 1) % f.p.length];
+      if (rand(a) && rand(b)) { offen = false; continue; }
+      dd += (offen ? '' : 'M' + a[0] + ' ' + a[1]) + 'L' + b[0] + ' ' + b[1]; offen = true; }
+    return dd;
   }
   function formenSvg(plan) {
     const esc = window.HAFEN.H.esc;
     const liste = plan.formen.map((f, i) => ({ f, i })).filter((x) => ART[x.f.art] && x.f.p && x.f.p.length > 1).sort((a, b) => ART[a.f.art].z - ART[b.f.art].z || a.i - b.i);
-    const flaechen = liste.map(({ f }) => {
+    const flaechen = liste.map(({ f, i }) => {
       const zu = ART[f.art].zu; const dpf = pfad(f.p, zu);
       if (f.art === 'bahn') return `<path d="${dpf}" class="pf pf-bahn"/><path d="${dpf}" class="pf pf-bahn2"/>`;
       if (f.art === 'weg') return `<path d="${dpf}" class="pf pf-weg0"/><path d="${dpf}" class="pf pf-weg"/>`;
+      if (f.art === 'wasser') return `<path d="${dpf}" class="pf pf-wasser"/>`;
       const muster = { natur: 'schilf', gruen: 'baeume', hof: 'schotter', parken: 'schotter', lagerfl: 'schotter' }[f.art];
-      return `<path d="${dpf}" class="pf pf-${f.art}"/>` + (muster ? `<path d="${dpf}" fill="url(#${muster})" class="pf-muster"/>` : '');
+      let extra = '';
+      if (f.art === 'gruen' && f.p.length > 2) {   // einzelne Bäume, fest verteilt (immer gleich)
+        const z = wuerfel(977 + i * 131); let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; f.p.forEach(([x, y]) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); });
+        for (let y = y0 + 9; y < y1; y += 27) for (let x = x0 + 9; x < x1; x += 31) { const px = x + (z() - .5) * 22, py = y + (z() - .5) * 18, gr = .55 + z() * .75; if (z() < .68 && innen(px, py, f.p)) extra += `<use href="#baum" transform="translate(${px.toFixed(1)} ${py.toFixed(1)}) scale(${gr.toFixed(2)})"/>`; }
+        extra = `<g class="baeume">${extra}</g>`;
+      }
+      const schatten = (f.art === 'gebaeude' || f.art === 'dach') ? `<path d="${dpf}" class="pf-schatten" transform="translate(${f.art === 'gebaeude' ? '2.6 3.4' : '1.6 2.2'})"/>` : '';
+      return schatten + `<path d="${dpf}" class="pf pf-${f.art}"/>` + (muster ? `<path d="${dpf}" fill="url(#${muster})" class="pf-muster"/>` : '') + extra +
+        (f.art === 'gebaeude' ? `<path d="${dpf}" class="pf-first" transform="translate(${mitte(f.p).map((v) => (v * .14).toFixed(2)).join(' ')}) scale(.86)"/>` : '');
     }).join('');
     const texte = liste.filter(({ f }) => f.name).map(({ f }) => {
       const zu = ART[f.art].zu; let x, y, rot = 0;
@@ -202,48 +262,70 @@
     }).join('');
     return { flaechen, texte };
   }
+  // Wasser: Tiefenzonen entlang der Ufer, zwei ziehende Wellenlagen, Lichtreflexe, ein kleines Boot auf der Fahrrinne
+  function wasserSvg(plan) {
+    const wasser = plan.formen.filter((x) => x.art === 'wasser' && x.p && x.p.length > 2); if (!wasser.length) return '';
+    const ufer = wasser.map((x) => uferPfad(x, plan)).join(' ');
+    const z = wuerfel(4711); let funken = '';
+    for (let i = 0, versuche = 0; i < 34 && versuche < 900; versuche++) { const x = z() * plan.breite, y = z() * plan.hoehe; if (!wasser.some((w) => innen(x, y, w.p))) continue;
+      funken += `<use href="#funke" class="funke" style="--i:${i}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(.5 + z() * .9).toFixed(2)})"/>`; i++; }
+    const route = Array.isArray(plan.route) && plan.route.length > 1 ? `<g class="fahrt"><path id="fahrt-weg" d="${pfad(plan.route, false)}" fill="none"/>` +
+      `<g class="fahrt-boot"><path class="kiel" d="M-9 0 L-34 -5 M-9 0 L-34 5"/><path class="b-rumpf" d="${rumpfPfad(11, 4)}"/><path class="segel" d="M2 0 L-4.5 3.4 L-4 0 Z"/><circle class="b-mast" cx="2" cy="0" r=".5"/>` +
+      `<animateMotion dur="130s" repeatCount="indefinite" rotate="auto"><mpath href="#fahrt-weg"/></animateMotion></g></g>` : '';
+    return `<clipPath id="wasser-clip">${wasser.map((x) => `<path d="${pfad(x.p, true)}"/>`).join('')}</clipPath>` +
+      `<g clip-path="url(#wasser-clip)" class="wasser-ebene"><path d="${ufer}" class="tiefe t1"/><path d="${ufer}" class="tiefe t2"/><path d="${ufer}" class="tiefe t3"/>` +
+      `<rect class="wellen w2" x="-80" y="-80" width="${plan.breite + 160}" height="${plan.hoehe + 160}" fill="url(#wellen2)"/><rect class="wellen" x="-60" y="-60" width="${plan.breite + 120}" height="${plan.hoehe + 120}" fill="url(#wellen)"/>` +
+      `<g class="funken">${funken}</g>${route}<path d="${ufer}" class="tiefe saum"/></g>`;
+  }
   function stegeSvg(plan, geo) {
     const esc = window.HAFEN.H.esc;
-    const linien = plan.stege.map((s) => `<line x1="${s.a[0]}" y1="${s.a[1]}" x2="${s.b[0]}" y2="${s.b[1]}" pathLength="1" class="steg${s.schwimm ? ' steg-schwimm' : ''}"/><line x1="${s.a[0]}" y1="${s.a[1]}" x2="${s.b[0]}" y2="${s.b[1]}" class="steg-planken"/>`).join('');
-    const pf = geo.pfaehle.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1" class="pfahl"/>`).join('');
+    const linie = (s, kl, tr) => `<line x1="${s.a[0]}" y1="${s.a[1]}" x2="${s.b[0]}" y2="${s.b[1]}" class="${kl}"${tr || ''}/>`;
+    const linien = plan.stege.map((s) => linie(s, 'steg-schatten', ' transform="translate(1.4 2)"')).join('') +
+      plan.stege.map((s) => `<line x1="${s.a[0]}" y1="${s.a[1]}" x2="${s.b[0]}" y2="${s.b[1]}" pathLength="1" class="steg${s.schwimm ? ' steg-schwimm' : ''}"/>` + linie(s, 'steg-licht') + linie(s, 'steg-planken')).join('');
+    const pf = geo.pfaehle.map(([x, y]) => `<circle cx="${(x + .5).toFixed(1)}" cy="${(y + .7).toFixed(1)}" r="1.25" class="pfahl-s"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.15" class="pfahl"/><circle cx="${(x - .3).toFixed(1)}" cy="${(y - .3).toFixed(1)}" r=".45" class="pfahl-l"/>`).join('');
     const gesehen = new Set();
     const namen = plan.stege.filter((s) => s.name).map((s) => {
       // gleichnamige Abschnitte (z. B. Westbrücke in zwei Teilen): Name nur am längsten Abschnitt
       const gleich = plan.stege.filter((x) => x.name === s.name); const laengster = gleich.reduce((a, b) => stegGeo(b, plan.m).len > stegGeo(a, plan.m).len ? b : a);
       if (laengster !== s || gesehen.has(s.name)) return ''; gesehen.add(s.name);
-      const g = stegGeo(s, plan.m); const mx = (s.a[0] + s.b[0]) / 2 - g.nx * 7, my = (s.a[1] + s.b[1]) / 2 - g.ny * 7; const w = Math.abs(g.winkel) > 90 ? g.winkel + 180 : g.winkel;
+      const g = stegGeo(s, plan.m); const ab = hatPlaetze(s) ? 18 : 7; const mx = (s.a[0] + s.b[0]) / 2 - g.nx * ab, my = (s.a[1] + s.b[1]) / 2 - g.ny * ab; const w = Math.abs(g.winkel) > 90 ? g.winkel + 180 : g.winkel;
       return `<text x="${mx.toFixed(1)}" y="${my.toFixed(1)}" class="pl-label bruecke" text-anchor="middle" dominant-baseline="middle" transform="rotate(${w.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)})">${esc(s.name)}</text>`;
     }).join('');
-    return { linien, pf, namen };
+    // Laternen an den Steg-Enden und alle ca. 30 m (leuchten in der Abendansicht)
+    const lampen = plan.stege.map((s) => { const g = stegGeo(s, plan.m); const n = Math.max(1, Math.round(g.len / 75)); let o = '';
+      for (let i = 0; i <= n; i++) { const t = g.len * i / n; o += `<circle class="lampe" cx="${(s.a[0] + g.ux * t).toFixed(1)}" cy="${(s.a[1] + g.uy * t).toFixed(1)}" r="9" fill="url(#halo-warm)"/>`; } return o; }).join('');
+    return { linien, pf, namen, lampen };
   }
   function punkteSvg(plan) {
     const esc = window.HAFEN.H.esc;
     return (plan.punkte || []).map((p) => { const [z, n] = PUNKT[p.art] || ['?', '']; const name = p.name || n;
-      return `<g class="pkt pkt-${p.art}" transform="translate(${p.x} ${p.y})"><title>${esc(name)}</title><circle r="7"/><text y="2.6" text-anchor="middle" class="pkt-z">${z}</text><text y="15" text-anchor="middle" class="pl-label klein pkt-n">${esc(name)}</text></g>`; }).join('');
+      return `<g class="pkt pkt-${p.art}" transform="translate(${p.x} ${p.y})"><circle class="pkt-s" cx=".8" cy="1.2" r="7"/><circle r="7"/><text y="2.6" text-anchor="middle" class="pkt-z">${z}</text><text y="15" text-anchor="middle" class="pl-label klein pkt-n">${esc(name)}</text></g>`; }).join('');
   }
   function massstab(plan) {
     const e50 = 50 / plan.m; const x = plan.breite - e50 - 60, y = plan.hoehe - 34;
     return `<g class="massstab" transform="translate(${x} ${y})"><rect x="-10" y="-16" width="${e50 + 20}" height="30" rx="4" class="ms-bg"/><rect width="${e50 / 2}" height="4" class="ms-a"/><rect x="${e50 / 2}" width="${e50 / 2}" height="4" class="ms-b"/>
       <text y="-4" class="pl-label klein">0</text><text x="${e50 / 2}" y="-4" text-anchor="middle" class="pl-label klein">25</text><text x="${e50}" y="-4" text-anchor="end" class="pl-label klein">50 m</text></g>
-      <g transform="translate(${plan.breite - 34} ${plan.hoehe - 70})"><circle r="17" fill="rgba(255,255,255,.75)"/><path d="M0 -14 L4.5 0 L0 14 L-4.5 0 Z" fill="#0E1B45"/><path d="M0 -14 L4.5 0 L-4.5 0 Z" fill="#B8232B"/><text y="-19" text-anchor="middle" class="pl-label klein">N</text></g>`;
+      <g class="rose" transform="translate(${plan.breite - 40} ${plan.hoehe - 84})"><circle r="21" class="rose-bg"/><circle r="15.5" class="rose-ring"/><path d="M0 -15 L3.2 -3.2 L15 0 L3.2 3.2 L0 15 L-3.2 3.2 L-15 0 L-3.2 -3.2 Z" class="rose-stern"/><path d="M0 -18.5 L4.4 0 L-4.4 0 Z" class="rose-n"/><path d="M0 18.5 L4.4 0 L-4.4 0 Z" class="rose-s"/><text y="-23.5" text-anchor="middle" class="pl-label klein">N</text></g>`;
   }
   // Untergrund: Zeichnung oder Luftbild
   function svgGrund(plan, geo, luftbild) {
     const st = stegeSvg(plan, geo);
-    if (luftbild) return svgDefs() + `<image href="${plan.bild}" x="0" y="0" width="${plan.breite}" height="${plan.hoehe}" preserveAspectRatio="none"/>` +
-      `<g class="auf-bild">${st.linien}${st.pf}${st.namen}${punkteSvg(plan)}</g><text x="6" y="${plan.hoehe - 6}" class="pl-label klein quelle">${QUELLE}</text>`;
+    if (luftbild) return { unten: svgDefs() + `<image href="${plan.bild}" x="0" y="0" width="${plan.breite}" height="${plan.hoehe}" preserveAspectRatio="none"/>` +
+      `<g class="auf-bild">${st.linien}${st.pf}${st.namen}</g>`, punkte: `<g class="auf-bild">${punkteSvg(plan)}</g>`, lichter: '', oben: `<text x="6" y="${plan.hoehe - 6}" class="pl-label klein quelle">${QUELLE}</text>` };
     const f = formenSvg(plan);
-    // sanfte Wellen auf dem Wasser (nur Zeichnung; bewegt sich per CSS, aus bei „Bewegung reduzieren“)
-    const wasser = plan.formen.filter((x) => x.art === 'wasser' && x.p && x.p.length > 2);
-    const wellen = wasser.length ? `<clipPath id="wasser-clip">${wasser.map((x) => `<path d="${pfad(x.p, true)}"/>`).join('')}</clipPath>` +
-      `<g clip-path="url(#wasser-clip)" class="wellen-clip"><rect class="wellen" x="-60" y="-60" width="${plan.breite + 120}" height="${plan.hoehe + 120}" fill="url(#wellen)"/></g>` : '';
-    return svgDefs() + `<rect x="-400" y="-400" width="${plan.breite + 800}" height="${plan.hoehe + 800}" fill="#ece6d6"/>` + f.flaechen + wellen + f.texte + st.linien + st.pf + st.namen + punkteSvg(plan) + massstab(plan);
+    const heim = plan.formen.filter((x) => x.art === 'gebaeude' && x.p && x.p.length > 2).map((x) => { const [mx, my] = mitte(x.p); return `<circle class="lampe fenster" cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="26" fill="url(#halo-warm)"/>`; }).join('');
+    return { unten: svgDefs() + `<rect x="-400" y="-400" width="${plan.breite + 800}" height="${plan.hoehe + 800}" class="grund"/>` + f.flaechen.replace(/(<path d="[^"]*" class="pf pf-wasser"\/>)(?![\s\S]*class="pf pf-wasser")/, '$1' + wasserSvg(plan)) + f.texte + st.linien + st.pf + st.namen,
+      punkte: punkteSvg(plan), lichter: st.lampen + heim, oben: massstab(plan) };
   }
 
   /**
    * Zeichnet den Plan in ein Element.
-   * opts: { modus: 'sommer'|'winter', saison, datum, markiere: platzId, onKlick(platzId), ansicht, namen, luftbild, plan }
+   * opts: { modus: 'sommer'|'winter', saison, datum, markiere: platzId, onKlick(platzId), ansicht, namen, luftbild, plan,
+   *         wasser(p) → { status, boot, gast }   eigene Belegung (z. B. öffentliche Karte, Zeitraum) statt der Vereinsdaten,
+   *         karte(id) → HTML                      Inhalt der Schwebekarte (Standard: Platz, Status, mit opts.namen auch Boot/Eigner),
+   *         abend: true                           Abendansicht (Bojen und Laternen leuchten stärker), schweb: false = keine Schwebekarte }
    */
+  const FREI = { frei: 1, unterwegs: 1 };
   function zeichnen(el, opts) {
     const { Q } = window.HAFEN;
     const d = window.HAFEN.d;
@@ -251,47 +333,65 @@
     const geo = plaetzeVon(plan);
     const winter = opts.modus === 'winter';
     const lpById = new Map(d.liegeplaetze.map((p) => [p.nr, p]));
-    const esc = window.HAFEN.H.esc;
-    // Tooltip mit Boot und Eigner – nur, wenn die Verwaltung den Plan zeichnet (opts.namen)
-    const info = (p, status) => {
-      if (!opts.namen) return '';
-      const g = status === 'gast' && Q.gastAm(p.id, opts.datum); const bel = Q.belegungPlatz(opts.saison, 'sommer', p.id); const b = bel && Q.boot(bel.boot_id); const m = b && Q.mitglied(b.eigner_id);
-      const txt = (p.box === 'L' ? 'Längsseits ' : 'Platz ') + p.nr + ' – ' + (g ? 'Gast „' + g.bootsname + '“' : b ? '„' + b.name + '“ · ' + Q.name(m) : (STATUS_TEXT[status] || status)) + (status === 'unterwegs' ? ' (grünes Schild)' : '');
-      return '<title>' + esc(txt) + '</title>';
+    const esc = window.HAFEN.H.esc, H = window.HAFEN.H;
+    const M = plan.m;
+    // Belegung eines Wasserplatzes: Status, Boot des Dauerliegers, Gast
+    const lage = opts.wasser || ((p) => {
+      const status = Q.statusWasser(p, opts.saison, opts.datum); const bel = Q.belegungPlatz(opts.saison, 'sommer', p.id);
+      return { status, boot: bel ? Q.boot(bel.boot_id) : null, gast: status === 'gast' ? Q.gastAm(p.id, opts.datum) : null };
+    });
+    const lagen = new Map();
+    const lageVon = (p) => { if (!lagen.has(p.id)) lagen.set(p.id, winter ? { status: p.gesperrt ? 'gesperrt' : 'leer' } : (lage(p) || { status: 'frei' })); return lagen.get(p.id); };
+    // Boot in einer Box: echte Maße (Meter → Plan-Einheiten), Bug zum Steg
+    const bootInBox = (x, tiefe, breite) => {
+      if (!['belegt', 'gast', 'saisongast'].includes(x.status)) return '';
+      const q = x.status === 'gast' ? (x.gast || {}) : (x.boot || {});
+      const L = Math.min(tiefe + 4, Math.max(8, (Number(q.laenge) || (tiefe * M - 2.4)) / M)), B = Math.min(breite - .9, Math.max(3, (Number(q.breite) || Number(q.laenge) * .33 || 2.8) / M));
+      const farbe = x.status === 'gast' ? 'gast' : x.status === 'saisongast' ? 'saison' : hash(q.id || q.name) % 6;
+      return `<g class="boot-lage" transform="translate(${f2(-tiefe / 2 + 1.6 + L / 2)} 0) rotate(180)">${bootSvg(L, B, { farbe, motor: istMotor(q.typ) })}</g>`;
     };
+    const lichter = [];
+    const boje = (x, y, status, i) => { const art = status === 'gesperrt' || status === 'leer' ? 'aus' : FREI[status] ? 'gruen' : 'rot';
+      lichter.push(`<g class="boje bo-${art}" style="--i:${i}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">${art === 'aus' ? '' : `<circle class="halo" r="8.5" fill="url(#halo-${art})"/>`}<circle class="bo-s" cx=".5" cy=".8" r="1.9"/><circle class="bo-k" r="1.8" fill="url(#boje-${art})"/></g>`); };
 
     const gezeichnet = new Set();
-    const wasserPlaetze = geo.plaetze.map((g) => {
+    const wasserPlaetze = geo.plaetze.map((g, idx) => {
       const p = lpById.get(g.nr); if (!p || gezeichnet.has(g.nr)) return ''; gezeichnet.add(g.nr);   // nur Plätze, die es im Verein gibt; doppelte Nummern nur einmal
-      const status = winter ? (p.gesperrt ? 'gesperrt' : 'leer') : Q.statusWasser(p, opts.saison, opts.datum);
+      const x = lageVon(p); const status = x.status;
       const mark = opts.markiere === p.id ? ' markiert' : '';
-      return `<g class="lp st-${status}${mark}" style="--i:${Math.round(g.x / 22)}" data-platz="${p.id}" transform="translate(${g.x.toFixed(1)} ${g.y.toFixed(1)}) rotate(${(g.winkel + 90).toFixed(1)})" tabindex="0" role="button" aria-label="Platz ${p.nr}: ${STATUS_TEXT[status] || status}">${winter ? '' : info(p, status)}
-        <rect x="${(-g.tiefe / 2).toFixed(1)}" y="${(-g.breite / 2).toFixed(1)}" width="${g.tiefe.toFixed(1)}" height="${g.breite.toFixed(1)}" rx="1.5"/>
-        ${['belegt', 'gast', 'saisongast'].includes(status) ? `<path class="rumpf" d="M${-g.tiefe / 2 + 3} 0 Q ${-g.tiefe / 2 + 6} ${-g.breite / 2 + 1.2}, ${g.tiefe / 2 - 7} ${-g.breite / 2 + 1.4} L ${g.tiefe / 2 - 3} 0 L ${g.tiefe / 2 - 7} ${g.breite / 2 - 1.4} Q ${-g.tiefe / 2 + 6} ${g.breite / 2 - 1.2}, ${-g.tiefe / 2 + 3} 0 Z"/>` : ''}
-        <text class="lp-nr" x="${(-g.tiefe / 2 - 4.5).toFixed(1)}" y="1.6" transform="rotate(-90 ${(-g.tiefe / 2 - 4.5).toFixed(1)} 0)" text-anchor="middle">${p.nr}</text>
+      const [bx, by] = drehen(g.tiefe / 2 + 5, 0, g.dreh); boje(g.x + bx, g.y + by, status, idx);
+      const tw = ((g.dreh % 360) + 360) % 360; const kopf = tw > 0 && tw < 180;   // Nummer immer lesbar (nie auf dem Kopf)
+      return `<g class="lp st-${status}${mark}${g.eigen ? ' eigen' : ''}" style="--i:${Math.round(g.x / 22)}" data-platz="${p.id}" transform="translate(${g.x.toFixed(1)} ${g.y.toFixed(1)}) rotate(${g.dreh.toFixed(1)})" tabindex="0" role="button" aria-label="Platz ${esc(p.nr)}: ${STATUS_TEXT[status] || (status === 'leer' ? 'Winterpause' : status)}">
+        <rect class="box" x="${f2(-g.tiefe / 2)}" y="${f2(-g.breite / 2)}" width="${f2(g.tiefe)}" height="${f2(g.breite)}" rx="1.2"/><path class="leine" d="M${f2(-g.tiefe / 2)} ${f2(-g.voll / 2)} H${f2(g.tiefe / 2 + 1.5)} M${f2(-g.tiefe / 2)} ${f2(g.voll / 2)} H${f2(g.tiefe / 2 + 1.5)}"/>
+        ${bootInBox(x, g.tiefe, g.breite)}${status === 'unterwegs' ? `<g class="schild" transform="translate(${f2(-g.tiefe / 2 + 3.4)} 0)"><rect x="-1.7" y="-2.6" width="3.4" height="5.2" rx=".7"/></g>` : ''}
+        <text class="lp-nr" text-anchor="middle" transform="translate(${f2(-g.tiefe / 2 - 5.2)} 0) rotate(${kopf ? -90 : 90}) translate(0 1.9)">${esc(p.nr)}</text>
       </g>`;
     }).join('');
 
-    const laengs = (plan.laengs || []).map((l) => {
-      const p = lpById.get(l.nr); if (!p) return '';
-      const status = winter ? 'leer' : Q.statusWasser(p, opts.saison, opts.datum);
+    const laengs = (plan.laengs || []).map((l, idx) => {
+      const p = lpById.get(String(l.nr)); if (!p) return '';
+      const x = lageVon(p); const status = x.status; const hh = Number(l.h) || 10;
       const mark = opts.markiere === p.id ? ' markiert' : '';
-      return `<g class="lp laengs st-${status}${mark}" data-platz="${p.id}" transform="translate(${l.x} ${l.y}) rotate(${l.rot})" tabindex="0" role="button" aria-label="Längsseits ${p.nr}: ${STATUS_TEXT[status] || status}">${winter ? '' : info(p, status)}
-        <rect x="${-l.w / 2}" y="-5" width="${l.w}" height="10" rx="2"/>
-        ${['belegt', 'gast', 'saisongast'].includes(status) ? `<path class="rumpf" d="M${-l.w / 2 + 2} 0 Q ${-l.w / 2 + 5} -4, ${l.w / 2 - 6} -3.6 L ${l.w / 2 - 2} 0 L ${l.w / 2 - 6} 3.6 Q ${-l.w / 2 + 5} 4, ${-l.w / 2 + 2} 0 Z"/>` : ''}
-        <text class="lp-nr" x="0" y="-7.5" text-anchor="middle">${p.nr}</text></g>`;
+      const [bx, by] = drehen(l.w / 2 + 5, 0, Number(l.rot) || 0); boje(l.x + bx, l.y + by, status, 60 + idx);
+      const q = status === 'gast' ? (x.gast || {}) : (x.boot || {});
+      const boot = ['belegt', 'gast', 'saisongast'].includes(status) ? bootSvg(Math.min(l.w - 2, Math.max(8, (Number(q.laenge) || 9) / M)), Math.min(hh - 1.4, Math.max(3, (Number(q.breite) || 3) / M)), { farbe: status === 'gast' ? 'gast' : status === 'saisongast' ? 'saison' : hash(q.id || q.name) % 6, motor: istMotor(q.typ) }) : '';
+      return `<g class="lp laengs st-${status}${mark}" data-platz="${p.id}" transform="translate(${l.x} ${l.y}) rotate(${Number(l.rot) || 0})" tabindex="0" role="button" aria-label="${p.box === 'L' ? 'Längsseits' : 'Platz'} ${esc(p.nr)}: ${STATUS_TEXT[status] || status}">
+        <rect class="box" x="${f2(-l.w / 2)}" y="${f2(-hh / 2)}" width="${l.w}" height="${hh}" rx="2"/>${boot}
+        <text class="lp-nr" x="0" y="${f2(-hh / 2 - 2.5)}" text-anchor="middle">${esc(p.nr)}</text></g>`;
     }).join('');
 
     const per = winter ? 'winter' : 'sommer';
     const land = lagerVon(plan).map((g) => {
       const lp = Q.platz(g.id); if (!lp) return '';
-      const status = Q.statusLand(lp, opts.saison, per);
+      const status = opts.land ? opts.land(lp) : Q.statusLand(lp, opts.saison, per);
       const mark = opts.markiere === g.id ? ' markiert' : '';
-      const bel = Q.belegungPlatz(opts.saison, per, g.id); const b = bel && Q.boot(bel.boot_id);
-      const titel = opts.namen ? '<title>' + esc(g.id + ' – ' + (b ? '„' + b.name + '“ · ' + Q.name(Q.mitglied(b.eigner_id)) + (bel.nicht_kranen ? ' (nicht kranen)' : '') : 'frei')) + '</title>' : '';
+      const bel = opts.land ? null : Q.belegungPlatz(opts.saison, per, g.id); const b = bel && Q.boot(bel.boot_id);
       const [px] = drehen(g.mx, g.my, g.rot);
-      return `<g class="land st-${status}${mark}" style="--i:${Math.round((g.cx + px) / 22)}" data-platz="${g.id}" transform="translate(${g.cx} ${g.cy}) rotate(${g.rot})" tabindex="0" role="button" aria-label="${g.id}: ${status}">${titel}
-        <g transform="translate(${g.mx.toFixed(1)} ${g.my.toFixed(1)})${g.neig ? ` rotate(${g.neig})` : ''}"><rect x="${(-g.w / 2).toFixed(1)}" y="${(-g.h / 2).toFixed(1)}" width="${g.w}" height="${g.h}" rx="1.5"/>${status === 'belegt' ? rumpfLand(g) : ''}</g>
+      const lang = g.h >= g.w; const maxL = (lang ? g.h : g.w) - 1.4, maxB = (lang ? g.w : g.h) - 1.6;
+      const bw = lang ? (g.bug === -1 ? -90 : 90) : (g.bug === -1 ? 180 : 0);
+      const boot = status === 'belegt' ? `<g transform="rotate(${bw})">${bootSvg(Math.min(maxL, Math.max(maxL * .62, ((b && Number(b.laenge)) || 99) / M)), Math.min(maxB, Math.max(maxB * .6, ((b && Number(b.breite)) || 99) / M)), { farbe: winter ? 'plane' : hash(b && (b.id || b.name)) % 6, motor: istMotor(b && b.typ) })}</g>` : '';
+      return `<g class="land st-${status}${mark}${g.eigen ? ' eigen' : ''}" style="--i:${Math.round((g.cx + px) / 22)}" data-platz="${g.id}" transform="translate(${g.cx} ${g.cy}) rotate(${g.rot})" tabindex="0" role="button" aria-label="${g.id}: ${status}">
+        <g transform="translate(${g.mx.toFixed(1)} ${g.my.toFixed(1)})${g.neig ? ` rotate(${g.neig})` : ''}"><rect class="box" x="${(-g.w / 2).toFixed(1)}" y="${(-g.h / 2).toFixed(1)}" width="${g.w}" height="${g.h}" rx="1.5"/>${boot}</g>
         <text class="lp-nr" x="${g.mx.toFixed(1)}" y="${(g.my + 1.8).toFixed(1)}" text-anchor="middle">${g.id}</text>${opts.namen && b ? `<text class="lp-boot" x="${g.mx.toFixed(1)}" y="${(g.my + (g.h > g.w ? 6.5 : 4.6)).toFixed(1)}" text-anchor="middle">${esc(String(b.name).slice(0, 12))}</text>` : ''}</g>`;
     }).join('');
     // Lagernamen über (bzw. bei Lagern unterhalb des Wegs: unter) dem Feld
@@ -302,12 +402,40 @@
     const A = ansichten(plan);
     const vb = Array.isArray(opts.ansicht) ? opts.ansicht : (A[opts.ansicht || 'gesamt'] || A.gesamt);
     const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    el.innerHTML = `<svg class="hafenplan${(vb[2] < 600) ? ' nah' : ''}${vb[2] < 260 ? ' sehr-nah' : ''}${opts.luftbild ? ' mit-bild' : ''}${opts.intro === false || ruhig ? '' : ' intro'}" viewBox="${vb.join(' ')}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Hafenplan des SSV">${svgGrund(plan, geo, !!opts.luftbild)}${land}${lagerNamen}${wasserPlaetze}${laengs}</svg>`;
+    const G = svgGrund(plan, geo, !!opts.luftbild);
+    el.innerHTML = `<svg class="hafenplan${(vb[2] < 600) ? ' nah' : ''}${vb[2] < 260 ? ' sehr-nah' : ''}${opts.luftbild ? ' mit-bild' : ''}${winter ? ' winter' : ''}${opts.abend ? ' abend' : ''}${opts.intro === false || ruhig ? '' : ' intro'}" viewBox="${vb.join(' ')}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Hafenplan des SSV">` +
+      `${G.unten}${land}${lagerNamen}${wasserPlaetze}${laengs}${G.punkte}<rect class="daemmer" x="-400" y="-400" width="${plan.breite + 800}" height="${plan.hoehe + 800}"/><g class="lichter">${G.lichter}${lichter.join('')}</g>${G.oben}</svg>`;
     const svg = el.firstChild; svg._ansichten = A; svg._plan = plan;
-    if (svg.classList.contains('intro')) setTimeout(() => svg.classList.remove('intro'), 1800);
+    if (svg.classList.contains('intro')) setTimeout(() => svg.classList.remove('intro'), 2100);
     const klick = (e) => { const g = e.target.closest('[data-platz]'); if (g && opts.onKlick) opts.onKlick(g.dataset.platz); };
     svg.addEventListener('click', klick);
     svg.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); klick(e); } });
+
+    // Schwebekarte: beim Zeigen mit der Maus erscheint neben dem Platz, was dort los ist
+    if (opts.schweb !== false) {
+      const inhalt = opts.karte || ((id) => {
+        const p = Q.platz(id); if (!p) return '';
+        if (p.bez) { const bel = Q.belegungPlatz(opts.saison, per, id); const b = bel && Q.boot(bel.boot_id);
+          return `<strong>${esc(p.bez)}</strong><span class="pk-st ${b ? 'rot' : 'gruen'}">${b ? 'belegt' : 'frei'}</span>` + (b && opts.namen ? `<p>„${esc(b.name)}“ · ${esc(Q.name(Q.mitglied(b.eigner_id)))}${bel.nicht_kranen ? ' · nicht kranen' : ''}</p>` : ''); }
+        const x = lageVon(p); const st = x.status; const aw = st === 'unterwegs' && Q.abwesendAm(p.id, opts.datum);
+        let h = `<strong>${p.box === 'L' ? 'Längsseits' : 'Platz'} ${esc(p.nr)}</strong><span class="pk-st ${st === 'gesperrt' || st === 'leer' ? 'aus' : FREI[st] ? 'gruen' : 'rot'}">${esc(st === 'leer' ? 'Winterpause' : st === 'unterwegs' ? 'frei · grünes Schild' : STATUS_TEXT[st] || st)}</span>`;
+        if (aw) h += `<p>frei bis ${H.kurz(aw.bis)}</p>`;
+        if (opts.namen && x.gast) h += `<p>Gast „${esc(x.gast.bootsname)}“ · ${H.kurz(x.gast.ankunft)}, ${x.gast.naechte} ${x.gast.naechte > 1 ? 'Nächte' : 'Nacht'}</p>`;
+        if (opts.namen && x.boot && !winter) h += `<p>„${esc(x.boot.name)}“ · ${esc(Q.name(Q.mitglied(x.boot.eigner_id)))}</p>`;
+        if (p.max_laenge) h += `<p class="pk-leise">bis ${H.zahl(p.max_laenge, 1)} × ${H.zahl(p.max_breite, 1)} m</p>`;
+        return h; });
+      const karte = document.createElement('div'); karte.className = 'plan-karte'; karte.hidden = true; el.appendChild(karte); let akt = null;
+      const weg = () => { karte.hidden = true; akt = null; };
+      svg.addEventListener('pointermove', (e) => {
+        if (e.pointerType !== 'mouse' || e.buttons || svg.classList.contains('zieht')) return weg();
+        const g = e.target.closest && e.target.closest('[data-platz]'); if (!g) return weg();
+        if (g.dataset.platz !== akt) { akt = g.dataset.platz; const h = inhalt(akt); if (!h) return weg(); karte.innerHTML = h; karte.hidden = false; }
+        const r = el.getBoundingClientRect(); const kw = karte.offsetWidth, kh = karte.offsetHeight; let x = e.clientX - r.left + 16, y = e.clientY - r.top + 18;
+        if (x + kw > r.width - 6) x = e.clientX - r.left - kw - 14; if (y + kh > r.height - 6) y = e.clientY - r.top - kh - 12;
+        karte.style.transform = `translate(${Math.max(4, x).toFixed(0)}px, ${Math.max(4, y).toFixed(0)}px)`;
+      });
+      svg.addEventListener('pointerleave', weg); svg.addEventListener('pointerdown', weg);
+    }
     return svg;
   }
 
@@ -454,6 +582,6 @@
       landFehlen: landSoll.filter((id) => !landIst.has(id)), anzahl: soll.length };
   }
 
-  window.HAFEN_PLAN = { zeichnen, zoomen, kamera, lagerEcken, STATUS_TEXT, STANDARD, ART, PUNKT, QUELLE, aktiv, gueltig, plaetzeVon, lagerVon, stegGeo, hatPlaetze, ansichten, pruefen, svgDefs, formenSvg, mitte, drehen,
+  window.HAFEN_PLAN = { zeichnen, zoomen, kamera, lagerEcken, bootSvg, istMotor, STATUS_TEXT, STANDARD, ART, PUNKT, QUELLE, aktiv, gueltig, plaetzeVon, lagerVon, stegGeo, hatPlaetze, ansichten, pruefen, svgDefs, formenSvg, mitte, drehen,
     get ANSICHTEN() { return ansichten(aktiv()); } };
 })();

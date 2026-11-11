@@ -238,8 +238,8 @@
   /* ============================================================ Hafenplan */
   V.plan = (main) => {
     const legende = planStand.modus === 'sommer'
-      ? '<span><i style="background:#24396f"></i>belegt</span><span><i style="background:var(--gruen)"></i>Eigner unterwegs (grünes Schild)</span><span><i style="background:var(--gast)"></i>Gastlieger</span><span><i style="background:var(--lila)"></i>Saison-Gast</span><span><i style="background:#fff"></i>frei</span><span><i style="background:repeating-linear-gradient(45deg,#fff 0 2px,#8890a8 2px 4px)"></i>gesperrt</span><span><i style="background:#4a5a86"></i>an Land belegt</span>'
-      : '<span><i style="background:#4a5a86"></i>Palette/Halle/Außen belegt</span><span><i style="background:#fff"></i>frei</span><span><i style="background:rgba(255,255,255,.55)"></i>Wasserplatz (Winterpause)</span>';
+      ? '<span><i class="lg-boje gruen"></i>grüne Boje: frei für Gäste</span><span><i class="lg-boje rot"></i>rote Boje: belegt</span><span><i class="lg-boot"></i>Dauerlieger</span><span><i class="lg-boot gast"></i>Gastlieger</span><span><i class="lg-boot saison"></i>Saison-Gast</span><span><i class="lg-feld gruen"></i>grünes Schild (Eigner unterwegs)</span><span><i class="lg-feld sperr"></i>gesperrt</span>'
+      : '<span><i class="lg-boot plane"></i>an Land belegt (Palette, Halle, Außenlager)</span><span><i class="lg-feld leer"></i>frei</span><span><i class="lg-feld wasser"></i>Wasserplatz (Winterpause)</span>';
     const anders = planStand.modus === 'sommer' && planStand.datum !== heute;
     main.innerHTML = kopf('Hafenplan', planStand.modus === 'sommer' ? 'Sommer ' + SAISON + ' · Stand am ' + H.datum(planStand.datum) + ' (' + stichtagText(planStand.datum) + ')' : 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) + (imSommer ? '' : ' · Stand heute'),
       '<a class="btn" href="https://www.google.com/maps/search/?api=1&query=53.91139%2C10.70111" target="_blank" rel="noopener">Google Maps</a><a class="btn" href="https://maps.apple.com/?ll=53.91139,10.70111&q=Schwartauer%20Segler-Verein&z=17" target="_blank" rel="noopener">Apple Karten</a>') +
@@ -250,11 +250,12 @@
       '<span class="trenn"></span>' + [['gesamt', 'Gesamt'], ['ost', 'Ost'], ['west', 'West'], ['schwimm', 'Schwimm'], ['land', 'Land']].map(([k, n]) =>
         '<button class="btn klein' + (planStand.ansicht === k ? ' aktiv' : '') + '" data-ansicht="' + k + '">' + n + '</button>').join('') +
       '<span class="trenn"></span><button class="btn klein' + (planStand.luftbild ? ' aktiv' : '') + '" id="plan-bild" aria-pressed="' + planStand.luftbild + '">Luftbild</button>' +
+      '<button class="btn klein' + (planStand.abend ? ' aktiv' : '') + '" id="plan-abend" aria-pressed="' + !!planStand.abend + '" title="Abendansicht: die Bojen leuchten">☾ Abend</button>' +
       (darf('einstellungen') ? '<button class="btn klein" id="plan-edit">Lageplan bearbeiten</button>' : '') +
       '</div><div class="plan-flaeche" id="plan"></div><div class="legende">' + legende + (planStand.luftbild ? '<span class="quelle-zeile">' + esc(PLAN.QUELLE) + '</span>' : '') + '</div></div><aside class="detail" id="detail"></aside></div>' +
       '<p class="hinweis" style="margin-top:12px">Maßstäblicher Plan nach amtlichem Luftbild (DOP20)' + (d.einstellungen.lageplan ? ', vom Verein nachgezeichnet. ' : '. ') + (planAnnahme() ? 'Zuordnung, Nummerierung und Boxmaße sind eine <strong>Annahme</strong>, bis der Verein sie unter „Liegeplätze“ bestätigt – die Platzempfehlung für Gäste ist bis dahin nur eine Orientierung. ' : '') + 'Tippe auf einen Platz für Details; mit „Ost / West / Schwimm“ zoomst du heran und siehst die Platznummern.</p>';
     const zh = $('#zu-heute'); if (zh) zh.addEventListener('click', () => { if (imSommer) planStand.datum = heute; else { planStand.modus = 'winter'; planStand.ansicht = 'land'; planStand.vb = null; } planStand.markiere = null; zeige('plan'); });
-    const svg = PLAN.zeichnen($('#plan'), { namen: true, luftbild: planStand.luftbild, modus: planStand.modus, saison: SAISON, datum: planStand.datum, ansicht: planStand.vb || planStand.ansicht, intro: !planStand.vb, markiere: planStand.markiere, onKlick: (id) => { planStand.markiere = id; detail(id); markieren(id); } });
+    const svg = PLAN.zeichnen($('#plan'), { namen: true, abend: planStand.abend && !planStand.luftbild, luftbild: planStand.luftbild, modus: planStand.modus, saison: SAISON, datum: planStand.datum, ansicht: planStand.vb || planStand.ansicht, intro: !planStand.vb, markiere: planStand.markiere, onKlick: (id) => { planStand.markiere = id; detail(id); markieren(id); } });
     // Verschieben/Zoomen wie in einer Karten-App, dazu Vollbild (Esc beendet)
     const box = main.querySelector('.plan-box');
     const vollbild = (an) => { const v = an == null ? !box.classList.contains('vollbild') : an; box.classList.toggle('vollbild', v); document.body.classList.toggle('plan-vollbild', v); planStand.voll = v;
@@ -275,6 +276,7 @@
     main.querySelectorAll('[data-modus]').forEach((b) => b.addEventListener('click', () => { planStand.modus = b.dataset.modus; planStand.markiere = null; planStand.vb = null; if (planStand.modus === 'winter' && planStand.ansicht === 'gesamt') planStand.ansicht = 'land'; if (planStand.modus === 'sommer' && planStand.ansicht === 'land') planStand.ansicht = 'gesamt'; zeige('plan'); }));
     const dat = $('#plan-datum'); if (dat) dat.addEventListener('change', () => { planStand.datum = dat.value || planStand.datum; zeige('plan'); });
     $('#plan-bild').addEventListener('click', () => { planStand.luftbild = !planStand.luftbild; zeige('plan', true); });
+    $('#plan-abend').addEventListener('click', (e) => { planStand.abend = !planStand.abend; if (planStand.abend && planStand.luftbild) { planStand.luftbild = false; return zeige('plan', true); } svg.classList.toggle('abend', planStand.abend); e.currentTarget.classList.toggle('aktiv', planStand.abend); e.currentTarget.setAttribute('aria-pressed', planStand.abend); });
     const pe = $('#plan-edit'); if (pe) pe.addEventListener('click', () => window.HAFEN_PLAN_EDITOR.oeffnen({
       plan: d.einstellungen.lageplan || PLAN.STANDARD, eigen: !!d.einstellungen.lageplan, daten: d,
       onSpeichern: (neu) => { d.einstellungen.lageplan = neu; speichern('Lageplan gespeichert – er gilt jetzt für alle.'); zeige('plan', true); },
