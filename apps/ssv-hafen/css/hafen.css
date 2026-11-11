@@ -792,3 +792,11 @@ body.plan-vollbild { overflow: hidden; }
 }
 @media screen { .wc-panel p small { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 14px; display: block; margin-top: 4px; } .wc-panel > div > small { font-size: 12.5px; letter-spacing: .06em; } }
 @media print { .such-knopf, .such-knopf-m, details.erklaer > summary { display: none !important; } details.erklaer > .hinweis { display: block; } }
+
+/* Rechnungen per E-Mail */
+.mv-zahlen { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
+.mv-liste { max-height: 42vh; overflow: auto; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 12px; }
+.mv-liste .tab th { position: sticky; top: 0; background: #fff; z-index: 1; }
+.mv-adr { font-weight: 600; color: var(--navy); word-break: break-all; }
+.mv-sicher { margin-top: 4px; } .mv-ok { margin: 6px 0 4px; font-weight: 600; }
+.mv-gesendet { color: var(--ok); font-weight: 600; }

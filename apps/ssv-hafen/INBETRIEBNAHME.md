@@ -65,6 +65,8 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
 14. `apps/ssv-hafen/supabase/nachtrag-14.sql` – Veranstaltungskosten abrechnen: Rechnungsart `veranstaltung`
    (Nummern `SSV-V-…`), Spalte `hafen_rechnungen.veranstaltung_id`, Doppelschutz je Mitglied und Veranstaltung.
    Der Kontoauszug-Abgleich (Finanzen → Kontoauszug) braucht keinen Nachtrag.
+15. `apps/ssv-hafen/supabase/nachtrag-15.sql` – Rechnungen per E-Mail: Versandprotokoll `rechnung_versand`
+   (nur Vorstand/Kassenwart lesen, schreiben kann nur die Edge Function „rechnung-mail“). Einrichtung siehe 6a3.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 
@@ -150,6 +152,29 @@ Sie legt beim ersten Aufruf ihr Schlüsselpaar selbst an – es gibt keine Gehei
    → Meine Daten → „Benachrichtigungen einschalten“. Dann im Hafen-Manager → Mitteilungen eine Test-Mitteilung mit
    „als Push senden“ veröffentlichen.
 3. Klappt etwas nicht: Supabase → Edge Functions → push → Logs.
+
+## 6a3 · Rechnungen per E-Mail (Beiträge, Hafen, Veranstaltungen, Getränke)
+Die Edge Function `rechnung-mail` ist im Projekt hochgeladen (Quelle `apps/ssv-hafen/supabase/functions/rechnung-mail`).
+Sie verschickt nichts, solange kein Mail-Dienst eingetragen ist – „Prüfen“ funktioniert aber schon.
+
+1. **Mail-Dienst:** Konto bei **Brevo** anlegen (Sitz in der EU, kostenlos bis 300 Mails am Tag). Alternativ geht Resend.
+   Im Konto den **Auftragsverarbeitungsvertrag** abschließen (Datenschutz).
+2. **Absender bestätigen:** Am besten die Domain `ssv-net.de` bei Brevo bestätigen (SPF/DKIM-Einträge beim
+   Domain-Anbieter eintragen) und als Absender z. B. `rechnung@ssv-net.de` nehmen. So landen die Mails nicht im Spam.
+3. **API-Schlüssel** bei Brevo erzeugen (SMTP & API → API-Schlüssel).
+4. In **Supabase → Edge Functions → Secrets** eintragen (nicht in den Chat, nicht in eine Datei):
+   - `MAIL_API_KEY` = der Brevo-Schlüssel
+   - `MAIL_ABSENDER` = z. B. `rechnung@ssv-net.de`
+   - optional `MAIL_ABSENDER_NAME` (sonst der Vereinsname), `MAIL_ANBIETER` = `resend` (nur bei Resend),
+     `MEIN_SSV_URL` = Adresse von „Mein SSV“ (erscheint als Link in der Mail)
+5. Nachtrag 15 einspielen (siehe oben).
+6. Ausprobieren: Finanzen → Abrechnung → Schritt 3 „Per E-Mail senden“ → **„Test-Mail an mich“**. Die Test-Mail geht
+   nur an die eigene Anmelde-Adresse.
+
+So ist es abgesichert: Der Browser schickt nur Rechnungsnummern (IDs). Die Empfängeradresse liest die Funktion selbst aus
+dem Mitglied, dem die Rechnung gehört – aus dem Feld E-Mail in den Mitgliederdaten. Ändert sich eine Adresse zwischen
+„Prüfen“ und „Senden“, bleibt diese Rechnung liegen. Jede Mail hat genau einen Empfänger und genau eine Rechnung als PDF
+(SSV-Briefkopf). Jeder Versand steht mit Adresse, Zeit und Auslöser im Protokoll; doppelt geht nur mit „noch einmal senden“.
 
 ## 6b · Datensicherung
 

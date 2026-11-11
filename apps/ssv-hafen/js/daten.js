@@ -360,7 +360,8 @@
       sichern();
     }
     if (!d.toilette) { d.toilette = { ...TOILETTE_DEMO }; sichern(); }
-    if (!d.veranstaltungen) { Object.assign(d, demoVeranstaltungen(d.mitglieder, d.boote)); sichern(); }   // ältere Demo-Daten um Beispiel-Bereiche ergänzen
+    if (!d.veranstaltungen) { Object.assign(d, demoVeranstaltungen(d.mitglieder, d.boote)); sichern(); }
+    if (!d.rechnung_versand) d.rechnung_versand = [];   // Demo: „gesendet“ wird nur hier im Browser vermerkt   // ältere Demo-Daten um Beispiel-Bereiche ergänzen
     d.einstellungen = { ...STANDARD_EINSTELLUNGEN, ...d.einstellungen };
     d.rechnungen.forEach((r) => { if (!r.zahlungen) r.zahlungen = []; });
     if (!demoSchnapp) demoSchnapp = schnappschuss(zeilen(true));
@@ -505,14 +506,15 @@
       personal ? hol('arbeitsbereich_mitglieder').catch(() => []) : leer(),
       personal ? hol('gast_toilette').catch(() => []) : leer(),
       personal ? hol('veranstaltungen', '*', '&order=datum.desc').catch(() => []) : leer(),
-      personal ? hol('zusagen').catch(() => []) : leer()
+      personal ? hol('zusagen').catch(() => []) : leer(),
+      db.finanz ? hol('rechnung_versand', 'art,rechnung_id,email,gesendet', '&status=eq.gesendet&order=gesendet.desc').catch(() => []) : leer()
     ]);
-    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc, ver, zus] = daten;
-    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc, ver, zus }, null);
+    const [mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc, ver, zus, vs] = daten;
+    return fertig(false, { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc, ver, zus, vs }, null);
   }
   async function fertig(mitgliedsbereich, x, ich) {
     const personal = !mitgliedsbereich;
-    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc, ver, zus } = x;
+    const { mg, bank, boote, bel, aw, gaeste, warte, kran, ad, re, sl, an, lp, landp, sais, geb, einst, auf, eins, codes, mitt, abr, abm, wc, ver, zus, vs } = x;
     const bankVon = new Map(bank.map((b) => [b.mitglied_id, b]));
     const zahl = (o, felder) => { felder.forEach((f) => { if (o[f] != null) o[f] = Number(o[f]); }); return o; };
     d = {
@@ -532,7 +534,7 @@
       arbeitseinsaetze: (eins || []).map((e) => zahl(e, ['stunden'])), arbeitseinsatz_codes: codes || [], mitteilungen: mitt || [],
       toilette: (wc && wc[0]) || { code: '', regel: '', hinweis: '' },
       arbeitsbereiche: (abr || []).map((b) => ({ ...b, aufgaben: (b.aufgaben || []).map((a) => zahl({ ...a }, ['stunden'])) })), arbeitsbereich_mitglieder: abm || [],
-      veranstaltungen: (ver || []).map((v) => zahl(v, ['kosten'])), zusagen: zus || [],
+      veranstaltungen: (ver || []).map((v) => zahl(v, ['kosten'])), zusagen: zus || [], rechnung_versand: vs || [],
       zaehler: { quittung: 0 }
     };
     d.mitglieder.forEach((m) => { delete m.mandatsreferenz; delete m.sepa; delete m.aktiv; });

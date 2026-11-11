@@ -1562,7 +1562,7 @@
     const ablauf = '<ol class="ablauf" aria-label="Ablauf ' + label + '">' + schritte.map(([t, st, info], i) => '<li class="' + st + (i === erstAktiv ? ' jetzt' : '') + '"><a href="#abl-' + (i + 1) + '" data-abl="' + (i + 1) + '"><span class="ablauf-nr">' + (st === 'ok' ? '✓' : i + 1) + '</span><span><strong>' + t + '</strong><small>' + info + '</small></span></a></li>').join('') + '</ol>';
     const pruefHtml = '<div class="panel" id="abl-1"><h2>1 · Prüfen</h2><ul class="pruefliste">' + pruef.map(([st, t, info, z]) => '<li class="' + st + '"><span class="pl-icon" aria-hidden="true">' + (st === 'ok' ? '✓' : st === 'warn' ? '!' : 'i') + '</span><span><strong>' + t + '</strong> – ' + info + '</span>' + (st !== 'ok' && darf(z) ? '<a href="#" data-gehe="' + z + '">ändern →</a>' : '') + '</li>').join('') + '</ul></div>';
     const zustellHtml = '<div class="panel" id="abl-3"><h2>3 · Zustellen</h2>' + (rsP.length ? '<p style="margin-top:0">' + rsP.length + ' Rechnungen ' + label + ' – sie stehen sofort in „Mein SSV“. Wer dort kein Konto hat, bekommt sie als PDF per E-Mail oder Brief.</p>' +
-        '<div class="aktionen"><button class="btn" id="abl-pdf">Alle ' + rsP.length + ' als PDF öffnen</button>' + (zugestellt ? '<span class="tag ok">zugestellt am ' + H.datum(zugestellt) + '</span> <button class="btn klein" id="abl-zu-weg">Vermerk entfernen</button>' : '<button class="btn primaer" id="abl-zu">Als zugestellt vermerken</button>') + '</div>' +
+        '<div class="aktionen"><button class="btn primaer" id="abl-mail">Per E-Mail senden' + (rsP.filter((r) => !versandVon('hafen', r.id)).length < rsP.length ? ' (' + rsP.filter((r) => versandVon('hafen', r.id)).length + ' von ' + rsP.length + ' gesendet)' : '') + '</button><button class="btn" id="abl-pdf">Alle ' + rsP.length + ' als PDF öffnen</button>' + (zugestellt ? '<span class="tag ok">zugestellt am ' + H.datum(zugestellt) + '</span> <button class="btn klein" id="abl-zu-weg">Vermerk entfernen</button>' : '<button class="btn" id="abl-zu">Als zugestellt vermerken</button>') + '</div>' +
         '<p class="hinweis" style="margin:10px 0 0">Die Rechnung ist zugleich die Ankündigung der Lastschrift: eingezogen wird frühestens am Fälligkeitstag (' + Number(e.zahlungsziel_tage || 14) + ' Tage nach Rechnungsdatum).</p>'
       : '<p class="leer" style="margin:0">Erst nach dem Erstellen.</p>') + '</div>';
     main.innerHTML = kopf('Abrechnung & Lastschrift', 'Mitgliedsbeitrag einmal im Jahr · laut Gebührenordnung Sommer nach dem Auslagern, Winter nach dem Einlagern.',
@@ -1601,9 +1601,9 @@
       $('#r-liste').innerHTML = zeig.map((r) => { const st = Q.rstatus(r, heute); const rest = Q.rest(r); const z = r.zahlungen || [];
         return '<tr' + (r.storniert_am ? ' class="blass"' : '') + '><td><strong style="white-space:nowrap">' + esc(r.nr) + '</strong></td><td>' + H.datum(r.datum) + '</td><td>' + esc(r.empfaenger.vorname + ' ' + r.empfaenger.nachname) + ' <small style="color:var(--muted)">' + esc(r.empfaenger.nr || '') + '</small></td><td>' + H.periodeText(r) + '</td>' +
           '<td class="r">' + H.geld(r.summe) + (rest > 0 && rest < r.summe ? '<br><small>offen ' + H.geld(rest) + '</small>' : '') + '</td><td>' + (r.sepa ? 'Lastschrift' + (r.sepa_lauf ? ' <small style="color:var(--muted)">' + esc(r.sepa_lauf) + '</small>' : '') : 'Überweisung') + '</td>' +
-          '<td>' + kette(r) + '<span class="tag ' + STUFE[stufe(r)][1] + '">' + (st === 'ueberfaellig' || st === 'teilbezahlt' || st === 'ruecklastschrift' ? RSTATUS[st][0] : STUFE[stufe(r)][0]) + '</span>' + (r.bezahlt_am ? ' <small style="color:var(--muted)">' + H.kurz(r.bezahlt_am) + '</small>' : '') + (z.length > 1 ? ' <small style="color:var(--muted)" title="' + esc(z.map((x) => H.datum(x.datum) + ' ' + (x.art === 'ruecklastschrift' ? 'Rücklastschrift' : 'Eingang') + ' ' + H.geld(x.betrag) + (x.notiz ? ' – ' + x.notiz : '')).join('\n')) + '">(' + z.length + ' Buchung' + (z.length > 1 ? 'en' : '') + ')</small>' : '') + '</td>' +
+          '<td>' + kette(r) + '<span class="tag ' + STUFE[stufe(r)][1] + '">' + (st === 'ueberfaellig' || st === 'teilbezahlt' || st === 'ruecklastschrift' ? RSTATUS[st][0] : STUFE[stufe(r)][0]) + '</span>' + (r.bezahlt_am ? ' <small style="color:var(--muted)">' + H.kurz(r.bezahlt_am) + '</small>' : '') + (versandVon('hafen', r.id) ? ' <small class="mv-gesendet" title="per E-Mail an ' + esc(versandVon('hafen', r.id).email) + '">✉ ' + H.kurz(String(versandVon('hafen', r.id).gesendet).slice(0, 10)) + '</small>' : '') + (z.length > 1 ? ' <small style="color:var(--muted)" title="' + esc(z.map((x) => H.datum(x.datum) + ' ' + (x.art === 'ruecklastschrift' ? 'Rücklastschrift' : 'Eingang') + ' ' + H.geld(x.betrag) + (x.notiz ? ' – ' + x.notiz : '')).join('\n')) + '">(' + z.length + ' Buchung' + (z.length > 1 ? 'en' : '') + ')</small>' : '') + '</td>' +
           '<td class="r aktion">' + (r.storniert_am ? '<button class="btn klein" data-zeige="' + r.id + '">Ansehen</button>' : '<button class="btn klein' + (rest > 0 ? ' primaer' : '') + '" data-zahl="' + r.id + '">Zahlung</button> ' +
-            zeilenMenue(['<button class="zm-punkt" data-zeige="' + r.id + '">Rechnung ansehen</button>'].concat(!r.bezahlt_am && !Q.gezahlt(r) ? ['<button class="zm-punkt gefahr" data-storno="' + r.id + '">Stornieren</button>'] : []))) + '</td></tr>'; }).join('') || '<tr><td colspan="8" class="leer">Keine Rechnung passt zu den Filtern.</td></tr>';
+            zeilenMenue(['<button class="zm-punkt" data-zeige="' + r.id + '">Rechnung ansehen</button>', '<button class="zm-punkt" data-mail1="' + r.id + '">Per E-Mail senden</button>'].concat(!r.bezahlt_am && !Q.gezahlt(r) ? ['<button class="zm-punkt gefahr" data-storno="' + r.id + '">Stornieren</button>'] : []))) + '</td></tr>'; }).join('') || '<tr><td colspan="8" class="leer">Keine Rechnung passt zu den Filtern.</td></tr>';
       $('#r-mehr').innerHTML = l.length > zeig.length ? '<button class="btn klein" style="margin-top:10px">Alle ' + l.length + ' anzeigen</button>' : '';
       const mb = $('#r-mehr button'); if (mb) mb.addEventListener('click', () => { abrStand.mehr = true; rListe(); });
     };
@@ -1622,11 +1622,16 @@
     }));
     $('#r-liste').addEventListener('click', (e) => {
       const z = e.target.closest('[data-zeige]'); if (z) return oeffnen('drucken.html?art=rechnungen&ids=' + z.dataset.zeige);
+      const m1 = e.target.closest('[data-mail1]'); if (m1) { const r1 = d.rechnungen.find((r) => r.id === m1.dataset.mail1); return mailVersandDialog('hafen', [r1], r1.nr + ' · ' + H.periodeText(r1)); }
       const zb = e.target.closest('[data-zahl]'); if (zb) return zahlungDialog(d.rechnungen.find((r) => r.id === zb.dataset.zahl));
       const sb = e.target.closest('[data-storno]'); if (sb) { if (!confirm('Rechnung stornieren? Das Mitglied erscheint danach wieder in der Vorschau – so lässt sich eine falsche Rechnung korrigieren.')) return; G.stornieren(d, sb.dataset.storno); speichern('Storniert.'); zeige('abrechnung'); }
     });
     main.querySelectorAll('[data-abl]').forEach((x) => x.addEventListener('click', (ev) => { ev.preventDefault(); const z = $('#abl-' + x.dataset.abl); if (z) z.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
     const ap = $('#abl-pdf'); if (ap) ap.addEventListener('click', () => oeffnen('drucken.html?art=rechnungen&ids=' + rsP.map((r) => r.id).join(',')));
+    const am = $('#abl-mail'); if (am) am.addEventListener('click', () => mailVersandDialog('hafen', rsP, label, () => {
+      const alle = rsP.every((r) => versandVon('hafen', r.id));
+      if (alle && !(e.abrechnung_zugestellt || {})[pKey]) { e.abrechnung_zugestellt = { ...(e.abrechnung_zugestellt || {}), [pKey]: heute }; speichern('Alle Rechnungen sind per E-Mail raus – als zugestellt vermerkt.'); }
+      zeige('abrechnung', true); }));
     const az = $('#abl-zu'); if (az) az.addEventListener('click', () => { e.abrechnung_zugestellt = { ...(e.abrechnung_zugestellt || {}), [pKey]: heute }; speichern('Als zugestellt vermerkt.'); zeige('abrechnung', true); });
     const azw = $('#abl-zu-weg'); if (azw) azw.addEventListener('click', () => { const z = { ...(e.abrechnung_zugestellt || {}) }; delete z[pKey]; e.abrechnung_zugestellt = z; speichern('Vermerk entfernt.'); zeige('abrechnung', true); });
     main.querySelectorAll('[data-per]').forEach((b) => b.addEventListener('click', () => { abrStand.periode = b.dataset.per; if (b.dataset.jahr) abrStand.beitragJahr = Number(b.dataset.jahr); zeige('abrechnung'); }));
@@ -1792,6 +1797,82 @@
       const ok = await speichern(); if (ok === false) return;
       toast(n + (n === 1 ? ' Zahlung' : ' Zahlungen') + ' gebucht.' + (fehler.length ? ' Nicht gebucht: ' + fehler.join('; ') : ''), fehler.length ? 'fehler' : '', fehler.length ? 8000 : 3200);
     } finally { kaLaeuft = false; zeige('kontoauszug', true); }
+  }
+
+  /* ============================================================ Rechnungen per E-Mail
+   * Ablauf: Prüfen (Server sagt, an welche Adresse jede Rechnung ginge) → Kassenwart bestätigt → Senden.
+   * Sicherheit: Der Browser schickt nur Rechnungs-IDs; die Adresse liest die Edge Function „rechnung-mail“ selbst aus dem
+   * Mitglied, dem die Rechnung gehört. Mitgeschickt werden nur die beim Prüfen gesehenen Adressen – weicht eine ab, geht
+   * diese Rechnung nicht raus. Jede Mail: genau ein Empfänger, genau eine Rechnung als PDF. */
+  const versandVon = (art, id) => (d.rechnung_versand || []).filter((v) => v.art === art && v.rechnung_id === id).sort((x, y) => String(y.gesendet).localeCompare(String(x.gesendet)))[0];
+  const mailOk = (s) => /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(String(s || '').trim()) && !/\.\./.test(String(s));
+  const MSTAND = { bereit: ['bereit', 'ok'], keine_email: ['keine E-Mail-Adresse', 'warn'], ungueltig: ['Adresse ungültig', 'rot'], schon_gesendet: ['schon gesendet', ''], storniert: ['storniert', ''], kein_mitglied: ['Mitglied fehlt', 'rot'], nicht_gefunden: ['nicht gefunden', 'rot'],
+    gesendet: ['gesendet', 'ok'], fehler: ['Fehler', 'rot'], adresse_geaendert: ['Adresse inzwischen geändert – nicht gesendet', 'warn'] };
+  async function mailFunktion(body) { return window.SSV_SB.req('/functions/v1/rechnung-mail', { method: 'POST', body }); }
+  // Demo: dieselben Regeln im Browser, ohne echten Versand
+  function mailPruefenDemo(art, ids) {
+    return { eingerichtet: true, demo: true, liste: ids.map((id) => { const r = d.rechnungen.find((x) => x.id === id); if (!r) return { id, status: 'nicht_gefunden' };
+      const m = Q.mitglied(r.mitglied_id); const basis = { id, nr: r.nr, betrag: r.summe, mitglied_id: r.mitglied_id, mitglied: m ? { nr: m.nr, name: m.vorname + ' ' + m.nachname } : null };
+      if (r.storniert_am) return { ...basis, status: 'storniert' }; if (!m) return { ...basis, status: 'kein_mitglied' };
+      const email = String(m.email || '').trim(); if (!email) return { ...basis, status: 'keine_email' }; if (!mailOk(email)) return { ...basis, email, status: 'ungueltig' };
+      const v = versandVon(art, id); return { ...basis, email, status: v ? 'schon_gesendet' : 'bereit', gesendet: v && v.gesendet, gesendet_an: v && v.email }; }) };
+  }
+  let mailLaeuft = false;
+  async function mailVersandDialog(art, rechnungen, titel, nachher) {
+    const ids = rechnungen.filter((r) => !r.storniert_am).map((r) => r.id);
+    if (!ids.length) return toast('Keine Rechnungen zum Versenden.');
+    const el = modal('<h2>Rechnungen per E-Mail</h2><p style="margin-top:0">' + esc(titel) + ' · ' + ids.length + ' Rechnung' + (ids.length === 1 ? '' : 'en') + '</p><div id="mv-inhalt"><p class="leer">Adressen werden geprüft …</p></div>', true);
+    const box = $('#mv-inhalt', el);
+    let pr;
+    try { pr = DB ? await mailFunktion({ aktion: 'pruefen', art, ids }) : mailPruefenDemo(art, ids); }
+    catch (er) { box.innerHTML = '<p class="hinweis fehler">Prüfen nicht möglich: ' + esc(er.message) + (/404|nicht gefunden|Failed/i.test(er.message) ? ' – ist die Funktion „rechnung-mail“ eingerichtet?' : '') + '</p>'; return; }
+    const l = pr.liste; const zahl = (s) => l.filter((x) => x.status === s).length;
+    const zeige2 = () => {
+      const erneut = !!($('#mv-erneut', el) && $('#mv-erneut', el).checked);
+      const raus = l.filter((x) => x.status === 'bereit' || (erneut && x.status === 'schon_gesendet'));
+      box.innerHTML = (!pr.eingerichtet ? '<p class="hinweis warn">Der E-Mail-Versand ist noch nicht eingerichtet: Es fehlen der Schlüssel des Mail-Dienstes und die Absender-Adresse (siehe Anleitung „Inbetriebnahme“, Schritt Mail-Versand). Prüfen geht trotzdem.</p>' : '') +
+        (pr.demo ? '<p class="hinweis">Demo: Es wird keine echte E-Mail verschickt – der Versand wird nur in diesem Browser vermerkt.</p>' : '') +
+        '<div class="mv-zahlen"><span class="tag ok">' + zahl('bereit') + ' bereit</span>' + (zahl('keine_email') + zahl('ungueltig') ? '<span class="tag warn">' + (zahl('keine_email') + zahl('ungueltig')) + ' ohne gültige Adresse</span>' : '') +
+          (zahl('schon_gesendet') ? '<span class="tag">' + zahl('schon_gesendet') + ' schon gesendet</span>' : '') + (zahl('storniert') ? '<span class="tag">' + zahl('storniert') + ' storniert</span>' : '') + '</div>' +
+        '<div class="mv-liste"><table class="tab"><thead><tr><th>Rechnung</th><th>Mitglied</th><th class="r">Betrag</th><th>geht an</th></tr></thead><tbody>' +
+          l.map((x) => '<tr><td class="nw">' + esc(x.nr || '–') + '</td><td>' + esc(x.mitglied ? x.mitglied.name : '–') + '</td><td class="r nw">' + H.geld(x.betrag || 0) + '</td><td>' +
+            (x.email ? '<strong class="mv-adr">' + esc(x.email) + '</strong>' : '') + ' <span class="tag ' + MSTAND[x.status][1] + '">' + MSTAND[x.status][0] + (x.gesendet ? ' ' + H.kurz(String(x.gesendet).slice(0, 10)) : '') + '</span></td></tr>').join('') + '</tbody></table></div>' +
+        (zahl('keine_email') + zahl('ungueltig') ? '<p class="hinweis warn">Ohne gültige Adresse geht nichts raus. Diese Mitglieder sehen die Rechnung in „Mein SSV“ – oder bekommen sie als Brief. Die Adresse lässt sich in der Mitgliedsakte nachtragen.</p>' : '') +
+        (zahl('schon_gesendet') ? '<label class="feld check"><input type="checkbox" id="mv-erneut"' + (erneut ? ' checked' : '') + '> Schon gesendete noch einmal senden</label>' : '') +
+        '<p class="hinweis ok mv-sicher">Jede Rechnung geht <strong>nur an die Adresse, die beim jeweiligen Mitglied eingetragen ist</strong> – einzeln, mit genau dieser einen Rechnung als PDF. Ändert sich eine Adresse nach dem Prüfen, bleibt diese Rechnung liegen.</p>' +
+        '<label class="feld check mv-ok"><input type="checkbox" id="mv-geprueft"> Ich habe die Liste geprüft – Mitglieder und Adressen passen.</label>' +
+        '<div class="modal-fuss"><button class="btn links" id="mv-test"' + (pr.eingerichtet && raus.length ? '' : ' disabled') + '>Test-Mail an mich</button><button class="btn" data-zu>Abbrechen</button>' +
+          '<button class="btn primaer" id="mv-los" disabled>' + raus.length + ' Rechnung' + (raus.length === 1 ? '' : 'en') + ' senden</button></div>';
+      const er = $('#mv-erneut', el); if (er) er.addEventListener('change', zeige2);
+      const gp = $('#mv-geprueft', el), los = $('#mv-los', el);
+      gp.addEventListener('change', () => { los.disabled = !gp.checked || !raus.length || !pr.eingerichtet; });
+      $('#mv-test', el).addEventListener('click', async (ev) => {
+        const k = ev.currentTarget; k.disabled = true;
+        try { if (DB) { const t = await mailFunktion({ aktion: 'test', art, ids: [raus[0].id] }); toast('Test-Mail an ' + t.an + ' gesendet – bitte ansehen.'); } else toast('Demo: Die Test-Mail ginge an deine Anmelde-Adresse.'); }
+        catch (x2) { toast('Test-Mail nicht gesendet: ' + x2.message, 'fehler', 7000); } finally { k.disabled = false; }
+      });
+      los.addEventListener('click', async () => {
+        if (mailLaeuft || !gp.checked) return; mailLaeuft = true;
+        el.querySelectorAll('.modal-fuss .btn, input').forEach((b) => { b.disabled = true; });
+        const erg = []; const erwartet = Object.fromEntries(raus.map((x) => [x.id, x.email]));
+        try {
+          for (let i = 0; i < raus.length; i += 20) {
+            const teil = raus.slice(i, i + 20).map((x) => x.id);
+            los.textContent = 'Wird gesendet … ' + Math.min(i + 20, raus.length) + ' von ' + raus.length;
+            if (DB) { const a2 = await mailFunktion({ aktion: 'senden', art, ids: teil, erwartet: Object.fromEntries(teil.map((id) => [id, erwartet[id]])), erneut }); erg.push(...a2.ergebnis); }
+            else teil.forEach((id) => { const x = raus.find((y) => y.id === id); d.rechnung_versand.push({ art, rechnung_id: id, email: x.email, gesendet: new Date().toISOString() }); erg.push({ id, nr: x.nr, status: 'gesendet', email: x.email }); });
+          }
+        } catch (x3) { erg.push({ status: 'fehler', fehler: x3.message }); }
+        if (!DB) HF.sichern();
+        mailLaeuft = false;
+        const ok = erg.filter((x) => x.status === 'gesendet'); const nicht = erg.filter((x) => x.status !== 'gesendet');
+        box.innerHTML = '<p class="hinweis ' + (nicht.length ? 'warn' : 'ok') + '"><strong>' + ok.length + ' Rechnung' + (ok.length === 1 ? '' : 'en') + ' gesendet.</strong>' + (nicht.length ? ' ' + nicht.length + ' nicht gesendet:' : ' Jede an die eingetragene Adresse des Mitglieds.') + '</p>' +
+          (nicht.length ? '<ul>' + nicht.map((x) => '<li>' + esc(x.nr || '') + ' – ' + esc(MSTAND[x.status] ? MSTAND[x.status][0] : x.status) + (x.fehler ? ': ' + esc(x.fehler) : '') + '</li>').join('') + '</ul><p class="hinweis">Nicht Gesendetes einfach noch einmal prüfen und senden – schon Gesendetes geht nicht doppelt raus.</p>' : '') +
+          '<div class="modal-fuss"><button class="btn primaer" id="mv-fertig">Fertig</button></div>';
+        $('#mv-fertig', el).addEventListener('click', async () => { zu(); if (DB) { await HF.neuLaden().catch(() => {}); d = HF.d; } if (nachher) nachher(ok.length, nicht.length); else zeige(tab, true); });
+      });
+    };
+    zeige2();
   }
 
   // Zahlungseingang (auch Teilzahlung) und Rücklastschrift je Rechnung
@@ -2117,7 +2198,7 @@
     const wann = (z) => z.geaendert ? new Date(z.geaendert).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) : '';
     const menue = (z) => zeilenMenue(['<button class="zm-punkt" data-z-bearb="' + z.id + '">Ändern</button>', '<button class="zm-punkt gefahr" data-z-weg="' + z.id + '">Antwort löschen</button>']);
     main.innerHTML = druckKopf() + kopf(esc(v.titel) + (v.abgesagt ? ' <span class="tag rot">abgesagt</span>' : ''), H.datum(v.datum) + (verZeit(v) ? ' · ' + esc(verZeit(v)) : '') + (v.anmeldung_bis ? ' · Anmeldung bis ' + H.datum(v.anmeldung_bis) : ''),
-        '<button class="btn" id="v-zurueck">← Alle Veranstaltungen</button><button class="btn" id="v-eintragen">+ Antwort eintragen</button>' + (v.kosten && darfGeld && offenAbr.length ? '<button class="btn" id="v-abr">Kosten abrechnen (' + offenAbr.length + ')</button>' : '') + '<button class="btn" id="v-csv">CSV</button><button class="btn primaer" id="v-druck">Drucken</button>') +
+        '<button class="btn" id="v-zurueck">← Alle Veranstaltungen</button><button class="btn" id="v-eintragen">+ Antwort eintragen</button>' + (v.kosten && darfGeld && offenAbr.length ? '<button class="btn" id="v-abr">Kosten abrechnen (' + offenAbr.length + ')</button>' : '') + (darfGeld && reVon.length ? '<button class="btn" id="v-mail">Rechnungen per E-Mail</button>' : '') + '<button class="btn" id="v-csv">CSV</button><button class="btn primaer" id="v-druck">Drucken</button>') +
       '<div class="karten ver-karten"><div class="kz"><small>Personen zugesagt</small><strong>' + st.pers + (v.max_personen ? ' / ' + v.max_personen : '') + '</strong><span>' + ja.length + ' Mitglied' + (ja.length === 1 ? '' : 'er') + (st.pers > ja.length ? ' + ' + (st.pers - ja.length) + ' Begleitung' : '') + '</span></div>' +
         (frei !== null ? '<div class="kz"><small>Plätze frei</small><strong>' + Math.max(0, frei) + '</strong><span>' + (frei <= 0 ? 'ausgebucht' : 'Mitglieder sehen nur diese Zahl') + '</span></div>' : '') +
         '<div class="kz"><small>Absagen</small><strong>' + nein.length + '</strong><span>' + (d.mitglieder.length ? 'noch keine Antwort: ' + Math.max(0, d.mitglieder.filter((m) => m.art !== 'gast' && !(m.austritt && m.austritt <= heute)).length - st.z.length) : '') + '</span></div>' +
@@ -2134,6 +2215,7 @@
       ja.concat(nein).map((z) => { const m = Q.mitglied(z.mitglied_id) || {}; return [m.nr || '', name(z.mitglied_id), z.antwort === 'ja' ? 'Zusage' : 'Absage', z.personen, z.bemerkung || '', z.geaendert ? new Date(z.geaendert).toLocaleString('de-DE') : '', z.quelle === 'verein' ? 'vom Verein' : 'Mein SSV']; }))), 'text/csv'));
     $('#v-eintragen').addEventListener('click', () => zusageForm(v, null));
     const vabr = $('#v-abr'); if (vabr) vabr.addEventListener('click', () => verAbrechnenDialog(v));
+    const vm = $('#v-mail'); if (vm) vm.addEventListener('click', () => mailVersandDialog('hafen', reVon, v.titel + ' · ' + H.datum(v.datum), () => zeige('veranstaltungen', true)));
     main.querySelectorAll('[data-z-bearb]').forEach((b) => b.addEventListener('click', () => zusageForm(v, st.z.find((z) => z.id === b.dataset.zBearb))));
     main.querySelectorAll('[data-z-weg]').forEach((b) => b.addEventListener('click', () => {
       const z = st.z.find((x) => x.id === b.dataset.zWeg); if (!confirm('Antwort von ' + name(z.mitglied_id) + ' löschen?')) return;
@@ -2291,6 +2373,7 @@
     ['Lastschrift einziehen', 'lastschrift einziehen einzug sepa bank datei abbuchen', 'abrechnung'],
     ['Zahlung von Hand buchen', 'zahlung buchen bezahlt eingang ueberweisung teilzahlung', 'abrechnung'],
     ['Kontoauszug abgleichen', 'kontoauszug bank umsaetze abgleich zahlungseingang camt csv onlinebanking', 'kontoauszug'],
+    ['Rechnungen per E-Mail senden', 'rechnung email mail senden verschicken zustellen versand', 'abrechnung'],
     ['Finanzen im Überblick', 'finanzen geld einnahmen offen ueberblick getraenke kasse summe', 'finanzen'],
     ['Gebührenordnung ändern', 'gebuehrenordnung preise gebuehren beitrag hoehe aendern', 'gebuehren'],
     ['Verbandsmeldung (Bestandserhebung)', 'verband meldung bestandserhebung statistik landessportverband', 'verband'],

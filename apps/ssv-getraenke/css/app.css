@@ -416,3 +416,8 @@ body.rechnung-seite { background: #e9e6df; }
   html.schrift-gross .a-hinweis { font-size: 16.5px; } html.schrift-gross .a-karte span { font-size: 16px; } html.schrift-gross .a-nav button, html.schrift-gross .a-nav a { font-size: 17.5px; }
 }
 @media screen and (max-width: 860px) { .a-karte small { font-size: 11.5px; } .a-karte span { font-size: 13.5px; } }
+
+/* Rechnungen per E-Mail (Kassenwart) */
+.a-modal-card.breit { width: min(860px, 100%); }
+.mv-liste { max-height: 42vh; overflow: auto; border: 1px solid var(--linie, rgba(28,36,64,.13)); border-radius: 12px; margin: 8px 0 12px; }
+.mv-liste .a-tab th { position: sticky; top: 0; background: #fff; }
