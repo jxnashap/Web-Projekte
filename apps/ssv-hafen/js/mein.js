@@ -108,6 +108,65 @@
     nein.disabled = true; antworten(v, 'nein', 0, '').catch((er) => { nein.disabled = false; toast(er.message); });
   });
 
+  /* „Was möchtest du tun?“ – Suchfeld oben: führt direkt zur richtigen Stelle (Abschnitt öffnen, Knopf drücken) */
+  const norm = (s) => String(s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, ' ').trim();
+  const TUN = [
+    ['Meine Rechnungen ansehen', 'rechnung rechnungen bezahlen offen beitrag hafengeld lastschrift ueberweisung geld kosten', 'rechnungen'],
+    ['Platz frei melden (grünes Schild)', 'gruenes schild platz frei unterwegs abwesend urlaub segeln toern weg reise', 'schild', '#awf [name=bis]'],
+    ['Zu Veranstaltungen zu- oder absagen', 'veranstaltung zusagen absagen anmelden einladung termin fest feier wintertreffen', 'veranstaltungen'],
+    ['Arbeitsstunden melden', 'stunden arbeitsdienst arbeitsstunden melden gearbeitet arbeit', 'arbeitsdienst', '#ad-melden'],
+    ['Schaden melden', 'schaden kaputt defekt steg strom melden reparatur', 'schaden', '#schaden'],
+    ['Adresse, Telefon oder E-Mail ändern', 'adresse anschrift umzug umgezogen telefon handy email mail aendern daten', 'daten', '#meine-daten'],
+    ['Getränke-Code ändern', 'code pin getraenke kasse aendern vergessen geheimzahl', 'kasse', '#code'],
+    ['Getränke-Verbrauch ansehen', 'getraenke kasse verbrauch bier trinken monat', 'kasse'],
+    ['Versicherungsnachweis hochladen', 'versicherung nachweis police hochladen foto pdf', 'boot', '#nachweis'],
+    ['Bootsdaten aktualisieren', 'boot daten laenge breite gewicht tiefgang aendern', 'boot', '#daten'],
+    ['Mein Liegeplatz und Winterlager', 'liegeplatz platz box winterlager hafenplan wo boot', 'boot'],
+    ['Meine Termine', 'termine datum wann einzug auslagern einlagern kalender', 'termine'],
+    ['Warteliste', 'warteliste liegeplatz warten platz bekommen', 'warteliste'],
+    ['Meine Arbeitsgruppe', 'arbeitsgruppe gruppe aufgaben ansprechpartner leitung', 'arbeitsbereiche'],
+    ['Benachrichtigungen aufs Handy', 'push benachrichtigung handy nachricht mitteilung', 'daten', '#push-box'],
+    ['Schrift größer oder kleiner', 'schrift groesser kleiner lesen brille sehen', '', 'schrift']
+  ];
+  const FRAGEN = [
+    ['Muss ich meine Rechnung überweisen?', 'ueberweisen bezahlen lastschrift einzug muss ich', 'Wenn du uns ein Lastschriftmandat gegeben hast: nein – der Betrag wird am Fälligkeitstag abgebucht, du musst nichts tun. Ohne Mandat steht auf der Rechnung, wohin und mit welchem Verwendungszweck du überweist.'],
+    ['Was bedeutet das grüne Schild?', 'gruenes schild bedeutung', 'Bist du mit dem Boot unterwegs, meldest du hier „Platz frei“. Dann darf der Hafenmeister den Platz an Gäste geben. Kommst du früher zurück, drückst du „Früher zurück“.'],
+    ['Getränke-Code vergessen?', 'code vergessen pin', 'Du kannst ihn hier unter „Getränkekasse“ neu festlegen. Klappt das nicht, hilft der Kassenwart.']
+  ];
+  function tunTreffer(q) {
+    const w = norm(q).split(' ').filter(Boolean); if (!w.length) return [];
+    const passt = (text) => { const ws = norm(text).split(' '); return w.every((x) => ws.some((y) => y.startsWith(x) || (x.length >= 4 && y.includes(x)))); };
+    const da = (sek) => !sek || document.querySelector('details.sek[data-sek="' + sek + '"]');
+    return TUN.filter(([t, s, sek]) => da(sek) && passt(t + ' ' + s)).map((x) => ({ art: 'tun', x }))
+      .concat(FRAGEN.filter(([t, s]) => passt(t + ' ' + s)).map((x) => ({ art: 'frage', x })));
+  }
+  function tunAusfuehren(sek, ziel) {
+    if (ziel === 'schrift') { schriftUmschalten(); return; }
+    const el = document.querySelector('details.sek[data-sek="' + sek + '"]'); if (!el) return;
+    el.open = true; AUF[sek] = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (ziel) setTimeout(() => { const z = document.querySelector(ziel); if (!z) return; if (z.tagName === 'BUTTON') z.click(); else if (z.focus) z.focus(); }, 450);
+  }
+  const SCHRIFT = 'ssv-schrift-gross';
+  const schriftGross = () => { try { return localStorage.getItem(SCHRIFT) === '1'; } catch (e) { return false; } };
+  function schriftUmschalten() { const an = !schriftGross(); try { localStorage.setItem(SCHRIFT, an ? '1' : '0'); } catch (e) { /* egal */ } document.documentElement.classList.toggle('schrift-gross', an); const k = $('#schrift-m'); if (k) { k.textContent = an ? 'Schrift normal' : 'Schrift größer'; k.setAttribute('aria-pressed', an); } toast(an ? 'Schrift ist jetzt größer.' : 'Schrift ist wieder normal.'); }
+  document.documentElement.classList.toggle('schrift-gross', schriftGross());
+  (() => { const kopf = document.querySelector('.mein-kopf'); if (!kopf || $('#schrift-m')) return; const b = document.createElement('button'); b.id = 'schrift-m'; b.className = 'btn klein schrift-m'; b.type = 'button';
+    b.textContent = schriftGross() ? 'Schrift normal' : 'Schrift größer'; b.setAttribute('aria-pressed', schriftGross()); b.addEventListener('click', schriftUmschalten); kopf.appendChild(b); })();
+  const tunHtml = () => '<div class="mein-suche"><label for="mein-such">Was möchtest du tun?</label><div class="such-feld"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>' +
+    '<input id="mein-such" type="search" autocomplete="off" placeholder="z. B. Rechnung, Platz frei, Code ändern" aria-controls="mein-such-erg"></div><div id="mein-such-erg" class="mein-such-erg"></div>' +
+    '<div class="mein-schnell">' + [['Rechnungen', 'rechnungen'], ['Platz frei melden', 'schild', '#awf [name=bis]'], ['Veranstaltungen', 'veranstaltungen'], ['Stunden melden', 'arbeitsdienst', '#ad-melden'], ['Schaden melden', 'schaden', '#schaden']]
+      .map(([t, sek, z]) => '<button type="button" class="chip" data-tun="' + sek + '"' + (z ? ' data-tun-ziel="' + esc(z) + '"' : '') + '>' + t + '</button>').join('') + '</div></div>';
+  document.addEventListener('input', (e) => {
+    if (e.target.id !== 'mein-such') return; const box = $('#mein-such-erg'); const l = tunTreffer(e.target.value);
+    box.innerHTML = !e.target.value.trim() ? '' : l.length ? l.map(({ art, x }, i) => art === 'tun'
+      ? '<button type="button" class="such-zeile" data-tun="' + x[2] + '" data-tun-ziel="' + esc(x[3] || '') + '"><span class="such-t">' + esc(x[0]) + '</span><span class="such-pfeil" aria-hidden="true">→</span></button>'
+      : '<details class="mein-frage"><summary>' + esc(x[0]) + '</summary><p>' + esc(x[2]) + '</p></details>').join('')
+      : '<p class="such-tipp">Dazu habe ich nichts gefunden. Probier ein anderes Wort – oder schreib an <a href="mailto:' + esc(d.einstellungen.verein_email) + '">' + esc(d.einstellungen.verein_email) + '</a>.</p>';
+  });
+  document.addEventListener('keydown', (e) => { if (e.target.id === 'mein-such' && e.key === 'Enter') { e.preventDefault(); const b = document.querySelector('#mein-such-erg [data-tun]'); if (b) b.click(); } });
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-tun]'); if (!b) return; const s = $('#mein-such'); if (s) { s.value = ''; $('#mein-such-erg').innerHTML = ''; }
+    const sek = b.dataset.tun; const ziel = b.dataset.tunZiel; tunAusfuehren(sek, ziel); });
+
   function zeigen() {
     const m = Q.mitglied(mid); const boote = Q.booteVon(mid);
     const b = boote[0]; const sommer = b && Q.belegungBoot(SAISON, 'sommer', b.id); const winter = b && Q.belegungBoot(SAISON, 'winter', b.id);
@@ -187,7 +246,7 @@
         awTabelle : '';
 
     $('#main').innerHTML = (DBM ? '' : '<div class="demo-band"><strong>Demo</strong> – erfundene Daten. Im Echtbetrieb meldest du dich mit deinem eigenen Zugang an.</div>') +
-      '<div class="kopf"><div><h1>Moin ' + esc(m.vorname) + '!</h1><p>' + H.ART[m.art] + ' · Mitgliedsnr. ' + esc(m.nr) + '</p></div></div>' +
+      '<div class="kopf"><div><h1>Moin ' + esc(m.vorname) + '!</h1><p>' + H.ART[m.art] + ' · Mitgliedsnr. ' + esc(m.nr) + '</p></div></div>' + tunHtml() +
       mitteilungenHtml(!!b, !!wasser) +
       (vs !== 'ok' && b ? '<p class="hinweis warn">Deine Bootsversicherung ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'ist noch nicht hinterlegt' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte unter „Mein Boot“ einen neuen Nachweis hochladen.</p>' : '') +
       '<div class="blick">' + kachel('rechnungen', 'Rechnungen', '…', 'wird geladen …', 'k-offen') +
@@ -214,6 +273,8 @@
       sektion('schaden', 'Schaden melden', 'Steg, Strom, Kran …', '<p style="margin-top:0">Etwas kaputt im Hafen? Kurz melden – die Funktionsträger sehen es sofort und kümmern sich.</p><div class="aktionen"><button class="btn" id="schaden">Schaden melden</button></div>') +
       '</div></div>';
 
+    // Schnellwahl nur für Abschnitte, die es bei diesem Mitglied gibt (kein Boot → kein grünes Schild)
+    document.querySelectorAll('.mein-schnell [data-tun]').forEach((c) => { if (!document.querySelector('details.sek[data-sek="' + c.dataset.tun + '"]')) c.remove(); });
     // Aufklappen merken; Kacheln springen zum Bereich
     document.querySelectorAll('details.sek').forEach((el) => el.addEventListener('toggle', () => { AUF[el.dataset.sek] = el.open; }));
     document.querySelectorAll('.blick [data-ziel]').forEach((k) => k.addEventListener('click', () => {

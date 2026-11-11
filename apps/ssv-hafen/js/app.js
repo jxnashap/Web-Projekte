@@ -29,9 +29,9 @@
   const BEREICHE = [
     ['uebersicht', 'Übersicht', [['uebersicht', 'Übersicht']]],
     ['hafen', 'Hafen', [['plan', 'Hafenplan'], ['plaetze', 'Liegeplätze'], ['belegung', 'Belegung'], ['warteliste', 'Warteliste']]],
-    ['gaeste', 'Gäste & Schild', [['gaeste', 'Gastlieger'], ['abwesenheiten', 'Grünes Schild']]],
+    ['gaeste', 'Gäste & grünes Schild', [['gaeste', 'Gastlieger'], ['abwesenheiten', 'Grünes Schild']]],
     ['mitglieder', 'Mitglieder & Boote', [['eigner', 'Mitglieder'], ['boote', 'Boote'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
-    ['betrieb', 'Betrieb', [['arbeitsdienst', 'Arbeitsdienst'], ['arbeitsbereiche', 'Arbeitsgruppen'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen'], ['veranstaltungen', 'Veranstaltungen']]],
+    ['betrieb', 'Arbeit & Termine', [['arbeitsdienst', 'Arbeitsdienst'], ['arbeitsbereiche', 'Arbeitsgruppen'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen'], ['veranstaltungen', 'Veranstaltungen']]],
     ['finanzen', 'Finanzen', [['finanzen', 'Übersicht'], ['abrechnung', 'Abrechnung & Lastschrift'], ['kontoauszug', 'Kontoauszug'], ['gebuehren', 'Gebührenordnung']]],
     ['verwaltung', 'Verwaltung', [['einstellungen', 'Einstellungen'], ['verlauf', 'Änderungsverlauf']]]
   ];
@@ -94,7 +94,7 @@
     });
   }).observe(document.getElementById('main'), { childList: true, subtree: true });
   function kopf(titel, unter, aktionen) { return '<div class="kopf"><div><h1>' + titel + '</h1>' + (unter ? '<p>' + unter + '</p>' : '') + '</div><div class="aktionen">' + (aktionen || '') + '</div></div>'; }
-  const DEMO = DB ? '' : '<div class="demo-band"><strong>Demo:</strong> Alle Personen, Boote und Bankdaten sind erfunden. Gespeichert wird nur in diesem Browser – im Echtbetrieb arbeiten alle mit derselben Vereinsdatenbank. Die Zuordnung der Brücken und die Box-Maße sind Annahmen, bis der Verein sie bestätigt.</div>';
+  const DEMO = DB ? '' : '<div class="demo-band"><strong>Demo:</strong> alle Daten sind erfunden und bleiben in diesem Browser.</div>';
   const planAnnahme = () => !d.einstellungen.plan_bestaetigt;
   const iban = (s) => bankSichtbar() ? esc(String(s || '').replace(/(.{4})/g, '$1 ').trim()) : (s ? '•••• ' + esc(String(s).slice(-4)) : '');
   const bootTxt = (b) => b ? '„' + esc(b.name) + '“ · ' + esc(b.typ) : '–';
@@ -1589,7 +1589,7 @@
       '<select class="suche" id="r-jahr" style="min-width:0"><option value="">alle Jahre</option>' + jahre.map((j) => '<option>' + j + '</option>').join('') + '</select>' +
       '<select class="suche" id="r-status" style="min-width:0"><option value="">jeder Stand</option><option value="nicht_bezahlt">noch nicht bezahlt</option>' + Object.entries(RSTATUS).map(([k, [t]]) => '<option value="' + k + '">' + t + '</option>').join('') + '</select></div>' +
       '<p id="r-summe" style="font-size:13px;color:var(--muted);margin:0 0 6px"></p>' +
-      '<table class="tab"><thead><tr><th>Nr.</th><th>Datum</th><th>Mitglied</th><th>Periode</th><th class="r">Betrag</th><th>Zahlung</th><th>Stand</th><th></th></tr></thead><tbody id="r-liste"></tbody></table><div id="r-mehr"></div></div>';
+      '<table class="tab"><thead><tr><th>Nr.</th><th>Datum</th><th>Mitglied</th><th>Art</th><th class="r">Betrag</th><th>Zahlung</th><th>Stand</th><th></th></tr></thead><tbody id="r-liste"></tbody></table><div id="r-mehr"></div></div>';
     ['art', 'jahr', 'status'].forEach((k) => { $('#r-' + k).value = abrStand[k]; });
     const rListe = () => {
       const q = abrStand.such.trim().toLowerCase();
@@ -2241,6 +2241,152 @@
       arbeitsdienst: d.arbeitsdienst.filter((a) => a.status === 'eingereicht').length };
     Object.keys(z).forEach((t) => { if (!darf(t)) z[t] = 0; }); return z;
   }
+  /* ============================================================ Schriftgröße
+   * „Schrift größer“ gilt für dieses Gerät (localStorage) – auch in Mein SSV und der Getränkekasse (gleicher Schlüssel). */
+  const SCHRIFT = 'ssv-schrift-gross';
+  const schriftGross = () => { try { return localStorage.getItem(SCHRIFT) === '1'; } catch (e) { return false; } };
+  const schriftSetzen = (an) => { try { localStorage.setItem(SCHRIFT, an ? '1' : '0'); } catch (e) { /* egal */ } document.documentElement.classList.toggle('schrift-gross', an); };
+  document.documentElement.classList.toggle('schrift-gross', schriftGross());
+  document.addEventListener('click', (e) => { if (!e.target.closest('#schrift')) return; schriftSetzen(!schriftGross()); nav(); toast(schriftGross() ? 'Schrift ist jetzt größer.' : 'Schrift ist wieder normal.'); });
+
+  /* ============================================================ Suche „Was suchen Sie?“
+   * Findet Aufgaben („Lastschrift einziehen“), Seiten, Hilfe-Antworten und Datensätze (Mitglieder, Boote, Plätze,
+   * Rechnungen, Gäste, Veranstaltungen, Schäden). Groß-/Kleinschreibung, Umlaute und kleine Tippfehler sind egal. */
+  const norm = (s) => String(s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, ' ').trim();
+  const abstand = (a2, b2) => {   // Levenshtein, früh abbrechen ab 2
+    if (Math.abs(a2.length - b2.length) > 1) return 2; const v = Array.from({ length: b2.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a2.length; i++) { let prev = v[0]; v[0] = i; let min = v[0];
+      for (let j = 1; j <= b2.length; j++) { const t = v[j]; v[j] = Math.min(v[j] + 1, v[j - 1] + 1, prev + (a2[i - 1] === b2[j - 1] ? 0 : 1)); prev = t; min = Math.min(min, v[j]); }
+      if (min > 1) return 2; }
+    return v[b2.length]; };
+  // Punktzahl eines Eintrags für die Suchwörter (0 = passt nicht); Titelwörter zählen mehr als Stichwörter
+  function trefferWert(q, titel, mehr) {
+    const tw = norm(titel).split(' '), mw = norm(mehr).split(' ').filter(Boolean); let summe = 0;
+    for (const w of q) {
+      let best = 0;
+      const pruefe = (liste, faktor) => liste.forEach((x) => { const s2 = x === w ? 10 : x.startsWith(w) ? 7 : (w.length >= 3 && x.includes(w)) ? 4 : (w.length >= 4 && x.length >= 4 && abstand(w, x.slice(0, w.length + 1)) <= 1) ? 3 : 0; if (s2 * faktor > best) best = s2 * faktor; });
+      pruefe(tw, 1.5); pruefe(mw, 1);
+      if (!best) return 0; summe += best;
+    }
+    return summe;
+  }
+  // Aufgaben: was man tun will – mit Wörtern, die Leute dafür benutzen
+  const AUFGABEN = [
+    ['Neues Mitglied anlegen', 'mitglied person neu anlegen aufnehmen eintragen hinzufuegen', 'eigner', '#neu'],
+    ['Mitglieder importieren (Excel/CSV)', 'import excel csv liste einlesen easyverein mitgliederliste', 'eigner', '#import'],
+    ['Aufnahmeanträge bearbeiten', 'antrag aufnahme beitritt neue mitglieder bewerbung', 'antraege'],
+    ['Boot anmelden', 'boot schiff neu anmelden eintragen yacht', 'boote', '#neu'],
+    ['Gastlieger einweisen', 'gast gastlieger gastboot einweisen ankunft besucher', 'gaeste', '#neu'],
+    ['Grünes Schild / Abwesenheit eintragen', 'gruenes schild abwesenheit unterwegs platz frei urlaub toern', 'abwesenheiten', '#neu'],
+    ['Hafenplan ansehen', 'hafenplan karte plan steg bruecke luftbild liegeplatz belegung', 'plan'],
+    ['Liegeplatz vergeben (Belegung)', 'liegeplatz vergeben belegung zuweisen box platz sommer winter', 'belegung'],
+    ['Warteliste ansehen', 'warteliste warten liegeplatz anspruch', 'warteliste'],
+    ['Ein-/Auslagern und Kran planen', 'kran kranen einlagern auslagern winterlager slippen mast', 'lagern'],
+    ['Arbeitsstunden erfassen', 'arbeitsdienst stunden arbeitsstunden erfassen bestaetigen', 'arbeitsdienst', '#neu'],
+    ['Arbeitsgruppen und Aufgabenliste', 'arbeitsgruppe gruppe aufgabe aufgabenliste einkaufsliste team', 'arbeitsbereiche'],
+    ['Schaden oder Wartung melden', 'schaden kaputt wartung reparatur defekt melden', 'aufgaben', '#neu'],
+    ['Mitteilung an alle Mitglieder', 'mitteilung nachricht info rundschreiben sturmwarnung push benachrichtigung', 'mitteilungen', '#neu'],
+    ['Veranstaltung anlegen / einladen', 'veranstaltung termin fest feier einladen einladung wintertreffen jhv versammlung ansegeln', 'veranstaltungen', '#neu'],
+    ['Rechnungen erstellen (Beitrag, Sommer, Winter)', 'rechnung rechnungen erstellen abrechnen abrechnung beitrag winterlager sommer gebuehren', 'abrechnung'],
+    ['Lastschrift einziehen', 'lastschrift einziehen einzug sepa bank datei abbuchen', 'abrechnung'],
+    ['Zahlung von Hand buchen', 'zahlung buchen bezahlt eingang ueberweisung teilzahlung', 'abrechnung'],
+    ['Kontoauszug abgleichen', 'kontoauszug bank umsaetze abgleich zahlungseingang camt csv onlinebanking', 'kontoauszug'],
+    ['Finanzen im Überblick', 'finanzen geld einnahmen offen ueberblick getraenke kasse summe', 'finanzen'],
+    ['Gebührenordnung ändern', 'gebuehrenordnung preise gebuehren beitrag hoehe aendern', 'gebuehren'],
+    ['Verbandsmeldung (Bestandserhebung)', 'verband meldung bestandserhebung statistik landessportverband', 'verband'],
+    ['Einstellungen (Verein, Bank, Kran)', 'einstellungen bank iban glaeubiger kran gewicht verein adresse paypal', 'einstellungen'],
+    ['Änderungen nachverfolgen (Verlauf)', 'verlauf aenderung wer hat protokoll historie', 'verlauf'],
+    ['Datensicherung herunterladen', 'sicherung backup datensicherung export', 'einstellungen']
+  ];
+  // Kurze Hilfe in Schritten (auch über die Suche erreichbar)
+  const HILFE = [
+    ['Wie ziehe ich die Beiträge per Lastschrift ein?', 'lastschrift beitrag einziehen sepa', 'abrechnung', ['Finanzen → „Abrechnung & Lastschrift“ öffnen.', 'Oben „Beitrag …“ wählen und die Prüfliste ansehen.', '„Rechnungen erstellen“ drücken – die Mitglieder sehen sie sofort in „Mein SSV“.', 'Bei „Lastschrift“ die Datei erzeugen und im Online-Banking hochladen.', 'Kommt das Geld an: Kontoauszug einlesen – fertig.']],
+    ['Wie trage ich ein neues Mitglied ein?', 'mitglied neu aufnehmen', 'eigner', ['Mitglieder & Boote → „Mitglieder“.', 'Oben rechts „+ Person“.', 'Name, Anschrift und Mitgliedsart eintragen, für die Lastschrift auch IBAN und Mandat.', '„Speichern“.']],
+    ['Wie weise ich einen Gast ein?', 'gast einweisen gastlieger', 'gaeste', ['Gäste & Schild → „Gastlieger“.', '„+ Gast einweisen“ drücken.', 'Bootsname, Länge und Nächte eintragen – das Programm schlägt freie Plätze vor.', 'Platz wählen und speichern. Bezahlt der Gast, „Eingang bestätigen“.']],
+    ['Was bedeutet das grüne Schild?', 'gruenes schild abwesenheit', 'abwesenheiten', ['Ein Mitglied ist mit dem Boot unterwegs – der Platz ist frei für Gäste.', 'Mitglieder melden das selbst in „Mein SSV“, der Hafenmeister sieht es im Hafenplan grün.', 'Kommt das Mitglied früher zurück, beendet es die Abwesenheit selbst.']],
+    ['Wie gleiche ich den Kontoauszug ab?', 'kontoauszug abgleich bank', 'kontoauszug', ['Im Online-Banking die Umsätze exportieren (CAMT oder CSV).', 'Finanzen → „Kontoauszug“ öffnen und die Datei hineinziehen.', 'Grün markierte Zuordnungen sind sicher – Häkchen lassen. Gelbe Vorschläge prüfen.', '„Buchen“ drücken. Was übrig bleibt, steht auf der Klärliste.']],
+    ['Wie lade ich zu einer Veranstaltung ein?', 'veranstaltung einladen zusage', 'veranstaltungen', ['Arbeit & Termine → „Veranstaltungen“ → „+ Veranstaltung“.', 'Datum, Anmeldefrist, Plätze und Kosten eintragen, „Einladen“.', 'Die Mitglieder sagen in „Mein SSV“ zu oder ab. Unter „Teilnehmer“ steht, wer kommt.']],
+    ['Wie melde ich einen Schaden?', 'schaden melden kaputt', 'aufgaben', ['Arbeit & Termine → „Schäden & Wartung“ → „+ Schaden / Wartung“.', 'Kurz beschreiben, wo und was – ein Foto hilft.', 'Dringlichkeit wählen und speichern. Mitglieder können Schäden auch in „Mein SSV“ melden.']],
+    ['Wie bestätige ich Arbeitsstunden?', 'arbeitsstunden bestaetigen arbeitsdienst', 'arbeitsdienst', ['Arbeit & Termine → „Arbeitsdienst“.', 'Gemeldete Stunden stehen oben. „Bestätigen“ oder „Ablehnen“ drücken.']],
+    ['Wie mache ich die Schrift größer?', 'schrift groesser lesen sehen brille zoom', '', ['Links unten „Schrift größer“ drücken (am Handy im Menü).', 'Die Einstellung gilt für dieses Gerät, auch für „Mein SSV“.', 'Außerdem geht immer: Strg und + (am Mac ⌘ und +).']],
+    ['Was ist der Unterschied zwischen Übersicht und den Bereichen?', 'uebersicht start anfang was ist zu tun', 'uebersicht', ['Die Übersicht zeigt nur, was heute wichtig ist und was ansteht – mit Pfeil direkt zur richtigen Stelle.', 'In den Bereichen links (z. B. „Mitglieder & Boote“) findet man alles zum Nachschlagen.', 'Oder oben „Suchen“ und einfach eintippen, was man sucht.']]
+  ];
+  let suchWahl = 0, suchListe = [];
+  function suchIndex() {
+    const l = [];
+    BEREICHE.forEach(([, bn, ts]) => ts.forEach(([t, n]) => { if (darf(t)) l.push({ g: 'Seiten', t: n, u: bn, w: bn + ' ' + n, los: () => zeige(t) }); }));
+    AUFGABEN.forEach(([t, w, ziel, klick]) => { if (darf(ziel)) l.push({ g: 'Aufgaben', t, u: '', w, los: () => { zeige(ziel); if (klick) setTimeout(() => { const k = $(klick); if (k) k.click(); }, 60); } }); });
+    HILFE.forEach(([t, w, ziel, schritte]) => { if (!ziel || darf(ziel)) l.push({ g: 'Hilfe', t, u: 'Kurz erklärt', w, los: () => hilfeZeigen(t, schritte, ziel) }); });
+    if (darf('eigner')) d.mitglieder.forEach((m) => l.push({ g: 'Mitglieder', t: m.nachname + ', ' + m.vorname, u: [H.ART[m.art], 'Nr. ' + m.nr, m.ort].filter(Boolean).join(' · '), w: [m.vorname, m.nachname, m.nr, m.ort, m.email, m.tel].join(' '), los: () => { zeige('eigner'); mitgliedAkte(m); } }));
+    if (darf('boote')) d.boote.forEach((b) => { const m = Q.mitglied(b.eigner_id); l.push({ g: 'Boote', t: '„' + b.name + '“', u: [b.typ, m && Q.name(m), b.segelnr].filter(Boolean).join(' · '), w: [b.name, b.typ, b.segelnr, m && m.nachname, 'boot'].join(' '), los: () => { zeige('boote'); bootForm(b); } }); });
+    if (darf('plan')) d.liegeplaetze.forEach((p) => { const bel = Q.belegungPlatz(SAISON, 'sommer', p.id); const b = bel && Q.boot(bel.boot_id);
+      l.push({ g: 'Liegeplätze', t: (p.box === 'L' ? 'Längsseits ' : 'Platz ') + p.nr, u: [H.BRUECKE[p.bruecke], b ? '„' + b.name + '“' : 'frei im Sommer ' + SAISON].filter(Boolean).join(' · '), w: ['platz', 'liegeplatz', p.nr, p.id, H.BRUECKE[p.bruecke], b && b.name].join(' '),
+        los: () => { Object.assign(planStand, { markiere: p.id, fokus: true, vb: null, modus: 'sommer', ansicht: 'gesamt' }); zeige('plan'); } }); });
+    if (darf('plan')) (d.landplaetze || []).forEach((p) => l.push({ g: 'Liegeplätze', t: 'Landplatz ' + (p.bez || p.id), u: 'Winterlager', w: ['landplatz', 'winterlager', 'lager', p.id, p.bez].join(' '),
+      los: () => { Object.assign(planStand, { markiere: p.id, fokus: true, vb: null, modus: 'winter', ansicht: 'land' }); zeige('plan'); } }));
+    if (darf('abrechnung')) d.rechnungen.forEach((r) => l.push({ g: 'Rechnungen', t: r.nr, u: [r.empfaenger.vorname + ' ' + r.empfaenger.nachname, H.periodeText(r), H.geld(r.summe), Q.rest(r) > 0 ? 'offen ' + H.geld(Q.rest(r)) : r.storniert_am ? 'storniert' : 'bezahlt'].join(' · '),
+      w: ['rechnung', r.nr, r.empfaenger.vorname, r.empfaenger.nachname, H.periodeText(r)].join(' '), los: () => { zeige('abrechnung'); zahlungDialog(r); } }));
+    if (darf('gaeste')) d.gaeste.forEach((g2) => l.push({ g: 'Gäste', t: '„' + g2.bootsname + '“', u: [g2.skipper, H.datum(g2.ankunft), g2.platz_id ? platzName(g2.platz_id) : 'ohne Platz'].filter(Boolean).join(' · '), w: ['gast', g2.bootsname, g2.skipper, g2.herkunft].join(' '), los: () => { zeige('gaeste'); gastForm(g2); } }));
+    if (darf('veranstaltungen')) (d.veranstaltungen || []).forEach((v) => l.push({ g: 'Veranstaltungen', t: v.titel, u: H.datum(v.datum) + (v.ort ? ' · ' + v.ort : ''), w: ['veranstaltung', 'termin', v.titel, v.ort].join(' '), los: () => { verAuswahl = v.id; zeige('veranstaltungen'); } }));
+    if (darf('aufgaben')) (d.aufgaben || []).filter((x) => x.status !== 'erledigt').forEach((x) => l.push({ g: 'Schäden & Wartung', t: x.titel, u: [x.ort, x.status === 'in_arbeit' ? 'in Arbeit' : 'offen'].filter(Boolean).join(' · '), w: ['schaden', 'wartung', x.titel, x.ort, x.beschreibung].join(' '), los: () => { zeige('aufgaben'); aufgabeForm(x); } }));
+    if (darf('arbeitsbereiche')) (d.arbeitsbereiche || []).forEach((b) => l.push({ g: 'Arbeitsgruppen', t: b.name, u: 'Arbeitsgruppe', w: ['gruppe', 'arbeitsgruppe', b.name, b.beschreibung].join(' '), los: () => zeige('arbeitsbereiche') }));
+    return l;
+  }
+  const GRUPPEN = ['Aufgaben', 'Hilfe', 'Seiten', 'Mitglieder', 'Boote', 'Liegeplätze', 'Rechnungen', 'Gäste', 'Veranstaltungen', 'Schäden & Wartung', 'Arbeitsgruppen'];
+  const OFT = { vorstand: ['Neues Mitglied anlegen', 'Rechnungen erstellen (Beitrag, Sommer, Winter)', 'Kontoauszug abgleichen', 'Mitteilung an alle Mitglieder', 'Veranstaltung anlegen / einladen'],
+    kassenwart: ['Rechnungen erstellen (Beitrag, Sommer, Winter)', 'Lastschrift einziehen', 'Kontoauszug abgleichen', 'Finanzen im Überblick', 'Zahlung von Hand buchen'],
+    hafenmeister: ['Gastlieger einweisen', 'Hafenplan ansehen', 'Grünes Schild / Abwesenheit eintragen', 'Schaden oder Wartung melden', 'Ein-/Auslagern und Kran planen'],
+    brueckenwart: ['Hafenplan ansehen', 'Liegeplatz vergeben (Belegung)', 'Warteliste ansehen', 'Boot anmelden', 'Gastlieger einweisen'] };
+  function sucheOeffnen(start) {
+    const idx = suchIndex();
+    const el = modal('<h2 class="such-titel">Was suchen Sie?</h2><div class="such-feld"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>' +
+      '<input id="such-ein" type="search" autocomplete="off" spellcheck="false" placeholder="z. B. Nachname, Bootsname, Platz 12, Rechnung, Lastschrift" aria-label="Suchbegriff" aria-controls="such-erg"></div>' +
+      '<div id="such-erg" class="such-erg" role="listbox" aria-label="Suchergebnisse"></div>', true);
+    el.querySelector('.modal-karte').classList.add('such-karte');
+    const ein = $('#such-ein', el), erg = $('#such-erg', el);
+    const zeigen = () => {
+      const q = norm(ein.value).split(' ').filter(Boolean);
+      if (!q.length) {
+        const oft = (OFT[rolle] || OFT.vorstand).map((t) => idx.find((x) => x.g === 'Aufgaben' && x.t === t)).filter(Boolean);
+        suchListe = oft.concat(idx.filter((x) => x.g === 'Hilfe').slice(0, 4));
+        erg.innerHTML = '<p class="such-tipp">Tippen Sie einfach ein, was Sie suchen oder tun möchten – einen Namen, ein Boot, eine Platznummer, eine Rechnungsnummer oder eine Aufgabe wie „Lastschrift“.</p>' +
+          '<h3>Häufig gebraucht</h3>' + oft.map((x, i) => zeile(x, i)).join('') + '<h3>Kurz erklärt</h3>' + suchListe.slice(oft.length).map((x, i) => zeile(x, oft.length + i)).join('');
+      } else {
+        const tr = idx.map((x) => ({ x, s: trefferWert(q, x.t, x.w + ' ' + x.u) })).filter((y) => y.s > 0).sort((a2, b2) => b2.s - a2.s);
+        const je = {}; tr.forEach(({ x }) => { (je[x.g] = je[x.g] || []).push(x); });
+        const reihe = GRUPPEN.filter((g) => je[g]).sort((a2, b2) => (tr.findIndex((y) => y.x.g === a2)) - (tr.findIndex((y) => y.x.g === b2)));
+        suchListe = []; reihe.forEach((g) => { suchListe.push(...je[g].slice(0, g === 'Seiten' ? 3 : 6)); });
+        let i = 0;
+        erg.innerHTML = suchListe.length ? reihe.map((g) => '<h3>' + g + (je[g].length > 6 ? ' <small>(' + je[g].length + ', die ersten 6)</small>' : '') + '</h3>' + je[g].slice(0, g === 'Seiten' ? 3 : 6).map((x) => zeile(x, i++)).join('')).join('')
+          : '<p class="such-tipp"><strong>Nichts gefunden zu „' + esc(ein.value) + '“.</strong><br>Versuchen Sie ein anderes Wort – zum Beispiel nur den Nachnamen, den Bootsnamen oder eine Nummer.</p>';
+      }
+      suchWahl = 0; markieren();
+    };
+    const zeile = (x, i) => '<button type="button" class="such-zeile" role="option" data-i="' + i + '"><span class="such-t">' + esc(x.t) + '</span>' + (x.u ? '<span class="such-u">' + esc(x.u) + '</span>' : '') + '<span class="such-pfeil" aria-hidden="true">→</span></button>';
+    const markieren = () => erg.querySelectorAll('.such-zeile').forEach((b2) => { const an = Number(b2.dataset.i) === suchWahl; b2.classList.toggle('gewaehlt', an); b2.setAttribute('aria-selected', an); if (an) b2.scrollIntoView({ block: 'nearest' }); });
+    const los = (i) => { const x = suchListe[i]; if (!x) return; zu(); x.los(); };
+    ein.addEventListener('input', zeigen);
+    ein.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); suchWahl = Math.min(suchListe.length - 1, suchWahl + 1); markieren(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); suchWahl = Math.max(0, suchWahl - 1); markieren(); }
+      else if (e.key === 'Enter') { e.preventDefault(); los(suchWahl); }
+    });
+    erg.addEventListener('click', (e) => { const b2 = e.target.closest('.such-zeile'); if (b2) los(Number(b2.dataset.i)); });
+    if (start) ein.value = start;
+    zeigen(); setTimeout(() => ein.focus(), 40);
+  }
+  function hilfeZeigen(titel, schritte, ziel) {
+    const el = modal('<h2>' + esc(titel) + '</h2><ol class="hilfe-schritte">' + schritte.map((s2) => '<li>' + esc(s2) + '</li>').join('') + '</ol>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Schließen</button>' + (ziel && darf(ziel) ? '<button class="btn primaer" id="hilfe-hin">Dorthin</button>' : '') + '</div>');
+    const h2 = $('#hilfe-hin', el); if (h2) h2.addEventListener('click', () => { zu(); zeige(ziel); });
+  }
+  document.addEventListener('click', (e) => { if (e.target.closest('[data-suche]')) { e.preventDefault(); sucheOeffnen(); } });
+  document.addEventListener('keydown', (e) => {
+    if (!rolle) return;
+    const tipp = e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName);
+    if ((e.key === 'k' && (e.ctrlKey || e.metaKey)) || (e.key === '/' && !tipp && !$('#modal').firstChild)) { e.preventDefault(); if (!$('#such-ein')) sucheOeffnen(); }
+  });
+
   function nav() {
     const z = zahlenJe(); const aktB = bereichVon(tab);
     const sichtbar = BEREICHE.map(([id, n, ts]) => [id, n, ts.filter(([t]) => darf(t))]).filter(([, , ts]) => ts.length);
@@ -2249,14 +2395,15 @@
     const aktName = (sichtbar.find(([id]) => id === aktB) || [, 'Übersicht'])[1];
     $('#nav').classList.remove('offen'); document.body.classList.remove('nav-auf');
     $('#nav').innerHTML = '<div class="nav-leiste"><svg class="stander"><use href="#stander"/></svg><strong>' + aktName + '</strong>' +
-      '<button id="navauf" aria-expanded="false" aria-controls="nav-inhalt">Menü' + (gesamt ? '<span class="zahl">' + gesamt + '</span>' : '') + '</button></div><div class="nav-inhalt" id="nav-inhalt">' +
+      '<button class="such-knopf-m" data-suche aria-label="Suchen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>Suchen</span></button><button id="navauf" aria-expanded="false" aria-controls="nav-inhalt">Menü' + (gesamt ? '<span class="zahl">' + gesamt + '</span>' : '') + '</button></div><div class="nav-inhalt" id="nav-inhalt">' +
       '<div class="marke"><svg class="stander"><use href="#stander"/></svg><div><strong>Hafen-Manager</strong><span>SSV · Teerhofinsel</span></div></div>' +
       '<div class="rolle-chip">Angemeldet als <strong>' + ROLLEN[rolle].name + '</strong><label class="saison-wahl">Saison <select id="saison-wahl">' +
         [SAISON - 1, SAISON, SAISON + 1].map((j) => '<option' + (j === SAISON ? ' selected' : '') + '>' + j + '</option>').join('') + '</select></label></div>' +
+      '<button class="such-knopf" data-suche><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>Suchen …</span><kbd>Strg K</kbd></button>' +
       '<div class="nav-bereiche">' + sichtbar.map(([id, n, ts]) => { const ziel = zuletzt[id] && darf(zuletzt[id]) ? zuletzt[id] : ts[0][0]; const s = summe(ts);
         return '<button data-tab="' + ziel + '" data-bereich="' + id + '" data-tabs="' + ts.map(([t]) => t).join(' ') + '" class="' + (id === aktB ? 'aktiv' : '') + '"' + (id === aktB ? ' aria-current="page"' : '') + '>' +
           '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[id] + '</svg><span>' + n + '</span>' + (s ? '<span class="zahl">' + s + '</span>' : '') + '</button>'; }).join('') + '</div>' +
-      '<div class="nav-unten"><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">' + (DB ? 'Abmelden' : 'Rolle wechseln') + '</button></div></div>';
+      '<div class="nav-unten"><button id="schrift" aria-pressed="' + schriftGross() + '">' + (schriftGross() ? 'Schrift normal' : 'Schrift größer') + '</button><a href="mein-ssv.html" target="_blank">Mein SSV (Mitglieder) ↗</a><button id="abmelden">' + (DB ? 'Abmelden' : 'Rolle wechseln') + '</button></div></div>';
   }
   // Reiter des aktuellen Bereichs über dem Seiteninhalt
   function unterNav() {
@@ -2276,11 +2423,29 @@
     if (!k) { k = document.createElement('button'); k.id = 'schnell'; k.className = 'schnell'; k.type = 'button'; document.body.appendChild(k); k.addEventListener('click', () => SCHNELL[rolle] && SCHNELL[rolle][1]()); }
     k.textContent = s[0];
   }
+  /* Weniger auf einmal: lange Erklärtexte stehen hinter „Erklärung anzeigen“, lange Untertitel zeigen erst den ersten Satz.
+   * Warnungen, Fehler und Hinweise mit Knöpfen oder Eingaben bleiben immer sichtbar. */
+  function einklappen(root) {
+    if (!root) return;
+    root.querySelectorAll('.hinweis').forEach((h) => {
+      if (h.closest('details.erklaer, .modal, .demo-band') || /\b(warn|ok|fehler|stichtag|offen)\b/.test(h.className)) return;
+      if (h.querySelector('button, input, select, textarea, form') || h.textContent.trim().length < 170) return;
+      const det = document.createElement('details'); det.className = 'erklaer';
+      det.innerHTML = '<summary>Erklärung anzeigen</summary>'; h.replaceWith(det); det.appendChild(h);
+      det.addEventListener('toggle', () => { det.firstChild.textContent = det.open ? 'Erklärung ausblenden' : 'Erklärung anzeigen'; });
+    });
+    const p = root.querySelector('.kopf > div > p');
+    if (p && !p.children.length && p.textContent.length > 120) {
+      const voll = p.textContent; const m = voll.match(/^(.{30,110}?[.:!?])\s/) || voll.match(/^(.{30,110}?)\s·\s/);
+      if (m) { p.textContent = m[1] + ' '; const k = document.createElement('button'); k.type = 'button'; k.className = 'kopf-mehr'; k.textContent = 'mehr'; k.setAttribute('aria-label', 'Ganzen Text zeigen');
+        k.addEventListener('click', () => { p.textContent = voll; }); p.appendChild(k); }
+    }
+  }
   function zeige(t, ruhig) {
     if (!darf(t)) t = 'uebersicht';
     document.body.classList.remove('plan-vollbild'); if (t !== 'plan') planStand.voll = false;
     if (t !== 'veranstaltungen') verAuswahl = null;
-    const y = window.scrollY; const vorher = tab; tab = t; zuletzt[bereichVon(t)] = t; nav(); V[t]($('#main'));
+    const y = window.scrollY; const vorher = tab; tab = t; zuletzt[bereichVon(t)] = t; nav(); V[t]($('#main')); einklappen($('#main'));
     const r = unterNav(); if (r) $('#main').insertAdjacentHTML('afterbegin', r);
     window.scrollTo(0, ruhig ? y : 0); schnellknopf();
     // neuer Bereich/Reiter → eigener Verlaufseintrag, damit die Zurück-Taste funktioniert

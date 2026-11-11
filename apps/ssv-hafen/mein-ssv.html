@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="css/hafen.css">
 <style>
   .mein-kopf { background: var(--navy); color: #fff; padding: 18px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-  .mein-kopf h1 { color: #fff; font-size: 24px; } .mein-kopf p { margin: 2px 0 0; opacity: .7; font-size: 13px; }
+  .mein-kopf h1 { color: #fff; font-size: 24px; } .mein-kopf p { margin: 2px 0 0; opacity: .8; font-size: 14.5px; }
   .mein-kopf select { margin-left: auto; padding: 8px 10px; border-radius: 9px; border: 0; max-width: 100%; color: var(--ink); background: #fff; }
   .mein { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
   .mein-raster { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
@@ -22,6 +22,16 @@
   .mein-bereich { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 0 8px; font-size: 14px; }
   .mein-bereich p { margin: 4px 0; } .mein-bereich ul { margin: 6px 0 0; padding-left: 18px; } .mein-bereich li { margin: 2px 0; } .mein-bereich small { color: var(--muted); }
   .mein-bereich-kopf strong { font-size: 15px; color: var(--navy); }
+  .mein-suche { background: #fff; border-radius: 16px; box-shadow: var(--schatten); padding: 14px 16px; margin: 0 0 14px; }
+  .mein-suche > label { display: block; font-family: 'Playfair Display', Georgia, serif; font-size: 19px; color: var(--navy); margin: 0 0 8px; }
+  .mein-such-erg { margin-top: 6px; } .mein-such-erg:empty { display: none; }
+  .mein-schnell { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chip { border: 1px solid var(--line); background: #f6f4ee; color: var(--navy); border-radius: 99px; padding: 8px 14px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; min-height: 40px; }
+  .chip:hover { border-color: var(--navy-3); }
+  .mein-frage { border-top: 1px solid var(--line); padding: 10px 12px; } .mein-frage summary { cursor: pointer; font-weight: 600; color: var(--navy); } .mein-frage p { margin: 8px 0 0; }
+  .schrift-m { margin-left: auto; background: rgba(255,255,255,.14) !important; color: #fff !important; box-shadow: none !important; }
+  #wer + .schrift-m { margin-left: 0; }
+  html.schrift-gross .chip { font-size: 16.5px; } html.schrift-gross .mein-suche > label { font-size: 21px; }
   .ver-karte { display: grid; grid-template-columns: 54px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
   .ver-karte:first-child { border-top: 0; padding-top: 2px; }
   .ver-datum { display: flex; flex-direction: column; align-items: center; justify-content: center; align-self: start; padding: 6px 0; border-radius: 10px; background: #E7EEF3; color: var(--navy); line-height: 1.1; }

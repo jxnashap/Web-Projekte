@@ -699,3 +699,84 @@ body.plan-vollbild { overflow: hidden; }
 .ka-fuss .btn { box-shadow: var(--schatten); }
 .ka-knopf { cursor: pointer; }
 @media (max-width: 860px) { .ka-tab th:nth-child(4), .ka-tab td:nth-child(4) { display: none; } }
+
+/* ===================================================================== Lesbarkeit
+   Für alle Altersgruppen: Grundschrift 16 px, Knöpfe mind. 40–44 px hoch, keine winzigen Großbuchstaben-Etiketten.
+   „Schrift größer“ (html.schrift-gross, Schalter unten in der Seitenleiste) legt noch einmal rund 12 % drauf.
+   Nur am Bildschirm – Ausdrucke und PDFs bleiben unverändert. */
+@media screen {
+  body { font-size: 16px; line-height: 1.55; }
+  .btn { font-size: 15px; padding: 10px 16px; min-height: 42px; }
+  .btn.klein { font-size: 14px; padding: 7px 12px; min-height: 36px; }
+  .feld { font-size: 14px; gap: 5px; }
+  .feld input, .feld select, .feld textarea { font-size: 16px; padding: 10px 12px; }
+  .feld small { font-size: 13.5px; }
+  .feld.check { font-size: 15.5px; } .feld.check input { width: 20px; height: 20px; }
+  .tab th { font-size: 13px; letter-spacing: .02em; text-transform: none; }
+  .tab td { padding: 10px 9px; }
+  .tab small, .panel small { font-size: 13.5px; }
+  .tag { font-size: 13px; padding: 2px 9px; }
+  .hinweis { font-size: 15px; line-height: 1.55; }
+  .hinweis-klein { font-size: 14px; }
+  .kopf h1 { font-size: 31px; } .kopf p { font-size: 16px; }
+  .panel h2 { font-size: 20px; }
+  .modal-karte h2 { font-size: 25px; }
+  .kz small { font-size: 12.5px; letter-spacing: .06em; }
+  .kz span { font-size: 14px; }
+  .nav button, .nav a { font-size: 15.5px; padding: 10px 12px; }
+  .marke span { font-size: 11.5px; } .rolle-chip { font-size: 13.5px; }
+  .reiter-titel { font-size: 12.5px; letter-spacing: .08em; }
+  .reiter-liste button { font-size: 15px; padding: 9px 15px; }
+  .zm-punkt { font-size: 15px; padding: 11px 14px; }
+  .todo td { font-size: 15.5px; }
+
+  /* Suche */
+  .nav .such-knopf { display: flex; align-items: center; gap: 10px; width: calc(100% - 16px); margin: 0 8px 12px; padding: 11px 12px; border-radius: 11px; border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.1); color: #fff; font: inherit; font-size: 15.5px; cursor: pointer; text-align: left; }
+  .nav .such-knopf:hover { background: rgba(255,255,255,.16); }
+  .nav .such-knopf span { flex: 1; } .nav .such-knopf kbd { font: inherit; font-size: 11.5px; opacity: .6; border: 1px solid rgba(255,255,255,.3); border-radius: 5px; padding: 0 5px; }
+  .nav .such-knopf-m { display: none; }
+  .such-karte { align-self: flex-start; margin-top: 6vh; }
+  .such-titel { margin-bottom: 10px; }
+  .such-feld { display: flex; align-items: center; gap: 10px; border: 2px solid var(--navy-3); border-radius: 14px; padding: 4px 14px; background: #fff; color: var(--muted); }
+  .such-feld input { flex: 1; border: 0; outline: 0; font-size: 19px; padding: 12px 0; min-width: 0; color: var(--ink); background: transparent; }
+  .such-erg { margin-top: 12px; max-height: 60vh; overflow: auto; }
+  .such-erg h3 { font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted-2); margin: 16px 4px 6px; }
+  .such-erg h3 small { text-transform: none; letter-spacing: 0; font-weight: 500; }
+  .such-zeile { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "t p" "u p"; align-items: center; gap: 0 12px; width: 100%; text-align: left; border: 0; background: none; padding: 10px 12px; border-radius: 11px; cursor: pointer; font: inherit; color: var(--ink); min-height: 48px; }
+  .such-zeile:hover { background: rgba(28,57,135,.04); } .such-zeile.gewaehlt { background: rgba(28,57,135,.09); box-shadow: inset 3px 0 0 var(--navy-3); }
+  .such-t { grid-area: t; font-weight: 600; font-size: 16.5px; color: var(--navy); } .such-u { grid-area: u; font-size: 14px; color: var(--muted); }
+  .such-pfeil { grid-area: p; color: var(--muted); font-size: 18px; }
+  .such-tipp { color: var(--muted); font-size: 15.5px; margin: 6px 4px 4px; }
+  .hilfe-schritte { padding-left: 24px; font-size: 17px; line-height: 1.6; } .hilfe-schritte li { margin: 8px 0; padding-left: 4px; }
+
+  /* Lange Erklärungen zum Aufklappen */
+  details.erklaer { background: rgba(28,57,135,.05); border-radius: 11px; margin: 0 0 12px; }
+  details.erklaer > summary { cursor: pointer; padding: 10px 13px; font-size: 15px; font-weight: 600; color: var(--navy-3); list-style: none; display: flex; align-items: center; gap: 8px; }
+  details.erklaer > summary::-webkit-details-marker { display: none; }
+  details.erklaer > summary::before { content: 'i'; flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid currentColor; font: italic 700 13px/17px Georgia, serif; text-align: center; }
+  details.erklaer > summary::after { content: '▾'; margin-left: auto; transition: transform .2s; }
+  details.erklaer[open] > summary::after { transform: rotate(180deg); }
+  details.erklaer > .hinweis { background: none; margin: 0; padding-top: 0; }
+  .kopf-mehr { border: 0; background: none; color: var(--navy-3); font: inherit; font-weight: 600; cursor: pointer; padding: 0 0 0 4px; text-decoration: underline; }
+
+  /* Schrift größer */
+  html.schrift-gross body { font-size: 18px; }
+  html.schrift-gross .btn { font-size: 16.5px; min-height: 46px; } html.schrift-gross .btn.klein { font-size: 15.5px; min-height: 42px; }
+  html.schrift-gross .feld { font-size: 15.5px; } html.schrift-gross .feld input, html.schrift-gross .feld select, html.schrift-gross .feld textarea { font-size: 18px; }
+  html.schrift-gross .tab td { font-size: 17px; } html.schrift-gross .tab th { font-size: 14.5px; } html.schrift-gross .tab small, html.schrift-gross .panel small { font-size: 15px; }
+  html.schrift-gross .tag { font-size: 14.5px; } html.schrift-gross .hinweis { font-size: 16.5px; }
+  html.schrift-gross .kopf h1 { font-size: 34px; } html.schrift-gross .kopf p { font-size: 17.5px; }
+  html.schrift-gross .panel h2 { font-size: 22px; } html.schrift-gross .kz span { font-size: 15.5px; } html.schrift-gross .kz small { font-size: 14px; }
+  html.schrift-gross .nav button, html.schrift-gross .nav a { font-size: 17px; } html.schrift-gross .reiter-liste button { font-size: 16.5px; }
+  html.schrift-gross .such-t { font-size: 18px; } html.schrift-gross .such-u { font-size: 15.5px; }
+  html.schrift-gross .todo td { font-size: 17px; } html.schrift-gross details.erklaer > summary { font-size: 16.5px; }
+}
+@media screen and (min-width: 861px) { .shell { grid-template-columns: 264px 1fr; } }
+@media screen and (max-width: 860px) {
+  .nav .such-knopf { display: none; }
+  .nav .nav-leiste .such-knopf-m { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; border: 0; background: rgba(255,255,255,.12); color: #fff; font: inherit; font-weight: 600; font-size: 15px; padding: 8px 12px; border-radius: 9px; min-height: 44px; cursor: pointer; }
+  .nav .nav-leiste .such-knopf-m + button { margin-left: 8px; }
+  .such-karte { margin-top: 0; }
+  .such-feld input { font-size: 18px; }
+}
+@media print { .such-knopf, .such-knopf-m, details.erklaer > summary { display: none !important; } details.erklaer > .hinweis { display: block; } }

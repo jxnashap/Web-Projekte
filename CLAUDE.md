@@ -36,7 +36,7 @@ Repo für alle Website-Projekte. Struktur:
   **Ersetzt easyVerein:** Mitgliederstamm (Arten laut Satzung, Geburtsdatum/Geschlecht/Eintritt), CSV-Import,
   Online-Aufnahmeantrag `aufnahme.html` → Vorstand nimmt auf, Beitragseinzug (Gebührenordnung 2024, `SSV-B-…`),
   Verbandsmeldung (Bestandserhebung 1.1.). Website verlinkt Antrag + Mein SSV (`../ssv-hafen/`).
-  Menü: 7 Bereiche (`BEREICHE` in `js/app.js`) mit Reitern oben, Zurück-Taste über `#tab`-Verlauf.
+  Menü: 7 Bereiche (`BEREICHE` in `js/app.js`; „Betrieb“ heißt jetzt „Arbeit & Termine“) mit Reitern oben, Zurück-Taste über `#tab`-Verlauf.
   Hafenplan maßstäblich (1000 × 750 Einheiten = 400 × 300 m) aus einem Lageplan-Datensatz (`STANDARD` in `js/plan.js`, eigener Plan des Vereins in
   `einstellungen.lageplan`, Zeichenfenster `js/plan-editor.js`); Luftbild `img/luftbild-dop20.jpg` = amtliches DOP20, Quellenvermerk
   „© GeoBasis-DE/LVermGeo SH/CC BY 4.0“ muss sichtbar bleiben (Details `RECHERCHE.md`).
@@ -53,6 +53,8 @@ Repo für alle Website-Projekte. Struktur:
   Gestaltung: dezenter Nautik-Stil am Ende von `css/hafen.css` (nur `@media screen`: Seekarten-Gradnetz, Tau-Linien in Messing `--tau`, Kompassrose `--kompass`, Wellenkanten `--wellen-hell`; Druck/PDF unberührt).
   Veranstaltungen (Betrieb → Veranstaltungen, Vorstand/Kassenwart/Brückenwartin): Mitglieder sagen in „Mein SSV“ zu/ab (Frist, Begleitung, max. Plätze – Regeln doppelt in `HAFEN.zusageSetzen` und SQL `meine_zusage`), Teilnehmerliste mit Druck/CSV, Antworten vom Verein `quelle = 'verein'`; „Kosten abrechnen“ erzeugt je Zusage eine Rechnung `SSV-V-…` (periode `veranstaltung`).
   Kontoauszug (Finanzen → Kontoauszug, Vorstand/Kassenwart): `js/kontoauszug.js` liest CAMT.053/CSV (Windows-1252 erkannt) und ordnet zu (Rechnungsnr. im Verwendungszweck/End-to-End, Sammellastschrift `SSV-SEPA-…` oder Betrag, Rücklastschrift, Gast Bootsname+Betrag, Mitglied per IBAN/Name = Vorschlag); gebucht wird in `zahlungen` mit `ref` = Umsatz-Schlüssel (kein Doppelbuchen), Getränke über `SSV.speicher.rechnungBezahlt`.
+  Verständlichkeit (Zielgruppe 50+): Suche „Was suchen Sie?“ (`sucheOeffnen()` in app.js, Strg+K oder „/“, Knopf in Seitenleiste/Kopfleiste) findet Aufgaben (`AUFGABEN` mit Alltagswörtern), Hilfe in Schritten (`HILFE`), Seiten und Datensätze je Rolle – Umlaute/Tippfehler egal; Mein SSV hat „Was möchtest du tun?“ (`TUN`/`FRAGEN` in mein.js);
+  Lesbarkeits-Ebene am Ende von `css/hafen.css` und `ssv-getraenke/css/app.css` (16 px Grundschrift, Knöpfe ≥ 40 px, keine Mini-Großbuchstaben), Schalter „Schrift größer“ (`html.schrift-gross`, localStorage `ssv-schrift-gross`, gilt geräteweit); lange `.hinweis`-Texte klappt `einklappen()` hinter „Erklärung anzeigen“ (Warnungen/Hinweise mit Knöpfen nie), lange Untertitel zeigen erst den ersten Satz.
   Tabellen: eine Hauptaktion je Zeile, Rest im ⋯-Menü (`zeilenMenue()`, fest positioniert); Übersicht max. 5 Punkte je Gruppe, Etikett = Thema.
   **Alle Druck-/PDF-Seiten im SSV-Briefkopf: Flagge oben links + Vereinsadresse rechts** (`kopf` in `js/drucken.js`, `druckKopf()` in app.js für direkt gedruckte Seiten) – Vorgabe des Nutzers.
   Recherche/Annahmen: `RECHERCHE.md`, `PLAN.md`.

@@ -398,3 +398,21 @@ body.rechnung-seite { background: #e9e6df; }
   .a-login form { position: relative; z-index: 1; border-top: 3px solid var(--messing); }
 }
 @media (hover: none) { .a-tab tr:hover td { background: transparent; } }
+
+/* ===================================================================== Lesbarkeit (Kassenwart-Bereich)
+   Wie im Hafen-Manager: größere Schrift, keine winzigen Großbuchstaben-Etiketten, Knöpfe mind. 40 px.
+   „Schrift größer“ (html.schrift-gross) gilt für das ganze Gerät. Rechnungen r-… und Kiosk k-… bleiben unverändert. */
+@media screen {
+  body.admin { font-size: 16px; line-height: 1.55; }
+  .a-btn { font-size: 15px; min-height: 42px; } .a-btn.klein { font-size: 14px; min-height: 36px; padding: 7px 12px; }
+  .a-tab th { font-size: 13px; letter-spacing: .02em; text-transform: none; } .a-tab td { font-size: 15.5px; }
+  .a-tag { font-size: 13px; } .a-feld { font-size: 14px; } .a-feld input, .a-feld select, .a-feld textarea { font-size: 16px; }
+  .a-hinweis { font-size: 15px; } .a-karte small { font-size: 12.5px; letter-spacing: .06em; } .a-karte span { font-size: 14.5px; }
+  .a-nav button, .a-nav a { font-size: 16px; }
+  html.schrift-gross body.admin { font-size: 18px; }
+  html.schrift-gross .a-btn { font-size: 16.5px; min-height: 46px; } html.schrift-gross .a-btn.klein { font-size: 15.5px; min-height: 42px; }
+  html.schrift-gross .a-tab td { font-size: 17px; } html.schrift-gross .a-tab th { font-size: 14.5px; } html.schrift-gross .a-tag { font-size: 14.5px; }
+  html.schrift-gross .a-feld { font-size: 15.5px; } html.schrift-gross .a-feld input, html.schrift-gross .a-feld select, html.schrift-gross .a-feld textarea { font-size: 18px; }
+  html.schrift-gross .a-hinweis { font-size: 16.5px; } html.schrift-gross .a-karte span { font-size: 16px; } html.schrift-gross .a-nav button, html.schrift-gross .a-nav a { font-size: 17.5px; }
+}
+@media screen and (max-width: 860px) { .a-karte small { font-size: 11.5px; } .a-karte span { font-size: 13.5px; } }

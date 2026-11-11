@@ -50,6 +50,7 @@
     <button data-tab="einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Einstellungen</button>
     <div class="a-unten">
       <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h4"/></svg>Zur Kasse</a>
+      <button id="schrift" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19l5-14 5 14M6 14h6M15 19l3-8 3 8M16 17h4"/></svg><span>Schrift größer</span></button>
       <button id="abmelden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>Abmelden</button>
     </div>
   </nav>
@@ -65,5 +66,10 @@
 <script src="js/config.js"></script>
 <script src="js/store.js"></script>
 <script src="js/admin.js"></script>
+<script>
+(function () { var K = 'ssv-schrift-gross'; var an = function () { try { return localStorage.getItem(K) === '1'; } catch (e) { return false; } };
+  var setz = function () { document.documentElement.classList.toggle('schrift-gross', an()); var b = document.getElementById('schrift'); if (b) { b.querySelector('span').textContent = an() ? 'Schrift normal' : 'Schrift größer'; b.setAttribute('aria-pressed', an()); } };
+  setz(); document.addEventListener('click', function (e) { if (!e.target.closest('#schrift')) return; try { localStorage.setItem(K, an() ? '0' : '1'); } catch (x) { /* egal */ } setz(); }); })();
+</script>
 </body>
 </html>
