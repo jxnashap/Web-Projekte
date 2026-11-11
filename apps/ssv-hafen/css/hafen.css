@@ -930,7 +930,7 @@ body.plan-vollbild { overflow: hidden; }
   .pd-legende .lg-boje { width: 3.2mm; height: 3.2mm; border-radius: 50%; } .pd-legende .lg-boje.gruen { background: #2ed47c; } .pd-legende .lg-boje.rot { background: #ee4a3b; }
   .pd-legende .lg-boot { width: 6mm; height: 2.8mm; border-radius: 1mm 60% 60% 1mm / 1mm 50% 50% 1mm; background: #fff; border: .35mm solid #1d2f5f; } .pd-legende .lg-boot.gast { background: #ffe9b0; border-color: #b9790c; } .pd-legende .lg-boot.saison { background: #e6daf6; border-color: #5c4190; } .pd-legende .lg-boot.plane { background: #c9d3df; border-color: #77859a; }
   .pd-legende .lg-feld { width: 5mm; height: 3.2mm; border: .35mm dashed #2fa36b; background: rgba(46,212,124,.25); } .pd-legende .lg-feld.leer { border-color: #8a8266; background: #fff; } .pd-legende .lg-feld.neu { border-color: #c9a400; background: rgba(255,217,74,.4); }
-  .pd-blatt2 { break-before: page; } .pd-zwei { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; align-items: start; } .pd-tab { font-size: 7.6pt; width: 100%; line-height: 1.2; table-layout: fixed; } .pd-tab th:nth-child(1) { width: 9%; } .pd-tab th:nth-child(2) { width: 40%; } .pd-tab th:nth-child(3) { width: 25%; } .pd-tab td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .pd-tab td, .pd-tab th { padding: .6mm 1.5mm; } .pd-tab tr { break-inside: avoid; }
+  .pd-blatt2 { break-before: page; } .pd-zwei { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5mm; align-items: start; } .pd-tab { font-size: 7.6pt; width: 100%; line-height: 1.2; table-layout: fixed; } .pd-tab th:nth-child(1) { width: 11%; } .pd-tab th:nth-child(2) { width: 38%; } .pd-tab th:nth-child(3) { width: 26%; } .pd-tab td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .pd-tab td, .pd-tab th { padding: .6mm 1.5mm; } .pd-tab tr { break-inside: avoid; }
   .hafenplan.druck .lp-nr, .hafenplan.druck .land .lp-nr { opacity: 1; } .hafenplan.druck .lp-boot { opacity: .95; }
   /* helle Fassung: wenig Tinte, klare Linien */
   .hafenplan.druck-hell .pf-wasser { fill: #e3eff6; } .hafenplan.druck-hell .tiefe.t1, .hafenplan.druck-hell .tiefe.t2 { display: none; } .hafenplan.druck-hell .tiefe.t3 { stroke: #cfe2ee; opacity: 1; } .hafenplan.druck-hell .tiefe.saum { stroke: #7fa3bd; opacity: 1; stroke-width: .8; }
@@ -940,3 +940,39 @@ body.plan-vollbild { overflow: hidden; }
   .hafenplan.druck-hell .lp .box { stroke: #33415f; stroke-width: .45; } .hafenplan.druck-hell .lp .leine { stroke: #7d8aa6; } .hafenplan.druck-hell .lp.st-belegt .box, .hafenplan.druck-hell .lp.st-leer .box { fill: #fff; }
   .hafenplan.druck-hell .lp-nr { fill: #111; stroke: #fff; } .hafenplan.druck-hell .pl-label.wasser-text { fill: #55718a; } .hafenplan.druck-hell .lp.st-gesperrt .box { fill: #ddd; }
 }
+/* Gäste: Karte & Kalender */
+.gk-leiste { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end; padding: 14px 16px; margin-bottom: 10px; }
+.gk-leiste .feld { margin: 0; } .gk-leiste .feld > span { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+.gk-zahl { display: flex; gap: 4px; align-items: stretch; } .gk-zahl input { width: 64px; text-align: center; font-weight: 700; } .gk-zahl .btn { min-width: 42px; font-size: 18px; padding: 0; }
+.gk-schnell { display: flex; gap: 6px; flex-wrap: wrap; } .gk-boot { align-self: center; } .gk-boot summary { cursor: pointer; font-weight: 600; color: var(--navy-3); padding: 6px 0; } .gk-masse { display: flex; gap: 10px; margin-top: 6px; } .gk-masse input { width: 110px; }
+.gk-sicht { margin-left: auto; display: flex; gap: 0; } .gk-sicht .btn { border-radius: 0; min-width: 96px; } .gk-sicht .btn:first-child { border-radius: 10px 0 0 10px; } .gk-sicht .btn:last-child { border-radius: 0 10px 10px 0; }
+.gk-summe { margin: 0 0 12px; font-size: 15px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; } .gk-summe .pk-st { margin: 0; }
+.pk-st.aus { color: #5d667d; }
+.lp.st-zuklein .box { fill: rgba(255,255,255,.14); stroke: rgba(255,255,255,.7); stroke-dasharray: 1.4 1.4; }
+.legende .lg-feld.klein { border: 1.5px dashed #8890a8; background: #eef0f5; }
+.gk-frei { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; max-height: 420px; overflow: auto; }
+.gk-frei button { width: 100%; text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 9px 12px; cursor: pointer; font: inherit; display: grid; gap: 2px; border-left: 5px solid #2ed47c; }
+.gk-frei button:hover { background: #f3fbf6; } .gk-frei span { color: var(--muted); font-size: 13.5px; }
+.gk-zurueck { border: 0; background: none; color: var(--navy-3); font: inherit; font-weight: 600; padding: 0 0 8px; cursor: pointer; }
+.gk-monat { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; } .gk-monat-kopf { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.gk-tage { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; } .gk-tage b { font-size: 12px; text-align: center; color: var(--muted); font-weight: 600; }
+.gk-tage .kt { aspect-ratio: 1; border: 0; border-radius: 8px; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; min-height: 36px; }
+.kt.gewaehlt, td.gewaehlt { box-shadow: inset 0 0 0 2.5px var(--navy); } .kt.heute { text-decoration: underline; }
+.z-belegt { background: #d5d9e4; color: #3d4560; } .z-gruen { background: #2ed47c; color: #06381f; } .z-frei { background: #c8f3db; color: #0d5a33; } .z-gast { background: #f3b83c; color: #4a3200; }
+.z-sperr { background: repeating-linear-gradient(45deg, #eceef3 0 4px, #b9bfcd 4px 7px); color: #555; } .z-aus { background: #f4f5f8; color: #b3b8c6; cursor: default !important; }
+.gk-kal-panel { padding: 0; overflow: hidden; } .gk-kal-kopf { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.gk-kal-kopf select { min-height: 36px; border-radius: 9px; border: 1px solid var(--line); padding: 4px 8px; font: inherit; } .gk-nur { margin-left: auto; display: flex; gap: 6px; align-items: center; font-size: 14px; }
+.gk-kal { overflow: auto; max-height: 68vh; } table.kal { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 760px; }
+.kal th, .kal td { border-right: 1px solid #fff; border-bottom: 1px solid #fff; } .kal thead th { position: sticky; top: 0; background: #fff; z-index: 2; font-size: 13px; padding: 4px 2px; text-align: center; color: var(--navy); }
+.kal thead tr:nth-child(2) th { top: 27px; } .kal .kal-monat { text-align: left; padding-left: 8px; font-family: "Playfair Display", serif; font-size: 15px; height: 27px; border-bottom: 1px solid var(--line); }
+.kal .kal-tag small { display: block; font-weight: 500; color: var(--muted); font-size: 11.5px; } .kal .kal-tag.we { background: #f3f4f8; } .kal .kal-tag.heute { color: var(--rot); } .kal .kal-tag.gewaehlt { background: var(--navy); color: #fff; box-shadow: none; } .kal .kal-tag.gewaehlt small { color: #cfd6ea; }
+.kal .kal-platz { position: sticky; left: 0; z-index: 3; background: #fff; text-align: left; min-width: 132px; padding: 0; } .kal thead .kal-platz { z-index: 4; padding: 4px 10px; }
+.kal .kal-platz button { border: 0; background: none; font: inherit; text-align: left; padding: 5px 10px; cursor: pointer; width: 100%; display: flex; gap: 8px; align-items: baseline; } .kal .kal-platz button:hover { background: #f1f4fb; }
+.kal .kal-platz strong { min-width: 26px; font-size: 15px; color: var(--navy); } .kal .kal-platz small { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+.kal td { height: 34px; min-width: 30px; position: relative; padding: 0; } .kal td.klick { cursor: pointer; } .kal td.klick:hover { filter: brightness(.93); }
+.kal-name { position: absolute; left: 4px; top: 50%; transform: translateY(-50%); white-space: nowrap; font-size: 12.5px; font-weight: 700; z-index: 1; pointer-events: none; color: #4a3200; }
+.legende i.kz { width: 18px; height: 12px; border-radius: 3px; border: 0; }
+@media (max-width: 860px) { .gk-sicht { margin-left: 0; width: 100%; } .gk-sicht .btn { flex: 1; } .gk-nur { margin-left: 0; } }
+/* In der Übersicht sind die Bojen größer, damit man frei/belegt auf einen Blick sieht */
+.bo-i { transition: transform .35s ease; } .hafenplan:not(.nah) .bo-i { transform: scale(1.75); }
+.kal td.start { z-index: 2; } .legende i.kz { width: 22px !important; height: 14px !important; display: inline-block; }

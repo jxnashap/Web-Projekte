@@ -192,7 +192,8 @@
     plan.formen.filter((f) => ['gebaeude', 'dach', 'hof', 'parken', 'lagerfl', 'slipfl'].includes(f.art)).forEach((f) => alle.push(...f.p));
     (plan.laengs || []).forEach((l) => alle.push([l.x, l.y])); (plan.punkte || []).forEach((p) => alle.push([p.x, p.y])); alle.push(...land);
     const gesamt = rahmen(alle, 45, 300) || [0, 0, plan.breite, plan.hoehe];
-    const a = { gesamt, land: rahmen(land, 30, 260) || gesamt };
+    const wasser = []; plan.stege.forEach((s) => wasser.push(...stegPunkte(s, plan.m))); (plan.laengs || []).forEach((l) => wasser.push([l.x, l.y]));
+    const a = { gesamt, land: rahmen(land, 30, 260) || gesamt, wasser: rahmen(wasser, 34, 300) || gesamt };
     ['ost', 'west', 'schwimm'].forEach((k) => { a[k] = rahmen(je[k] || [], 24, 200) || gesamt; });
     return a;
   }
@@ -351,8 +352,8 @@
       return `<g class="boot-lage" transform="translate(${f2(-tiefe / 2 + 1.6 + L / 2)} 0) rotate(180)">${bootSvg(L, B, { farbe, motor: istMotor(q.typ) })}</g>`;
     };
     const lichter = [];
-    const boje = (x, y, status, i) => { const art = status === 'gesperrt' || status === 'leer' || status === 'neu' ? 'aus' : FREI[status] ? 'gruen' : 'rot';
-      lichter.push(`<g class="boje bo-${art}" style="--i:${i}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">${art === 'aus' ? '' : `<circle class="halo" r="8.5" fill="url(#halo-${art})"/>`}<circle class="bo-s" cx=".5" cy=".8" r="1.9"/><circle class="bo-k" r="1.8" fill="url(#boje-${art})"/></g>`); };
+    const boje = (x, y, status, i) => { const art = status === 'gesperrt' || status === 'leer' || status === 'neu' || status === 'zuklein' ? 'aus' : FREI[status] ? 'gruen' : 'rot';
+      lichter.push(`<g class="boje bo-${art}" style="--i:${i}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><g class="bo-i">${art === 'aus' ? '' : `<circle class="halo" r="8.5" fill="url(#halo-${art})"/>`}<circle class="bo-s" cx=".5" cy=".8" r="1.9"/><circle class="bo-k" r="1.8" fill="url(#boje-${art})"/></g></g>`); };
 
     const gezeichnet = new Set();
     const wasserPlaetze = geo.plaetze.map((g, idx) => {

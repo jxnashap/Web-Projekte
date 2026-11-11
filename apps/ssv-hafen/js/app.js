@@ -12,8 +12,8 @@
   /* ------------------------------------------------------------ Rollen */
   const ROLLEN = {
     vorstand: { name: 'Vorstand', tabs: '*', bank: true },
-    brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'warteliste', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen'], bank: false },
-    hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'abwesenheiten', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen'], bank: false },
+    brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'gastkarte', 'warteliste', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen'], bank: false },
+    hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'gastkarte', 'abwesenheiten', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen'], bank: false },
     kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'finanzen', 'abrechnung', 'kontoauszug', 'gebuehren', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen', 'einstellungen', 'verlauf'], bank: true }
   };
   // Sieben Bereiche statt neunzehn Menüpunkte; innerhalb eines Bereichs wechseln Reiter oben auf der Seite
@@ -29,7 +29,7 @@
   const BEREICHE = [
     ['uebersicht', 'Übersicht', [['uebersicht', 'Übersicht']]],
     ['hafen', 'Hafen', [['plan', 'Hafenplan'], ['plaetze', 'Liegeplätze'], ['belegung', 'Belegung'], ['warteliste', 'Warteliste']]],
-    ['gaeste', 'Gäste & grünes Schild', [['gaeste', 'Gastlieger'], ['abwesenheiten', 'Grünes Schild']]],
+    ['gaeste', 'Gäste & grünes Schild', [['gaeste', 'Gastlieger'], ['gastkarte', 'Karte & Kalender'], ['abwesenheiten', 'Grünes Schild']]],
     ['mitglieder', 'Mitglieder & Boote', [['eigner', 'Mitglieder'], ['boote', 'Boote'], ['antraege', 'Aufnahmeanträge'], ['verband', 'Verbandsmeldung']]],
     ['betrieb', 'Arbeit & Termine', [['arbeitsdienst', 'Arbeitsdienst'], ['arbeitsbereiche', 'Arbeitsgruppen'], ['lagern', 'Ein-/Auslagern & Kran'], ['aufgaben', 'Schäden & Wartung'], ['mitteilungen', 'Mitteilungen'], ['veranstaltungen', 'Veranstaltungen']]],
     ['finanzen', 'Finanzen', [['finanzen', 'Übersicht'], ['abrechnung', 'Abrechnung & Lastschrift'], ['kontoauszug', 'Kontoauszug'], ['gebuehren', 'Gebührenordnung']]],
@@ -293,8 +293,8 @@
       const zeilen = winter ? PLAN.lagerVon(P).map((g) => { const bel = Q.belegungPlatz(SAISON, per, g.id); const b = bel && Q.boot(bel.boot_id); return [g.id, b ? '„' + b.name + '“' + (b.typ ? ' · ' + b.typ : '') : '– frei –', b ? Q.name(Q.mitglied(b.eigner_id)) : '', b ? masse(b) : '']; })
         : nrn.map((nr) => { const lp = d.liegeplaetze.find((x) => String(x.nr) === nr); if (!lp) return [nr, '– neu –', '', '']; const st = Q.statusWasser(lp, SAISON, planStand.datum); const bel = Q.belegungPlatz(SAISON, 'sommer', lp.id); const b = bel && Q.boot(bel.boot_id); const g = Q.gastAm(lp.id, planStand.datum);
           return [nr, b ? '„' + b.name + '“' + (b.typ ? ' · ' + b.typ : '') : '– frei –', b ? Q.name(Q.mitglied(b.eigner_id)) : '', (g ? 'Gast „' + g.bootsname + '“' : st === 'unterwegs' ? 'grünes Schild bis ' + H.kurz(Q.abwesendAm(lp.id, planStand.datum).bis) : st === 'gesperrt' ? 'gesperrt' : '')]; });
-      const halb = Math.ceil(zeilen.length / 2); const tab = (z) => '<table class="tab pd-tab"><thead><tr><th>Platz</th><th>Boot</th><th>Eigner</th><th>' + (winter ? 'Maße' : 'Hinweis') + '</th></tr></thead><tbody>' + z.map((r) => '<tr><td><strong>' + esc(r[0]) + '</strong></td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td><td>' + (winter ? r[3] : esc(r[3])) + '</td></tr>').join('') + '</tbody></table>';
-      const blatt = document.createElement('div'); blatt.className = 'pd-blatt2'; blatt.innerHTML = druckKopf() + '<div class="pd-titel"><h1>Belegungsliste · ' + esc(winter ? 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) : 'Sommer ' + SAISON + ' · Stand ' + H.datum(planStand.datum)) + '</h1></div><div class="pd-zwei">' + tab(zeilen.slice(0, halb)) + tab(zeilen.slice(halb)) + '</div>';
+      const drittel = Math.ceil(zeilen.length / 3); const tab = (z) => '<table class="tab pd-tab"><thead><tr><th>Platz</th><th>Boot</th><th>Eigner</th><th>' + (winter ? 'Maße' : 'Hinweis') + '</th></tr></thead><tbody>' + z.map((r) => '<tr><td><strong>' + esc(r[0]) + '</strong></td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td><td>' + (winter ? r[3] : esc(r[3])) + '</td></tr>').join('') + '</tbody></table>';
+      const blatt = document.createElement('div'); blatt.className = 'pd-blatt2'; blatt.innerHTML = druckKopf() + '<div class="pd-titel"><h1>Belegungsliste · ' + esc(winter ? 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) : 'Sommer ' + SAISON + ' · Stand ' + H.datum(planStand.datum)) + '</h1></div><div class="pd-zwei">' + tab(zeilen.slice(0, drittel)) + tab(zeilen.slice(drittel, 2 * drittel)) + tab(zeilen.slice(2 * drittel)) + '</div>';
       seite.appendChild(blatt);
     }
     const st = document.createElement('style'); st.id = 'plan-druck-seite'; st.textContent = '@page { size: ' + o.papier + ' landscape; margin: 9mm; }'; document.head.appendChild(st);
@@ -997,6 +997,137 @@
   }
 
   /* ============================================================ Abwesenheiten */
+  /* ============================================================ Gäste: Karte & Kalender („Wer liegt wann wo?“)
+   * Eine Karte für einen Zeitraum (Anreise + Nächte): grüne Boje = im ganzen Zeitraum frei (unvergeben oder grünes Schild
+   * aus „Mein SSV“ / vom Hafenmeister), rot = belegt. Platz antippen → Kalender des Platzes, Gast direkt eintragen.
+   * Der Kalender zeigt dieselben Daten als Zeitleiste je Platz. */
+  const gkStand = { von: null, n: 1, sicht: 'karte', l: '', b: '', platz: null, kalVon: null, wochen: 3, nurFrei: true, vb: null, monat: null };
+  const tagNach = (t, n) => tagVor(t, -n);
+  const WOTAG = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'], MONAT = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+  // Was ist an einem Tag auf einem Wasserplatz los?
+  function tagLage(p, t) {
+    if (p.gesperrt) return { k: 'sperr', txt: 'gesperrt' };
+    const g = Q.gastAm(p.id, t); if (g) return { k: 'gast', txt: 'Gast „' + g.bootsname + '“', gast: g };
+    const bel = Q.belegungPlatz(Number(t.slice(0, 4)), 'sommer', p.id); if (!bel) return { k: 'frei', txt: 'frei (kein Dauerlieger)' };
+    const aw = Q.abwesendAm(p.id, t); if (aw) return { k: 'gruen', txt: 'grünes Schild bis ' + H.kurz(aw.bis) + (aw.gemeldet ? ' · gemeldet: ' + aw.gemeldet : ''), aw };
+    const b = Q.boot(bel.boot_id); return { k: 'belegt', txt: b ? '„' + b.name + '“' : 'belegt', boot: b };
+  }
+  // … und im gewählten Zeitraum (für die Karte)
+  function zeitraumLage(p, von, n, l, b) {
+    const bel = Q.belegungPlatz(Number(von.slice(0, 4)), 'sommer', p.id); const boot = bel ? Q.boot(bel.boot_id) : null;
+    if (p.gesperrt) return { status: 'gesperrt', boot, grund: p.notiz || 'gesperrt' };
+    const gast = naechteVon(von, n).map((t) => Q.gastAm(p.id, t)).find(Boolean);
+    if (gast) return { status: 'gast', gast, boot, grund: 'Gast „' + gast.bootsname + '“ bis ' + H.kurz(abreise(gast)) };
+    const frei = platzPruefen(p, von, n, 0, 0, 0, null);
+    if (!frei.ok) return { status: bel && bel.art === 'saisongast' ? 'saisongast' : 'belegt', boot, grund: frei.gruende[frei.gruende.length - 1] };
+    const passt = platzPruefen(p, von, n, H.dez(gkStand.l) || 0, H.dez(gkStand.b) || 0, 0, null);
+    if (!passt.ok) return { status: 'zuklein', boot, grund: passt.gruende[0] };
+    const aw = frei.art === 'unterwegs' ? Q.abwesendAm(p.id, von) : null;
+    return { status: frei.art === 'unterwegs' ? 'unterwegs' : 'frei', boot, aw };
+  }
+  V.gastkarte = (main) => {
+    const S = gkStand; if (!S.von) S.von = imSommer ? heute : planStand.datum; if (S.von < sd.auslagern) S.von = sd.auslagern; if (S.von >= sd.einlagern) S.von = tagVor(sd.einlagern, 1);
+    S.n = Math.max(1, Math.min(60, Number(S.n) || 1)); const bis = tagNach(S.von, S.n);
+    const L = new Map(d.liegeplaetze.map((p) => [p.id, zeitraumLage(p, S.von, S.n)]));
+    const zahl = (k) => [...L.values()].filter((x) => k.includes(x.status)).length;
+    const zeitraum = H.kurz(S.von) + ' – ' + H.datum(bis) + ' (' + S.n + (S.n > 1 ? ' Nächte' : ' Nacht') + ')';
+    main.innerHTML = kopf('Karte & Kalender', 'Wer liegt wann wo? Zeitraum wählen – grüne Bojen sind frei. Platz antippen und Gast eintragen.', darf('gaeste') ? '<button class="btn primaer" id="gk-neu">+ Gast eintragen</button>' : '') +
+      '<div class="gk-leiste panel"><label class="feld">Anreise<input type="date" id="gk-von" value="' + S.von + '" min="' + sd.auslagern + '" max="' + tagVor(sd.einlagern, 1) + '"></label>' +
+      '<div class="feld"><span>Nächte</span><div class="gk-zahl"><button type="button" class="btn" id="gk-m" aria-label="Eine Nacht weniger">−</button><input type="number" id="gk-n" min="1" max="60" value="' + S.n + '" aria-label="Nächte"><button type="button" class="btn" id="gk-p" aria-label="Eine Nacht mehr">+</button></div></div>' +
+      '<div class="feld"><span>Schnellwahl</span><div class="gk-schnell">' + (imSommer ? '<button type="button" class="btn klein" data-gk-tag="' + heute + '">Heute</button><button type="button" class="btn klein" data-gk-tag="' + tagNach(heute, 1) + '">Morgen</button>' : '') + '<button type="button" class="btn klein" data-gk-schieb="-1">‹ Tag</button><button type="button" class="btn klein" data-gk-schieb="1">Tag ›</button></div></div>' +
+      '<details class="gk-boot"' + (S.l || S.b ? ' open' : '') + '><summary>Passt das Boot? Maße eingeben</summary><div class="gk-masse"><label class="feld">Länge (m)<input id="gk-l" inputmode="decimal" value="' + esc(S.l) + '" placeholder="z. B. 9,5"></label><label class="feld">Breite (m)<input id="gk-b" inputmode="decimal" value="' + esc(S.b) + '" placeholder="z. B. 3,1"></label></div></details>' +
+      '<div class="gk-sicht" role="tablist"><button type="button" class="btn' + (S.sicht === 'karte' ? ' aktiv' : '') + '" data-gk-sicht="karte" role="tab" aria-selected="' + (S.sicht === 'karte') + '">Karte</button><button type="button" class="btn' + (S.sicht === 'kalender' ? ' aktiv' : '') + '" data-gk-sicht="kalender" role="tab" aria-selected="' + (S.sicht === 'kalender') + '">Kalender</button></div></div>' +
+      '<p class="gk-summe" id="gk-summe"><strong>' + zeitraum + ':</strong> <span class="pk-st gruen">' + zahl(['frei', 'unterwegs']) + ' frei</span> (davon ' + zahl(['unterwegs']) + ' mit grünem Schild)' + (zahl(['zuklein']) ? ' · ' + zahl(['zuklein']) + ' frei, aber zu klein' : '') +
+      ' · <span class="pk-st rot">' + zahl(['belegt', 'saisongast']) + ' belegt</span> · ' + zahl(['gast']) + (zahl(['gast']) === 1 ? ' Gast' : ' Gäste') + '</p>' +
+      (S.sicht === 'karte'
+        ? '<div class="plan-layout"><div class="plan-box"><div class="plan-flaeche" id="gk-plan"></div><div class="legende"><span><i class="lg-boje gruen"></i>im ganzen Zeitraum frei</span><span><i class="lg-boje rot"></i>belegt (ganz oder an einzelnen Tagen)</span><span><i class="lg-boot gast"></i>Gastlieger</span><span><i class="lg-feld gruen"></i>grünes Schild</span>' + (S.l || S.b ? '<span><i class="lg-feld klein"></i>frei, aber zu klein</span>' : '') + '</div></div><aside class="detail" id="gk-detail"></aside></div>'
+        : '<div class="panel gk-kal-panel"><div class="gk-kal-kopf"><button type="button" class="btn klein" data-kal="-7">‹ Woche</button><button type="button" class="btn klein" data-kal="0">Zum Zeitraum</button><button type="button" class="btn klein" data-kal="7">Woche ›</button>' +
+          '<select id="gk-wochen" aria-label="Wie viele Wochen?">' + [2, 3, 4, 6].map((w) => '<option value="' + w + '"' + (S.wochen === w ? ' selected' : '') + '>' + w + ' Wochen</option>').join('') + '</select>' +
+          '<label class="gk-nur"><input type="checkbox" id="gk-nur"' + (S.nurFrei ? ' checked' : '') + '> nur Plätze, an denen sich etwas tut (frei, grünes Schild, Gast)</label></div><div class="gk-kal" id="gk-kal"></div>' +
+          '<div class="legende"><span><i class="kz z-belegt"></i>Dauerlieger da</span><span><i class="kz z-gruen"></i>grünes Schild – frei für Gäste</span><span><i class="kz z-frei"></i>frei (kein Dauerlieger)</span><span><i class="kz z-gast"></i>Gast</span><span><i class="kz z-sperr"></i>gesperrt</span><span>Freien Tag antippen = Gast eintragen · Platznummer antippen = Karte</span></div></div>');
+    // ---- Bedienung
+    const neu = () => zeige('gastkarte', true);
+    $('#gk-von').addEventListener('change', (e) => { if (e.target.value) { S.von = e.target.value; S.kalVon = null; S.monat = null; neu(); } });
+    $('#gk-n').addEventListener('change', (e) => { S.n = Number(e.target.value) || 1; neu(); });
+    $('#gk-m').addEventListener('click', () => { S.n = Math.max(1, S.n - 1); neu(); }); $('#gk-p').addEventListener('click', () => { S.n = Math.min(60, S.n + 1); neu(); });
+    main.querySelectorAll('[data-gk-tag]').forEach((b) => b.addEventListener('click', () => { S.von = b.dataset.gkTag; S.kalVon = null; S.monat = null; neu(); }));
+    main.querySelectorAll('[data-gk-schieb]').forEach((b) => b.addEventListener('click', () => { S.von = tagNach(S.von, Number(b.dataset.gkSchieb)); S.kalVon = null; S.monat = null; neu(); }));
+    main.querySelectorAll('[data-gk-sicht]').forEach((b) => b.addEventListener('click', () => { S.sicht = b.dataset.gkSicht; neu(); }));
+    ['l', 'b'].forEach((k) => $('#gk-' + k).addEventListener('change', (e) => { S[k] = e.target.value.trim(); neu(); }));
+    const gn = $('#gk-neu'); if (gn) gn.addEventListener('click', () => gastForm({ ankunft: S.von, naechte: S.n, laenge: S.l ? H.dez(S.l) : '', breite: S.b ? H.dez(S.b) : '', platz_id: S.platz && ['frei', 'unterwegs'].includes((L.get(S.platz) || {}).status) ? S.platz : '' }));
+    if (S.sicht === 'karte') gkKarte(L); else gkKalender();
+  };
+  function gkKarte(L) {
+    const S = gkStand;
+    const svg = PLAN.zeichnen($('#gk-plan'), { namen: true, modus: 'sommer', saison: SAISON, datum: S.von, ansicht: S.vb || 'wasser', intro: !S.vb, markiere: S.platz, wasser: (p) => L.get(p.id) || { status: 'frei' },
+      karte: (id) => { const p = Q.platz(id); if (!p || p.bez) return ''; const x = L.get(id); const frei = ['frei', 'unterwegs'].includes(x.status);
+        return '<strong>' + (p.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(p.nr) + '</strong><span class="pk-st ' + (frei ? 'gruen' : x.status === 'zuklein' || x.status === 'gesperrt' ? 'aus' : 'rot') + '">' + (frei ? 'frei im ganzen Zeitraum' : x.status === 'zuklein' ? 'frei, aber zu klein' : x.status === 'gast' ? 'Gastlieger' : esc(PLAN.STATUS_TEXT[x.status] || x.status)) + '</span>' +
+          (x.aw ? '<p>grünes Schild bis ' + H.kurz(x.aw.bis) + '</p>' : '') + (x.grund ? '<p>' + esc(x.grund) + '</p>' : '') + (x.boot && !frei ? '' : x.boot ? '<p class="pk-leise">sonst: „' + esc(x.boot.name) + '“</p>' : '') + '<p class="pk-leise">bis ' + H.zahl(p.max_laenge, 1) + ' × ' + H.zahl(p.max_breite, 1) + ' m</p>'; },
+      onKlick: (id) => { const p = Q.platz(id); if (!p || p.bez) return; S.platz = id; S.monat = null; svg.querySelectorAll('.markiert').forEach((x) => x.classList.remove('markiert')); const g = svg.querySelector('[data-platz="' + id + '"]'); if (g) g.classList.add('markiert'); gkDetail(L); } });
+    PLAN.kamera(svg, { onAnsicht: (v) => { S.vb = v.slice(); } });
+    gkDetail(L);
+  }
+  // Seitenleiste zur Karte: gewählter Platz mit Monatskalender – oder die Liste der freien Plätze
+  function gkDetail(L) {
+    const S = gkStand, el = $('#gk-detail'); if (!el) return; const p = S.platz && d.liegeplaetze.find((x) => x.id === S.platz);
+    if (!p) {
+      const frei = d.liegeplaetze.filter((x) => ['frei', 'unterwegs'].includes(L.get(x.id).status)).sort((a, b) => String(a.nr).localeCompare(String(b.nr), 'de', { numeric: true }));
+      el.innerHTML = '<h2>Frei im Zeitraum</h2><p class="unter">' + H.kurz(S.von) + ' – ' + H.datum(tagNach(S.von, S.n)) + '</p>' + (frei.length ? '<ul class="gk-frei">' + frei.map((x) => { const l = L.get(x.id);
+        return '<li><button type="button" data-gk-platz="' + x.id + '"><strong>' + esc(platzName(x.id)) + '</strong><span>' + (l.aw ? 'grünes Schild bis ' + H.kurz(l.aw.bis) : 'kein Dauerlieger') + ' · bis ' + H.zahl(x.max_laenge, 1) + ' × ' + H.zahl(x.max_breite, 1) + ' m</span></button></li>'; }).join('') + '</ul>'
+        : '<p class="leer">In diesem Zeitraum ist kein Platz durchgehend frei. Im Kalender siehst du, an welchen Tagen etwas frei wird.</p>');
+      el.querySelectorAll('[data-gk-platz]').forEach((b) => b.addEventListener('click', () => { S.platz = b.dataset.gkPlatz; S.vb = null; zeige('gastkarte', true); }));
+      return;
+    }
+    const x = L.get(p.id); const frei = ['frei', 'unterwegs'].includes(x.status);
+    const mon = S.monat || S.von.slice(0, 7); const [j, m] = mon.split('-').map(Number); const erster = new Date(j, m - 1, 1, 12); const tage = new Date(j, m, 0).getDate(); const vor = (erster.getDay() + 6) % 7;
+    const zr = new Set(naechteVon(S.von, S.n)); let zellen = '<span></span>'.repeat(vor);
+    for (let t = 1; t <= tage; t++) { const tg = mon + '-' + String(t).padStart(2, '0'); const in_saison = tg >= sd.auslagern && tg < sd.einlagern; const l = in_saison ? tagLage(p, tg) : { k: 'aus', txt: 'außerhalb der Saison' };
+      zellen += '<button type="button" class="kt z-' + l.k + (zr.has(tg) ? ' gewaehlt' : '') + (tg === heute ? ' heute' : '') + '" data-kt="' + tg + '"' + (in_saison ? '' : ' disabled') + ' title="' + esc(H.datum(tg) + ': ' + l.txt) + '">' + t + '</button>'; }
+    const kommende = d.abwesenheiten.filter((a) => a.platz_id === p.id && a.bis >= S.von).sort((a, b) => a.von.localeCompare(b.von));
+    const gaeste = d.gaeste.filter((g) => g.platz_id === p.id && g.status !== 'storniert' && abreise(g) > S.von).sort((a, b) => a.ankunft.localeCompare(b.ankunft));
+    el.innerHTML = '<button type="button" class="gk-zurueck" id="gk-liste">‹ alle freien Plätze</button><h2>' + (p.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(p.nr) + '</h2><p class="unter">' + esc(H.BRUECKE[p.bruecke] || '') + ' · bis ' + H.zahl(p.max_laenge, 1) + ' × ' + H.zahl(p.max_breite, 1) + ' m' + (p.strom ? ' · Strom' : '') + '</p>' +
+      '<p><span class="pk-st ' + (frei ? 'gruen' : x.status === 'zuklein' || x.status === 'gesperrt' ? 'aus' : 'rot') + '">' + (frei ? 'frei vom ' + H.kurz(S.von) + ' bis ' + H.kurz(tagNach(S.von, S.n)) : x.status === 'zuklein' ? 'frei, aber zu klein' : x.status === 'gast' ? 'Gastlieger' : esc(PLAN.STATUS_TEXT[x.status] || x.status)) + '</span></p>' +
+      (x.grund ? '<p class="hinweis' + (frei ? '' : ' warn') + '" style="margin:6px 0">' + esc(x.grund.charAt(0).toUpperCase() + x.grund.slice(1)) + '.</p>' : '') +
+      (x.boot ? '<p class="unter" style="margin-top:4px">Dauerlieger: „' + esc(x.boot.name) + '“ · ' + esc(Q.name(Q.mitglied(x.boot.eigner_id))) + '</p>' : '<p class="unter" style="margin-top:4px">Kein Dauerlieger in dieser Saison.</p>') +
+      '<div class="gk-monat"><div class="gk-monat-kopf"><button type="button" class="btn klein" data-mon="-1" aria-label="Monat zurück">‹</button><strong>' + MONAT[m - 1] + ' ' + j + '</strong><button type="button" class="btn klein" data-mon="1" aria-label="Monat vor">›</button></div>' +
+      '<div class="gk-tage"><b>Mo</b><b>Di</b><b>Mi</b><b>Do</b><b>Fr</b><b>Sa</b><b>So</b>' + zellen + '</div><p class="pk-leise">Tag antippen = Anreise auf diesen Tag setzen.</p></div>' +
+      (kommende.length ? '<div class="abschnitt"><h3>Grünes Schild</h3><dl>' + kommende.map((a) => '<dt>' + H.kurz(a.von) + '–' + H.kurz(a.bis) + '</dt><dd>' + esc(a.notiz || 'unterwegs') + ' <small style="color:var(--muted)">' + esc(a.gemeldet === 'Mitglied' ? '· über Mein SSV' : a.gemeldet ? '· ' + a.gemeldet : '') + '</small></dd>').join('') + '</dl></div>' : '') +
+      (gaeste.length ? '<div class="abschnitt"><h3>Gäste auf diesem Platz</h3><dl>' + gaeste.map((g) => '<dt>' + H.kurz(g.ankunft) + '–' + H.kurz(abreise(g)) + '</dt><dd><a href="#" data-gk-gast="' + g.id + '">„' + esc(g.bootsname) + '“</a> · ' + esc(g.skipper || '') + '</dd>').join('') + '</dl></div>' : '') +
+      '<div class="aktionen">' + (frei && darf('gaeste') ? '<button class="btn primaer" id="gk-hier">Gast hier eintragen</button>' : '') + (x.boot && darf('abwesenheiten') ? '<button class="btn gruen" id="gk-aw">Grünes Schild eintragen</button>' : '') + '</div>';
+    $('#gk-liste').addEventListener('click', () => { S.platz = null; const s = document.querySelector('#gk-plan .markiert'); if (s) s.classList.remove('markiert'); gkDetail(L); });
+    el.querySelectorAll('[data-mon]').forEach((b) => b.addEventListener('click', () => { const dt = new Date(j, m - 1 + Number(b.dataset.mon), 1, 12); S.monat = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0'); gkDetail(L); }));
+    el.querySelectorAll('[data-kt]').forEach((b) => b.addEventListener('click', () => { S.von = b.dataset.kt; S.monat = mon; S.kalVon = null; zeige('gastkarte', true); }));
+    el.querySelectorAll('[data-gk-gast]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); gastForm(d.gaeste.find((g) => g.id === a.dataset.gkGast)); }));
+    const gh = $('#gk-hier'); if (gh) gh.addEventListener('click', () => gastForm({ platz_id: p.id, ankunft: S.von, naechte: S.n, laenge: S.l ? H.dez(S.l) : '', breite: S.b ? H.dez(S.b) : '' }));
+    const ga = $('#gk-aw'); if (ga) ga.addEventListener('click', () => abwesenheitForm({ boot_id: x.boot.id, von: S.von }));
+  }
+  // Kalender: Zeitleiste je Platz
+  function gkKalender() {
+    const S = gkStand, el = $('#gk-kal'); const n = S.wochen * 7; let ab = S.kalVon || tagVor(S.von, 2); if (ab < sd.auslagern) ab = sd.auslagern;
+    const tage = []; for (let i = 0; i < n; i++) { const t = tagNach(ab, i); if (t >= sd.einlagern) break; tage.push(t); }
+    const zr = new Set(naechteVon(S.von, S.n));
+    const plaetze = d.liegeplaetze.slice().sort((a, b) => String(a.nr).localeCompare(String(b.nr), 'de', { numeric: true }));
+    const zeilen = plaetze.map((p) => ({ p, z: tage.map((t) => tagLage(p, t)) })).filter((r) => !S.nurFrei || r.z.some((x) => x.k !== 'belegt' && x.k !== 'sperr'));
+    // Monatszeile
+    let monate = '', i = 0; while (i < tage.length) { const mo = tage[i].slice(0, 7); let k = i; while (k < tage.length && tage[k].slice(0, 7) === mo) k++; monate += '<th colspan="' + (k - i) + '" class="kal-monat">' + MONAT[Number(mo.slice(5)) - 1] + ' ' + mo.slice(0, 4) + '</th>'; i = k; }
+    el.innerHTML = !zeilen.length ? '<p class="leer" style="padding:18px">In diesen Wochen ist an keinem Platz etwas frei. Haken „nur Plätze, an denen sich etwas tut“ entfernen, um alle Plätze zu sehen.</p>'
+      : '<table class="kal"><thead><tr><th rowspan="2" class="kal-platz">Platz</th>' + monate + '</tr><tr>' + tage.map((t) => { const w = new Date(t + 'T12:00:00').getDay(); return '<th class="kal-tag' + (w === 0 || w === 6 ? ' we' : '') + (t === heute ? ' heute' : '') + (zr.has(t) ? ' gewaehlt' : '') + '"><small>' + WOTAG[w] + '</small>' + Number(t.slice(8)) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      zeilen.map(({ p, z }) => { const bel = Q.belegungPlatz(SAISON, 'sommer', p.id); const b = bel && Q.boot(bel.boot_id);
+        return '<tr><th class="kal-platz"><button type="button" data-kal-platz="' + p.id + '" title="Auf der Karte zeigen"><strong>' + esc(p.nr) + '</strong><small>' + (b ? esc(String(b.name).slice(0, 14)) : 'kein Dauerlieger') + '</small></button></th>' +
+          z.map((x, k) => { const t = tage[k]; const start = x.k === 'gast' && (k === 0 || !z[k - 1].gast || z[k - 1].gast.id !== x.gast.id); const klickbar = x.k === 'gast' || ((x.k === 'frei' || x.k === 'gruen') && darf('gaeste'));
+            return '<td class="z-' + x.k + (zr.has(t) ? ' gewaehlt' : '') + (klickbar ? ' klick' : '') + (start ? ' start' : '') + '" data-p="' + p.id + '" data-t="' + t + '"' + (x.gast ? ' data-g="' + x.gast.id + '"' : '') + ' title="' + esc((p.box === 'L' ? '' : 'Platz ') + p.nr + ' · ' + H.datum(t) + ': ' + x.txt) + '">' + (start ? '<span class="kal-name">' + esc(String(x.gast.bootsname).slice(0, 16)) + '</span>' : '') + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
+    document.querySelectorAll('[data-kal]').forEach((b) => b.addEventListener('click', () => { const k = Number(b.dataset.kal); S.kalVon = k === 0 ? null : tagNach(ab, k); if (S.kalVon && S.kalVon >= sd.einlagern) S.kalVon = tagVor(sd.einlagern, 7); zeige('gastkarte', true); }));
+    $('#gk-wochen').addEventListener('change', (e) => { S.wochen = Number(e.target.value) || 3; zeige('gastkarte', true); });
+    $('#gk-nur').addEventListener('change', (e) => { S.nurFrei = e.target.checked; zeige('gastkarte', true); });
+    el.addEventListener('click', (e) => {
+      const pk = e.target.closest('[data-kal-platz]'); if (pk) { S.platz = pk.dataset.kalPlatz; S.sicht = 'karte'; S.vb = null; return zeige('gastkarte', true); }
+      const td = e.target.closest('td.klick'); if (!td) return;
+      if (td.dataset.g) return gastForm(d.gaeste.find((g) => g.id === td.dataset.g));
+      // freie Tage ab dem angetippten Tag zählen → als Vorschlag für die Nächte (höchstens der gewählte Zeitraum)
+      gastForm({ platz_id: td.dataset.p, ankunft: td.dataset.t, naechte: 1, laenge: S.l ? H.dez(S.l) : '', breite: S.b ? H.dez(S.b) : '' });
+    });
+  }
+
   V.abwesenheiten = (main) => {
     const liste = d.abwesenheiten.slice().sort((a, b) => b.von.localeCompare(a.von));
     main.innerHTML = kopf('Abwesenheiten', 'Das digitale „grüne Schild“ (Hafenbetriebsordnung 2.2.3): Solange der Eigner unterwegs ist, kann der Platz an Gäste gehen.', '<button class="btn gruen" id="neu">+ Abwesenheit</button>') +
@@ -2451,6 +2582,8 @@
     ['Aufnahmeanträge bearbeiten', 'antrag aufnahme beitritt neue mitglieder bewerbung', 'antraege'],
     ['Boot anmelden', 'boot schiff neu anmelden eintragen yacht', 'boote', '#neu'],
     ['Gastlieger einweisen', 'gast gastlieger gastboot einweisen ankunft besucher', 'gaeste', '#neu'],
+    ['Freie Plätze auf der Karte sehen (Zeitraum)', 'frei freie plaetze karte boje gruen rot zeitraum naechte anreise wann wo liegt belegungskarte', 'gastkarte'],
+    ['Belegungskalender öffnen', 'kalender zeitleiste wer liegt wann wo belegung tage wochen gast gruenes schild uebersicht', 'gastkarte'],
     ['Grünes Schild / Abwesenheit eintragen', 'gruenes schild abwesenheit unterwegs platz frei urlaub toern', 'abwesenheiten', '#neu'],
     ['Hafenplan ansehen', 'hafenplan karte plan steg bruecke luftbild liegeplatz belegung', 'plan'],
     ['Liegeplatz vergeben (Belegung)', 'liegeplatz vergeben belegung zuweisen box platz sommer winter', 'belegung'],
