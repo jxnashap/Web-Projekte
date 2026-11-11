@@ -227,6 +227,17 @@
       return { ok: true, vorname: m.vorname, nachname: m.nachname, alter: this._alter(m), ...this._summen(mid) };
     }
     async kasseBuchenNach(mid, pin, posten) { return this.kasseBuchen(mid, pin, posten); }
+    // Veranstaltungen: Demo nutzt die Regeln des Hafen-Managers (gleicher Browser, gleiche Mitglieder-IDs)
+    async kasseVeranstaltungen(mid, pin) {
+      const f = this._pruefen(mid, pin); if (f) return f;
+      const H = window.HAFEN; if (!H || !H.laden || !H.meineVeranstaltungen) return { ok: true, liste: [] };
+      H.laden(); return { ok: true, liste: H.meineVeranstaltungen(mid) };
+    }
+    async kasseZusage(mid, pin, p) {
+      const f = this._pruefen(mid, pin); if (f) return f;
+      const H = window.HAFEN; if (!H || !H.zusageSetzen) throw new Error('Veranstaltungen sind hier nicht verfügbar.');
+      H.laden(); await H.zusageSetzen(mid, p, 'kasse'); return { ok: true, antwort: p.antwort };
+    }
     async kasseMitteilungen() {   // Demo: Mitteilungen aus dem Hafen-Manager (gleicher Browser)
       const H = window.HAFEN; if (!H || !H.laden) return []; const heute = new Date().toISOString().slice(0, 10);
       return (H.laden().mitteilungen || []).filter((x) => x.zielgruppe === 'alle' && (!x.gueltig_bis || x.gueltig_bis >= heute)).sort((a, b) => (b.wichtig ? 1 : 0) - (a.wichtig ? 1 : 0)).slice(0, 3);
@@ -438,6 +449,8 @@
     async kasseLogin(mid, pin) { return this._zahlenSumme(await this._rpc('kasse_login', { p_token: this._tok, p_mitglied: mid, p_pin: pin }, false)); }
     async kasseBuchen(mid, pin, posten) { return this._zahlenSumme(await this._rpc('kasse_buchen', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p_posten: posten }, false)); }
     async kasseMitteilungen() { try { return await this._rpc('kasse_mitteilungen', { p_token: this._tok }, false); } catch (e) { if (e.offline) throw e; return []; } }
+    async kasseVeranstaltungen(mid, pin) { return this._rpc('kasse_veranstaltungen', { p_token: this._tok, p_mitglied: mid, p_pin: pin }, false); }
+    async kasseZusage(mid, pin, p) { return this._rpc('kasse_zusage', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p }, false); }
     // Buchen mit Kennung und Zeit (auch nachträglich, nach einem Netzausfall) – dieselbe Kennung wird nur einmal verbucht
     async kasseBuchenNach(mid, pin, posten, zeit, ref) {
       try { return this._zahlenSumme(await this._rpc('kasse_buchen_nach', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p_posten: posten, p_zeit: zeit, p_ref: ref }, false)); }

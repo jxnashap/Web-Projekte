@@ -421,3 +421,19 @@ body.rechnung-seite { background: #e9e6df; }
 .a-modal-card.breit { width: min(860px, 100%); }
 .mv-liste { max-height: 42vh; overflow: auto; border: 1px solid var(--linie, rgba(28,36,64,.13)); border-radius: 12px; margin: 8px 0 12px; }
 .mv-liste .a-tab th { position: sticky; top: 0; background: #fff; }
+
+/* Veranstaltungen am Getränke-iPad */
+.k-einladung { display: flex; align-items: center; justify-content: space-between; gap: 16px; background: #fff; border-left: 5px solid #1d8a5a; border-radius: 14px; padding: 12px 16px; margin: 0 0 14px; font-size: 17px; box-shadow: 0 8px 20px -14px rgba(14,27,69,.4); }
+.k-einladung small { color: var(--ink-3); font-size: 15px; } .k-einladung .k-btn { flex: none; }
+.k-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(14,27,69,.55); display: flex; align-items: flex-start; justify-content: center; padding: 3vh 16px; overflow: auto; }
+.k-overlay-karte { background: var(--sand, #f5f2eb); border-radius: 22px; padding: 20px; width: min(760px, 100%); box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+.k-overlay-kopf { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; } .k-overlay-kopf h2 { margin: 0; font-size: 26px; color: var(--navy); }
+.k-v-karte { background: #fff; border-radius: 16px; padding: 18px; margin: 0 0 12px; }
+.k-v-karte h3 { margin: 0; font-size: 22px; color: var(--navy); } .k-v-karte.abgesagt h3 { text-decoration: line-through; color: var(--ink-3); }
+.k-v-zeit { margin: 4px 0 8px; font-size: 17px; color: var(--ink-2); } .k-v-text { font-size: 16px; margin: 8px 0; } .k-v-info { font-size: 15px; color: var(--ink-3); margin: 6px 0 0; }
+.k-v-stand { display: inline-block; font-size: 15px; font-weight: 700; padding: 4px 12px; border-radius: 99px; background: rgba(14,27,69,.07); color: var(--navy); }
+.k-v-stand.ok { background: rgba(29,138,90,.14); color: #166b46; } .k-v-stand.warn { background: rgba(199,129,27,.16); color: #93600f; } .k-v-stand.rot { background: rgba(184,35,43,.1); color: var(--rot); }
+.k-v-knoepfe { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; } .k-v-knoepfe .k-btn { min-width: 150px; }
+.k-v-nein { background: #fff; color: var(--navy); border: 2px solid rgba(14,27,69,.2); }
+.k-v-frage { margin: 14px 0 0; font-weight: 700; font-size: 17px; }
+#k-veranst-liste.warten { opacity: .55; pointer-events: none; }

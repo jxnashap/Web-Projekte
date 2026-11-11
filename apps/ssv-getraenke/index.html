@@ -104,10 +104,12 @@
       <p class="k-sub">Diesen Monat: <strong id="monat-summe">0,00 €</strong> · noch nicht abgerechnet: <strong id="offen-summe">0,00 €</strong></p>
     </div>
     <div class="k-kopf-btns">
+      <button class="k-btn k-btn-ghost" id="btn-veranst" hidden>Veranstaltungen</button>
       <button class="k-btn k-btn-ghost" id="btn-verlauf">Meine Buchungen</button>
       <button class="k-btn k-btn-ghost" id="btn-abmelden">Abmelden</button>
     </div>
   </div>
+  <div class="k-einladung" id="k-einladung" hidden></div>
   <div class="k-auswahl">
     <div class="k-kacheln" id="kacheln"></div>
     <aside class="k-bon" aria-label="Bon">
@@ -119,6 +121,14 @@
     </aside>
   </div>
 </section>
+
+<!-- Veranstaltungen: zu- oder absagen (nach Anmeldung mit Code) -->
+<div class="k-overlay" id="k-veranst" hidden role="dialog" aria-modal="true" aria-labelledby="k-veranst-titel">
+  <div class="k-overlay-karte">
+    <div class="k-overlay-kopf"><h2 id="k-veranst-titel">Veranstaltungen</h2><button class="k-btn k-btn-ghost" id="k-veranst-zu">Zurück zu den Getränken</button></div>
+    <div id="k-veranst-liste"></div>
+  </div>
+</div>
 
 <!-- 4 · Fertig -->
 <section class="k-screen" id="s-fertig" hidden>

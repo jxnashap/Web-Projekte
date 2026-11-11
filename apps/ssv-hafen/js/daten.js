@@ -666,7 +666,7 @@
     return (d.veranstaltungen || []).filter((v) => v.datum >= heute).sort((a, b) => a.datum.localeCompare(b.datum) || String(a.beginn || '').localeCompare(String(b.beginn || '')))
       .map((v) => ({ ...v, belegt: belegt(v.id), meine: (d.zusagen || []).find((z) => z.veranstaltung_id === v.id && z.mitglied_id === mid) || null }));
   }
-  async function zusageSetzen(mid, p) {
+  async function zusageSetzen(mid, p, quelle) {
     if (SB) { await SB.rpc('meine_zusage', { p }); return neuLaden(); }
     const heute = tag(new Date()); const v = (d.veranstaltungen || []).find((x) => x.id === p.veranstaltung_id);
     if (p.antwort !== 'ja' && p.antwort !== 'nein') throw new Error('Bitte zu- oder absagen.');
@@ -678,7 +678,7 @@
     if (p.antwort === 'ja' && v.max_personen) { const frei = v.max_personen - belegt(v.id, mid); if (pers > frei) throw new Error(frei <= 0 ? 'Leider ist die Veranstaltung schon ausgebucht.' : frei === 1 ? 'Es ist nur noch 1 Platz frei.' : 'Es sind nur noch ' + frei + ' Plätze frei.'); }
     if (!d.zusagen) d.zusagen = [];
     const alt = d.zusagen.find((z) => z.veranstaltung_id === v.id && z.mitglied_id === mid);
-    const neu = { antwort: p.antwort, personen: pers, bemerkung: String(p.bemerkung || '').trim().slice(0, 200), quelle: 'mein-ssv', geaendert: new Date().toISOString() };
+    const neu = { antwort: p.antwort, personen: pers, bemerkung: String(p.bemerkung || '').trim().slice(0, 200), quelle: quelle || 'mein-ssv', geaendert: new Date().toISOString() };
     if (alt) Object.assign(alt, neu); else d.zusagen.push({ id: uid('Z'), veranstaltung_id: v.id, mitglied_id: mid, ...neu });
     return sichern();
   }

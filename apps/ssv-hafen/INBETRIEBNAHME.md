@@ -67,6 +67,8 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    Der Kontoauszug-Abgleich (Finanzen → Kontoauszug) braucht keinen Nachtrag.
 15. `apps/ssv-hafen/supabase/nachtrag-15.sql` – Rechnungen per E-Mail: Versandprotokoll `rechnung_versand`
    (nur Vorstand/Kassenwart lesen, schreiben kann nur die Edge Function „rechnung-mail“). Einrichtung siehe 6a3.
+16. `apps/ssv-hafen/supabase/nachtrag-16.sql` – Veranstaltungen am Getränke-iPad: `kasse_veranstaltungen` und
+   `kasse_zusage` (Gerät + Code wie beim Buchen), Herkunft `kasse`; „Mein SSV“ nutzt dieselben Regeln (`_zusage_setzen`).
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 
