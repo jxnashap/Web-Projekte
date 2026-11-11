@@ -78,7 +78,7 @@
 
   const STATUS_TEXT = {
     belegt: 'belegt', unterwegs: 'Eigner unterwegs – grünes Schild', gast: 'Gastlieger', saisongast: 'Saison-Gast',
-    frei: 'frei', gesperrt: 'gesperrt'
+    frei: 'frei', gesperrt: 'gesperrt', neu: 'neu in dieser Planung'
   };
 
   const gueltig = (p) => p && Array.isArray(p.stege) && Array.isArray(p.formen) && p.stege.every((s) => Array.isArray(s.a) && Array.isArray(s.b));
@@ -341,7 +341,7 @@
       return { status, boot: bel ? Q.boot(bel.boot_id) : null, gast: status === 'gast' ? Q.gastAm(p.id, opts.datum) : null };
     });
     const lagen = new Map();
-    const lageVon = (p) => { if (!lagen.has(p.id)) lagen.set(p.id, winter ? { status: p.gesperrt ? 'gesperrt' : 'leer' } : (lage(p) || { status: 'frei' })); return lagen.get(p.id); };
+    const lageVon = (p) => { if (!lagen.has(p.id)) lagen.set(p.id, p.neu ? { status: 'neu' } : winter ? { status: p.gesperrt ? 'gesperrt' : 'leer' } : (lage(p) || { status: 'frei' })); return lagen.get(p.id); };
     // Boot in einer Box: echte Maße (Meter → Plan-Einheiten), Bug zum Steg
     const bootInBox = (x, tiefe, breite) => {
       if (!['belegt', 'gast', 'saisongast'].includes(x.status)) return '';
@@ -351,12 +351,12 @@
       return `<g class="boot-lage" transform="translate(${f2(-tiefe / 2 + 1.6 + L / 2)} 0) rotate(180)">${bootSvg(L, B, { farbe, motor: istMotor(q.typ) })}</g>`;
     };
     const lichter = [];
-    const boje = (x, y, status, i) => { const art = status === 'gesperrt' || status === 'leer' ? 'aus' : FREI[status] ? 'gruen' : 'rot';
+    const boje = (x, y, status, i) => { const art = status === 'gesperrt' || status === 'leer' || status === 'neu' ? 'aus' : FREI[status] ? 'gruen' : 'rot';
       lichter.push(`<g class="boje bo-${art}" style="--i:${i}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">${art === 'aus' ? '' : `<circle class="halo" r="8.5" fill="url(#halo-${art})"/>`}<circle class="bo-s" cx=".5" cy=".8" r="1.9"/><circle class="bo-k" r="1.8" fill="url(#boje-${art})"/></g>`); };
 
     const gezeichnet = new Set();
     const wasserPlaetze = geo.plaetze.map((g, idx) => {
-      const p = lpById.get(g.nr); if (!p || gezeichnet.has(g.nr)) return ''; gezeichnet.add(g.nr);   // nur Plätze, die es im Verein gibt; doppelte Nummern nur einmal
+      const p = lpById.get(g.nr) || (opts.entwurf ? { id: 'neu-' + g.nr, nr: g.nr, neu: true } : null); if (!p || gezeichnet.has(g.nr)) return ''; gezeichnet.add(g.nr);   // nur Plätze, die es im Verein gibt (in einer Planung auch neue); doppelte Nummern nur einmal
       const x = lageVon(p); const status = x.status;
       const mark = opts.markiere === p.id ? ' markiert' : '';
       const [bx, by] = drehen(g.tiefe / 2 + 5, 0, g.dreh); boje(g.x + bx, g.y + by, status, idx);
@@ -369,7 +369,7 @@
     }).join('');
 
     const laengs = (plan.laengs || []).map((l, idx) => {
-      const p = lpById.get(String(l.nr)); if (!p) return '';
+      const p = lpById.get(String(l.nr)) || (opts.entwurf ? { id: 'neu-' + l.nr, nr: String(l.nr), neu: true, box: 'L' } : null); if (!p) return '';
       const x = lageVon(p); const status = x.status; const hh = Number(l.h) || 10;
       const mark = opts.markiere === p.id ? ' markiert' : '';
       const [bx, by] = drehen(l.w / 2 + 5, 0, Number(l.rot) || 0); boje(l.x + bx, l.y + by, status, 60 + idx);
@@ -382,8 +382,8 @@
 
     const per = winter ? 'winter' : 'sommer';
     const land = lagerVon(plan).map((g) => {
-      const lp = Q.platz(g.id); if (!lp) return '';
-      const status = opts.land ? opts.land(lp) : Q.statusLand(lp, opts.saison, per);
+      const lp = Q.platz(g.id) || (opts.entwurf ? { id: g.id, bez: g.id, neu: true } : null); if (!lp) return '';
+      const status = lp.neu ? 'neu' : opts.land ? opts.land(lp) : Q.statusLand(lp, opts.saison, per);
       const mark = opts.markiere === g.id ? ' markiert' : '';
       const bel = opts.land ? null : Q.belegungPlatz(opts.saison, per, g.id); const b = bel && Q.boot(bel.boot_id);
       const [px] = drehen(g.mx, g.my, g.rot);
@@ -579,7 +579,7 @@
     const soll = (d.liegeplaetze || []).map((p) => String(p.nr));
     const landSoll = (d.landplaetze || []).map((p) => p.id); const landIst = new Set(lagerVon(plan).map((g) => g.id));
     return { fehlen: soll.filter((n) => !zaehl[n]), doppelt: Object.keys(zaehl).filter((n) => zaehl[n] > 1), unbekannt: Object.keys(zaehl).filter((n) => !soll.includes(n)),
-      landFehlen: landSoll.filter((id) => !landIst.has(id)), anzahl: soll.length };
+      landFehlen: landSoll.filter((id) => !landIst.has(id)), landUnbekannt: [...landIst].filter((id) => !landSoll.includes(id)), anzahl: soll.length };
   }
 
   window.HAFEN_PLAN = { zeichnen, zoomen, kamera, lagerEcken, bootSvg, istMotor, STATUS_TEXT, STANDARD, ART, PUNKT, QUELLE, aktiv, gueltig, plaetzeVon, lagerVon, stegGeo, hatPlaetze, ansichten, pruefen, svgDefs, formenSvg, mitte, drehen,

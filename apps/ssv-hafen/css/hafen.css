@@ -907,3 +907,36 @@ body.plan-vollbild { overflow: hidden; }
 .legende .lg-feld { width: 18px; height: 12px; border-radius: 3px; border: 1.5px dashed #2fa36b; background: rgba(46,212,124,.25); } .legende .lg-feld.sperr { border: 1.5px solid #8890a8; background: repeating-linear-gradient(45deg, #fff 0 2px, #8890a8 2px 4px); }
 .legende .lg-feld.leer { border: 1.5px dashed #8a8266; background: #fff; } .legende .lg-feld.wasser { border: 1.5px solid #9fc3d6; background: #4d8fb3; }
 .land .lp-nr { font-size: 4.2px; } .lp-boot { fill: #0E1B45; paint-order: stroke; stroke: rgba(255,255,255,.75); stroke-width: .8px; font-size: 2.4px; }
+/* Zeichenfenster: einzelne Boxen und Lagerplätze */
+.pe-box { pointer-events: auto; cursor: pointer; } .pe-box.pe-selbst rect, .pe-zelle.pe-selbst rect { stroke: #fff !important; fill: rgba(255,122,26,.62) !important; stroke-width: 2.5px; }
+.pe-box.pe-eigen rect, .pe-zelle.pe-eigen rect { stroke-dasharray: 4 2; }
+.pe-zelle { cursor: pointer; } .pe-tab { fill: #ffd94a; font-weight: 700; font-family: "Inter", sans-serif; paint-order: stroke; stroke: rgba(0,0,0,.75); stroke-width: .28em; cursor: pointer; }
+.pe-mass-griff { fill: #ff7a1a; stroke: #fff; cursor: nwse-resize; } .pe-mass-text { fill: #ffd94a; }
+/* Planungen und Plan-Druck */
+.plan-wahl { min-height: 36px; border-radius: 9px; border: 1px solid var(--line); padding: 4px 8px; font: inherit; font-weight: 600; color: var(--navy); background: #fff; max-width: 230px; }
+.planung-band { align-items: center; gap: 10px 14px; flex-wrap: wrap; } .planung-knoepfe { display: flex; gap: 6px; flex-wrap: wrap; }
+.lp.st-neu .box, .land.st-neu .box { fill: rgba(255,217,74,.28); stroke: #ffd94a; stroke-width: 1; stroke-dasharray: 2.4 1.6; }
+.legende .lg-feld.neu { border: 1.5px dashed #c9a400; background: rgba(255,217,74,.4); }
+.plan-druckseite { display: none; }
+.hafenplan.ohne-bojen .boje { display: none; }
+@media print {
+  body.druckt-plan > *:not(.plan-druckseite) { display: none !important; }
+  body.druckt-plan { background: #fff; }
+  .plan-druckseite { display: block; color: #111; }
+  .plan-druckseite .druck-kopf { margin-bottom: 3mm; padding-bottom: 3mm; }
+  .pd-titel { display: flex; justify-content: space-between; align-items: baseline; gap: 10mm; margin-bottom: 2.5mm; } .pd-titel h1 { font-size: 15pt; margin: 0; } .pd-titel span { font-size: 8.5pt; color: #555; }
+  .pd-blatt1 { break-after: avoid; break-inside: avoid; } .pd-plan { border: .3mm solid #9aa2b3; height: var(--pd-h, 134mm); overflow: hidden; } .pd-plan svg { width: 100%; height: 100%; display: block; }
+  .pd-legende { display: flex; flex-wrap: wrap; gap: 1.5mm 6mm; font-size: 8.5pt; margin-top: 2.5mm; align-items: center; } .pd-legende i { display: inline-block; margin-right: 1.5mm; vertical-align: -1px; } .pd-quelle { margin-left: auto; color: #666; font-size: 7.5pt; }
+  .pd-legende .lg-boje { width: 3.2mm; height: 3.2mm; border-radius: 50%; } .pd-legende .lg-boje.gruen { background: #2ed47c; } .pd-legende .lg-boje.rot { background: #ee4a3b; }
+  .pd-legende .lg-boot { width: 6mm; height: 2.8mm; border-radius: 1mm 60% 60% 1mm / 1mm 50% 50% 1mm; background: #fff; border: .35mm solid #1d2f5f; } .pd-legende .lg-boot.gast { background: #ffe9b0; border-color: #b9790c; } .pd-legende .lg-boot.saison { background: #e6daf6; border-color: #5c4190; } .pd-legende .lg-boot.plane { background: #c9d3df; border-color: #77859a; }
+  .pd-legende .lg-feld { width: 5mm; height: 3.2mm; border: .35mm dashed #2fa36b; background: rgba(46,212,124,.25); } .pd-legende .lg-feld.leer { border-color: #8a8266; background: #fff; } .pd-legende .lg-feld.neu { border-color: #c9a400; background: rgba(255,217,74,.4); }
+  .pd-blatt2 { break-before: page; } .pd-zwei { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; align-items: start; } .pd-tab { font-size: 7.6pt; width: 100%; line-height: 1.2; table-layout: fixed; } .pd-tab th:nth-child(1) { width: 9%; } .pd-tab th:nth-child(2) { width: 40%; } .pd-tab th:nth-child(3) { width: 25%; } .pd-tab td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .pd-tab td, .pd-tab th { padding: .6mm 1.5mm; } .pd-tab tr { break-inside: avoid; }
+  .hafenplan.druck .lp-nr, .hafenplan.druck .land .lp-nr { opacity: 1; } .hafenplan.druck .lp-boot { opacity: .95; }
+  /* helle Fassung: wenig Tinte, klare Linien */
+  .hafenplan.druck-hell .pf-wasser { fill: #e3eff6; } .hafenplan.druck-hell .tiefe.t1, .hafenplan.druck-hell .tiefe.t2 { display: none; } .hafenplan.druck-hell .tiefe.t3 { stroke: #cfe2ee; opacity: 1; } .hafenplan.druck-hell .tiefe.saum { stroke: #7fa3bd; opacity: 1; stroke-width: .8; }
+  .hafenplan.druck-hell .wellen, .hafenplan.druck-hell .b-schatten, .hafenplan.druck-hell .steg-schatten, .hafenplan.druck-hell .pf-schatten, .hafenplan.druck-hell .halo { display: none; }
+  .hafenplan.druck-hell .grund { fill: #fff; } .hafenplan.druck-hell .pf-gruen { fill: #eef4e4; } .hafenplan.druck-hell .pf-natur { fill: #e8efdc; } .hafenplan.druck-hell .pf-muster { opacity: .5; } .hafenplan.druck-hell .baeume { opacity: .45; }
+  .hafenplan.druck-hell .pf-gebaeude { fill: #b9bfd0; stroke: #555; } .hafenplan.druck-hell .pf-first { display: none; } .hafenplan.druck-hell .pl-label.hell { fill: #111; }
+  .hafenplan.druck-hell .lp .box { stroke: #33415f; stroke-width: .45; } .hafenplan.druck-hell .lp .leine { stroke: #7d8aa6; } .hafenplan.druck-hell .lp.st-belegt .box, .hafenplan.druck-hell .lp.st-leer .box { fill: #fff; }
+  .hafenplan.druck-hell .lp-nr { fill: #111; stroke: #fff; } .hafenplan.druck-hell .pl-label.wasser-text { fill: #55718a; } .hafenplan.druck-hell .lp.st-gesperrt .box { fill: #ddd; }
+}

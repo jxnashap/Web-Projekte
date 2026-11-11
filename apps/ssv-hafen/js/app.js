@@ -236,14 +236,84 @@
   };
 
   /* ============================================================ Hafenplan */
+  // Planungen: Entwürfe neben dem gültigen Lageplan („so will ich es nächstes Jahr haben“)
+  const planungen = () => Array.isArray(d.einstellungen.lageplan_planungen) ? d.einstellungen.lageplan_planungen : [];
+  const planVoll = (x) => ({ ...PLAN.STANDARD, laengs: [], punkte: [], lager: [], ...x });
+  const planungName = () => { const vor = 'Saison ' + (SAISON + 1); let n = prompt('Wie soll die Planung heißen?\n(z. B. „Saison ' + (SAISON + 1) + '“ oder „Nordlager neu“)', planungen().some((x) => x.name === vor) ? 'Planung ' + (planungen().length + 1) : vor); n = n && n.trim().slice(0, 60); return n || null; };
+  function planungBearbeiten(pl) {
+    window.HAFEN_PLAN_EDITOR.oeffnen({ plan: planVoll(pl.plan), eigen: false, entwurf: true, titel: 'Planung „' + pl.name + '“', daten: d,
+      onSpeichern: (neu) => { pl.plan = neu; pl.stand = heute; speichern('Planung „' + pl.name + '“ gespeichert – der gültige Plan ist unverändert.'); zeige('plan', true); } });
+  }
+  // Plätze, die im Plan neu sind, im Verein anlegen (nach Rückfrage). Gibt die Anzahl zurück.
+  function plaetzeAnlegen(plan, neuP) {
+    const wasser = ((neuP && neuP.wasser) || []).filter((nr) => !d.liegeplaetze.some((x) => String(x.nr) === String(nr))), land = ((neuP && neuP.land) || []).filter((id) => !d.landplaetze.some((x) => x.id === id));
+    if (!wasser.length && !land.length) return 0;
+    if (!confirm('Im Plan stehen Plätze, die es im Verein noch nicht gibt:\n' + (wasser.length ? 'Wasser: ' + window.HAFEN_PLAN_EDITOR.bereiche(wasser) + '\n' : '') + (land.length ? 'Land: ' + window.HAFEN_PLAN_EDITOR.bereiche(land) + '\n' : '') +
+      '\nJetzt anlegen? Maße und Box-Klasse übernimmt das Programm aus dem Plan – bitte danach unter „Liegeplätze“ prüfen.')) return 0;
+    const voll = planVoll(plan); const geo = PLAN.plaetzeVon(voll); const r1 = (v) => Math.round(v * 10) / 10;
+    wasser.forEach((nr) => { const g = geo.plaetze.find((x) => x.nr === String(nr)), l = (voll.laengs || []).find((x) => String(x.nr) === String(nr)); if (!g && !l) return;
+      const breite = g ? g.voll * voll.m : (Number(l.h) || 10) * voll.m, laenge = g ? g.tiefe * voll.m : l.w * voll.m;
+      let id = 'LP' + (/^\d+$/.test(nr) ? String(nr).padStart(2, '0') : nr); while (d.liegeplaetze.some((x) => x.id === id)) id += 'N';
+      d.liegeplaetze.push({ id, nr: String(nr), bruecke: g ? (g.bruecke || 'ost') : 'laengs', box: g ? (breite >= 3.9 ? 'I' : breite >= 3.3 ? 'II' : 'III') : 'L', max_laenge: r1(laenge + (g ? 1 : 0)), max_breite: r1(Math.max(1, breite - 0.3)),
+        tiefe: null, strom: true, gesperrt: false, sonderpreis: null, notiz: 'Neu aus dem Lageplan (' + H.datum(heute) + ') – Maße und Box-Klasse prüfen' }); });
+    land.forEach((id) => { const art = /^H/i.test(id) ? 'halle' : /^A/i.test(id) ? 'aussen' : 'palette'; const z = (id.match(/\d+/) || [''])[0].replace(/^0+/, '');
+      d.landplaetze.push({ id, bez: ({ halle: 'Halle ', aussen: 'Außenlager ', palette: 'Palette ' })[art] + (z || id), art, bereich: ({ halle: 'halle', aussen: 'aussen', palette: 'nord' })[art] }); });
+    return wasser.length + land.length;
+  }
+  /* Plan drucken: eigene Druckseite im SSV-Briefkopf (Flagge links, Adresse rechts), mit Legende, Maßstab und Nordpfeil */
+  function planDruckDialog(pl, svgJetzt) {
+    const A = svgJetzt._ansichten || PLAN.ANSICHTEN; const jetzt = (svgJetzt._kamera ? svgJetzt._kamera.ansicht : null);
+    modal('<h2>Plan drucken</h2><p class="unter">' + (pl ? 'Planung „' + esc(pl.name) + '“' : 'Gültiger Hafenplan') + ' · im Druckfenster kannst du auch „Als PDF sichern“ wählen.</p>' +
+      '<form id="pdf" class="form">' +
+      '<label class="feld">Was?<select name="modus"><option value="sommer"' + (planStand.modus === 'sommer' ? ' selected' : '') + '>Sommer – Belegung im Wasser</option><option value="winter"' + (planStand.modus === 'winter' ? ' selected' : '') + '>Winterlager – Belegung an Land</option><option value="leer">Nur der Plan (ohne Boote)</option></select></label>' +
+      '<label class="feld">Ausschnitt<select name="ansicht"><option value="gesamt">Ganzer Hafen</option>' + (jetzt ? '<option value="jetzt">So wie gerade am Bildschirm</option>' : '') + '<option value="ost">Ostbrücke</option><option value="west">Westbrücke</option><option value="schwimm">Schwimmbrücke</option><option value="land"' + (planStand.modus === 'winter' ? ' selected' : '') + '>Lager an Land</option></select></label>' +
+      '<label class="feld">Papier<select name="papier"><option value="A4">A4 quer</option><option value="A3">A3 quer</option></select></label>' +
+      '<label class="feld">Farben<select name="farbe"><option value="hell">Hell (spart Tinte)</option><option value="voll">Kräftig wie am Bildschirm</option></select></label>' +
+      '<label class="feld voll check-zeile"><span><input type="checkbox" name="liste" checked> Belegungsliste (Platz · Boot · Eigner) auf einem zweiten Blatt</span></label></form>' +
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="pd-ok">Drucken</button></div>');
+    $('#pd-ok').addEventListener('click', () => { const f = new FormData($('#pdf')); const o = { modus: f.get('modus'), ansicht: f.get('ansicht') === 'jetzt' ? jetzt : f.get('ansicht'), papier: f.get('papier'), hell: f.get('farbe') === 'hell', liste: !!f.get('liste') }; zu(); planDrucken(pl, o); });
+  }
+  function planDrucken(pl, o) {
+    const alt = $('#plan-druckseite'); if (alt) alt.remove();
+    const seite = document.createElement('div'); seite.id = 'plan-druckseite'; seite.className = 'plan-druckseite';
+    const leer = o.modus === 'leer', winter = o.modus === 'winter'; const per = winter ? 'winter' : 'sommer';
+    const titel = (pl ? 'Planung „' + pl.name + '“' : 'Hafenplan') + ' · ' + (leer ? 'Lageplan' : winter ? 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) : 'Sommer ' + SAISON + ' · Stand ' + H.datum(planStand.datum));
+    seite.style.setProperty('--pd-h', o.papier === 'A3' ? '218mm' : '134mm');
+    seite.innerHTML = '<div class="pd-blatt1">' + druckKopf() + '<div class="pd-titel"><h1>' + esc(titel) + '</h1><span>gedruckt am ' + H.datum(heute) + ' · Maßstab siehe Leiste · Norden oben</span></div><div class="pd-plan" id="pd-plan"></div>' +
+      '<div class="pd-legende">' + (leer ? '' : winter ? '<span><i class="lg-boot plane"></i>an Land belegt</span><span><i class="lg-feld leer"></i>frei</span>' :
+        '<span><i class="lg-boje gruen"></i>frei für Gäste</span><span><i class="lg-boje rot"></i>belegt</span><span><i class="lg-boot"></i>Dauerlieger</span><span><i class="lg-boot gast"></i>Gastlieger</span><span><i class="lg-boot saison"></i>Saison-Gast</span><span><i class="lg-feld gruen"></i>grünes Schild</span>') +
+      (pl ? '<span><i class="lg-feld neu"></i>neuer Platz (Planung)</span>' : '') + '<span class="pd-quelle">Grundlage: amtliches Luftbild · ' + esc(PLAN.QUELLE.replace('Luftbild: ', '')) + '</span></div></div>';
+    document.body.appendChild(seite);
+    const plan = pl ? planVoll(pl.plan) : undefined;
+    const sv = PLAN.zeichnen(seite.querySelector('#pd-plan'), { plan, entwurf: !!pl, namen: true, schweb: false, intro: false, modus: winter ? 'winter' : 'sommer', saison: SAISON, datum: planStand.datum, ansicht: o.ansicht,
+      wasser: leer ? (() => ({ status: 'leer' })) : undefined, land: leer ? (() => 'frei') : undefined });
+    sv.classList.add('nah', 'druck'); sv.classList.toggle('druck-hell', o.hell); if (leer) sv.classList.add('ohne-bojen');
+    if (o.liste && !leer) {   // zweites Blatt: wer liegt wo
+      const P = plan || PLAN.aktiv(); const nrn = PLAN.plaetzeVon(P).plaetze.map((x) => x.nr).concat((P.laengs || []).map((x) => String(x.nr)));
+      const zeilen = winter ? PLAN.lagerVon(P).map((g) => { const bel = Q.belegungPlatz(SAISON, per, g.id); const b = bel && Q.boot(bel.boot_id); return [g.id, b ? '„' + b.name + '“' + (b.typ ? ' · ' + b.typ : '') : '– frei –', b ? Q.name(Q.mitglied(b.eigner_id)) : '', b ? masse(b) : '']; })
+        : nrn.map((nr) => { const lp = d.liegeplaetze.find((x) => String(x.nr) === nr); if (!lp) return [nr, '– neu –', '', '']; const st = Q.statusWasser(lp, SAISON, planStand.datum); const bel = Q.belegungPlatz(SAISON, 'sommer', lp.id); const b = bel && Q.boot(bel.boot_id); const g = Q.gastAm(lp.id, planStand.datum);
+          return [nr, b ? '„' + b.name + '“' + (b.typ ? ' · ' + b.typ : '') : '– frei –', b ? Q.name(Q.mitglied(b.eigner_id)) : '', (g ? 'Gast „' + g.bootsname + '“' : st === 'unterwegs' ? 'grünes Schild bis ' + H.kurz(Q.abwesendAm(lp.id, planStand.datum).bis) : st === 'gesperrt' ? 'gesperrt' : '')]; });
+      const halb = Math.ceil(zeilen.length / 2); const tab = (z) => '<table class="tab pd-tab"><thead><tr><th>Platz</th><th>Boot</th><th>Eigner</th><th>' + (winter ? 'Maße' : 'Hinweis') + '</th></tr></thead><tbody>' + z.map((r) => '<tr><td><strong>' + esc(r[0]) + '</strong></td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td><td>' + (winter ? r[3] : esc(r[3])) + '</td></tr>').join('') + '</tbody></table>';
+      const blatt = document.createElement('div'); blatt.className = 'pd-blatt2'; blatt.innerHTML = druckKopf() + '<div class="pd-titel"><h1>Belegungsliste · ' + esc(winter ? 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) : 'Sommer ' + SAISON + ' · Stand ' + H.datum(planStand.datum)) + '</h1></div><div class="pd-zwei">' + tab(zeilen.slice(0, halb)) + tab(zeilen.slice(halb)) + '</div>';
+      seite.appendChild(blatt);
+    }
+    const st = document.createElement('style'); st.id = 'plan-druck-seite'; st.textContent = '@page { size: ' + o.papier + ' landscape; margin: 9mm; }'; document.head.appendChild(st);
+    document.body.classList.add('druckt-plan');
+    const fertig = () => { document.body.classList.remove('druckt-plan'); seite.remove(); st.remove(); window.removeEventListener('afterprint', fertig); };
+    window.addEventListener('afterprint', fertig);
+    setTimeout(() => { if (window.SSV_KEIN_DRUCK) return; window.print(); }, 150);
+  }
   V.plan = (main) => {
     const legende = planStand.modus === 'sommer'
       ? '<span><i class="lg-boje gruen"></i>grüne Boje: frei für Gäste</span><span><i class="lg-boje rot"></i>rote Boje: belegt</span><span><i class="lg-boot"></i>Dauerlieger</span><span><i class="lg-boot gast"></i>Gastlieger</span><span><i class="lg-boot saison"></i>Saison-Gast</span><span><i class="lg-feld gruen"></i>grünes Schild (Eigner unterwegs)</span><span><i class="lg-feld sperr"></i>gesperrt</span>'
       : '<span><i class="lg-boot plane"></i>an Land belegt (Palette, Halle, Außenlager)</span><span><i class="lg-feld leer"></i>frei</span><span><i class="lg-feld wasser"></i>Wasserplatz (Winterpause)</span>';
     const anders = planStand.modus === 'sommer' && planStand.datum !== heute;
+    const pl = darf('einstellungen') ? planungen().find((x) => x.id === planStand.planung) : null; if (!pl) planStand.planung = null;
     main.innerHTML = kopf('Hafenplan', planStand.modus === 'sommer' ? 'Sommer ' + SAISON + ' · Stand am ' + H.datum(planStand.datum) + ' (' + stichtagText(planStand.datum) + ')' : 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) + (imSommer ? '' : ' · Stand heute'),
       '<a class="btn" href="https://www.google.com/maps/search/?api=1&query=53.91139%2C10.70111" target="_blank" rel="noopener">Google Maps</a><a class="btn" href="https://maps.apple.com/?ll=53.91139,10.70111&q=Schwartauer%20Segler-Verein&z=17" target="_blank" rel="noopener">Apple Karten</a>') +
       (anders ? '<div class="hinweis warn stichtag"><span><strong>' + stichtagText(planStand.datum) + ':</strong> Du siehst den Stand am ' + H.datum(planStand.datum) + ' – nicht den heutigen' + (imSommer ? '' : ' (heute ist Winterpause)') + '.</span><button class="btn klein" id="zu-heute">Zum heutigen Stand</button></div>' : '') +
+      (pl ? '<div class="hinweis warn stichtag planung-band"><span><strong>Planung „' + esc(pl.name) + '“</strong> – ein Entwurf, zuletzt geändert am ' + H.datum(pl.stand) + '. Der gültige Plan bleibt unverändert, bis du die Planung gültig schaltest. Gestrichelt gelb = neue Plätze.</span>' +
+        '<span class="planung-knoepfe"><button class="btn klein primaer" id="pl-gueltig">Gültig schalten</button><button class="btn klein" id="pl-name">Umbenennen</button><button class="btn klein" id="pl-weg">Löschen</button><button class="btn klein" id="pl-zurueck">Zum gültigen Plan</button></span></div>' : '') +
       '<div class="plan-layout"><div class="plan-box"><div class="plan-leiste">' +
       '<button class="btn klein' + (planStand.modus === 'sommer' ? ' aktiv' : '') + '" data-modus="sommer">Sommer (Wasser)</button><button class="btn klein' + (planStand.modus === 'winter' ? ' aktiv' : '') + '" data-modus="winter">Winter (Land)</button>' +
       (planStand.modus === 'sommer' ? '<input type="date" id="plan-datum" value="' + planStand.datum + '" min="' + sd.auslagern + '" max="' + sd.einlagern + '" aria-label="Stichtag">' : '') +
@@ -251,11 +321,13 @@
         '<button class="btn klein' + (planStand.ansicht === k ? ' aktiv' : '') + '" data-ansicht="' + k + '">' + n + '</button>').join('') +
       '<span class="trenn"></span><button class="btn klein' + (planStand.luftbild ? ' aktiv' : '') + '" id="plan-bild" aria-pressed="' + planStand.luftbild + '">Luftbild</button>' +
       '<button class="btn klein' + (planStand.abend ? ' aktiv' : '') + '" id="plan-abend" aria-pressed="' + !!planStand.abend + '" title="Abendansicht: die Bojen leuchten">☾ Abend</button>' +
-      (darf('einstellungen') ? '<button class="btn klein" id="plan-edit">Lageplan bearbeiten</button>' : '') +
+      (darf('einstellungen') ? '<span class="trenn"></span><select id="plan-wahl" class="plan-wahl" aria-label="Welcher Plan?"><option value="">Gültiger Plan</option>' + planungen().map((x) => '<option value="' + esc(x.id) + '"' + (planStand.planung === x.id ? ' selected' : '') + '>Planung: ' + esc(x.name) + '</option>').join('') + '<option value="+">+ Neue Planung …</option></select>' +
+        '<button class="btn klein" id="plan-edit">' + (pl ? 'Planung bearbeiten' : 'Lageplan bearbeiten') + '</button>' : '') +
+      '<button class="btn klein" id="plan-druck">Drucken</button>' +
       '</div><div class="plan-flaeche" id="plan"></div><div class="legende">' + legende + (planStand.luftbild ? '<span class="quelle-zeile">' + esc(PLAN.QUELLE) + '</span>' : '') + '</div></div><aside class="detail" id="detail"></aside></div>' +
       '<p class="hinweis" style="margin-top:12px">Maßstäblicher Plan nach amtlichem Luftbild (DOP20)' + (d.einstellungen.lageplan ? ', vom Verein nachgezeichnet. ' : '. ') + (planAnnahme() ? 'Zuordnung, Nummerierung und Boxmaße sind eine <strong>Annahme</strong>, bis der Verein sie unter „Liegeplätze“ bestätigt – die Platzempfehlung für Gäste ist bis dahin nur eine Orientierung. ' : '') + 'Tippe auf einen Platz für Details; mit „Ost / West / Schwimm“ zoomst du heran und siehst die Platznummern.</p>';
     const zh = $('#zu-heute'); if (zh) zh.addEventListener('click', () => { if (imSommer) planStand.datum = heute; else { planStand.modus = 'winter'; planStand.ansicht = 'land'; planStand.vb = null; } planStand.markiere = null; zeige('plan'); });
-    const svg = PLAN.zeichnen($('#plan'), { namen: true, abend: planStand.abend && !planStand.luftbild, luftbild: planStand.luftbild, modus: planStand.modus, saison: SAISON, datum: planStand.datum, ansicht: planStand.vb || planStand.ansicht, intro: !planStand.vb, markiere: planStand.markiere, onKlick: (id) => { planStand.markiere = id; detail(id); markieren(id); } });
+    const svg = PLAN.zeichnen($('#plan'), { plan: pl ? planVoll(pl.plan) : undefined, entwurf: !!pl, namen: true, abend: planStand.abend && !planStand.luftbild, luftbild: planStand.luftbild, modus: planStand.modus, saison: SAISON, datum: planStand.datum, ansicht: planStand.vb || planStand.ansicht, intro: !planStand.vb, markiere: planStand.markiere, onKlick: (id) => { planStand.markiere = id; detail(id); markieren(id); } });
     // Verschieben/Zoomen wie in einer Karten-App, dazu Vollbild (Esc beendet)
     const box = main.querySelector('.plan-box');
     const vollbild = (an) => { const v = an == null ? !box.classList.contains('vollbild') : an; box.classList.toggle('vollbild', v); document.body.classList.toggle('plan-vollbild', v); planStand.voll = v;
@@ -277,11 +349,29 @@
     const dat = $('#plan-datum'); if (dat) dat.addEventListener('change', () => { planStand.datum = dat.value || planStand.datum; zeige('plan'); });
     $('#plan-bild').addEventListener('click', () => { planStand.luftbild = !planStand.luftbild; zeige('plan', true); });
     $('#plan-abend').addEventListener('click', (e) => { planStand.abend = !planStand.abend; if (planStand.abend && planStand.luftbild) { planStand.luftbild = false; return zeige('plan', true); } svg.classList.toggle('abend', planStand.abend); e.currentTarget.classList.toggle('aktiv', planStand.abend); e.currentTarget.setAttribute('aria-pressed', planStand.abend); });
-    const pe = $('#plan-edit'); if (pe) pe.addEventListener('click', () => window.HAFEN_PLAN_EDITOR.oeffnen({
+    const pe = $('#plan-edit'); if (pe) pe.addEventListener('click', () => pl ? planungBearbeiten(pl) : window.HAFEN_PLAN_EDITOR.oeffnen({
       plan: d.einstellungen.lageplan || PLAN.STANDARD, eigen: !!d.einstellungen.lageplan, daten: d,
-      onSpeichern: (neu) => { d.einstellungen.lageplan = neu; speichern('Lageplan gespeichert – er gilt jetzt für alle.'); zeige('plan', true); },
+      onSpeichern: (neu, neuP) => { d.einstellungen.lageplan = neu; const n = plaetzeAnlegen(neu, neuP); speichern('Lageplan gespeichert – er gilt jetzt für alle.' + (n ? ' ' + n + ' neue Plätze angelegt.' : '')); zeige('plan', true); },
+      onPlanung: (neu) => { const name = planungName(); if (!name) return false; const x = { id: H.uid('PL'), name, plan: neu, stand: heute }; d.einstellungen.lageplan_planungen = planungen().concat([x]); planStand.planung = x.id; speichern('Als Planung „' + name + '“ gesichert – der gültige Plan ist unverändert.'); zeige('plan', true); return true; },
       onVorlage: () => { delete d.einstellungen.lageplan; speichern('Vorlage wiederhergestellt.'); zeige('plan', true); }
     }));
+    const pw = $('#plan-wahl'); if (pw) pw.addEventListener('change', () => {
+      if (pw.value === '+') { const name = planungName(); if (!name) { pw.value = planStand.planung || ''; return; }
+        const x = { id: H.uid('PL'), name, plan: JSON.parse(JSON.stringify(d.einstellungen.lageplan || PLAN.STANDARD)), stand: heute }; d.einstellungen.lageplan_planungen = planungen().concat([x]); planStand.planung = x.id; speichern('Planung „' + name + '“ angelegt – eine Kopie des gültigen Plans.'); zeige('plan', true); return planungBearbeiten(x); }
+      planStand.planung = pw.value || null; planStand.markiere = null; zeige('plan', true); });
+    const an = (id, fn) => { const b = $('#' + id); if (b) b.addEventListener('click', fn); };
+    an('pl-zurueck', () => { planStand.planung = null; zeige('plan', true); });
+    an('pl-name', () => { const n = prompt('Name der Planung:', pl.name); if (!n || !n.trim()) return; pl.name = n.trim().slice(0, 60); speichern('Umbenannt.'); zeige('plan', true); });
+    an('pl-weg', () => { if (!confirm('Planung „' + pl.name + '“ löschen? Der gültige Plan bleibt, wie er ist.')) return; d.einstellungen.lageplan_planungen = planungen().filter((x) => x.id !== pl.id); planStand.planung = null; speichern('Planung gelöscht.'); zeige('plan', true); });
+    an('pl-gueltig', () => {
+      const pr = PLAN.pruefen(planVoll(pl.plan), d); const fehlt = pr.fehlen.concat(pr.landFehlen);
+      if (!confirm('Planung „' + pl.name + '“ jetzt gültig schalten?\n\nSie ersetzt den Hafenplan für alle. Der bisherige Plan bleibt als Planung „Bisheriger Plan“ erhalten – du kannst jederzeit zurück.' +
+        (fehlt.length ? '\n\nAchtung: Diese Plätze gibt es im Verein, sie stehen aber nicht mehr im Plan und wären nicht mehr zu sehen: ' + window.HAFEN_PLAN_EDITOR.bereiche(fehlt) + '.' : ''))) return;
+      const alt = { id: H.uid('PL'), name: 'Bisheriger Plan (bis ' + H.datum(heute) + ')', plan: JSON.parse(JSON.stringify(d.einstellungen.lageplan || PLAN.STANDARD)), stand: heute };
+      d.einstellungen.lageplan = pl.plan; d.einstellungen.lageplan_planungen = planungen().filter((x) => x.id !== pl.id).concat([alt]); planStand.planung = null;
+      const n = plaetzeAnlegen(pl.plan, { wasser: pr.unbekannt, land: pr.landUnbekannt });
+      speichern('Die Planung gilt jetzt für alle.' + (n ? ' ' + n + ' neue Plätze angelegt.' : '')); zeige('plan', true); });
+    $('#plan-druck').addEventListener('click', () => planDruckDialog(pl, svg));
     if (planStand.markiere) detail(planStand.markiere); else detailLeer();
   };
 
