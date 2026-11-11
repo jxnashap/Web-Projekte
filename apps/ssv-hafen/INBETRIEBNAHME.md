@@ -69,6 +69,8 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    (nur Vorstand/Kassenwart lesen, schreiben kann nur die Edge Function „rechnung-mail“). Einrichtung siehe 6a3.
 16. `apps/ssv-hafen/supabase/nachtrag-16.sql` – Veranstaltungen am Getränke-iPad: `kasse_veranstaltungen` und
    `kasse_zusage` (Gerät + Code wie beim Buchen), Herkunft `kasse`; „Mein SSV“ nutzt dieselben Regeln (`_zusage_setzen`).
+17. `apps/ssv-hafen/supabase/nachtrag-17.sql` – öffentliche Hafenkarte: Funktion `hafen_karte` (frei/belegt je Platznummer,
+   ohne Namen). Bleibt ohne Wirkung, bis der Vorstand die Karte einschaltet – siehe 6a4.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 
@@ -154,6 +156,22 @@ Sie legt beim ersten Aufruf ihr Schlüsselpaar selbst an – es gibt keine Gehei
    → Meine Daten → „Benachrichtigungen einschalten“. Dann im Hafen-Manager → Mitteilungen eine Test-Mitteilung mit
    „als Push senden“ veröffentlichen.
 3. Klappt etwas nicht: Supabase → Edge Functions → push → Logs.
+
+## 6a4 · Hafenkarte für Gäste (öffentlich)
+
+Die Seite `ssv-hafen/hafenplan.html` zeigt ohne Anmeldung, welche Gastliegeplätze frei sind: grüne Boje = frei,
+rote Boje = belegt. Mehr verrät sie nicht – keine Namen, keine Boote der Mitglieder; ob ein Platz wegen eines grünen
+Schilds oder ohnehin frei ist, sieht man von außen nicht.
+
+1. Nachtrag 17 einspielen.
+2. Hafen-Manager → Verwaltung → Einstellungen → „Hafenkarte für Gäste (öffentlich)“:
+   **Nein** (Standard) · **nur den heutigen Stand** · **heute und die nächsten Tage** (Zahl der Tage, höchstens 60).
+3. Speichern – die Seite zeigt den Stand sofort und holt ihn alle 5 Minuten neu.
+4. Auf der Vereinswebsite verlinken oder einbetten: `hafenplan.html?einbetten=1` (ohne Kopf und Fußzeile, für einen Rahmen
+   auf der Seite „Hafen & Gastlieger“), Sprache mit `?lang=en` oder `?lang=da`.
+
+Außerhalb der Saison (Saisontermine in den Einstellungen) meldet die Seite „Winterpause“. Ist die Karte ausgeschaltet,
+steht dort nur der Hinweis, beim Hafenmeister nachzufragen.
 
 ## 6a3 · Rechnungen per E-Mail (Beiträge, Hafen, Veranstaltungen, Getränke)
 Die Edge Function `rechnung-mail` ist im Projekt hochgeladen (Quelle `apps/ssv-hafen/supabase/functions/rechnung-mail`).

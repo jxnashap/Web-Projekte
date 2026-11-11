@@ -32,7 +32,10 @@ cd apps/ssv-hafen && python3 -m http.server 8080
 
 ## Was umgesetzt ist
 
-- **Hafenplan:** Schematische Karte nach Luftbild mit Ost-, West- und Schwimmbrücke (Plätze 1–79, Längsseits L1/L2), Winterlager mit Paletten, Halle und Außenlager. Die Status-Farben gelten für einen wählbaren Tag. Zoom auf jede Brücke, Platzdetails per Klick, Links zu Google Maps und Apple Karten.
+- **Hafenplan / Hafenkarte:** Maßstäbliche Karte nach amtlichem Luftbild mit Ost-, West- und Schwimmbrücke, Winterlager mit Paletten, Halle und Außenlager. Boote in echter Größe, je Platz eine Boje als Ampel (grün = frei für Gäste, rot = belegt), Abendansicht, Schwebekarte. Der Stand gilt für einen wählbaren Tag. Zoom auf jede Brücke, Platzdetails per Klick, Links zu Google Maps und Apple Karten.
+- **Lageplan bearbeiten:** Stege, Flächen, Punkte und Lagerfelder zeichnen; einzelne Boxen und Lagerplätze verschieben, in der Größe ändern, entfernen, neu setzen. **Planungen** als Entwürfe neben dem gültigen Plan („so will ich es nächstes Jahr“), **Druck** im Vereinsbriefkopf mit Belegungsliste.
+- **Gäste – Karte & Kalender:** Anreise und Nächte wählen, freie Plätze auf der Karte sehen, Gast direkt eintragen; Zeitleiste je Platz mit grünem Schild (auch aus „Mein SSV“), Gästen und Dauerliegern.
+- **Öffentliche Hafenkarte** `hafenplan.html`: zeigt Gästen nur frei/belegt je Platz, ohne Namen; vom Vorstand ein- und ausschaltbar (Einstellungen), Deutsch/Englisch/Dänisch. Plan und Recherche: `PLAN-HAFENKARTE.md`.
 - **Regeln aus der Hafenbetriebsordnung:** Warnung bei Booten über 10 t, Prüfung „Boot passt zum Platz“, Erinnerung an den Versicherungsnachweis, Kennzeichen „nicht kranen“, Kfz-Kennzeichen.
 - **Grünes Schild:** Mitglieder melden ihre Abwesenheit in „Mein SSV“, der Platz wird grün, und der Hafenmeister kann ihn an Gäste geben. Bei der Platzwahl für Gäste werden nur Plätze angeboten, die über den ganzen Zeitraum frei oder grün sind und deren Maße passen.
 - **Mein SSV:** Jedes Mitglied (mit oder ohne Boot) hat einen Zugang: Boot und Liegeplatz, grünes Schild, Warteliste, alle Rechnungen (Hafen und Getränke) als PDF, Getränkebuchungen des Monats, Getränke-Code ändern oder neu festlegen, Kontaktdaten und Versicherung aktualisieren. In der Demo wählt man oben rechts, als wer man die Seite ansieht.

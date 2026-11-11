@@ -341,7 +341,9 @@
     // Belegung eines Wasserplatzes: Status, Boot des Dauerliegers, Gast
     const lage = opts.wasser || ((p) => {
       const status = Q.statusWasser(p, opts.saison, opts.datum); const bel = Q.belegungPlatz(opts.saison, 'sommer', p.id);
-      return { status, boot: bel ? Q.boot(bel.boot_id) : null, gast: status === 'gast' ? Q.gastAm(p.id, opts.datum) : null };
+      // In „Mein SSV“ kennt das Mitglied nur den Status fremder Plätze (keine Gästeliste, keine fremden Boote) – dann eben ohne Einzelheiten
+      let gast = null; if (status === 'gast') { try { gast = Q.gastAm(p.id, opts.datum) || null; } catch (e) { gast = null; } }
+      return { status, boot: bel ? (Q.boot(bel.boot_id) || null) : null, gast };
     });
     const lagen = new Map();
     const lageVon = (p) => { if (!lagen.has(p.id)) lagen.set(p.id, p.neu ? { status: 'neu' } : winter ? { status: p.gesperrt ? 'gesperrt' : 'leer' } : (lage(p) || { status: 'frei' })); return lagen.get(p.id); };

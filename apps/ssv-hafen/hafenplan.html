@@ -153,7 +153,7 @@
   }
   async function holen() {
     try { D = SB ? await SB.rpc('hafen_karte', { p_von: S.von, p_naechte: S.n }, true) : demoKarte(); }
-    catch (x) { D = { ok: false, grund: 'fehler' }; }
+    catch (x) { D = { ok: false, grund: x && x.status === 404 ? 'aus' : 'fehler' }; }   // 404 = Funktion noch nicht eingespielt (Nachtrag 17) → wie „nicht öffentlich“
     if (D && D.ok) { S.von = D.von; S.n = D.naechte; }
     zeigen();
   }
