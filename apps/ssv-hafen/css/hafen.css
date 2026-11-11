@@ -776,7 +776,19 @@ body.plan-vollbild { overflow: hidden; }
   .nav .such-knopf { display: none; }
   .nav .nav-leiste .such-knopf-m { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; border: 0; background: rgba(255,255,255,.12); color: #fff; font: inherit; font-weight: 600; font-size: 15px; padding: 8px 12px; border-radius: 9px; min-height: 44px; cursor: pointer; }
   .nav .nav-leiste .such-knopf-m + button { margin-left: 8px; }
+  .shell { grid-template-columns: minmax(0, 1fr); } .shell > * { min-width: 0; }
+  .nav .nav-leiste strong { flex: 1 1 auto; min-width: 0; }
+  .nav .nav-leiste .stander { width: 40px; height: 20px; }
+  .nav .nav-leiste button { flex: none; }
+  .kopf > div:first-child { min-width: 0; max-width: 100%; }
+  .kopf .aktionen { flex-wrap: wrap; max-width: 100%; }
+  .kopf .aktionen .btn, .panel .aktionen .btn { white-space: normal; text-align: center; }
   .such-karte { margin-top: 0; }
   .such-feld input { font-size: 18px; }
 }
+@media screen and (max-width: 430px) {   /* schmale Handys: Lupe ohne Text (Name bleibt für Vorlesehilfen) */
+  .nav .nav-leiste .such-knopf-m span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .nav .nav-leiste .such-knopf-m { padding: 8px 12px; min-width: 44px; justify-content: center; }
+}
+@media screen { .wc-panel p small { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 14px; display: block; margin-top: 4px; } .wc-panel > div > small { font-size: 12.5px; letter-spacing: .06em; } }
 @media print { .such-knopf, .such-knopf-m, details.erklaer > summary { display: none !important; } details.erklaer > .hinweis { display: block; } }
