@@ -139,7 +139,9 @@
       fertig: 'Tak – god fornøjelse!', fertigT: 'Vi har noteret din betaling ({a}). Kvittering får du hos havnefogeden.', fragen: 'Spørgsmål?', neu: 'Ny tilmelding', wa: { paypal: 'PayPal', ueberweisung: 'bankoverførsel', bar: 'kontant' } }
   };
   // Sprache des Handys übernehmen (dänische und andere Gäste sehen nicht zuerst Deutsch)
-  const nl = (navigator.language || 'de').slice(0, 2); let lang = nl === 'de' ? 'de' : nl === 'da' ? 'da' : 'en';
+  // Aus der Hafenkarte kommt der Gast mit Platz, Anreise und Nächten im Link (hafenplan.html → „Hier anmelden“)
+  const LINK = new URLSearchParams(location.search);
+  const nl = (navigator.language || 'de').slice(0, 2); let lang = ['de', 'en', 'da'].includes(LINK.get('lang')) ? LINK.get('lang') : nl === 'de' ? 'de' : nl === 'da' ? 'da' : 'en';
   const telLink = (t) => { t = String(t || '').replace(/[^\d+]/g, ''); return t.startsWith('0') ? '+49' + t.slice(1) : t; };   // international wählbar
   const esc = H.esc, karte = document.getElementById('karte'), formHTML = karte.innerHTML;
   const lesen = () => { try { const a = JSON.parse(localStorage.getItem(LS) || 'null'); return a && a.bis >= H.tag(new Date()) ? a : null; } catch (x) { return null; } };
@@ -178,6 +180,11 @@
   }
   function formular() {
     karte.innerHTML = formHTML; const f = document.getElementById('f'); f.ankunft.value = H.tag(new Date());
+    // Vorbelegung aus der Hafenkarte: nur plausible Werte übernehmen (alles bleibt änderbar, die Datenbank prüft den Platz ohnehin)
+    const lp = LINK.get('platz'), la = LINK.get('ankunft'), ln = Number(LINK.get('naechte'));
+    if (lp && /^[A-Za-z0-9]{1,6}$/.test(lp)) f.platz.value = lp.toUpperCase();
+    if (la && /^\d{4}-\d\d-\d\d$/.test(la) && la >= H.tag(new Date())) f.ankunft.value = la;
+    if (ln >= 1 && ln <= 30) f.naechte.value = Math.round(ln);
     f.naechte.addEventListener('input', preis);
     f.addEventListener('submit', absenden); setze();
   }

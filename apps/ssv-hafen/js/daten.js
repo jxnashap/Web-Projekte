@@ -445,6 +445,8 @@
     if (finanz) z.mitglieder.forEach((r, i) => { const m = d.mitglieder[i]; r.sepa = !!(m.iban && m.mandat_ref && m.mandat_datum); });
     z.mitglieder_bank = finanz ? d.mitglieder.filter((m) => m.iban || m.kontoinhaber || m.bic || m.mandat_datum).map((m) => pick({ ...m, mitglied_id: m.id }, SP.mitglieder_bank)) : [];
     ['boote', 'belegungen', 'abwesenheiten', 'gaeste', 'warteliste', 'kran', 'arbeitsdienst', 'arbeitseinsaetze', 'arbeitseinsatz_codes', 'arbeitsbereiche', 'arbeitsbereich_mitglieder', 'mitteilungen', 'veranstaltungen', 'zusagen', 'sepa_laeufe', 'antraege', 'liegeplaetze', 'landplaetze', 'saisons', 'aufgaben'].forEach((t) => { z[t] = (d[t] || []).map((o) => pick(o, SP[t])); });
+    // Alles, was das Programm kennt, ist vorhanden – so wird ein früher ausgeblendeter Platz (Nachtrag 12) wieder sichtbar, wenn er im Lageplan neu angelegt wird
+    z.liegeplaetze.forEach((r) => { r.vorhanden = true; });
     z.hafen_rechnungen = d.rechnungen.map((o) => pick(o, SP.hafen_rechnungen));
     z.gebuehren = Object.entries(d.gebuehren || {}).map(([jahr, daten]) => ({ jahr: Number(jahr), daten }));
     const { zaehler, ...einst } = d.einstellungen; // Zähler leben in den Daten selbst

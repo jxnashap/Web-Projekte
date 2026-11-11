@@ -976,3 +976,9 @@ body.plan-vollbild { overflow: hidden; }
 /* In der Übersicht sind die Bojen größer, damit man frei/belegt auf einen Blick sieht */
 .bo-i { transition: transform .35s ease; } .hafenplan:not(.nah) .bo-i { transform: scale(1.75); }
 .kal td.start { z-index: 2; } .legende i.kz { width: 22px !important; height: 14px !important; display: inline-block; }
+/* Maßstab und Nord als feste Einblendung (mit Kamera); die gezeichnete Leiste bleibt für den Druck */
+.hafenplan.mit-kamera .massstab, .hafenplan.mit-kamera .rose { display: none; }
+.plan-mass { position: absolute; left: 10px; bottom: 10px; z-index: 3; display: flex; align-items: flex-end; gap: 10px; pointer-events: none; background: rgba(255,255,255,.9); border-radius: 10px; padding: 6px 10px; color: var(--navy); font: 600 12.5px/1 "Inter", sans-serif; box-shadow: 0 2px 8px rgba(8,20,50,.18); }
+.plan-mass .pm-n { display: grid; justify-items: center; gap: 1px; font-size: 11px; } .plan-mass .pm-n svg { width: 14px; height: 17px; }
+.plan-mass .pm-leiste { display: grid; gap: 3px; } .plan-mass .pm-leiste i { display: block; height: 6px; border: 1.5px solid var(--navy); border-top: 0; min-width: 20px; } .plan-mass .pm-leiste b { font-weight: 600; text-align: center; }
+@media print { .plan-mass { display: none; } }

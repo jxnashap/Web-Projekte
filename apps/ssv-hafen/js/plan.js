@@ -83,6 +83,8 @@
 
   const gueltig = (p) => p && Array.isArray(p.stege) && Array.isArray(p.formen) && p.stege.every((s) => Array.isArray(s.a) && Array.isArray(s.b));
   // Aktiver Plan: vom Verein gezeichnet (Einstellungen) oder die Vorlage
+  // Plan des Vereins (oder null) zu einem vollständigen Plan ergänzen
+  const voll = (eigen) => gueltig(eigen) ? { ...STANDARD, laengs: [], punkte: [], lager: [], ...eigen } : STANDARD;
   function aktiv() {
     const d = window.HAFEN && window.HAFEN.d; const eigen = d && d.einstellungen && d.einstellungen.lageplan;
     return gueltig(eigen) ? { ...STANDARD, laengs: [], punkte: [], lager: [], ...eigen } : STANDARD;
@@ -329,7 +331,7 @@
   const FREI = { frei: 1, unterwegs: 1 };
   function zeichnen(el, opts) {
     const { Q } = window.HAFEN;
-    const d = window.HAFEN.d;
+    const d = opts.daten || window.HAFEN.d;   // opts.daten = { liegeplaetze } für Seiten ohne Vereinsdaten (öffentliche Karte)
     const plan = opts.plan || aktiv();
     const geo = plaetzeVon(plan);
     const winter = opts.modus === 'winter';
@@ -382,7 +384,7 @@
     }).join('');
 
     const per = winter ? 'winter' : 'sommer';
-    const land = lagerVon(plan).map((g) => {
+    const land = opts.daten ? '' : lagerVon(plan).map((g) => {
       const lp = Q.platz(g.id) || (opts.entwurf ? { id: g.id, bez: g.id, neu: true } : null); if (!lp) return '';
       const status = lp.neu ? 'neu' : opts.land ? opts.land(lp) : Q.statusLand(lp, opts.saison, per);
       const mark = opts.markiere === g.id ? ' markiert' : '';
@@ -396,7 +398,7 @@
         <text class="lp-nr" x="${g.mx.toFixed(1)}" y="${(g.my + 1.8).toFixed(1)}" text-anchor="middle">${g.id}</text>${opts.namen && b ? `<text class="lp-boot" x="${g.mx.toFixed(1)}" y="${(g.my + (g.h > g.w ? 6.5 : 4.6)).toFixed(1)}" text-anchor="middle">${esc(String(b.name).slice(0, 12))}</text>` : ''}</g>`;
     }).join('');
     // Lagernamen über (bzw. bei Lagern unterhalb des Wegs: unter) dem Feld
-    const lagerNamen = (plan.lager || []).filter((L) => L.name).map((L) => { const zeilen = Math.ceil((Number(L.anzahl) || 0) / Math.max(1, Number(L.spalten) || 1));
+    const lagerNamen = opts.daten ? '' : (plan.lager || []).filter((L) => L.name).map((L) => { const zeilen = Math.ceil((Number(L.anzahl) || 0) / Math.max(1, Number(L.spalten) || 1));
       const unten = L.namenUnten || L.id === 'nr'; const dy = (zeilen * (Number(L.bh) || 20) / 2 + (unten ? 7 : 3)) * (unten ? 1 : -1);
       return `<text class="pl-label klein lager-name" text-anchor="middle" transform="translate(${L.x} ${L.y}) rotate(${Number(L.rot) || 0}) translate(0 ${dy.toFixed(1)})">${esc(L.name)}</text>`; }).join('');
 
@@ -461,7 +463,12 @@
       const mx = Math.min(plan.breite / 2 + rx, Math.max(plan.breite / 2 - rx, cx)), my = Math.min(plan.hoehe / 2 + ry, Math.max(plan.hoehe / 2 - ry, cy));
       return [mx - w / 2, my - h / 2, w, h];
     }
-    const setzen = (v) => { svg.setAttribute('viewBox', v.map((z) => z.toFixed(2)).join(' ')); svg.classList.toggle('nah', v[2] < 600); svg.classList.toggle('sehr-nah', v[2] < 260); if (opt.onAnsicht) opt.onAnsicht(v); };
+    // Maßstabsleiste und Nordpfeil als feste Einblendung: bleiben beim Zoomen sichtbar und stimmen immer
+    let mass = null, massM = 0, massPx = 0;
+    const massZeigen = (v) => { if (!mass) return; const r = box(); if (!r.width) return; const pxJeM = r.width / v[2] / plan.m;
+      const m = [2, 5, 10, 20, 50, 100, 200].find((x) => x * pxJeM >= 64) || 200; const px = Math.round(m * pxJeM);
+      if (m !== massM || Math.abs(px - massPx) > 0) { massM = m; massPx = px; mass.querySelector('i').style.width = px + 'px'; mass.querySelector('b').textContent = m + ' m'; } };
+    const setzen = (v) => { svg.setAttribute('viewBox', v.map((z) => z.toFixed(2)).join(' ')); svg.classList.toggle('nah', v[2] < 600); svg.classList.toggle('sehr-nah', v[2] < 260); massZeigen(v); if (opt.onAnsicht) opt.onAnsicht(v); };
     function tick(t) {
       const dt = Math.min(48, t - (last || t)); last = t;
       if (vel) { ziel = passend([ziel[0] + vel[0] * dt, ziel[1] + vel[1] * dt, ziel[2], ziel[3]]); const r = Math.pow(0.93, dt / 16); vel = [vel[0] * r, vel[1] * r];
@@ -549,6 +556,8 @@
       ctl.addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (!b) return; const k = b.dataset.k;
         if (k === 'rein') zoom(0.6); else if (k === 'raus') zoom(1.65); else if (k === 'alles') zu('gesamt'); else if (k === 'voll' && opt.vollbild) opt.vollbild(); });
       huelle.appendChild(ctl);
+      mass = document.createElement('div'); mass.className = 'plan-mass'; mass.setAttribute('aria-hidden', 'true'); mass.innerHTML = '<span class="pm-n"><svg viewBox="-10 -12 20 24"><path d="M0 -11 L5 9 L0 5 L-5 9 Z" fill="#B8232B"/></svg>N</span><span class="pm-leiste"><i></i><b></b></span>';
+      huelle.appendChild(mass); svg.classList.add('mit-kamera'); massZeigen(cur);
       let gesehen = false; try { gesehen = sessionStorage.getItem('ssv-plan-hinweis') === '1'; sessionStorage.setItem('ssv-plan-hinweis', '1'); } catch (x) { /* egal */ }
       if (!gesehen) { const h = document.createElement('div'); h.className = 'plan-tipp'; h.textContent = matchMedia('(pointer: coarse)').matches ? 'Mit einem Finger verschieben · mit zwei Fingern zoomen · Doppeltipp = näher' : 'Ziehen = verschieben · Mausrad = zoomen · Doppelklick = näher'; huelle.appendChild(h); setTimeout(() => h.remove(), 4200); }
     }
@@ -583,6 +592,6 @@
       landFehlen: landSoll.filter((id) => !landIst.has(id)), landUnbekannt: [...landIst].filter((id) => !landSoll.includes(id)), anzahl: soll.length };
   }
 
-  window.HAFEN_PLAN = { zeichnen, zoomen, kamera, lagerEcken, bootSvg, istMotor, STATUS_TEXT, STANDARD, ART, PUNKT, QUELLE, aktiv, gueltig, plaetzeVon, lagerVon, stegGeo, hatPlaetze, ansichten, pruefen, svgDefs, formenSvg, mitte, drehen,
+  window.HAFEN_PLAN = { zeichnen, zoomen, kamera, lagerEcken, bootSvg, istMotor, voll, STATUS_TEXT, STANDARD, ART, PUNKT, QUELLE, aktiv, gueltig, plaetzeVon, lagerVon, stegGeo, hatPlaetze, ansichten, pruefen, svgDefs, formenSvg, mitte, drehen,
     get ANSICHTEN() { return ansichten(aktiv()); } };
 })();

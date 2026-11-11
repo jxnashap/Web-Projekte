@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E1B45">
+<title>Freie Gastliegeplätze · Schwartauer Segler-Verein</title>
+<meta name="description" content="Hafenkarte des Schwartauer Segler-Vereins: Welche Gastliegeplätze sind frei? Grüne Boje = frei, rote Boje = belegt.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/hafen.css">
+<style>
+  /* Öffentliche Hafenkarte: freie Gastliegeplätze (ohne Anmeldung). Zeigt nur frei/belegt – keine Namen, keine Boote der Mitglieder. */
+  body.hk { background: #0b1a3f; color: #fff; margin: 0; }
+  .hk-rahmen { max-width: 1180px; margin: 0 auto; padding: 18px 16px 40px; }
+  .hk-kopf { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 6px 0 16px; }
+  .hk-kopf .stander { width: 62px; height: 31px; flex: none; }
+  .hk-kopf h1 { color: #fff; font-size: clamp(24px, 4vw, 34px); margin: 0; line-height: 1.1; }
+  .hk-kopf p { margin: 3px 0 0; color: rgba(255,255,255,.72); font-size: 15px; }
+  .hk-kopf .sprache { margin-left: auto; display: flex; gap: 6px; }
+  .hk-kopf .sprache button { background: rgba(255,255,255,.1); color: #fff; border: 0; border-radius: 99px; padding: 9px 14px; min-height: 42px; font: inherit; font-size: 14px; cursor: pointer; }
+  .hk-kopf .sprache button.aktiv { background: #fff; color: var(--navy); font-weight: 700; }
+  .hk-leiste { background: #fff; color: var(--navy); border-radius: 18px; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end; }
+  .hk-leiste .feld { margin: 0; } .hk-leiste .feld > span { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+  .hk-leiste input[type=date] { min-height: 46px; font-size: 16px; }
+  .hk-zahl { display: flex; gap: 4px; } .hk-zahl input { width: 62px; text-align: center; font-weight: 700; font-size: 17px; min-height: 46px; } .hk-zahl button { min-width: 46px; min-height: 46px; font-size: 20px; padding: 0; }
+  .hk-boot summary { cursor: pointer; font-weight: 600; color: var(--navy-3); padding: 10px 0; } .hk-masse { display: flex; gap: 10px; } .hk-masse input { width: 108px; min-height: 44px; }
+  .hk-abend { margin-left: auto; }
+  .hk-summe { font-size: clamp(17px, 2.4vw, 21px); margin: 16px 2px 12px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+  .hk-summe strong { font-family: "Playfair Display", Georgia, serif; font-weight: 500; font-size: 1.25em; }
+  .hk-summe .gr { color: #7df0b0; font-weight: 700; } .hk-summe small { color: rgba(255,255,255,.7); font-size: .78em; }
+  .hk-karte { border-radius: 20px; overflow: hidden; background: #133a5c; box-shadow: 0 20px 50px rgba(0,0,0,.35); position: relative; }
+  .hk-karte .plan-flaeche { aspect-ratio: 16 / 9; } @media (max-width: 760px) { .hk-karte .plan-flaeche { aspect-ratio: 1 / 1; height: auto; } }
+  .hk-karte .legende { background: #fff; color: var(--navy); font-size: 14px; }
+  .hk-melder { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; background: rgba(11,26,63,.82); z-index: 5; }
+  .hk-melder div { max-width: 460px; } .hk-melder h2 { color: #fff; font-size: 26px; margin: 0 0 8px; } .hk-melder p { color: rgba(255,255,255,.82); margin: 0 0 14px; font-size: 16px; }
+  .hk-wahl { margin-top: 14px; }
+  .hk-platz { background: #fff; color: var(--navy); border-radius: 18px; padding: 16px 18px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; border-left: 8px solid #2ed47c; }
+  .hk-platz.rot { border-left-color: #ee4a3b; } .hk-platz.grau { border-left-color: #9aa2b3; }
+  .hk-platz h2 { font-size: 24px; margin: 0; } .hk-platz p { margin: 2px 0 0; color: #3d4560; } .hk-platz .btn { margin-left: auto; min-height: 48px; font-size: 16px; padding: 12px 20px; }
+  .hk-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .hk-chips button { border: 0; border-radius: 12px; background: rgba(255,255,255,.1); color: #fff; padding: 9px 13px; font: inherit; cursor: pointer; text-align: left; min-height: 46px; display: grid; }
+  .hk-chips button strong { font-size: 16px; } .hk-chips button small { color: rgba(255,255,255,.7); font-size: 12.5px; } .hk-chips button:hover, .hk-chips button.aktiv { background: #2ed47c; color: #06381f; } .hk-chips button:hover small, .hk-chips button.aktiv small { color: #0d5a33; }
+  .hk-chips h3 { width: 100%; color: rgba(255,255,255,.8); font-family: inherit; font-size: 14px; font-weight: 600; margin: 0; letter-spacing: .02em; }
+  .hk-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 22px; }
+  .hk-info > div { background: rgba(255,255,255,.07); border-radius: 16px; padding: 16px 18px; } .hk-info h3 { color: #fff; font-size: 19px; margin: 0 0 8px; } .hk-info p, .hk-info li { color: rgba(255,255,255,.84); font-size: 15.5px; line-height: 1.5; } .hk-info p { margin: 0 0 8px; }
+  .hk-info ol { margin: 0; padding-left: 20px; } .hk-info a { color: #9fd0ff; } .hk-info .preis { font-family: "Playfair Display", Georgia, serif; font-size: 30px; color: #fff; }
+  .hk-info .btn { margin: 4px 6px 0 0; } .hk-info a.btn { color: var(--navy); } .hk-info a.btn.primaer { color: #fff; }
+  .hk-fuss { margin-top: 22px; color: rgba(255,255,255,.55); font-size: 12.5px; line-height: 1.5; } .hk-fuss a { color: rgba(255,255,255,.75); }
+  .hk-demo { background: #ffd94a; color: #3a2e00; border-radius: 10px; padding: 8px 12px; font-size: 14px; margin-bottom: 12px; }
+  body.einbetten { background: transparent; } body.einbetten .hk-kopf, body.einbetten .hk-info, body.einbetten .hk-fuss { display: none; } body.einbetten .hk-rahmen { padding: 0; }
+  body.einbetten .hk-summe { color: var(--navy); } body.einbetten .hk-summe .gr { color: #15794a; } body.einbetten .hk-summe small { color: var(--muted); }
+  body.einbetten .hk-chips button { background: #eef1f7; color: var(--navy); } body.einbetten .hk-chips button small { color: var(--muted); } body.einbetten .hk-chips h3 { color: var(--muted); }
+  body.einbetten .hk-leiste { box-shadow: inset 0 0 0 1px var(--line); } body.einbetten .hk-platz { box-shadow: inset 0 0 0 1px var(--line); }
+</style>
+</head>
+<body class="hk">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="sc"><path d="M14 8L118 33L14 58Z"/></clipPath>
+  <symbol id="stander" viewBox="12 6 108 54"><path d="M14 8L118 33L14 58Z" fill="#132a6b"/><g clip-path="url(#sc)"><path d="M14 8L70 58M14 58L70 8" stroke="#fff" stroke-width="8"/><path d="M14 8L70 58M14 58L70 8" stroke="#d3252c" stroke-width="4.5"/></g><path d="M14 8L118 33L14 58Z" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2"/></symbol></defs></svg>
+<div class="hk-rahmen">
+  <header class="hk-kopf">
+    <svg class="stander" aria-hidden="true"><use href="#stander"/></svg>
+    <div><h1 data-t="titel">Freie Gastliegeplätze</h1><p data-t="unter">Schwartauer Segler-Verein · Teerhofinsel, Lübeck</p></div>
+    <div class="sprache" role="group" aria-label="Sprache"><button data-lang="de" class="aktiv" aria-pressed="true">Deutsch</button><button data-lang="en" aria-pressed="false">English</button><button data-lang="da" aria-pressed="false">Dansk</button></div>
+  </header>
+  <main>
+    <div id="demo"></div>
+    <div class="hk-leiste">
+      <label class="feld"><span data-t="anreise">Anreise</span><input type="date" id="von"></label>
+      <div class="feld"><span data-t="naechte">Nächte</span><div class="hk-zahl"><button type="button" class="btn" id="minus" aria-label="−">−</button><input type="number" id="n" min="1" max="14" value="1" aria-label="Nächte"><button type="button" class="btn" id="plus" aria-label="+">+</button></div></div>
+      <details class="hk-boot"><summary data-t="passt">Passt mein Boot? Maße eingeben</summary><div class="hk-masse"><label class="feld"><span data-t="laenge">Länge (m)</span><input id="bl" inputmode="decimal" placeholder="9,5"></label><label class="feld"><span data-t="breite">Breite (m)</span><input id="bb" inputmode="decimal" placeholder="3,1"></label></div></details>
+      <button type="button" class="btn hk-abend" id="abend" aria-pressed="false">☾ <span data-t="abend">Abend</span></button>
+    </div>
+    <p class="hk-summe" id="summe" aria-live="polite"></p>
+    <div class="hk-karte"><div class="plan-flaeche" id="plan"></div>
+      <div class="legende"><span><i class="lg-boje gruen"></i><span data-t="lgFrei">grüne Boje: frei</span></span><span><i class="lg-boje rot"></i><span data-t="lgBelegt">rote Boje: belegt</span></span><span id="lg-klein" hidden><i class="lg-feld klein"></i><span data-t="lgKlein">frei, aber zu klein</span></span></div>
+      <div class="hk-melder" id="melder" hidden></div>
+    </div>
+    <div class="hk-wahl" id="wahl"></div>
+    <section class="hk-info">
+      <div><h3 data-t="soGehts">So geht’s</h3><ol><li data-t="s1">Freien Platz mit grüner Boje aussuchen – am Steg hängt dort das grüne Schild.</li><li data-t="s2">Festmachen und hier online anmelden.</li><li data-t="s3">Gleich bezahlen – du musst auf niemanden warten.</li></ol></div>
+      <div><h3 data-t="preisT">Liegegebühr</h3><p class="preis" id="preis">15,00 €</p><p data-t="preisU">pro Nacht, unabhängig von der Bootsgröße. Strom und Wasser am Steg.</p><a class="btn primaer" id="anmelden" href="gast.html" data-t="anmelden">Als Gast anmelden</a></div>
+      <div><h3 data-t="kontaktT">Hafenmeister</h3><p id="kontakt"></p><p data-t="anfahrt">Zur Teerhofsinsel 5B, 23554 Lübeck · nördlicher Travearm</p>
+        <a class="btn" href="https://www.google.com/maps/search/?api=1&query=53.91139%2C10.70111" target="_blank" rel="noopener">Google Maps</a><a class="btn" href="https://maps.apple.com/?ll=53.91139,10.70111&q=Schwartauer%20Segler-Verein&z=17" target="_blank" rel="noopener">Apple Karten</a></div>
+    </section>
+    <p class="hk-fuss"><span data-t="fuss">Die Karte zeigt nur, ob ein Platz frei oder belegt ist – ohne Gewähr; vor Ort gilt das grüne Schild am Steg.</span> <span id="stand"></span><br><span data-t="quelle">Plan gezeichnet nach amtlichem Luftbild</span> · © GeoBasis-DE/LVermGeo SH/CC BY 4.0</p>
+  </main>
+</div>
+<script src="js/config.js"></script>
+<script src="js/sb.js"></script>
+<script src="js/bereiche-vorlage.js"></script>
+<script src="js/daten.js"></script>
+<script src="js/gebuehren.js"></script>
+<script src="js/plan.js"></script>
+<script>
+(function () {
+  'use strict';
+  const HF = window.HAFEN, SB = window.SSV_SB, H = HF.H, PLAN = window.HAFEN_PLAN, esc = H.esc;
+  const $ = (s) => document.querySelector(s);
+  const param = new URLSearchParams(location.search);
+  if (param.get('einbetten')) document.body.classList.add('einbetten');
+  const T = {
+    de: { titel: 'Freie Gastliegeplätze', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', anreise: 'Anreise', naechte: 'Nächte', passt: 'Passt mein Boot? Maße eingeben', laenge: 'Länge (m)', breite: 'Breite (m)', abend: 'Abend',
+      lgFrei: 'grüne Boje: frei', lgBelegt: 'rote Boje: belegt', lgKlein: 'frei, aber zu klein für dein Boot', soGehts: 'So geht’s', s1: 'Freien Platz mit grüner Boje aussuchen – am Steg hängt dort das grüne Schild.', s2: 'Festmachen und hier online anmelden.', s3: 'Gleich bezahlen – du musst auf niemanden warten.',
+      preisT: 'Liegegebühr', preisU: 'pro Nacht, unabhängig von der Bootsgröße. Strom und Wasser am Steg.', anmelden: 'Als Gast anmelden', kontaktT: 'Hafenmeister', anfahrt: 'Zur Teerhofsinsel 5B, 23554 Lübeck · nördlicher Travearm',
+      fuss: 'Die Karte zeigt nur, ob ein Platz frei oder belegt ist – ohne Gewähr; vor Ort gilt das grüne Schild am Steg.', quelle: 'Plan gezeichnet nach amtlichem Luftbild',
+      frei1: '1 Platz frei', freiN: '{n} Plätze frei', frei0: 'Kein Platz durchgehend frei', nacht1: '1 Nacht', nachtN: '{n} Nächte', vonBis: '{a} bis {b}', klein: '{n} weitere frei, aber zu klein',
+      platz: 'Platz', laengs: 'Längsseits', frei: 'frei', belegt: 'belegt', zuKlein: 'frei, aber zu klein für dein Boot', bis: 'bis {l} × {b} m', hier: 'Hier anmelden', andere: 'Bitte einen Platz mit grüner Boje wählen.', freieListe: 'Freie Plätze – antippen zeigt den Platz auf der Karte',
+      winterT: 'Winterpause', winter: 'Der Hafen ist zurzeit nicht in Betrieb – die Boote stehen an Land.', oeffnet: 'Die Saison beginnt am {d}.', ausT: 'Karte nicht verfügbar', aus: 'Freie Plätze bitte direkt beim Hafenmeister erfragen.', fehlerT: 'Keine Verbindung', fehler: 'Die Karte konnte nicht geladen werden. Bitte später noch einmal versuchen.', neu: 'Noch einmal versuchen',
+      stand: 'Stand: {t} Uhr.', demo: 'Demo mit erfundenen Daten – zeigt einen Sommertag.', ruf: 'Anrufen: ' },
+    en: { titel: 'Free guest berths', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', anreise: 'Arrival', naechte: 'Nights', passt: 'Will my boat fit? Enter size', laenge: 'Length (m)', breite: 'Beam (m)', abend: 'Evening',
+      lgFrei: 'green buoy: free', lgBelegt: 'red buoy: occupied', lgKlein: 'free, but too small for your boat', soGehts: 'How it works', s1: 'Pick a berth with a green buoy – it has a green sign on the jetty.', s2: 'Moor and register here online.', s3: 'Pay right away – no need to wait for anyone.',
+      preisT: 'Berthing fee', preisU: 'per night, regardless of boat size. Power and water on the jetty.', anmelden: 'Register as guest', kontaktT: 'Harbour master', anfahrt: 'Zur Teerhofsinsel 5B, 23554 Lübeck · northern arm of the Trave',
+      fuss: 'The map only shows whether a berth is free or occupied – without guarantee; on site the green sign on the jetty applies.', quelle: 'Plan drawn from official aerial imagery',
+      frei1: '1 berth free', freiN: '{n} berths free', frei0: 'No berth free for the whole stay', nacht1: '1 night', nachtN: '{n} nights', vonBis: '{a} to {b}', klein: '{n} more free, but too small',
+      platz: 'Berth', laengs: 'Alongside', frei: 'free', belegt: 'occupied', zuKlein: 'free, but too small for your boat', bis: 'up to {l} × {b} m', hier: 'Register here', andere: 'Please choose a berth with a green buoy.', freieListe: 'Free berths – tap to show on the map',
+      winterT: 'Winter break', winter: 'The harbour is closed for the season – the boats are ashore.', oeffnet: 'The season starts on {d}.', ausT: 'Map not available', aus: 'Please ask the harbour master for free berths.', fehlerT: 'No connection', fehler: 'The map could not be loaded. Please try again later.', neu: 'Try again',
+      stand: 'As of {t}.', demo: 'Demo with made-up data – shows a summer day.', ruf: 'Call: ' },
+    da: { titel: 'Ledige gæstepladser', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', anreise: 'Ankomst', naechte: 'Nætter', passt: 'Passer min båd? Indtast mål', laenge: 'Længde (m)', breite: 'Bredde (m)', abend: 'Aften',
+      lgFrei: 'grøn bøje: ledig', lgBelegt: 'rød bøje: optaget', lgKlein: 'ledig, men for lille til din båd', soGehts: 'Sådan gør du', s1: 'Vælg en plads med grøn bøje – der hænger et grønt skilt på broen.', s2: 'Fortøj og tilmeld dig her online.', s3: 'Betal med det samme – du skal ikke vente på nogen.',
+      preisT: 'Havnepenge', preisU: 'pr. nat, uanset bådens størrelse. Strøm og vand på broen.', anmelden: 'Tilmeld som gæst', kontaktT: 'Havnefoged', anfahrt: 'Zur Teerhofsinsel 5B, 23554 Lübeck · nordlige Trave-arm',
+      fuss: 'Kortet viser kun, om en plads er ledig eller optaget – uden garanti; på stedet gælder det grønne skilt på broen.', quelle: 'Plan tegnet efter officielt luftfoto',
+      frei1: '1 plads ledig', freiN: '{n} pladser ledige', frei0: 'Ingen plads ledig i hele perioden', nacht1: '1 nat', nachtN: '{n} nætter', vonBis: '{a} til {b}', klein: '{n} flere ledige, men for små',
+      platz: 'Plads', laengs: 'Langskibs', frei: 'ledig', belegt: 'optaget', zuKlein: 'ledig, men for lille til din båd', bis: 'op til {l} × {b} m', hier: 'Tilmeld her', andere: 'Vælg venligst en plads med grøn bøje.', freieListe: 'Ledige pladser – tryk for at vise på kortet',
+      winterT: 'Vinterpause', winter: 'Havnen er lukket for sæsonen – bådene står på land.', oeffnet: 'Sæsonen begynder den {d}.', ausT: 'Kortet er ikke tilgængeligt', aus: 'Spørg venligst havnefogeden om ledige pladser.', fehlerT: 'Ingen forbindelse', fehler: 'Kortet kunne ikke indlæses. Prøv igen senere.', neu: 'Prøv igen',
+      stand: 'Status: kl. {t}.', demo: 'Demo med opdigtede data – viser en sommerdag.', ruf: 'Ring: ' }
+  };
+  let lang = ['de', 'en', 'da'].includes(param.get('lang')) ? param.get('lang') : 'de';
+  const t = (k, w) => { let s = (T[lang] && T[lang][k]) || T.de[k] || k; if (w) Object.keys(w).forEach((x) => { s = s.replace('{' + x + '}', w[x]); }); return s; };
+  const tag = (dt) => H.tag(dt), plus = (s, n) => tag(new Date(new Date(s + 'T12:00:00').getTime() + n * 864e5));
+  const kurz = (s) => { const [j, m, d2] = s.split('-'); return d2 + '.' + m + '.'; };
+
+  const demoDaten = SB ? null : HF.laden();
+  const echtHeute = tag(new Date());
+  // Demo: außerhalb der Saison zeigt die Seite einen Sommertag, damit man etwas sieht
+  let heute = echtHeute;
+  if (demoDaten) { const sd = window.HAFEN_GEBUEHREN.saisonDaten(demoDaten, Number(echtHeute.slice(0, 4))); if (!(echtHeute >= sd.auslagern && echtHeute < sd.einlagern)) heute = '2026-08-15'; }
+  const S = { von: /^\d{4}-\d\d-\d\d$/.test(param.get('von') || '') ? param.get('von') : heute, n: 1, l: '', b: '', platz: null, abend: false, vb: null };
+  let D = null, e = { hafenmeister_name: 'Hafenmeister', hafenmeister_tel: '' }, preis = 15;
+
+  // Demo rechnet wie die Datenbank-Funktion hafen_karte: frei nur, wenn in JEDER Nacht frei (kein Dauerlieger oder grünes Schild) und kein Gast
+  function demoKarte() {
+    const d = demoDaten, Q = HF.Q, ein = d.einstellungen; const modus = ein.karte_oeffentlich || 'vorschau';
+    if (modus === 'aus') return { ok: false, grund: 'aus' };
+    const tage = modus === 'heute' ? 0 : Math.min(60, Math.max(0, ein.karte_tage == null || ein.karte_tage === '' ? 14 : Number(ein.karte_tage)));
+    let von = S.von < heute ? heute : S.von; if (von > plus(heute, tage)) von = plus(heute, tage);
+    let n = Math.min(14, Math.max(1, S.n)); if (plus(von, n - 1) > plus(heute, tage)) n = Math.max(1, Math.round((new Date(plus(heute, tage)) - new Date(von)) / 864e5) + 1);
+    const sd = window.HAFEN_GEBUEHREN.saisonDaten(d, Number(von.slice(0, 4)));
+    if (!(von >= sd.auslagern && von < sd.einlagern)) return { ok: true, winter: true, von, naechte: n, tage, oeffnet: null, plan: ein.lageplan || null, plaetze: [] };
+    const naechte = []; for (let i = 0; i < n; i++) naechte.push(plus(von, i));
+    return { ok: true, winter: false, von, naechte: n, tage, stand: new Date().toISOString(), plan: ein.lageplan || null,
+      plaetze: d.liegeplaetze.map((p) => ({ nr: p.nr, box: p.box, l: p.max_laenge, b: p.max_breite,
+        frei: !p.gesperrt && !naechte.some((x) => Q.gastAm(p.id, x)) && (!Q.belegungPlatz(Number(von.slice(0, 4)), 'sommer', p.id) || naechte.every((x) => Q.abwesendAm(p.id, x))) })) };
+  }
+  async function holen() {
+    try { D = SB ? await SB.rpc('hafen_karte', { p_von: S.von, p_naechte: S.n }, true) : demoKarte(); }
+    catch (x) { D = { ok: false, grund: 'fehler' }; }
+    if (D && D.ok) { S.von = D.von; S.n = D.naechte; }
+    zeigen();
+  }
+  const zahlDe = (v) => H.zahl(v, 1);
+  const lageVon = (p) => { if (!p.frei) return 'belegt'; const l = H.dez(S.l) || 0, b = H.dez(S.b) || 0; return (l && p.l && l > p.l) || (b && p.b && b > p.b) ? 'zuklein' : 'frei'; };
+  const natuerlich = (a, b) => String(a.nr).localeCompare(String(b.nr), 'de', { numeric: true });
+
+  function zeigen() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-t]').forEach((x) => { x.textContent = t(x.dataset.t); });
+    document.querySelectorAll('.sprache button').forEach((b) => { const an = b.dataset.lang === lang; b.classList.toggle('aktiv', an); b.setAttribute('aria-pressed', an); });
+    document.title = t('titel') + ' · Schwartauer Segler-Verein';
+    $('#demo').innerHTML = SB ? '' : '<p class="hk-demo">' + esc(t('demo')) + '</p>';
+    $('#preis').textContent = H.geld(preis);
+    $('#kontakt').innerHTML = esc(e.hafenmeister_name || '') + (e.hafenmeister_tel ? '<br>' + esc(t('ruf')) + '<a href="tel:' + esc(String(e.hafenmeister_tel).replace(/[^\d+]/g, '')) + '">' + esc(e.hafenmeister_tel) + '</a>' : '');
+    $('#anmelden').href = 'gast.html' + (lang !== 'de' ? '?lang=' + lang : '');
+    const melder = $('#melder'), wahl = $('#wahl'), summe = $('#summe');
+    const von = $('#von'); von.value = S.von; von.min = heute; if (D && D.ok) von.max = plus(heute, D.tage); $('#n').value = S.n;
+    $('#lg-klein').hidden = !(S.l || S.b);
+    const melde = (titel, text, knopf) => { melder.hidden = false; melder.innerHTML = '<div><h2>' + esc(titel) + '</h2><p>' + text + '</p>' + (knopf || '') + '</div>'; };
+    const plan = PLAN.voll(D && D.plan);
+    const zeichne = (plaetze) => {
+      const d = { liegeplaetze: plaetze.map((p) => ({ id: 'P' + p.nr, nr: String(p.nr), box: p.box, max_laenge: p.l, max_breite: p.b, lage: lageVon(p) })) };
+      const svg = PLAN.zeichnen($('#plan'), { plan, daten: d, modus: 'sommer', ansicht: S.vb || 'wasser', intro: !S.vb, abend: S.abend, markiere: S.platz,
+        // belegte Plätze bekommen ein beliebiges Boot in Boxgröße – das echte Boot wird nicht gezeigt
+        wasser: (p) => ({ status: p.lage, boot: p.lage === 'belegt' ? { id: 'x' + p.nr, laenge: Math.max(5.5, (Number(p.max_laenge) || 9) - 1.6 - (Number(p.nr) % 3) * .6), breite: Math.max(2, (Number(p.max_breite) || 3) - .5) } : null }),
+        karte: (id) => { const p = d.liegeplaetze.find((x) => x.id === id); if (!p) return '';
+          return '<strong>' + esc((p.box === 'L' ? t('laengs') : t('platz')) + ' ' + p.nr) + '</strong><span class="pk-st ' + (p.lage === 'frei' ? 'gruen' : p.lage === 'zuklein' ? 'aus' : 'rot') + '">' + esc(p.lage === 'frei' ? t('frei') : p.lage === 'zuklein' ? t('zuKlein') : t('belegt')) + '</span>' + (p.max_laenge ? '<p class="pk-leise">' + esc(t('bis', { l: zahlDe(p.max_laenge), b: zahlDe(p.max_breite) })) + '</p>' : ''); },
+        onKlick: (id) => { S.platz = id; waehlen(d, svg); } });
+      PLAN.kamera(svg, { onAnsicht: (v) => { S.vb = v.slice(); } });
+      return { d, svg };
+    };
+    if (!D || !D.ok) {
+      zeichne([]); summe.textContent = ''; wahl.innerHTML = '';
+      if (D && D.grund === 'fehler') melde(t('fehlerT'), esc(t('fehler')), '<button type="button" class="btn" id="nochmal">' + esc(t('neu')) + '</button>'); else melde(t('ausT'), esc(t('aus')) + (e.hafenmeister_tel ? '<br><a style="color:#9fd0ff" href="tel:' + esc(String(e.hafenmeister_tel).replace(/[^\d+]/g, '')) + '">' + esc(e.hafenmeister_tel) + '</a>' : ''));
+      const nb = $('#nochmal'); if (nb) nb.addEventListener('click', holen); return;
+    }
+    if (D.winter) { zeichne([]); summe.textContent = ''; wahl.innerHTML = ''; return melde(t('winterT'), esc(t('winter')) + (D.oeffnet ? ' ' + esc(t('oeffnet', { d: H.datum(D.oeffnet) })) : '')); }
+    melder.hidden = true;
+    const { d, svg } = zeichne(D.plaetze);
+    const frei = d.liegeplaetze.filter((p) => p.lage === 'frei').sort(natuerlich), klein = d.liegeplaetze.filter((p) => p.lage === 'zuklein').length;
+    summe.innerHTML = '<strong class="' + (frei.length ? 'gr' : '') + '">' + esc(frei.length === 1 ? t('frei1') : frei.length ? t('freiN', { n: frei.length }) : t('frei0')) + '</strong><small>' + esc(t('vonBis', { a: kurz(S.von), b: H.datum(plus(S.von, S.n)) }) + ' · ' + (S.n === 1 ? t('nacht1') : t('nachtN', { n: S.n })) + (klein ? ' · ' + t('klein', { n: klein }) : '')) + '</small>';
+    $('#stand').textContent = D.stand ? t('stand', { t: new Date(D.stand).toLocaleTimeString(lang === 'de' ? 'de-DE' : lang === 'da' ? 'da-DK' : 'en-GB', { hour: '2-digit', minute: '2-digit' }) }) : '';
+    if (S.platz && !d.liegeplaetze.some((p) => p.id === S.platz)) S.platz = null;
+    waehlen(d, svg);
+  }
+  // Auswahl unter der Karte: gewählter Platz und die Liste der freien Plätze
+  function waehlen(d, svg) {
+    const wahl = $('#wahl'); const p = S.platz && d.liegeplaetze.find((x) => x.id === S.platz);
+    svg.querySelectorAll('.markiert').forEach((x) => x.classList.remove('markiert')); if (p) { const g = svg.querySelector('[data-platz="' + p.id + '"]'); if (g) g.classList.add('markiert'); }
+    const frei = d.liegeplaetze.filter((x) => x.lage === 'frei').sort(natuerlich);
+    const link = (x) => 'gast.html?platz=' + encodeURIComponent(x.nr) + '&ankunft=' + S.von + '&naechte=' + S.n + (lang !== 'de' ? '&lang=' + lang : '');
+    const name = (x) => (x.box === 'L' ? t('laengs') : t('platz')) + ' ' + x.nr;
+    wahl.innerHTML = (p ? '<div class="hk-platz ' + (p.lage === 'frei' ? '' : p.lage === 'zuklein' ? 'grau' : 'rot') + '"><div><h2>' + esc(name(p)) + ' · ' + esc(p.lage === 'frei' ? t('frei') : p.lage === 'zuklein' ? t('zuKlein') : t('belegt')) + '</h2><p>' +
+        esc(p.lage === 'frei' ? t('vonBis', { a: kurz(S.von), b: H.datum(plus(S.von, S.n)) }) + ' · ' : '') + (p.max_laenge ? esc(t('bis', { l: zahlDe(p.max_laenge), b: zahlDe(p.max_breite) })) : '') + (p.lage === 'frei' ? '' : ' · ' + esc(t('andere'))) + '</p></div>' +
+        (p.lage === 'frei' ? '<a class="btn primaer" target="_top" href="' + link(p) + '">' + esc(t('hier')) + '</a>' : '') + '</div>' : '') +
+      (frei.length ? '<div class="hk-chips"><h3>' + esc(t('freieListe')) + '</h3>' + frei.map((x) => '<button type="button" data-p="' + esc(x.id) + '"' + (p && p.id === x.id ? ' class="aktiv"' : '') + '><strong>' + esc(name(x)) + '</strong>' + (x.max_laenge ? '<small>' + esc(t('bis', { l: zahlDe(x.max_laenge), b: zahlDe(x.max_breite) })) + '</small>' : '') + '</button>').join('') + '</div>' : '');
+    wahl.querySelectorAll('[data-p]').forEach((b) => b.addEventListener('click', () => { S.platz = b.dataset.p; const g = svg.querySelector('[data-platz="' + S.platz + '"]');
+      if (g && svg._kamera) { const r = g.getBoundingClientRect(), sr = svg.getBoundingClientRect(), vb = svg._kamera.ansicht; if (sr.width) { const cx = vb[0] + (r.left + r.width / 2 - sr.left) / sr.width * vb[2], cy = vb[1] + (r.top + r.height / 2 - sr.top) / sr.height * vb[3]; svg._kamera.zu([cx - 110, cy - 62, 220, 124]); } }
+      waehlen(d, svg); }));
+  }
+
+  // Bedienung
+  $('#von').addEventListener('change', (x) => { if (x.target.value) { S.von = x.target.value; holen(); } });
+  $('#n').addEventListener('change', (x) => { S.n = Math.min(14, Math.max(1, Number(x.target.value) || 1)); holen(); });
+  $('#minus').addEventListener('click', () => { S.n = Math.max(1, S.n - 1); holen(); }); $('#plus').addEventListener('click', () => { S.n = Math.min(14, S.n + 1); holen(); });
+  ['bl', 'bb'].forEach((id) => $('#' + id).addEventListener('change', (x) => { S[id === 'bl' ? 'l' : 'b'] = x.target.value.trim(); zeigen(); }));
+  $('#abend').addEventListener('click', (x) => { S.abend = !S.abend; x.currentTarget.classList.toggle('aktiv', S.abend); x.currentTarget.setAttribute('aria-pressed', S.abend); const s = $('#plan svg'); if (s) s.classList.toggle('abend', S.abend); });
+  document.querySelectorAll('.sprache button').forEach((b) => b.addEventListener('click', () => { lang = b.dataset.lang; zeigen(); }));
+
+  // Preis und Hafenmeister
+  if (SB) SB.rpc('gast_info', {}, true).then((i) => { preis = Number(i.gast_nacht) || 15; e = { hafenmeister_name: i.hafenmeister_name || 'Hafenmeister', hafenmeister_tel: i.hafenmeister_tel || '' }; zeigen(); }).catch(() => {});
+  else { e = demoDaten.einstellungen; preis = window.HAFEN_GEBUEHREN.gebuehrenFuer(demoDaten, Number(heute.slice(0, 4))).gast_nacht; }
+  holen();
+  if (SB) setInterval(() => { if (!document.hidden) holen(); }, 5 * 60 * 1000);   // alle 5 Minuten frisch
+})();
+</script>
+</body>
+</html>
