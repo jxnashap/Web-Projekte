@@ -502,7 +502,11 @@
     // Zeiger: Verschieben, Kneifen, Doppeltipp
     const zeiger = new Map(); let start = null, bewegt = false, verlauf = [], tipp = null;
     svg.addEventListener('pointerdown', (e) => {
-      if (e.button > 0) return; zeiger.set(e.pointerId, [e.clientX, e.clientY]); vel = null;
+      if (e.button > 0) return;
+      // Erster Finger einer neuen Berührung: Zeiger vergessen, deren Ende nie gemeldet wurde (kommt auf Handys nach dem Kneifen vor).
+      // Sonst gälte das nächste Wischen mit einem Finger als Zwei-Finger-Geste – die Karte zoomt dann, statt sich zu verschieben.
+      if (e.isPrimary && zeiger.size) { zeiger.clear(); start = null; }
+      zeiger.set(e.pointerId, [e.clientX, e.clientY]); vel = null;
       if (zeiger.size === 1) { start = { x: e.clientX, y: e.clientY, v: cur.slice(), id: e.pointerId }; bewegt = false; verlauf = [[performance.now(), e.clientX, e.clientY]]; }
       if (zeiger.size === 2) { const [a, b] = [...zeiger.values()]; start = { zwei: true, d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], v: cur.slice() }; bewegt = true; svg.classList.add('zieht'); }
     });
@@ -540,6 +544,9 @@
     ['gesturestart', 'gesturechange', 'gestureend'].forEach((g) => svg.addEventListener(g, (e) => e.preventDefault()));
     // … und Ziehen nach unten zieht nicht die ganze Seite mit (Gummiband / „Ziehen zum Neuladen“ am Seitenanfang)
     svg.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    // Kein Finger mehr auf dem Bildschirm: aufräumen (nach den Zeiger-Ereignissen, deshalb verzögert)
+    const alleWeg = (e) => { if (e.touches && e.touches.length === 0) setTimeout(() => { if (zeiger.size) { zeiger.clear(); start = null; svg.classList.remove('zieht'); } }, 0); };
+    svg.addEventListener('touchend', alleWeg); svg.addEventListener('touchcancel', alleWeg);
     // Nach dem Ziehen keinen Klick auf einen Platz auslösen
     svg.addEventListener('click', (e) => { if (bewegt) { e.stopImmediatePropagation(); e.preventDefault(); bewegt = false; } }, true);
     svg.addEventListener('dblclick', (e) => { e.preventDefault(); zoom(e.shiftKey ? 2 : 0.5, e.clientX, e.clientY); });
