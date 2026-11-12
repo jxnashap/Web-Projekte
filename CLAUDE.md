@@ -61,7 +61,10 @@ Repo für alle Website-Projekte. Struktur:
   **Öffentliche Karte `hafenplan.html`** (Deutsch/Englisch/Dänisch, `?einbetten=1` für die Website): zeigt nur frei/belegt je Platznummer und Boxmaße,
   keine Namen, belegte Plätze bekommen ein beliebiges Boot. Vom Vorstand schaltbar: Einstellungen → `karte_oeffentlich` (aus = Standard | heute | vorschau)
   und `karte_tage` (höchstens 60); Datenbank-Funktion `hafen_karte(p_von, p_naechte)` (Nachtrag 17, für anon). Auf der Vereinswebsite noch nicht eingebunden.
-  Hafenplan-Kamera `HAFEN_PLAN.kamera(svg)` (Ziehen, Mausrad/Kneifen, Doppeltipp, Trägheit, Vollbild, Ausschnitt bleibt in `planStand.vb`), Auftakt-/Wellen-/Schaukel-Animationen per CSS (aus bei „Bewegung reduzieren“).
+  Hafenplan-Kamera `HAFEN_PLAN.kamera(svg)` (Ziehen, Mausrad/Kneifen, Doppeltipp, Trägheit, Vollbild, Ausschnitt bleibt in `planStand.vb`),
+  **Handy (Vorgabe des Nutzers):** Karte füllt ihren Rahmen immer ganz – Herauszoomen endet am Plan, kein Schieben über den Rand (`passend()`), Rahmen am Handy quadratisch;
+  Finger nicht mit `setPointerCapture` binden (löst `lostpointercapture` aus und brach das Wischen ab – nur Maus/Stift), `touch-action: none` auch am Rahmen `.plan-flaeche.mit-kamera`;
+  Seiten haben `minimum-scale=1` (kleiner zoomen geht nicht, hinein schon). Test `t_touch.js` (Wischen/Kneifen mit echten Touch-Ereignissen). Auftakt-/Wellen-/Schaukel-Animationen per CSS (aus bei „Bewegung reduzieren“).
   Nordlager laut Verein: Lagerweg mittig als Sackgasse (vorne an der Messe vorbei), links eine Reihe P11–P22, rechts zwei Reihen P23–P36, vorne links zwei schräge Reihen P01–P10 mit Bug zur Messe (Lager-Felder `neig`/`bug`/`lw`/`lh`).
   Gewichtsgrenzen nur über die Einstellungen: **Kran 9 t** (`kran_max_t`, Entscheidung des Nutzers, so auch auf der Website) und **Steg/Wasserliegeplatz 10 t** (`max_gewicht_t`, HBO 3.1.4); `Q.maxT(art)/Q.zuSchwer(b, art)/Q.maxTxt(art)` mit art 'kran' (Standard) | 'steg' (nur `Q.passt` für Wasserplätze).
   Gastlieger: Status wird aus Daten berechnet (`gastLage()` in app.js: Aufenthalt/Platz/Zahlung, Ansichten Heute & offen/Anreisen/Im Hafen/Abreisen/Archiv);

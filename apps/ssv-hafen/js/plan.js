@@ -452,7 +452,7 @@
   function kamera(svg, opt = {}) {
     if (svg._kamera) return svg._kamera;
     const plan = svg._plan || aktiv(); const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const minW = opt.minW || 60, maxW = opt.maxW || plan.breite * 1.25;
+    const minW = opt.minW || 60, maxW = opt.maxW || plan.breite;
     let cur = svg.getAttribute('viewBox').split(/\s+/).map(Number), ziel = cur.slice(), vel = null, raf = 0, last = 0;
     const box = () => svg.getBoundingClientRect();
     const asp = () => { const r = box(); return r.width > 10 && r.height > 10 ? r.width / r.height : cur[2] / cur[3]; };
@@ -460,9 +460,10 @@
     function passend(v, fuellen) {
       let [x, y, w, h] = v; const a = asp(); const cx = x + w / 2, cy = y + h / 2;
       if (fuellen ? w / h > a : w / h < a) w = h * a; else h = w / a;
-      if (w > maxW) { w = maxW; h = w / a; } if (w < minW) { w = minW; h = w / a; }
-      const rx = Math.max(0, (plan.breite - w) / 2) + w * 0.35, ry = Math.max(0, (plan.hoehe - h) / 2) + h * 0.35;
-      const mx = Math.min(plan.breite / 2 + rx, Math.max(plan.breite / 2 - rx, cx)), my = Math.min(plan.hoehe / 2 + ry, Math.max(plan.hoehe / 2 - ry, cy));
+      // Nie weiter herauszoomen, als der Plan reicht, und nie über den Rand hinaus schieben: die Karte füllt ihren Rahmen immer ganz.
+      const grenze = Math.min(maxW, plan.breite, plan.hoehe * a);
+      if (w > grenze) { w = grenze; h = w / a; } if (w < minW) { w = minW; h = w / a; }
+      const mx = Math.min(plan.breite - w / 2, Math.max(w / 2, cx)), my = Math.min(plan.hoehe - h / 2, Math.max(h / 2, cy));
       return [mx - w / 2, my - h / 2, w, h];
     }
     // Maßstabsleiste und Nordpfeil als feste Einblendung: bleiben beim Zoomen sichtbar und stimmen immer
@@ -503,7 +504,7 @@
     svg.addEventListener('pointerdown', (e) => {
       if (e.button > 0) return; zeiger.set(e.pointerId, [e.clientX, e.clientY]); vel = null;
       if (zeiger.size === 1) { start = { x: e.clientX, y: e.clientY, v: cur.slice(), id: e.pointerId }; bewegt = false; verlauf = [[performance.now(), e.clientX, e.clientY]]; }
-      if (zeiger.size === 2) { const [a, b] = [...zeiger.values()]; start = { zwei: true, d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], v: cur.slice() }; bewegt = true; }
+      if (zeiger.size === 2) { const [a, b] = [...zeiger.values()]; start = { zwei: true, d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], v: cur.slice() }; bewegt = true; svg.classList.add('zieht'); }
     });
     svg.addEventListener('pointermove', (e) => {
       if (!zeiger.has(e.pointerId) || !start) return; zeiger.set(e.pointerId, [e.clientX, e.clientY]); const r = box();
@@ -516,13 +517,13 @@
       if (start.zwei) return;
       const dx = e.clientX - start.x, dy = e.clientY - start.y;
       if (!bewegt && Math.hypot(dx, dy) < 6) return;
-      if (!bewegt) { bewegt = true; svg.classList.add('zieht'); try { svg.setPointerCapture(e.pointerId); } catch (x) { /* egal */ } }
+      if (!bewegt) { bewegt = true; svg.classList.add('zieht'); if (e.pointerType !== 'touch') { try { svg.setPointerCapture(e.pointerId); } catch (x) { /* egal */ } } }   // Finger sind schon gebunden – erneutes Binden würde das Ziehen abbrechen
       sofort([start.v[0] - dx / r.width * start.v[2], start.v[1] - dy / r.height * start.v[3], start.v[2], start.v[3]]);
       verlauf.push([performance.now(), e.clientX, e.clientY]); if (verlauf.length > 6) verlauf.shift();
     });
     const ende = (e) => {
       if (!zeiger.has(e.pointerId)) return; zeiger.delete(e.pointerId); svg.classList.remove('zieht');
-      if (start && start.zwei) { if (zeiger.size === 1) { const [p] = [...zeiger.values()]; start = { x: p[0], y: p[1], v: cur.slice() }; bewegt = true; } else start = null; return; }
+      if (start && start.zwei) { if (zeiger.size === 1) { const [p] = [...zeiger.values()]; start = { x: p[0], y: p[1], v: cur.slice() }; bewegt = true; svg.classList.add('zieht'); } else start = null; return; }
       if (bewegt && verlauf.length > 1 && e.type === 'pointerup') {   // nachgleiten
         const [t0, x0, y0] = verlauf[0], [t1, x1, y1] = verlauf[verlauf.length - 1]; const dt = Math.max(16, t1 - t0); const r = box();
         if (performance.now() - t1 < 80) { vel = [-(x1 - x0) / dt / r.width * cur[2], -(y1 - y0) / dt / r.height * cur[3]]; los(); }
@@ -534,7 +535,9 @@
       }
       start = null;
     };
-    svg.addEventListener('pointerup', ende); svg.addEventListener('pointercancel', ende); svg.addEventListener('lostpointercapture', (e) => { if (zeiger.has(e.pointerId)) ende(e); });
+    svg.addEventListener('pointerup', ende); svg.addEventListener('pointercancel', ende); svg.addEventListener('lostpointercapture', (e) => { if (e.target === svg && zeiger.has(e.pointerId)) ende(e); });
+    // iPhone/iPad: Kneifen auf der Karte zoomt die Karte, nicht die ganze Seite
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach((g) => svg.addEventListener(g, (e) => e.preventDefault()));
     // Nach dem Ziehen keinen Klick auf einen Platz auslösen
     svg.addEventListener('click', (e) => { if (bewegt) { e.stopImmediatePropagation(); e.preventDefault(); bewegt = false; } }, true);
     svg.addEventListener('dblclick', (e) => { e.preventDefault(); zoom(e.shiftKey ? 2 : 0.5, e.clientX, e.clientY); });
