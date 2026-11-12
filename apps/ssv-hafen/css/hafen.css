@@ -989,3 +989,5 @@ body.plan-vollbild { overflow: hidden; }
 @media (max-width: 860px) { .plan-box:not(.vollbild) .plan-flaeche { aspect-ratio: 1 / 1; height: auto; } }
 /* Seiten stehen am Handy fest: kein Gummiband über den Seitenanfang oder das Seitenende hinaus, kein „Ziehen zum Neuladen“ */
 html, body { overscroll-behavior: none; }
+/* Grillplatz und Spielplatz im Hafenplan */
+.pkt-grill circle { fill: #f0b36a; } .pkt-spiel circle { fill: #9fd58a; }

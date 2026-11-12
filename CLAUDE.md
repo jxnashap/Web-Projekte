@@ -72,8 +72,11 @@ Repo für alle Website-Projekte. Struktur:
   Tests `t_touch.js` (Wischen/Kneifen mit echten Touch-Ereignissen), `t_webkarte.js` (Website → Platz wählen → Anmeldung vorbelegt). Auftakt-/Wellen-/Schaukel-Animationen per CSS (aus bei „Bewegung reduzieren“).
   **Laut Verein (Nov. 2026):** Westbrücke – vorne (am Land) die großen Boxen, nach hinten gleichmäßig kleiner (14 m … 10 m lang, 4–5 m breit):
   Steg-Felder `tiefe` (Boxtiefe am Anfang) und `tiefe2` (am Ende), dazwischen stuft `plaetzeVon()` gleichmäßig ab. Ostbrücke (10 m) und Schwimmbrücke (8 m) unverändert – noch nicht bestätigt.
-  Winterlager West (Parkplatz): **8 große Plätze P41–P48** (12 × 4,5 m), zwei Reihen nebeneinander, Boote hintereinander mit dem Bug zur Messe/Vereinsheim; die Fläche zum Kran bleibt frei
-  (Lage auf dem Parkplatz = Annahme). P49–P60 entfallen (Nachtrag 18; Demo räumt selbst um). Nordlager-Maße unverändert (3,6 × 7,6 m u. a.) – offen, ob auch dort 10–14 m gelten.
+  Winterlager West (Parkplatz, nach Luftbild neu umrissen): **8 große Plätze P41–P48** (12 × 4,5 m) **vor dem Zaun** zum Nachbargrundstück (Linie `z1`, läuft gerade zum Wasser) –
+  je 2 Boote hintereinander mit dem Bug zur Messe/Vereinsheim, 4 solcher Reihen nebeneinander Richtung Wasser; die östliche Hälfte bis zum Kran bleibt frei. P49–P60 entfallen (Nachtrag 18; Demo räumt selbst um).
+  **Kran** 10–15 m weiter östlich an Land (493/354). **Hinter dem Wendekreis:** Außenlager A1–A6 (2 Reihen, ca. 6 Boote, links oben, fast bis an den Wendekreis), rechts daneben Lagerfläche „Gestelle“ (`f11`),
+  davor rechts ein kleiner Lagerbereich (`f12`), dazwischen der Busch (Grünfläche). **Keine Bootshalle** im Plan – H1–H4 stehen nur noch in den Stammdaten (offen, ob der Verein sie braucht).
+  Punktarten `grill` und `spiel`: Grillplatz rechts neben dem Mastenlager, Spielplatz etwa mittig auf der Grünfläche. Nordlager-Maße unverändert – offen, ob auch dort 10–14 m gelten.
   Nordlager laut Verein: Lagerweg mittig als Sackgasse (vorne an der Messe vorbei), links eine Reihe P11–P22, rechts zwei Reihen P23–P36, vorne links zwei schräge Reihen P01–P10 mit Bug zur Messe (Lager-Felder `neig`/`bug`/`lw`/`lh`).
   Gewichtsgrenzen nur über die Einstellungen: **Kran 9 t** (`kran_max_t`, Entscheidung des Nutzers, so auch auf der Website) und **Steg/Wasserliegeplatz 10 t** (`max_gewicht_t`, HBO 3.1.4); `Q.maxT(art)/Q.zuSchwer(b, art)/Q.maxTxt(art)` mit art 'kran' (Standard) | 'steg' (nur `Q.passt` für Wasserplätze).
   Gastlieger: Status wird aus Daten berechnet (`gastLage()` in app.js: Aufenthalt/Platz/Zahlung, Ansichten Heute & offen/Anreisen/Im Hafen/Abreisen/Archiv);

@@ -42,29 +42,39 @@
       { id: 'f8', art: 'hof', name: '', p: [[428, 262], [456.2, 255.2], [480.8, 215.2], [555.4, 186.3], [567.7, 193.5], [687, 147], [708.5, 147.5], [723.6, 182.5], [716.9, 198.8], [677.6, 213.5], [613.3, 241.6], [556.1, 259.7], [528, 265], [459, 282]] },
       // Lagerweg durch das Nordlager: vorne an der Messe vorbei, dann mittig bis zum Ende (Sackgasse)
       { id: 'f10', art: 'strasse', name: 'Lagerweg · Sackgasse', t: [644, 195, -20.4], p: [[471.3, 267.5], [533.2, 242.4], [581.8, 215.8], [618.7, 198.9], [703.1, 167.5], [705.8, 167.2], [708.3, 168.3], [709.8, 170.5], [710.1, 173.2], [709, 175.7], [706.8, 177.2], [622.5, 208.5], [586.5, 225.1], [537.6, 251.8], [475.2, 277.2]] },
-      { id: 'f9', art: 'parken', name: 'Parkplatz', t: [424, 381, -8], p: [[352, 345], [400, 300], [428, 262], [459, 282], [462, 310], [483, 318], [489, 337], [470, 376], [450, 384], [427, 407], [420, 400], [372, 398], [350, 372]] },
+      // Parkplatz nach Luftbild: Hecke zum Weg im Nordwesten, Zaun zum Nachbargrundstück im Südwesten (läuft gerade zum Wasser hinunter)
+      { id: 'f9', art: 'parken', name: 'Parkplatz', t: [437, 325, -41], p: [[352, 374], [362, 359], [396, 331], [428, 304], [446, 296], [457, 301], [460, 322], [470, 342], [489, 337], [492, 350], [470, 376], [450, 384], [440, 396], [427, 407], [414, 409]] },
+      { id: 'z1', art: 'zaun', name: '', p: [[352, 374], [424, 414]] },
+      // Lagerflächen hinter dem Wendekreis (laut Verein, nach Luftbild): hinten die größere Fläche – links stehen Boote, rechts Gestelle –,
+      // davor rechts ein kleiner Lagerbereich; dazwischen der Busch (bleibt Grünfläche)
+      { id: 'f11', art: 'lagerfl', name: 'Gestelle', t: [791, 126, -83], p: [[712, 112], [760, 106], [801, 102], [805, 147], [760, 150], [728, 151], [713, 146]] },
+      { id: 'f12', art: 'lagerfl', name: 'Lager', p: [[760, 153], [790, 150], [793, 172], [763, 175]] },
       { id: 'l1', art: 'bahn', name: 'Bahn', p: [[0, 625], [71, 583], [134, 527], [299, 371], [400, 285], [500, 207], [600, 144], [700, 100], [750, 83], [900, 60], [1000, 50]] },
       { id: 'l2', art: 'weg', name: '', p: [[0, 640], [59, 599], [134, 539], [280, 412], [327, 368], [450, 260], [550, 197], [650, 144], [724, 110], [780, 97], [1000, 76]] },
       { id: 'g1', art: 'gebaeude', name: 'Vereinsheim', p: [[459, 282], [528, 265], [542, 314], [516, 321], [518, 332], [489, 337], [483, 318], [462, 310]] },
       { id: 'g2', art: 'dach', name: 'Optis', p: [[553, 266], [562, 264], [572, 298], [563, 301]] },
       { id: 'g5', art: 'slipfl', name: '', p: [[543, 303], [552, 300], [561, 325], [552, 331]] },
-      { id: 'g3', art: 'dach', name: 'Mastenlager · Trecker', p: [[576, 257], [604, 249], [614, 280], [587, 289]] },
+      { id: 'g3', art: 'dach', name: 'Mastenlager · Trecker', t: [584, 263, 0], p: [[576, 257], [604, 249], [614, 280], [587, 289]] },
       { id: 'g4', art: 'dach', name: '', p: [[433, 396], [447, 393], [450, 402], [438, 407]] }
     ],
     // Fahrrinne (für das kleine Boot, das über die Karte zieht)
     route: [[232, 760], [300, 650], [390, 560], [480, 490], [600, 412], [740, 340], [880, 282], [1010, 238]],
-    punkte: [{ id: 'p1', art: 'kran', name: 'Kran', x: 462, y: 377 }, { id: 'p2', art: 'slip', name: 'Slip', x: 551, y: 318 }],
+    // Kran laut Verein 10–15 m weiter östlich an Land; Grillplatz rechts neben dem Mastenlager, Spielplatz etwa mittig auf der Grünfläche
+    punkte: [{ id: 'p1', art: 'kran', name: 'Kran', x: 493, y: 354 }, { id: 'p2', art: 'slip', name: 'Slip', x: 551, y: 318 },
+      { id: 'p3', art: 'grill', name: 'Grillplatz', x: 637, y: 266 }, { id: 'p4', art: 'spiel', name: 'Spielplatz', x: 664, y: 228 }],
     // Nordlager laut Verein: Lagerweg in der Mitte (Sackgasse), links eine Reihe, rechts zwei Reihen nebeneinander,
     // vorne links zwei Reihen schräg mit dem Bug zur Messe (Vereinsheim). neig = Schräge je Boot, bug = Bugrichtung (1 = zur Straße/nach vorn)
     lager: [
       { id: 'nv', name: 'Nord vorne · schräg', praefix: 'P', ab: 1, anzahl: 10, spalten: 5, stellen: 2, x: 520.7, y: 233.4, rot: -20.4, bw: 13, bh: 13, neig: 40, lw: 5.4, lh: 12.5, bug: 1 },
       { id: 'nl', name: 'Nord links', praefix: 'P', ab: 11, anzahl: 12, spalten: 12, stellen: 2, x: 623.3, y: 185.1, rot: -20.4, bw: 9, bh: 19, bug: 1 },
       { id: 'nr', name: 'Nord rechts · zwei Reihen', praefix: 'P', ab: 23, anzahl: 14, spalten: 7, stellen: 2, x: 645.4, y: 215.8, rot: -20.4, bw: 22, bh: 10, bug: 1 },
-      // Winterlager West laut Verein (Nov. 2026): 8 große Plätze (12 × 4,5 m), zwei Reihen nebeneinander, die Boote hintereinander mit dem Bug
-      // zur Messe (Vereinsheim); die Fläche zum Kran bleibt frei. [ANNAHME] genaue Lage auf dem Parkplatz
-      { id: 'w', name: 'Winterlager West', praefix: 'P', ab: 41, anzahl: 8, spalten: 4, stellen: 2, x: 412, y: 342, rot: -34.5, bw: 30.5, bh: 12, lw: 30, lh: 11.25, bug: 1 },
-      { id: 'h', name: 'Halle', praefix: 'H', ab: 1, anzahl: 4, spalten: 4, stellen: 0, x: 775, y: 175, rot: -8, bw: 8, bh: 20 },
-      { id: 'a', name: 'Außenlager', praefix: 'A', ab: 1, anzahl: 6, spalten: 6, stellen: 0, x: 772, y: 146, rot: -8, bw: 10, bh: 22 }
+      // Winterlager West laut Verein (Nov. 2026): 8 große Plätze (12 × 4,5 m) vor dem Zaun zum Nachbargrundstück –
+      // je zwei Boote hintereinander mit dem Bug zur Messe (Vereinsheim), vier solcher Reihen nebeneinander Richtung Wasser.
+      // Die östliche Hälfte des Parkplatzes bis zum Kran bleibt frei.
+      { id: 'w', name: 'Winterlager West', praefix: 'P', ab: 41, anzahl: 8, spalten: 2, stellen: 2, x: 408.2, y: 368.2, rot: -63.4, bw: 30, bh: 12, lw: 29.5, lh: 11.25, bug: 1 },
+      // Außenlager hinter dem Wendekreis (laut Verein): nur links oben zwei Reihen, etwa 6 Boote, fast bis an den Wendekreis; rechts davon Gestelle.
+      // Eine Bootshalle gibt es dort nicht – H1–H4 sind deshalb nicht mehr im Plan (in den Stammdaten bleiben sie, bis der Verein entscheidet).
+      { id: 'a', name: 'Außenlager', praefix: 'A', ab: 1, anzahl: 6, spalten: 2, stellen: 0, x: 745, y: 127.5, rot: -7, bw: 30, bh: 11.5, lw: 29, lh: 10.5, bug: -1 }
     ]
   };
 
@@ -77,7 +87,7 @@
   };
   const PUNKT = {
     kran: ['K', 'Kran'], mastkran: ['M', 'Mastenkran'], slip: ['S', 'Slip'], wc: ['WC', 'WC / Duschen'], strom: ['⚡', 'Strom'], wasser: ['W', 'Wasser'],
-    muell: ['Mü', 'Müll'], tor: ['T', 'Tor / Einfahrt'], rettung: ['R', 'Rettungsmittel'], feuer: ['F', 'Feuerlöscher'], info: ['i', 'Aushang / Info'], fahne: ['⚑', 'Flaggenmast']
+    muell: ['Mü', 'Müll'], tor: ['T', 'Tor / Einfahrt'], rettung: ['R', 'Rettungsmittel'], feuer: ['F', 'Feuerlöscher'], info: ['i', 'Aushang / Info'], fahne: ['⚑', 'Flaggenmast'], grill: ['G', 'Grillplatz'], spiel: ['Sp', 'Spielplatz']
   };
 
   const STATUS_TEXT = {

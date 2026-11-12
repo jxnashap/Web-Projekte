@@ -129,9 +129,16 @@ ersetzt es nicht.
 - **Westbrücke:** Die vorderen Boxen (nördlicher Teil, am Land) sind die größten, nach hinten werden sie immer kleiner.
   Bootsplätze insgesamt 10–14 m lang und 4–5 m breit. Umgesetzt: Boxtiefe 14 m (Platz 25) gleichmäßig fallend auf 10 m (Platz 56),
   Breite wie bisher aus der Steglänge (rund 5 m je Box).
-- **Winterlager West (Parkplatz):** 8 Boote, zwei Reihen nebeneinander, hintereinander aufgestellt mit dem Bug zur Messe
-  (Vereinsheim), über den halben Parkplatz – die Fläche links vom Kran bis zum Kran bleibt frei. Umgesetzt: P41–P48 mit 12 × 4,5 m.
-- **[ANNAHME]** genaue Lage der zwei Reihen auf dem Parkplatz (vom Verein im Lageplan-Fenster verschiebbar); Ostbrücke (10 m) und
+- **Winterlager West (Parkplatz):** Das Grundstück läuft im Südwesten gerade zum Wasser hinunter (Zaun zum Nachbargrundstück).
+  Die Boote stehen vor dem Zaun: je zwei hintereinander Richtung Vereinsheim (Bug zur Messe), vier solcher Reihen nebeneinander
+  Richtung Wasser – 8 Plätze P41–P48 mit 12 × 4,5 m. Der Parkplatz ist nach dem amtlichen Luftbild neu umrissen (Hecke zum Weg).
+- **Kran:** 10 bis 15 m weiter östlich als bisher gezeichnet, an Land.
+- **Hinter dem Wendekreis der Sackgasse (oben rechts):** nur links oben zwei Reihen, etwa 6 Boote, fast bis an den Wendekreis
+  (A1–A6). Rechts davon Lagerfläche für Gestelle (alte Gestelle bzw. die Gestelle im Sommer). Davor liegt ein Busch, der auf Höhe
+  des Wendekreises etwas weiter rechts beginnt, und rechts davon ein kleiner weiterer Lagerbereich. Eine Bootshalle gibt es dort nicht –
+  die Plätze H1–H4 sind aus dem Plan genommen, stehen aber noch in den Stammdaten.
+- **Grünfläche östlich vom Masten- und Treckerlager:** Grillplatz rechts neben dem Gebäude, Spielplatz etwa in der Mitte.
+- **[ANNAHME]** genaue Lage der Plätze, des Krans, von Grill- und Spielplatz (alles nach Luftbild geschätzt, im Lageplan-Fenster verschiebbar); Ostbrücke (10 m) und
   Schwimmbrücke (8 m) sowie die Maße im Nordlager sind unverändert und noch nicht bestätigt.
 - Die Höchstmaße je Liegeplatz für die Gast-Zuweisung („bis 11,0 × 3,7 m“) stehen weiter in den Stammdaten unter „Liegeplätze“
   und wurden nicht verändert.

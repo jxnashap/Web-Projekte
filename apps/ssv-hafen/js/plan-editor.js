@@ -194,7 +194,7 @@
           '<div class="pe-zwei">' + feld('Feldbreite (m)', 'bw', r1(x.bw * M), 'me') + feld('Feldlänge (m)', 'bh', r1(x.bh * M), 'me') + '</div>' + feld('Drehung (°)', 'rot', x.rot, 'zahl') + feld('Ziffern (2 = P01)', 'stellen', x.stellen, 'ganz') +
           '<div class="pe-zwei">' + feld('Boote schräg (°)', 'neig', x.neig || 0, 'zahl') + feld('Bug (1 = zum Weg, −1 = weg)', 'bug', x.bug || 1, 'ganz') + '</div>' +
           '<div class="pe-knoepfe"><button type="button" data-akt="platz-dazu">+ Platz anhängen</button></div><p class="pe-leise"><strong>Einzelnen Platz ändern:</strong> den Platz im Plan antippen. Ist das Feld gewählt, verschiebt Ziehen das ganze Feld.</p>' + einzelListe(x.aus, (k) => (PLAN.lagerVon({ lager: [{ ...x, aus: {} }] }).find((z) => z.nr === Number(k)) || {}).id || k) +
-          '<p class="pe-leise">Die Nummern müssen zu den Landplätzen im Programm passen (P01–P36 Nordlager, P41–P48 West, H1–H4, A1–A6). „Boote schräg“ dreht jedes Boot im Feld, z. B. 40° für die schrägen Reihen vorn links.</p>';
+          '<p class="pe-leise">Die Nummern müssen zu den Landplätzen im Programm passen (P01–P36 Nordlager, P41–P48 West, A1–A6 Außenlager). „Boote schräg“ dreht jedes Boot im Feld, z. B. 40° für die schrägen Reihen vorn links.</p>';
       } else if (sel.typ === 'box') {
         const p = boxGeo(x.steg, x.nr), a = (x.steg.aus && x.steg.aus[x.nr]) || {};
         h = '<h3>Box ' + esc(x.nr) + '</h3><p class="pe-leise" style="margin-top:-6px">' + esc(x.steg.name || 'Steg') + ' · jetzt ' + m1(p.voll) + ' × ' + m1(p.tiefe) + ' m' + (p.frei ? ' · frei verschoben' : '') + '</p>' +
