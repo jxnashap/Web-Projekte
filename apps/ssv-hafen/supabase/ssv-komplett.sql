@@ -2464,3 +2464,9 @@ end $$;
 
 revoke execute on function public.hafen_karte(date, int) from public;
 grant execute on function public.hafen_karte(date, int) to anon, authenticated;
+
+-- ================================================================ Nachtrag 18 · Winterlager West: 8 große Plätze (P41–P48) --
+-- siehe nachtrag-18.sql: P49–P60 entfallen, sofern kein Boot darauf eingetragen ist
+delete from public.landplaetze l
+ where l.id in ('P49','P50','P51','P52','P53','P54','P55','P56','P57','P58','P59','P60')
+   and not exists (select 1 from public.belegungen b where b.platz_id = l.id);

@@ -21,8 +21,10 @@
     stege: [
       // Platzzahl nach Luftbild (13.06.2025) und Angabe des Vereins (Nov. 2026): Ost 1–16, West 25–56, Schwimmbrücke 71–76
       { id: 'ost', name: 'Ostbrücke', bruecke: 'ost', a: [567, 328], b: [809, 219], von: 1, bis: 16, seite: 1, frei: [10.5, 8], tiefe: 10 },
-      { id: 'west1', name: 'Westbrücke', bruecke: 'west', a: [551, 352], b: [437, 409], von: 25, bis: 34, seite: -1, frei: [0, 0], tiefe: 10 },
-      { id: 'west2', name: 'Westbrücke', bruecke: 'west', a: [437, 409], b: [201.5, 600], von: 35, bis: 56, seite: -1, frei: [0, 0], tiefe: 10 },
+      // Westbrücke laut Verein (Nov. 2026): vorne (am Land) die großen Boxen, nach hinten gleichmäßig kleiner – 14 m … 10 m lang, 4–5 m breit.
+      // tiefe = Boxtiefe am Anfang, tiefe2 = am Ende des Abschnitts; dazwischen gleichmäßig abgestuft.
+      { id: 'west1', name: 'Westbrücke', bruecke: 'west', a: [551, 352], b: [437, 409], von: 25, bis: 34, seite: -1, frei: [0, 0], tiefe: 14, tiefe2: 12.8 },
+      { id: 'west2', name: 'Westbrücke', bruecke: 'west', a: [437, 409], b: [201.5, 600], von: 35, bis: 56, seite: -1, frei: [0, 0], tiefe: 12.7, tiefe2: 10 },
       { id: 'west-t', name: '', bruecke: '', a: [201.5, 600], b: [212, 617], von: null, bis: null, seite: -1, frei: [0, 0], tiefe: 10 },
       { id: 'schwimm', name: 'Schwimmbrücke', bruecke: 'schwimm', schwimm: true, a: [212, 617], b: [158, 661], von: 71, bis: 76, seite: -1, frei: [0, 0], tiefe: 8 },
       { id: 'quer', name: 'Schwimmsteg', bruecke: '', schwimm: true, a: [562, 325], b: [587, 366], von: null, bis: null, seite: 1, frei: [0, 0], tiefe: 10 }
@@ -40,7 +42,7 @@
       { id: 'f8', art: 'hof', name: '', p: [[428, 262], [456.2, 255.2], [480.8, 215.2], [555.4, 186.3], [567.7, 193.5], [687, 147], [708.5, 147.5], [723.6, 182.5], [716.9, 198.8], [677.6, 213.5], [613.3, 241.6], [556.1, 259.7], [528, 265], [459, 282]] },
       // Lagerweg durch das Nordlager: vorne an der Messe vorbei, dann mittig bis zum Ende (Sackgasse)
       { id: 'f10', art: 'strasse', name: 'Lagerweg · Sackgasse', t: [644, 195, -20.4], p: [[471.3, 267.5], [533.2, 242.4], [581.8, 215.8], [618.7, 198.9], [703.1, 167.5], [705.8, 167.2], [708.3, 168.3], [709.8, 170.5], [710.1, 173.2], [709, 175.7], [706.8, 177.2], [622.5, 208.5], [586.5, 225.1], [537.6, 251.8], [475.2, 277.2]] },
-      { id: 'f9', art: 'parken', name: 'Parkplatz', p: [[352, 345], [400, 300], [428, 262], [459, 282], [462, 310], [483, 318], [489, 337], [470, 376], [450, 384], [427, 407], [420, 400], [372, 398], [350, 372]] },
+      { id: 'f9', art: 'parken', name: 'Parkplatz', t: [424, 381, -8], p: [[352, 345], [400, 300], [428, 262], [459, 282], [462, 310], [483, 318], [489, 337], [470, 376], [450, 384], [427, 407], [420, 400], [372, 398], [350, 372]] },
       { id: 'l1', art: 'bahn', name: 'Bahn', p: [[0, 625], [71, 583], [134, 527], [299, 371], [400, 285], [500, 207], [600, 144], [700, 100], [750, 83], [900, 60], [1000, 50]] },
       { id: 'l2', art: 'weg', name: '', p: [[0, 640], [59, 599], [134, 539], [280, 412], [327, 368], [450, 260], [550, 197], [650, 144], [724, 110], [780, 97], [1000, 76]] },
       { id: 'g1', art: 'gebaeude', name: 'Vereinsheim', p: [[459, 282], [528, 265], [542, 314], [516, 321], [518, 332], [489, 337], [483, 318], [462, 310]] },
@@ -58,7 +60,9 @@
       { id: 'nv', name: 'Nord vorne · schräg', praefix: 'P', ab: 1, anzahl: 10, spalten: 5, stellen: 2, x: 520.7, y: 233.4, rot: -20.4, bw: 13, bh: 13, neig: 40, lw: 5.4, lh: 12.5, bug: 1 },
       { id: 'nl', name: 'Nord links', praefix: 'P', ab: 11, anzahl: 12, spalten: 12, stellen: 2, x: 623.3, y: 185.1, rot: -20.4, bw: 9, bh: 19, bug: 1 },
       { id: 'nr', name: 'Nord rechts · zwei Reihen', praefix: 'P', ab: 23, anzahl: 14, spalten: 7, stellen: 2, x: 645.4, y: 215.8, rot: -20.4, bw: 22, bh: 10, bug: 1 },
-      { id: 'w', name: 'Winterlager West', praefix: 'P', ab: 41, anzahl: 20, spalten: 10, stellen: 2, x: 408, y: 345, rot: -40, bw: 9, bh: 20 },
+      // Winterlager West laut Verein (Nov. 2026): 8 große Plätze (12 × 4,5 m), zwei Reihen nebeneinander, die Boote hintereinander mit dem Bug
+      // zur Messe (Vereinsheim); die Fläche zum Kran bleibt frei. [ANNAHME] genaue Lage auf dem Parkplatz
+      { id: 'w', name: 'Winterlager West', praefix: 'P', ab: 41, anzahl: 8, spalten: 4, stellen: 2, x: 412, y: 342, rot: -34.5, bw: 30.5, bh: 12, lw: 30, lh: 11.25, bug: 1 },
       { id: 'h', name: 'Halle', praefix: 'H', ab: 1, anzahl: 4, spalten: 4, stellen: 0, x: 775, y: 175, rot: -8, bw: 8, bh: 20 },
       { id: 'a', name: 'Außenlager', praefix: 'A', ab: 1, anzahl: 6, spalten: 6, stellen: 0, x: 772, y: 146, rot: -8, bw: 10, bh: 22 }
     ]
@@ -95,6 +99,7 @@
     const [ax, ay] = s.a, [bx, by] = s.b; const len = Math.hypot(bx - ax, by - ay) || 1;
     const ux = (bx - ax) / len, uy = (by - ay) / len; const sg = s.seite === -1 ? -1 : 1;
     return { len, ux, uy, nx: -uy * sg, ny: ux * sg, winkel: Math.atan2(uy, ux) * 180 / Math.PI, tiefe: (Number(s.tiefe) || 10) / m,
+      tiefe2: (Number(s.tiefe2) || Number(s.tiefe) || 10) / m,   // Boxtiefe am Ende des Stegs (ohne Angabe: wie am Anfang)
       f0: ((s.frei && Number(s.frei[0])) || 0) / m, f1: ((s.frei && Number(s.frei[1])) || 0) / m };
   }
   const hatPlaetze = (s) => s.von != null && s.bis != null && s.von !== '' && s.bis !== '' && !isNaN(Number(s.von)) && !isNaN(Number(s.bis));
@@ -115,8 +120,10 @@
       const auto = nrn.length > nFest ? Math.max(2, (nutz - fest) / (nrn.length - nFest)) : 0;
       const nw = Math.atan2(g.ny, g.nx) * 180 / Math.PI;
       let t = g.f0;
-      nrn.forEach((nr) => {
-        const a = aus[nr] || {}; const voll = Number(a.b) > 0 ? Number(a.b) / plan.m : auto; const tiefe = Number(a.t) > 0 ? Number(a.t) / plan.m : g.tiefe;
+      nrn.forEach((nr, k) => {
+        const a = aus[nr] || {}; const voll = Number(a.b) > 0 ? Number(a.b) / plan.m : auto;
+        // Boxtiefe: eigene Angabe, sonst gleichmäßig vom Anfang (tiefe) zum Ende (tiefe2) des Stegs abgestuft
+        const tiefe = Number(a.t) > 0 ? Number(a.t) / plan.m : g.tiefe + (g.tiefe2 - g.tiefe) * (nrn.length > 1 ? k / (nrn.length - 1) : 0);
         const frei = a.l != null && a.l !== ''; const l = frei ? Number(a.l) : t + voll / 2, q = frei ? Number(a.q) || 0 : 0; t += voll;
         const w = Number(a.w) || 0; const fx = s.a[0] + g.ux * l + g.nx * q, fy = s.a[1] + g.uy * l + g.ny * q;   // Fußpunkt am Steg
         const [dx, dy] = drehen(g.nx, g.ny, w);   // Richtung ins Wasser
@@ -185,7 +192,7 @@
     if (w / h < v) w = h * v; else h = w / v;
     return [cx - w / 2, cy - h / 2, w, h].map((z) => Math.round(z * 10) / 10);
   }
-  const stegPunkte = (s, m) => { const g = stegGeo(s, m); const o = hatPlaetze(s) ? g.tiefe + 10 : 0; return [s.a, s.b, [s.a[0] + g.nx * o, s.a[1] + g.ny * o], [s.b[0] + g.nx * o, s.b[1] + g.ny * o]]; };
+  const stegPunkte = (s, m) => { const g = stegGeo(s, m); const o = hatPlaetze(s) ? Math.max(g.tiefe, g.tiefe2) + 10 : 0; return [s.a, s.b, [s.a[0] + g.nx * o, s.a[1] + g.ny * o], [s.b[0] + g.nx * o, s.b[1] + g.ny * o]]; };
   function ansichten(plan) {
     const alle = [], je = {};
     plan.stege.forEach((s) => { const pk = stegPunkte(s, plan.m); alle.push(...pk); if (s.bruecke) (je[s.bruecke] = je[s.bruecke] || []).push(...pk); });

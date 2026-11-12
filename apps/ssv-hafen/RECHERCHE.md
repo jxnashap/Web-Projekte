@@ -123,3 +123,16 @@ ersetzt es nicht.
   (je ca. 5,4 m, bis zum T-Stück), Schwimmbrücke 71–76 (je ca. 4,6 m), dazu längsseits L1/L2.
 - Die übrigen Nummern (17–24, 57–70, 77–79) sind in der Datenbank nur ausgeblendet (`vorhanden = false`, Nachtrag 12).
 - Offen: Welche Nummer an welcher Box hängt, und ob die Website-Angabe „80 Liegeplätze“ angepasst werden soll.
+
+## Angaben des Vereins zum Lageplan (12.11.2026)
+
+- **Westbrücke:** Die vorderen Boxen (nördlicher Teil, am Land) sind die größten, nach hinten werden sie immer kleiner.
+  Bootsplätze insgesamt 10–14 m lang und 4–5 m breit. Umgesetzt: Boxtiefe 14 m (Platz 25) gleichmäßig fallend auf 10 m (Platz 56),
+  Breite wie bisher aus der Steglänge (rund 5 m je Box).
+- **Winterlager West (Parkplatz):** 8 Boote, zwei Reihen nebeneinander, hintereinander aufgestellt mit dem Bug zur Messe
+  (Vereinsheim), über den halben Parkplatz – die Fläche links vom Kran bis zum Kran bleibt frei. Umgesetzt: P41–P48 mit 12 × 4,5 m.
+- **[ANNAHME]** genaue Lage der zwei Reihen auf dem Parkplatz (vom Verein im Lageplan-Fenster verschiebbar); Ostbrücke (10 m) und
+  Schwimmbrücke (8 m) sowie die Maße im Nordlager sind unverändert und noch nicht bestätigt.
+- Die Höchstmaße je Liegeplatz für die Gast-Zuweisung („bis 11,0 × 3,7 m“) stehen weiter in den Stammdaten unter „Liegeplätze“
+  und wurden nicht verändert.
+

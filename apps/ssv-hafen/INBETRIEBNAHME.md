@@ -71,6 +71,8 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    `kasse_zusage` (Gerät + Code wie beim Buchen), Herkunft `kasse`; „Mein SSV“ nutzt dieselben Regeln (`_zusage_setzen`).
 17. `apps/ssv-hafen/supabase/nachtrag-17.sql` – öffentliche Hafenkarte: Funktion `hafen_karte` (frei/belegt je Platznummer,
    ohne Namen). Bleibt ohne Wirkung, bis der Vorstand die Karte einschaltet – siehe 6a4.
+18. `apps/ssv-hafen/supabase/nachtrag-18.sql` – Winterlager West: nur noch 8 große Plätze P41–P48 (zwei Reihen hintereinander,
+   Bug zur Messe). Löscht P49–P60, sofern kein Boot darauf eingetragen ist.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 

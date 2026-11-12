@@ -178,7 +178,8 @@
       } else if (sel.typ === 'steg') {
         h = '<h3>Steg</h3>' + feld('Name', 'name', x.name) + wahl('Gehört zu (Zoom-Knopf)', 'bruecke', x.bruecke, [['', '– keiner –'], ['ost', 'Ost'], ['west', 'West'], ['schwimm', 'Schwimm']]) +
           '<div class="pe-zwei">' + feld('Plätze von', 'von', x.von, 'ganz') + feld('bis', 'bis', x.bis, 'ganz') + '</div><p class="pe-leise" style="margin-top:-4px">Leer lassen = Steg ohne Plätze. Platz „von“ liegt am markierten Anfang.</p>' +
-          '<div class="pe-zwei">' + feld('Boxtiefe (m)', 'tiefe', x.tiefe, 'zahl') + '<label class="pe-check" style="margin-bottom:14px"><input type="checkbox" data-f="schwimm" data-t="ja"' + (x.schwimm ? ' checked' : '') + '> Schwimmsteg (blau)</label></div>' +
+          '<div class="pe-zwei">' + feld('Boxtiefe am Anfang (m)', 'tiefe', x.tiefe, 'zahl') + feld('am Ende (m)', 'tiefe2', x.tiefe2 || '', 'zahl', ' placeholder="wie am Anfang"') + '</div><p class="pe-leise" style="margin-top:-4px">Zwei verschiedene Werte = die Boxen werden vom Anfang zum Ende gleichmäßig kleiner (oder größer).</p>' +
+          '<label class="pe-check" style="margin-bottom:14px"><input type="checkbox" data-f="schwimm" data-t="ja"' + (x.schwimm ? ' checked' : '') + '> Schwimmsteg (blau)</label>' +
           '<div class="pe-zwei">' + feld('Ohne Boxen am Anfang (m)', 'frei0', (x.frei || [0, 0])[0], 'zahl') + feld('am Ende (m)', 'frei1', (x.frei || [0, 0])[1], 'zahl') + '</div>' +
           '<div class="pe-knoepfe"><button type="button" data-akt="box-dazu">+ Box anhängen</button><button type="button" data-akt="seite">Boxen auf die andere Seite</button><button type="button" data-akt="richtung">Zählrichtung umdrehen</button></div><p id="pe-info" class="pe-info"></p>' +
           '<p class="pe-leise"><strong>Einzelne Box ändern:</strong> die Box im Plan antippen.</p>' + einzelListe(x.aus, (k) => 'Box ' + k);
@@ -193,7 +194,7 @@
           '<div class="pe-zwei">' + feld('Feldbreite (m)', 'bw', r1(x.bw * M), 'me') + feld('Feldlänge (m)', 'bh', r1(x.bh * M), 'me') + '</div>' + feld('Drehung (°)', 'rot', x.rot, 'zahl') + feld('Ziffern (2 = P01)', 'stellen', x.stellen, 'ganz') +
           '<div class="pe-zwei">' + feld('Boote schräg (°)', 'neig', x.neig || 0, 'zahl') + feld('Bug (1 = zum Weg, −1 = weg)', 'bug', x.bug || 1, 'ganz') + '</div>' +
           '<div class="pe-knoepfe"><button type="button" data-akt="platz-dazu">+ Platz anhängen</button></div><p class="pe-leise"><strong>Einzelnen Platz ändern:</strong> den Platz im Plan antippen. Ist das Feld gewählt, verschiebt Ziehen das ganze Feld.</p>' + einzelListe(x.aus, (k) => (PLAN.lagerVon({ lager: [{ ...x, aus: {} }] }).find((z) => z.nr === Number(k)) || {}).id || k) +
-          '<p class="pe-leise">Die Nummern müssen zu den Landplätzen im Programm passen (P01–P36 Nordlager, P41–P60 West, H1–H4, A1–A6). „Boote schräg“ dreht jedes Boot im Feld, z. B. 40° für die schrägen Reihen vorn links.</p>';
+          '<p class="pe-leise">Die Nummern müssen zu den Landplätzen im Programm passen (P01–P36 Nordlager, P41–P48 West, H1–H4, A1–A6). „Boote schräg“ dreht jedes Boot im Feld, z. B. 40° für die schrägen Reihen vorn links.</p>';
       } else if (sel.typ === 'box') {
         const p = boxGeo(x.steg, x.nr), a = (x.steg.aus && x.steg.aus[x.nr]) || {};
         h = '<h3>Box ' + esc(x.nr) + '</h3><p class="pe-leise" style="margin-top:-6px">' + esc(x.steg.name || 'Steg') + ' · jetzt ' + m1(p.voll) + ' × ' + m1(p.tiefe) + ' m' + (p.frei ? ' · frei verschoben' : '') + '</p>' +
@@ -351,7 +352,7 @@
       if (akt === 'weg') return loeschen();
       if (!x) return; merken();
       if (akt === 'seite') x.seite = x.seite === -1 ? 1 : -1;
-      if (akt === 'richtung') { const a = x.a; x.a = x.b; x.b = a; x.seite = x.seite === -1 ? 1 : -1; x.frei = [(x.frei || [0, 0])[1], (x.frei || [0, 0])[0]]; seite(); }   // Boxen bleiben auf ihrer Seite
+      if (akt === 'richtung') { const a = x.a; x.a = x.b; x.b = a; x.seite = x.seite === -1 ? 1 : -1; x.frei = [(x.frei || [0, 0])[1], (x.frei || [0, 0])[0]]; if (Number(x.tiefe2) > 0) { const tt = x.tiefe; x.tiefe = x.tiefe2; x.tiefe2 = tt; } seite(); }   // Boxen bleiben auf ihrer Seite
       if (akt === 'punktweg') { const zu = PLAN.ART[x.art].zu; if (x.p.length <= (zu ? 3 : 2)) { rueck.pop(); return toast('Mindestens ' + (zu ? 'drei' : 'zwei') + ' Punkte müssen bleiben.'); } x.p.splice(sel.punkt, 1); sel.punkt = null; seite(); }
       zeichne();
     });

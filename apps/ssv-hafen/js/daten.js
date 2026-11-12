@@ -104,9 +104,9 @@
 
   function landplaetze() {
     const lp = [];
-    // Nordlager P01–P36 (vorne schräg P01–P10, links P11–P22, rechts zwei Reihen P23–P36), Winterlager West P41–P60
+    // Nordlager P01–P36 (vorne schräg P01–P10, links P11–P22, rechts zwei Reihen P23–P36), Winterlager West P41–P48 (8 große Plätze laut Verein)
     for (let i = 1; i <= 36; i++) lp.push({ id: 'P' + pad(i), bez: 'Palette ' + i, art: 'palette', bereich: 'nord' });
-    for (let i = 41; i <= 60; i++) lp.push({ id: 'P' + pad(i), bez: 'Palette ' + i, art: 'palette', bereich: 'west' });
+    for (let i = 41; i <= 48; i++) lp.push({ id: 'P' + pad(i), bez: 'Palette ' + i, art: 'palette', bereich: 'west' });
     for (let i = 1; i <= 4; i++) lp.push({ id: 'H' + i, bez: 'Halle ' + i, art: 'halle', bereich: 'halle' });
     for (let i = 1; i <= 6; i++) lp.push({ id: 'A' + i, bez: 'Außenlager ' + i, art: 'aussen', bereich: 'aussen' });
     return lp;
@@ -194,7 +194,7 @@
     // Zwei Boote bleiben im Sommer an Land (Sommerlagerung, Verdopplungsregel)
     const landSommer = [mitglied('ausuebend'), mitglied('ausuebend')];
     const bLand1 = boot(landSommer[0], 'II'), bLand2 = boot(landSommer[1], 'III');
-    belegungen.push({ id: uid('BL'), saison: 2026, periode: 'sommer', boot_id: bLand1.id, platz_typ: 'land', platz_id: 'P58', art: 'dauer', flaeche_m2: null, sommer_an_land_jahr: 1, nicht_kranen: true, notiz: '' });
+    belegungen.push({ id: uid('BL'), saison: 2026, periode: 'sommer', boot_id: bLand1.id, platz_typ: 'land', platz_id: 'P48', art: 'dauer', flaeche_m2: null, sommer_an_land_jahr: 1, nicht_kranen: true, notiz: '' });
     belegungen.push({ id: uid('BL'), saison: 2026, periode: 'sommer', boot_id: bLand2.id, platz_typ: 'land', platz_id: 'A6', art: 'dauer', flaeche_m2: Math.ceil(bLand2.laenge * bLand2.breite), sommer_an_land_jahr: 2, nicht_kranen: true, notiz: 'Zweiter Sommer an Land – Gebühr verdoppelt' });
 
     // Winter 2026/27: Mitglieder-Boote an Land (Paletten, Halle, außen); Gäste & Fördernde nicht (Landplätze nur für ausübende/Probe)
@@ -352,6 +352,15 @@
       const westAlt = new Set(d.landplaetze.filter((x) => x.bereich === 'west').map((x) => x.id));
       (d.belegungen || []).forEach((x) => { if (westAlt.has(x.platz_id)) x.platz_id = neu(x.platz_id); });
       d.landplaetze = landplaetze();
+    }
+    // Winterlager West: 8 große Plätze P41–P48 statt 20 (Angabe des Vereins, Nov. 2026) – nur solange die Demo keinen eigenen Lageplan hat.
+    // Boote von P49–P60 rücken auf freie Paletten; findet sich keine, entfällt die Beispiel-Belegung.
+    if (d.landplaetze && d.landplaetze.some((x) => x.id === 'P49') && !(d.einstellungen && d.einstellungen.lageplan)) {
+      const weg = new Set(); for (let i = 49; i <= 60; i++) weg.add('P' + i);
+      const bleiben = d.landplaetze.filter((x) => !weg.has(x.id));
+      d.belegungen = (d.belegungen || []).filter((b) => { if (!weg.has(b.platz_id)) return true;
+        const frei = bleiben.find((x) => x.art === 'palette' && !d.belegungen.some((y) => y !== b && y.saison === b.saison && y.periode === b.periode && y.platz_id === x.id)); if (!frei) return false; b.platz_id = frei.id; return true; });
+      d.landplaetze = bleiben; sichern();
     }
     if (!d.arbeitsbereiche || (window.SSV_BEREICHE_VORLAGE && d.bereiche_v !== window.SSV_BEREICHE_VORLAGE.version)) {
       const alt = new Set((d.arbeitsbereiche || []).map((x) => x.id));
