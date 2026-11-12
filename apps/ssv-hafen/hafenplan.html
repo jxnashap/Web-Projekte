@@ -97,7 +97,12 @@
   const HF = window.HAFEN, SB = window.SSV_SB, H = HF.H, PLAN = window.HAFEN_PLAN, esc = H.esc;
   const $ = (s) => document.querySelector(s);
   const param = new URLSearchParams(location.search);
+  const EINGEBETTET = !!param.get('einbetten') && window.parent !== window;
   if (param.get('einbetten')) document.body.classList.add('einbetten');
+  // Eingebettet (Vereinswebsite): Höhe und Zustand an die umgebende Seite melden – nur an die eigene Herkunft
+  let zustandKarte = 'laedt';
+  const melden = () => { if (!EINGEBETTET) return; try { window.parent.postMessage({ ssvKarte: { zustand: zustandKarte, hoehe: document.documentElement.scrollHeight } }, location.origin); } catch (x) { /* fremde Seite: keine Meldung */ } };
+  if (EINGEBETTET && window.ResizeObserver) new ResizeObserver(melden).observe(document.body);
   const T = {
     de: { titel: 'Freie Gastliegeplätze', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', anreise: 'Anreise', naechte: 'Nächte', passt: 'Passt mein Boot? Maße eingeben', laenge: 'Länge (m)', breite: 'Breite (m)', abend: 'Abend',
       lgFrei: 'grüne Boje: frei', lgBelegt: 'rote Boje: belegt', lgKlein: 'frei, aber zu klein für dein Boot', soGehts: 'So geht’s', s1: 'Freien Platz mit grüner Boje aussuchen – am Steg hängt dort das grüne Schild.', s2: 'Festmachen und hier online anmelden.', s3: 'Gleich bezahlen – du musst auf niemanden warten.',
@@ -155,7 +160,8 @@
     try { D = SB ? await SB.rpc('hafen_karte', { p_von: S.von, p_naechte: S.n }, true) : demoKarte(); }
     catch (x) { D = { ok: false, grund: x && x.status === 404 ? 'aus' : 'fehler' }; }   // 404 = Funktion noch nicht eingespielt (Nachtrag 17) → wie „nicht öffentlich“
     if (D && D.ok) { S.von = D.von; S.n = D.naechte; }
-    zeigen();
+    zustandKarte = !D || !D.ok ? (D && D.grund === 'fehler' ? 'fehler' : 'aus') : D.winter ? 'winter' : 'offen';
+    zeigen(); melden();
   }
   const zahlDe = (v) => H.zahl(v, 1);
   const lageVon = (p) => { if (!p.frei) return 'belegt'; const l = H.dez(S.l) || 0, b = H.dez(S.b) || 0; return (l && p.l && l > p.l) || (b && p.b && b > p.b) ? 'zuklein' : 'frei'; };
@@ -212,7 +218,7 @@
         (p.lage === 'frei' ? '<a class="btn primaer" target="_top" href="' + link(p) + '">' + esc(t('hier')) + '</a>' : '') + '</div>' : '') +
       (frei.length ? '<div class="hk-chips"><h3>' + esc(t('freieListe')) + '</h3>' + frei.map((x) => '<button type="button" data-p="' + esc(x.id) + '"' + (p && p.id === x.id ? ' class="aktiv"' : '') + '><strong>' + esc(name(x)) + '</strong>' + (x.max_laenge ? '<small>' + esc(t('bis', { l: zahlDe(x.max_laenge), b: zahlDe(x.max_breite) })) + '</small>' : '') + '</button>').join('') + '</div>' : '');
     wahl.querySelectorAll('[data-p]').forEach((b) => b.addEventListener('click', () => { S.platz = b.dataset.p; const g = svg.querySelector('[data-platz="' + S.platz + '"]');
-      if (g && svg._kamera) { const r = g.getBoundingClientRect(), sr = svg.getBoundingClientRect(), vb = svg._kamera.ansicht; if (sr.width) { const cx = vb[0] + (r.left + r.width / 2 - sr.left) / sr.width * vb[2], cy = vb[1] + (r.top + r.height / 2 - sr.top) / sr.height * vb[3]; svg._kamera.zu([cx - 110, cy - 62, 220, 124]); } }
+      if (g && svg._kamera) { const r = g.getBoundingClientRect(), sr = svg.getBoundingClientRect(), vb = svg._kamera.ansicht; if (sr.width) { const cx = vb[0] + (r.left + r.width / 2 - sr.left) / sr.width * vb[2], cy = vb[1] + (r.top + r.height / 2 - sr.top) / sr.height * vb[3]; svg._kamera.zu([cx - 170, cy - 96, 340, 192]); } }
       waehlen(d, svg); }));
   }
 

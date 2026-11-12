@@ -17,6 +17,8 @@ ROOT = "/home/user/Web-Projekte/webseiten/ssv-segelverein"
 MEIN_SSV = "../ssv-hafen/mein-ssv.html"
 # Online-Aufnahmeantrag (Hafen-Manager, landet beim Vorstand). Vorschau: Nachbarordner [PLATZHALTER: echte Adresse]
 ANTRAG = "../ssv-hafen/aufnahme.html"
+# Öffentliche Hafenkarte (frei/belegt je Platz) – wird auf der Hafen-Seite eingebettet
+HAFENKARTE = "../ssv-hafen/hafenplan.html"
 # Karten: immer Google Maps / Apple Karten (Vorgabe des Nutzers). Eingebettete Google-Karte nur per 2-Klick.
 GMAPS = "https://www.google.com/maps/search/?api=1&amp;query=53.91139%2C10.70111"
 AMAPS = "https://maps.apple.com/?ll=53.91139,10.70111&amp;q=Schwartauer%20Segler-Verein&amp;z=16"
@@ -248,6 +250,7 @@ FOOTER = f'''
   <script src="js/script.js"></script>
   <script src="js/boote.js"></script>
   <script src="js/karte.js"></script>
+  <script src="js/hafenkarte.js"></script>
 </body>
 </html>
 '''
@@ -612,6 +615,20 @@ PAGES["hafen.html"] = {
           <p class="hinweis-box reveal d3"><strong>Bitte beachten:</strong> Chemietoiletten können auf unserem Gelände nicht entleert werden – uns fehlen geeignete Behälter und eine Absauganlage zur sachgerechten Entsorgung.</p>
         </div>
         <div class="reveal d1" data-cms="zeiten" data-id="hafen,kran"></div>
+      </div>
+    </section>
+
+    <!-- Hafenkarte aus dem Hafen-Manager: nur frei/belegt je Platz, keine Namen. Verschwindet von selbst,
+         solange der Vorstand die Karte nicht eingeschaltet hat (js/hafenkarte.js). -->
+    <section class="section-tight hafenkarte" id="plaetze" data-hafenkarte>
+      <div class="container">
+        <p class="eyebrow reveal">Freie Plätze</p>
+        <h2 class="reveal d1">Welcher Platz ist <em>frei?</em></h2>
+        <p class="reveal d2 hafenkarte-text">Grüne Boje heißt frei, rote Boje belegt. Sucht euch einen freien Platz aus und tippt auf „Hier anmelden“ – die Platznummer steht dann schon im Anmeldeformular.</p>
+        <div class="hafenkarte-rahmen reveal d2">
+          <iframe src="''' + HAFENKARTE + '''?einbetten=1" title="Hafenkarte: freie Gastliegeplätze" loading="lazy"></iframe>
+        </div>
+        <p class="reveal d3 hafenkarte-gross"><a class="link-gold" href="''' + HAFENKARTE + '''">Karte groß öffnen</a></p>
       </div>
     </section>
 

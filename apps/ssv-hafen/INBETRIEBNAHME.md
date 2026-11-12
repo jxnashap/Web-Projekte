@@ -167,8 +167,13 @@ Schilds oder ohnehin frei ist, sieht man von außen nicht.
 2. Hafen-Manager → Verwaltung → Einstellungen → „Hafenkarte für Gäste (öffentlich)“:
    **Nein** (Standard) · **nur den heutigen Stand** · **heute und die nächsten Tage** (Zahl der Tage, höchstens 60).
 3. Speichern – die Seite zeigt den Stand sofort und holt ihn alle 5 Minuten neu.
-4. Auf der Vereinswebsite verlinken oder einbetten: `hafenplan.html?einbetten=1` (ohne Kopf und Fußzeile, für einen Rahmen
-   auf der Seite „Hafen & Gastlieger“), Sprache mit `?lang=en` oder `?lang=da`.
+4. Auf der Vereinswebsite ist die Karte schon eingebaut: Seite „Hafen & Gäste“, Abschnitt „Welcher Platz ist frei?“.
+   Solange die Karte ausgeschaltet ist, fehlt der Abschnitt dort einfach. Ist sie eingeschaltet, sucht sich der Gast
+   einen Platz mit grüner Boje aus, tippt auf „Hier anmelden“ und landet in der Gast-Anmeldung – die Platznummer,
+   Anreise und Nächte sind schon eingetragen.
+   Das Einbetten funktioniert, solange Website und Hafen-Manager unter derselben Adresse liegen (so wie im Paket).
+   Zieht die Website später auf eine eigene Adresse um, muss der Hafen-Manager das Einbetten für diese Adresse erlauben
+   (Kopfzeile `X-Frame-Options` in `vercel.json`).
 
 Außerhalb der Saison (Saisontermine in den Einstellungen) meldet die Seite „Winterpause“. Ist die Karte ausgeschaltet,
 steht dort nur der Hinweis, beim Hafenmeister nachzufragen.

@@ -101,6 +101,20 @@
       </div>
     </section>
 
+    <!-- Hafenkarte aus dem Hafen-Manager: nur frei/belegt je Platz, keine Namen. Verschwindet von selbst,
+         solange der Vorstand die Karte nicht eingeschaltet hat (js/hafenkarte.js). -->
+    <section class="section-tight hafenkarte" id="plaetze" data-hafenkarte>
+      <div class="container">
+        <p class="eyebrow reveal">Freie Plätze</p>
+        <h2 class="reveal d1">Welcher Platz ist <em>frei?</em></h2>
+        <p class="reveal d2 hafenkarte-text">Grüne Boje heißt frei, rote Boje belegt. Sucht euch einen freien Platz aus und tippt auf „Hier anmelden“ – die Platznummer steht dann schon im Anmeldeformular.</p>
+        <div class="hafenkarte-rahmen reveal d2">
+          <iframe src="../ssv-hafen/hafenplan.html?einbetten=1" title="Hafenkarte: freie Gastliegeplätze" loading="lazy"></iframe>
+        </div>
+        <p class="reveal d3 hafenkarte-gross"><a class="link-gold" href="../ssv-hafen/hafenplan.html">Karte groß öffnen</a></p>
+      </div>
+    </section>
+
     <section class="section dark" id="anfahrt">
       <div class="container split" style="align-items:center">
         <div>
@@ -219,5 +233,6 @@
   <script src="js/script.js"></script>
   <script src="js/boote.js"></script>
   <script src="js/karte.js"></script>
+  <script src="js/hafenkarte.js"></script>
 </body>
 </html>

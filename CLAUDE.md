@@ -60,11 +60,16 @@ Repo für alle Website-Projekte. Struktur:
   „Gast hier eintragen“; Kalender = Zeitleiste je Platz (`tagLage()`: Dauerlieger, grünes Schild aus Mein SSV, Gast), freien Tag antippen = Gast eintragen.
   **Öffentliche Karte `hafenplan.html`** (Deutsch/Englisch/Dänisch, `?einbetten=1` für die Website): zeigt nur frei/belegt je Platznummer und Boxmaße,
   keine Namen, belegte Plätze bekommen ein beliebiges Boot. Vom Vorstand schaltbar: Einstellungen → `karte_oeffentlich` (aus = Standard | heute | vorschau)
-  und `karte_tage` (höchstens 60); Datenbank-Funktion `hafen_karte(p_von, p_naechte)` (Nachtrag 17, für anon). Auf der Vereinswebsite noch nicht eingebunden.
+  und `karte_tage` (höchstens 60); Datenbank-Funktion `hafen_karte(p_von, p_naechte)` (Nachtrag 17, für anon).
+  **Auf der Website eingebettet:** `hafen.html` Abschnitt `#plaetze` (`HAFENKARTE` im Generator, `js/hafenkarte.js`, Rahmen `<iframe …?einbetten=1>`):
+  die Karte meldet Höhe und Zustand per `postMessage` (nur gleiche Herkunft); bei „aus“/Fehler/fehlender Seite entfernt sich der Abschnitt selbst.
+  Gast wählt einen Platz → „Hier anmelden“ (`target=_top`) → `gast.html?platz=…&ankunft=…&naechte=…` ist vorbelegt. Geht nur, solange Website und
+  Hafen-Manager unter derselben Adresse liegen (`X-Frame-Options: SAMEORIGIN` in `vercel.json`).
   Hafenplan-Kamera `HAFEN_PLAN.kamera(svg)` (Ziehen, Mausrad/Kneifen, Doppeltipp, Trägheit, Vollbild, Ausschnitt bleibt in `planStand.vb`),
   **Handy (Vorgabe des Nutzers):** Karte füllt ihren Rahmen immer ganz – Herauszoomen endet am Plan, kein Schieben über den Rand (`passend()`), Rahmen am Handy quadratisch;
   Finger nicht mit `setPointerCapture` binden (löst `lostpointercapture` aus und brach das Wischen ab – nur Maus/Stift), `touch-action: none` auch am Rahmen `.plan-flaeche.mit-kamera`;
-  Seiten haben `minimum-scale=1` (kleiner zoomen geht nicht, hinein schon). Test `t_touch.js` (Wischen/Kneifen mit echten Touch-Ereignissen). Auftakt-/Wellen-/Schaukel-Animationen per CSS (aus bei „Bewegung reduzieren“).
+  Seiten haben `minimum-scale=1` (kleiner zoomen geht nicht, hinein schon) und `overscroll-behavior: none` (kein Gummiband, kein Ziehen-zum-Neuladen); die Karte hält `touchmove` selbst fest.
+  Tests `t_touch.js` (Wischen/Kneifen mit echten Touch-Ereignissen), `t_webkarte.js` (Website → Platz wählen → Anmeldung vorbelegt). Auftakt-/Wellen-/Schaukel-Animationen per CSS (aus bei „Bewegung reduzieren“).
   Nordlager laut Verein: Lagerweg mittig als Sackgasse (vorne an der Messe vorbei), links eine Reihe P11–P22, rechts zwei Reihen P23–P36, vorne links zwei schräge Reihen P01–P10 mit Bug zur Messe (Lager-Felder `neig`/`bug`/`lw`/`lh`).
   Gewichtsgrenzen nur über die Einstellungen: **Kran 9 t** (`kran_max_t`, Entscheidung des Nutzers, so auch auf der Website) und **Steg/Wasserliegeplatz 10 t** (`max_gewicht_t`, HBO 3.1.4); `Q.maxT(art)/Q.zuSchwer(b, art)/Q.maxTxt(art)` mit art 'kran' (Standard) | 'steg' (nur `Q.passt` für Wasserplätze).
   Gastlieger: Status wird aus Daten berechnet (`gastLage()` in app.js: Aufenthalt/Platz/Zahlung, Ansichten Heute & offen/Anreisen/Im Hafen/Abreisen/Archiv);

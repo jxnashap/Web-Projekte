@@ -1049,3 +1049,12 @@ body.cine .site-header:not(.solid) .header-mein, body.nav-open .header-mein { ba
   .mb-circle { width: 38px; height: 38px; }
   .header-mein { padding: 0 11px; letter-spacing: 0.1em; }
 }
+
+/* Hafenkarte (eingebettet aus dem Hafen-Manager): Rahmen wächst mit dem Inhalt, die Höhe meldet die Karte selbst */
+.hafenkarte { padding-top: 0; }
+.hafenkarte-text { color: var(--muted); max-width: 62ch; }
+.hafenkarte-rahmen { margin-top: 30px; }
+.hafenkarte-rahmen iframe { display: block; width: 100%; height: 760px; border: 0; background: transparent; transition: height .3s ease; }
+.hafenkarte-gross { margin-top: 18px; }
+@media (max-width: 760px) { .hafenkarte-rahmen iframe { height: 820px; } }
+@media print { .hafenkarte { display: none; } }

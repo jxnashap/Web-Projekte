@@ -538,6 +538,8 @@
     svg.addEventListener('pointerup', ende); svg.addEventListener('pointercancel', ende); svg.addEventListener('lostpointercapture', (e) => { if (e.target === svg && zeiger.has(e.pointerId)) ende(e); });
     // iPhone/iPad: Kneifen auf der Karte zoomt die Karte, nicht die ganze Seite
     ['gesturestart', 'gesturechange', 'gestureend'].forEach((g) => svg.addEventListener(g, (e) => e.preventDefault()));
+    // … und Ziehen nach unten zieht nicht die ganze Seite mit (Gummiband / „Ziehen zum Neuladen“ am Seitenanfang)
+    svg.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
     // Nach dem Ziehen keinen Klick auf einen Platz auslösen
     svg.addEventListener('click', (e) => { if (bewegt) { e.stopImmediatePropagation(); e.preventDefault(); bewegt = false; } }, true);
     svg.addEventListener('dblclick', (e) => { e.preventDefault(); zoom(e.shiftKey ? 2 : 0.5, e.clientX, e.clientY); });
