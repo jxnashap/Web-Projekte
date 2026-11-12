@@ -48,3 +48,9 @@ ihren ursprünglichen Branches (PR #1/#2).
 - Recherche-Regeln: nur belegte Fakten verwenden, Unbelegtes als `[PLATZHALTER]`
   markieren; Design-Referenzen inspirieren, werden aber nie kopiert.
 - QA immer über die Screenshot-Tools der Baukästen (Reveal-Zählung muss n/n sein).
+- Ablauf und Vorlagen stehen in der Memory-Vault (privates Repo `jxnashap/Memory`):
+  Playbook `procedural/website-projekt-2-tage.md`, Vorlagen in `03 - InnoWeb/Prozess/`
+  (Kunden-Fragebogen, Kunden-Uebergabe, Domain-verbinden, Redaktion-Baustein).
+  **Nach jedem Projekt** neue Lehren in `03 - InnoWeb/Prozess/Erkenntnisse.md`
+  nachtragen und das Projekt in `semantic/projects/innoweb.md` vermerken
+  (Vault-Commits direkt auf `main`). Keine Passwörter in Repo oder Vault.
