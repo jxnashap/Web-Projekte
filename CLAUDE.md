@@ -109,6 +109,10 @@ ihren ursprünglichen Branches (PR #1/#2).
 ## `baukaesten/` – wiederverwendbare Website-Kits
 - `baukaesten/quiet-luxury/` – die Standard-Bauweise (Fontenay-Header, Cinematic-
   Heros, Signature-Animationen). README dort erklärt „Neues Projekt in 5 Schritten".
+- `baukaesten/redaktion/` – Bauschema für den Redaktionsbereich `/verwaltung/` (Kunde pflegt Texte, Termine,
+  Preise, Fotos selbst): `Redaktion-Schema.md` (Aufbau, Inhaltsmodell, SQL, Ablauf „alte Website → neue
+  Website mit Redaktion“, Auftrag für einen anderen Chat) und `Uebergabeformular-Vorlage.md`. Als
+  Obsidian-Notizen geschrieben (Vault-Bereich „Website-Entwicklung“); Referenz: `webseiten/ssv-segelverein/`.
 - `baukaesten/premium-estate/` – Premium-Variante nach era-residence-Vorbild
   (Preloader, Masken-Reveals, Sticky-Chapter, Marquee, Cut-Corner-Rahmen,
   Ghost-Schriftzug) für teure Zielgruppen: Golfclubs, Reithöfe, gehobene
