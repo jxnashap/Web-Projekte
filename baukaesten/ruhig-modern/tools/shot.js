@@ -66,6 +66,8 @@ function serve(root) {
     let file = path.normalize(path.join(root, u));
     if (!file.startsWith(root)) { res.writeHead(403); return res.end(); }
     if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
+    /* wie daten/.htaccess (redaktion-php): ohne gespeicherte Inhalte die Grundfassung ausliefern */
+    if (!fs.existsSync(file) && /[\\/]daten[\\/]inhalte\.json$/.test(file)) file = file.replace(/inhalte\.json$/, 'inhalte.standard.json');
     if (!fs.existsSync(file)) { res.writeHead(404, { 'Content-Type': 'text/plain' }); return res.end('404 ' + u); }
     res.writeHead(200, { 'Content-Type': MIME[path.extname(file).slice(1).toLowerCase()] || 'application/octet-stream' });
     fs.createReadStream(file).pipe(res);

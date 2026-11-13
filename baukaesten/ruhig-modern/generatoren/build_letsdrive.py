@@ -3,7 +3,12 @@
 """Generator: Fahrschule Let’s Drive Kiel — Baukasten „Ruhig-Modern“.
 
 Erzeugt alle HTML-Seiten + sitemap.xml + robots.txt + .htaccess + kontakt.php
-nach webseiten/lets-drive-kiel/. Fasst css/, js/ und assets/ NICHT an.
+nach webseiten/lets-drive-kiel/. Fasst css/, js/script.js und assets/ NICHT an.
+
+Redaktion (baukaesten/redaktion-php): REDAKTION unten ist die Grundfassung der
+Inhalte, die der Kunde selbst pflegt. Sie wird statisch vorgerendert, als
+daten/inhalte.standard.json ausgeliefert und mit SCHEMA als verwaltung/schema.json.
+Kopiert dazu verwaltung/, daten/*.htaccess, js/cms-kern.js und schreibt js/inhalte.js.
 
 Inhalte ausschließlich aus PLAN §3 bzw. .preview-cache/ldk/* (Original-Website)
 – nichts erfunden; Unbelegtes ist als [PLATZHALTER: …] markiert.
@@ -12,6 +17,7 @@ Aufruf (vom Repo-Root):
     python3 baukaesten/ruhig-modern/generatoren/build_letsdrive.py
 """
 import json
+import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]          # …/Web-Projekte
@@ -41,12 +47,160 @@ HOSTER = "IONOS SE, Elgendorfer Str.&nbsp;57, 56410&nbsp;Montabaur"
 # nirgends verlinkt. Zum Aktivieren den AGB-Text als HTML (<h2>, <p> …) eintragen.
 AGB_TEXT = None
 
-# (Label, JS-Wochentage nach Date.getDay(): 0 = So … 6 = Sa, von, bis)
-HOURS = [
-    ("Mo, Mi, Fr", "1,3,5", "12:00", "16:00"),
-    ("Di, Do", "2,4", "15:00", "19:00"),
-    ("Sa, So", "6,0", None, None),
-]
+# ------------------------------------------------------------------
+# Redaktion: Grundfassung der Inhalte, die der Kunde selbst pflegt.
+# Wochentage nach JS Date.getDay(): 0 = So … 6 = Sa. Belegt laut Original-Website.
+# js/inhalte.js (aus inhalte_letsdrive.js) formatiert exakt wie die Helfer unten.
+# ------------------------------------------------------------------
+REDAKTION = {
+    "hinweis": {"aktiv": False, "text": "", "link": "", "link_text": ""},
+    "buerozeiten": [
+        {"tage": [1, 3, 5], "von": "12:00", "bis": "16:00"},
+        {"tage": [2, 4], "von": "15:00", "bis": "19:00"},
+    ],
+    "theorie": {"tage": [2, 4], "von": "19:00", "bis": "20:30", "hinweis": ""},
+    "motorrad": [],
+    "stelle": {"aktiv": True, "klassen": "A, B und BE"},
+}
+
+ORDER = [1, 2, 3, 4, 5, 6, 0]
+KURZ = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
+ADV = ["sonntags", "montags", "dienstags", "mittwochs", "donnerstags", "freitags", "samstags"]
+EN_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+ANZAHL = ["", "Einmal pro Woche", "Zweimal pro Woche", "Dreimal pro Woche", "Viermal pro Woche",
+          "Fünfmal pro Woche", "Sechsmal pro Woche", "Jeden Tag"]
+
+
+def sort_tage(tage):
+    return sorted(set(tage), key=ORDER.index)
+
+
+def _teile(tage, namen, bis):
+    runs = []
+    for t in sort_tage(tage):
+        if runs and ORDER.index(t) == ORDER.index(runs[-1][-1]) + 1:
+            runs[-1].append(t)
+        else:
+            runs.append([t])
+    out = []
+    for r in runs:
+        out += [namen[r[0]] + bis + namen[r[-1]]] if len(r) >= 3 else [namen[t] for t in r]
+    return out
+
+
+def _verbinde(liste, und):
+    return "".join(liste) if len(liste) < 2 else ", ".join(liste[:-1]) + und + liste[-1]
+
+
+def tage_label(tage):
+    return ", ".join(_teile(tage, KURZ, "–"))
+
+
+def tage_lang(tage):
+    return _verbinde(_teile(tage, ADV, " bis "), " und ")
+
+
+def tage_kurz(tage, html=True):
+    return _verbinde(_teile(tage, KURZ, "–"), " &amp; " if html else " & ")
+
+
+def zeit_kurz(hhmm):
+    return str(int(hhmm[:2])) if hhmm[3:] == "00" else hhmm
+
+
+def minuten(hhmm):
+    return int(hhmm[:2]) * 60 + int(hhmm[3:])
+
+
+def cms(key, html, tag="span", attrs=""):
+    return f'<{tag} data-cms="{key}"{attrs}>{html}</{tag}>'
+
+
+def cms_time(key, hhmm):
+    return f'<time data-cms="{key}" datetime="{hhmm}">{hhmm}</time>'
+
+
+TH = REDAKTION["theorie"]
+TH_LANG = cms("theorie-tage-lang", tage_lang(TH["tage"]))
+TH_LANG_GROSS = cms("theorie-tage-lang-gross", tage_lang(TH["tage"])[:1].upper() + tage_lang(TH["tage"])[1:])
+TH_KURZ = cms("theorie-tage-kurz", tage_kurz(TH["tage"]))
+TH_VON = cms_time("theorie-von", TH["von"])
+TH_BIS = cms_time("theorie-bis", TH["bis"])
+TH_ANZAHL = cms("theorie-anzahl", ANZAHL[len(set(TH["tage"]))])
+TH_DAUER = cms("theorie-dauer", f'{minuten(TH["bis"]) - minuten(TH["von"])}&nbsp;Minuten')
+STELLE_KL = cms("stelle-klassen", REDAKTION["stelle"]["klassen"])
+BUERO_KURZ = " · ".join(f'{tage_label(e["tage"])} {zeit_kurz(e["von"])}–{zeit_kurz(e["bis"])}&nbsp;Uhr'
+                        for e in REDAKTION["buerozeiten"])
+
+# Link-Ziele für den Hinweis: nur feste Auswahl, nie freie URLs
+LINK_ZIELE = [["", "Kein Link"], ["kontakt.html", "Kontakt"], ["theorieunterricht.html", "Theorieunterricht"],
+              ["theorieunterricht.html#motorrad-termine", "Motorrad-Termine"],
+              ["fahrerlaubnisklassen.html", "Führerscheinklassen"], ["jobs.html", "Jobs"],
+              ["tel:+4943186923", "Anrufen"]]
+
+SCHEMA = {
+    "titel": "Let’s Drive Kiel · Redaktion",
+    "akzent": "#0e7a1e", "akzent_dunkel": "#065611",
+    "seite": "index.html",
+    "bereiche": [
+        {"id": "hinweis", "titel": "Hinweis", "kurz": "Urlaub, Schließtage, Neuigkeiten", "seite": "index.html",
+         "hilfe": "Ein kurzer Hinweis oben auf jeder Seite, zum Beispiel „Vom 23.12. bis 2.1. ist das Büro "
+                  "geschlossen.“ Nach dem Anlass einfach wieder ausschalten.",
+         "felder": [
+             {"id": "aktiv", "typ": "schalter", "label": "Hinweis auf der Website anzeigen"},
+             {"id": "text", "typ": "text", "label": "Text", "max": 160,
+              "platzhalter": "Vom 23.12. bis 2.1. ist das Büro geschlossen."},
+             {"id": "link", "typ": "auswahl", "label": "Link (optional)", "optionen": LINK_ZIELE},
+             {"id": "link_text", "typ": "text", "label": "Linktext", "max": 40, "platzhalter": "Mehr erfahren"}]},
+        {"id": "buerozeiten", "typ": "liste", "titel": "Bürozeiten", "kurz": "Beratung und Anmeldung",
+         "eintrag": "Zeitraum", "max": 7, "titelfelder": ["tage"], "seite": "kontakt.html",
+         "hilfe": "Eine Zeile je Zeitraum. Tage ohne Zeile gelten als geschlossen. Die Anzeige „Jetzt geöffnet“ "
+                  "rechnet automatisch mit.",
+         "neu": {"tage": [], "von": "12:00", "bis": "16:00"},
+         "felder": [
+             {"id": "tage", "typ": "wochentage", "label": "Tage", "pflicht": True},
+             {"id": "von", "typ": "uhrzeit", "label": "Von", "pflicht": True},
+             {"id": "bis", "typ": "uhrzeit", "label": "Bis", "pflicht": True}]},
+        {"id": "theorie", "titel": "Theorieunterricht", "kurz": "Tage und Uhrzeit", "seite": "theorieunterricht.html",
+         "hilfe": "Gilt überall auf der Website: Startseite, Theorie-Seite und Ablauf.",
+         "felder": [
+             {"id": "tage", "typ": "wochentage", "label": "Tage", "pflicht": True},
+             {"id": "von", "typ": "uhrzeit", "label": "Beginn", "pflicht": True},
+             {"id": "bis", "typ": "uhrzeit", "label": "Ende", "pflicht": True},
+             {"id": "hinweis", "typ": "text", "label": "Zusatzhinweis (optional)", "max": 160,
+              "platzhalter": "In den Herbstferien findet kein Unterricht statt."}]},
+        {"id": "motorrad", "typ": "liste", "titel": "Motorrad-Theorie", "kurz": "Termine der A-Lektionen",
+         "eintrag": "Termin", "max": 20, "sortieren": "datum", "titelfelder": ["datum", "titel"],
+         "seite": "theorieunterricht.html#motorrad-termine",
+         "hilfe": "Termine für die motorradspezifischen Lektionen. Vergangene Termine verschwinden auf der "
+                  "Website von selbst.",
+         "leer": "Noch keine Termine. Die Website sagt dann, dass die Termine bekannt gegeben werden.",
+         "neu": {"von": "19:00", "bis": "20:30"},
+         "felder": [
+             {"id": "datum", "typ": "datum", "label": "Datum", "pflicht": True},
+             {"id": "von", "typ": "uhrzeit", "label": "Beginn", "pflicht": True},
+             {"id": "bis", "typ": "uhrzeit", "label": "Ende", "pflicht": True},
+             {"id": "titel", "typ": "text", "label": "Inhalt (optional)", "max": 60,
+              "platzhalter": "Lektion 15 und 16"}]},
+        {"id": "stelle", "titel": "Stellenanzeige", "kurz": "Fahrlehrer gesucht", "seite": "jobs.html",
+         "hilfe": "Ausgeschaltet zeigt die Jobs-Seite, dass gerade keine Stelle offen ist, und lädt zur "
+                  "Initiativbewerbung ein.",
+         "felder": [
+             {"id": "aktiv", "typ": "schalter", "label": "Stelle ist offen"},
+             {"id": "klassen", "typ": "text", "label": "Gesuchte Fahrlehrerlaubnis (Klassen)", "max": 40,
+              "pflicht": True, "platzhalter": "A, B und BE"}]},
+    ],
+}
+
+
+def hinweis_html():
+    h = REDAKTION["hinweis"]
+    an = h["aktiv"] and h["text"]
+    inner = ""
+    if an:
+        inner = h["text"] + (f' <a href="{h["link"]}">{h["link_text"] or "Mehr erfahren"}</a>' if h["link"] else "")
+    return (f'<div class="cms-hinweis" data-cms="hinweis" role="note" aria-label="Aktueller Hinweis"'
+            f'{"" if an else " hidden"}><p>{inner}</p></div>\n    ')
 
 NAV = [
     ("index.html", "Start"),
@@ -169,14 +323,16 @@ def facts(rows, cls="facts rv rv-d2"):
 
 
 def hours_dl():
-    rows = []
-    for label, days, a, b in HOURS:
-        if a:
-            rows.append(f'<div data-days="{days}" data-from="{a}" data-to="{b}"><dt>{label}</dt>'
-                        f'<dd>{a}&nbsp;– {b}&nbsp;Uhr</dd></div>')
-        else:
-            rows.append(f'<div data-days="{days}"><dt>{label}</dt><dd>geschlossen</dd></div>')
-    return '<dl class="hours">' + "".join(rows) + "</dl>"
+    rows, offen = [], set()
+    for e in REDAKTION["buerozeiten"]:
+        days, a, b = sort_tage(e["tage"]), e["von"], e["bis"]
+        offen |= set(days)
+        rows.append(f'<div data-days="{",".join(map(str, days))}" data-from="{a}" data-to="{b}">'
+                    f'<dt>{tage_label(days)}</dt><dd>{a}&nbsp;– {b}&nbsp;Uhr</dd></div>')
+    zu = [t for t in ORDER if t not in offen]
+    if zu:
+        rows.append(f'<div data-days="{",".join(map(str, zu))}"><dt>{tage_label(zu)}</dt><dd>geschlossen</dd></div>')
+    return '<dl class="hours" data-cms="buerozeiten">' + "".join(rows) + "</dl>"
 
 
 def contact_list(fax=True, address=True, facebook=False):
@@ -224,7 +380,7 @@ def hero_page(crumb, eyebrow, h1, lead=None, media=None, actions=None):
     md = f'\n  <figure class="hero-page-media rv-img">{media}</figure>' if media else ""
     return f"""<section class="hero hero-page">
   <div class="wrap hero-page-in">
-    {crumbs}{eb}<h1 class="rv rv-d2">{h1}</h1>{ld}{ac}
+    {crumbs}{hinweis_html()}{eb}<h1 class="rv rv-d2">{h1}</h1>{ld}{ac}
   </div>{md}
 </section>
 """
@@ -313,7 +469,7 @@ def header(active, body_cls):
       </nav>
       <div class="mobile-nav-meta">
         <a class="btn btn-primary" href="{TEL_HREF}">{TEL} anrufen</a>
-        <p><strong>Bürozeiten</strong><br>Mo, Mi, Fr 12–16&nbsp;Uhr · Di, Do 15–19&nbsp;Uhr</p>
+        <p><strong>Bürozeiten</strong><br>{cms("buerozeiten-kurz", BUERO_KURZ)}</p>
       </div>
     </div>
   </div>
@@ -356,6 +512,8 @@ def footer():
   </div>
 </footer>
 <script src="js/script.js" defer></script>
+<script src="js/inhalte.js" defer></script>
+<script src="js/cms-kern.js" defer></script>
 </body>
 </html>
 """
@@ -391,10 +549,8 @@ LD = {
         "addressCountry": "DE",
     },
     "openingHoursSpecification": [
-        {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Wednesday", "Friday"],
-         "opens": "12:00", "closes": "16:00"},
-        {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Tuesday", "Thursday"],
-         "opens": "15:00", "closes": "19:00"},
+        {"@type": "OpeningHoursSpecification", "dayOfWeek": [EN_DAYS[t] for t in sort_tage(e["tage"])],
+         "opens": e["von"], "closes": e["bis"]} for e in REDAKTION["buerozeiten"]
     ],
     "sameAs": [FB],
 }
@@ -430,7 +586,7 @@ STEPS = [
     ("Beratung &amp; Anmeldung",
      "Komm zu unseren Bürozeiten in die Fahrschule am Knooper Weg. Wir beraten dich persönlich und finden gemeinsam die passende Klasse."),
     ("Theorieunterricht",
-     "Dienstags und donnerstags von 19:00 bis 20:30&nbsp;Uhr in unserem Schulungsraum. Der Einstieg ist jederzeit möglich."),
+     f"{TH_LANG_GROSS} von {TH_VON} bis {TH_BIS}&nbsp;Uhr in unserem Schulungsraum. Der Einstieg ist jederzeit möglich."),
     ("Praktische Ausbildung",
      "Übungsstunden und Sonderfahrten – Überland, Autobahn und Beleuchtung – auf modernen Schalt- oder Automatikfahrzeugen, in deinem Tempo."),
     ("Prüfung",
@@ -474,14 +630,14 @@ quotes_html = "\n".join(
 INDEX_BODY = f"""<section class="hero hero-home">
   <div class="hero-media"><img src="assets/img/hero-1600.webp" srcset="{HERO_SRCSET}" sizes="100vw" alt="Weißes Auto auf einer Uferstraße an der Förde, im Hintergrund Hafenkräne und Segelmasten" width="2400" height="1350" fetchpriority="high" decoding="async"></div>
   <div class="wrap hero-in">
-    <p class="eyebrow rv">Fahrschule in Kiel-Ravensberg</p>
+    {hinweis_html()}<p class="eyebrow rv">Fahrschule in Kiel-Ravensberg</p>
     <h1 class="hero-title rv rv-d1">Mehr als nur fahren.<br><em>Wir bringen dich sicher ans Ziel.</em></h1>
     <p class="lead rv rv-d2">Willkommen bei der Fahrschule {BRAND} am Ravensberg – deiner Fahrschule für Auto, Anhänger und Motorrad.</p>
     <div class="hero-actions rv rv-d3">{btn("kontakt.html", "Beratung anfragen")}{btn("fahrerlaubnisklassen.html", "Führerscheinklassen", "ghost", arrow=False)}</div>
     <ul class="hero-facts rv rv-d4">
       <li><strong><span data-count="14">14</span>&nbsp;Tage</strong><span>bis zur Fahrstunde buchbar</span></li>
       <li><strong>Schalt &amp; Automatik</strong><span>moderne Fahrzeuge</span></li>
-      <li><strong>Di &amp; Do</strong><span>Theorie 19:00&nbsp;Uhr</span></li>
+      <li><strong>{TH_KURZ}</strong><span>Theorie {TH_VON}&nbsp;Uhr</span></li>
     </ul>
   </div>
   <a class="scroll-cue" href="#start" aria-label="Weiter nach unten"><span></span></a>
@@ -590,7 +746,7 @@ INDEX_BODY = f"""<section class="hero hero-home">
 PAGES["index.html"] = page(
     "index.html", "start", "Führerschein in Kiel-Ravensberg",
     "Fahrschule Let’s Drive Kiel am Ravensberg: Führerschein B, BE, A1, A2 und A – ruhige Fahrlehrer, "
-    "Theorie Di &amp; Do, Fahrstunden innerhalb von 14 Tagen buchbar.",
+    "Theorie-Einstieg jederzeit, Fahrstunden innerhalb von 14 Tagen buchbar.",
     INDEX_BODY, active="index.html", dark_hero=True, extra_head=INDEX_HEAD)
 
 # ==================================================================
@@ -809,13 +965,13 @@ rules_html = "\n".join(
         <p>{p}</p>
       </article>""" for i, (ic, t, p) in enumerate(RULES))
 
-DAYS = [("Mo", False), ("Di", True), ("Mi", False), ("Do", True), ("Fr", False)]
 days_html = "".join(
-    f'<li class="day-chip{" is-active" if on else ""}">{dname}</li>' for dname, on in DAYS)
+    f'<li class="day-chip{" is-active" if d in TH["tage"] else ""}">{KURZ[d]}</li>'
+    for d in ORDER if d in (1, 2, 3, 4, 5) or d in TH["tage"])
 
 THEORIE_BODY = hero_page(
     "Theorie", "Theorieunterricht", "Theorie, die <em>hängen bleibt.</em>",
-    "Unser Theorieunterricht findet immer dienstags und donnerstags von 19:00 bis 20:30&nbsp;Uhr "
+    f"Unser Theorieunterricht findet immer {TH_LANG} von {TH_VON} bis {TH_BIS}&nbsp;Uhr "
     "in unserem Schulungsraum in der Fahrschule statt.",
     media=img("theorie", "Heller Schulungsraum mit Holztischen, schwarzen Stühlen und einem Bildschirm, "
               "auf dem eine Kreuzung zu sehen ist", SIZES_WIDE, lazy=False)) + f"""
@@ -823,18 +979,33 @@ THEORIE_BODY = hero_page(
   <div class="wrap split">
     <div>
       <p class="eyebrow rv">So läuft’s</p>
-      <h2 class="rv rv-d1">Zweimal pro Woche – <em>Einstieg jederzeit.</em></h2>
+      <h2 class="rv rv-d1">{TH_ANZAHL} – <em>Einstieg jederzeit.</em></h2>
       <p class="lead rv rv-d2">Ein Einstieg in den Theorieunterricht ist jederzeit möglich. Die aktuellen Termine liegen in der Fahrschule aus.</p>
       <p class="rv rv-d3">Du kommst einfach zu einem der nächsten Termine in unseren Schulungsraum am Knooper Weg – ganz gleich, mit welcher Lektion es gerade weitergeht.</p>
     </div>
     <div class="schedule card rv rv-d2">
       <p class="eyebrow">Theorieunterricht</p>
-      <p class="schedule-time"><time datetime="19:00">19:00</time> – <time datetime="20:30">20:30</time></p>
-      <ul class="day-chips" aria-hidden="true">{days_html}</ul>
-      <p>Dienstags und donnerstags, 19:00 bis 20:30&nbsp;Uhr · Schulungsraum in der Fahrschule, {STREET}, {CITY}</p>
+      <p class="schedule-time">{TH_VON} – {TH_BIS}</p>
+      <ul class="day-chips" aria-hidden="true" data-cms="theorie-chips">{days_html}</ul>
+      <p>{TH_LANG_GROSS}, {TH_VON} bis {TH_BIS}&nbsp;Uhr · Schulungsraum in der Fahrschule, {STREET}, {CITY}</p>
+      <p class="schedule-note" data-cms="theorie-hinweis"{"" if TH["hinweis"] else " hidden"}>{TH["hinweis"]}</p>
       {facts([("Lektionen Grundstoff", '<span data-count="12">12</span>'),
               ("Klassenspezifisch B", "B1 + B2"),
-              ("Dauer je Termin", "90&nbsp;Minuten")], cls="facts")}
+              ("Dauer je Termin", TH_DAUER)], cls="facts")}
+    </div>
+  </div>
+</section>
+
+<section class="section section-mint" id="motorrad-termine">
+  <div class="wrap split">
+    <div>
+      <p class="eyebrow rv">Motorrad</p>
+      <h2 class="rv rv-d1">Termine für die <em>Motorrad-Theorie</em></h2>
+      <p class="rv rv-d2">Für die A-Klassen kommen 4 motorradspezifische Lektionen dazu. Die Termine dafür findest du hier.</p>
+    </div>
+    <div class="card rv rv-d2">
+      <ul class="termine" data-cms="motorrad" hidden></ul>
+      <p class="termine-leer" data-cms="motorrad-leer">Die nächsten Termine geben wir hier und in der Fahrschule bekannt.</p>
     </div>
   </div>
 </section>
@@ -865,8 +1036,8 @@ THEORIE_BODY = hero_page(
 
 PAGES["theorieunterricht.html"] = page(
     "theorieunterricht.html", "theorieunterricht", "Theorieunterricht",
-    "Theorieunterricht bei Let’s Drive Kiel: dienstags und donnerstags 19:00–20:30 Uhr im Schulungsraum "
-    "am Knooper Weg. Einstieg jederzeit, alle 14 Lektionen im Überblick.",
+    "Theorieunterricht bei Let’s Drive Kiel im Schulungsraum am Knooper Weg: Einstieg jederzeit, aktuelle "
+    "Termine auch für die Motorrad-Lektionen, alle 14 Lektionen im Überblick.",
     THEORIE_BODY, active="theorieunterricht.html")
 
 # ==================================================================
@@ -874,7 +1045,7 @@ PAGES["theorieunterricht.html"] = page(
 # ==================================================================
 OFFER = ["Ein familiäres Umfeld", "Ein freundliches und humorvolles Team",
          "Ausbildung auf modernen Fahrzeugen", "Eine faire Bezahlung"]
-NEED = ["Fahrlehrerlaubnis der Klassen A, B und BE", "Engagement und Interesse für den Job",
+NEED = [f"Fahrlehrerlaubnis der Klassen {STELLE_KL}", "Engagement und Interesse für den Job",
         "Einfühlungsvermögen im Umgang mit jungen Menschen", "Eine zuverlässige und selbstständige Arbeitsweise"]
 
 
@@ -884,16 +1055,16 @@ def checklist(items):
 
 JOBS_BODY = hero_page(
     "Jobs", "Karriere", "Komm in <em>unser Team.</em>",
-    "Wir suchen Verstärkung: Du bist Fahrlehrer der Klassen A, B und BE und suchst eine neue "
-    "Herausforderung an der Ostseeküste? Prima!",
+    f'{cms("stelle-an", f"Wir suchen Verstärkung: Du bist Fahrlehrer der Klassen {STELLE_KL} und suchst eine neue Herausforderung an der Ostseeküste? Prima!", attrs="" if REDAKTION["stelle"]["aktiv"] else " hidden")}'
+    f'{cms("stelle-aus", "Gerade ist keine Stelle offen. Über eine Initiativbewerbung freuen wir uns trotzdem jederzeit.", attrs=" hidden" if REDAKTION["stelle"]["aktiv"] else "")}',
     media=img("schluessel", "Hand hält einen Autoschlüssel mit grünem Lederanhänger im Innenraum eines Autos",
               SIZES_WIDE, lazy=False)) + f"""
 <section class="section">
   <div class="wrap">
-    <article class="job">
+    <article class="job" data-cms="stelle-an"{"" if REDAKTION["stelle"]["aktiv"] else " hidden"}>
       <div class="section-head">
         <p class="eyebrow rv">Offene Stelle</p>
-        <h2 class="rv rv-d1">Fahrlehrer (w/m/d) – <em>Klassen A, B und BE</em></h2>
+        <h2 class="rv rv-d1">Fahrlehrer (w/m/d) – <em>Klassen {STELLE_KL}</em></h2>
         <p class="lead rv rv-d2">Wir suchen für unser Team Verstärkung. Bei uns schulst du auf modernen Fahrzeugen – in einem Team, das mit Herz und Erfahrung arbeitet.</p>
       </div>
       <div class="grid-2">
@@ -906,8 +1077,13 @@ JOBS_BODY = hero_page(
           {checklist(NEED)}
         </div>
       </div>
-      {facts([("Position", "Fahrlehrer (w/m/d)"), ("Klassen", "A, B und BE"),
+      {facts([("Position", "Fahrlehrer (w/m/d)"), ("Klassen", STELLE_KL),
               ("Standort", f"{STREET}, {CITY}"), ("Bewerbung", "gerne per E-Mail")])}
+    </article>
+    <article class="job-aus card" data-cms="stelle-aus"{" hidden" if REDAKTION["stelle"]["aktiv"] else ""}>
+      <p class="eyebrow">Offene Stellen</p>
+      <h2>Aktuell ist <em>alles besetzt.</em></h2>
+      <p>Du bist Fahrlehrer und möchtest gern bei uns arbeiten? Dann schick uns trotzdem eine kurze Initiativbewerbung per Mail.</p>
     </article>
   </div>
 </section>
@@ -929,8 +1105,8 @@ JOBS_BODY = hero_page(
 
 PAGES["jobs.html"] = page(
     "jobs.html", "jobs", "Jobs: Fahrlehrer (w/m/d)",
-    "Fahrlehrer (w/m/d) für die Klassen A, B und BE gesucht: familiäres Umfeld, humorvolles Team, moderne "
-    "Fahrzeuge, faire Bezahlung. Jetzt per Mail bewerben.",
+    "Karriere bei der Fahrschule Let’s Drive Kiel: Fahrlehrer (w/m/d) gesucht, familiäres Umfeld, humorvolles "
+    "Team, moderne Fahrzeuge. Bewerbung gern per Mail.",
     JOBS_BODY, active="jobs.html")
 
 # ==================================================================
@@ -1019,7 +1195,7 @@ KONTAKT_BODY = hero_page(
 PAGES["kontakt.html"] = page(
     "kontakt.html", "kontakt", "Kontakt &amp; Anfahrt",
     "Kontakt zur Fahrschule Let’s Drive Kiel: Knooper Weg 193, 24118 Kiel · Telefon 0431 86923 · "
-    "Bürozeiten Mo, Mi, Fr 12–16 Uhr, Di, Do 15–19 Uhr.",
+    "Bürozeiten, Kontaktformular und Anfahrt.",
     KONTAKT_BODY, active="kontakt.html")
 
 # ==================================================================
@@ -1064,7 +1240,7 @@ PAGES["impressum.html"] = legal_page(
     IMPRESSUM)
 
 DATENSCHUTZ = f"""    <h2>Auf einen Blick</h2>
-    <p>Diese Website kommt ohne Cookies, ohne Analyse- oder Tracking-Werkzeuge und ohne Werbung aus. Beim Aufruf werden keine Inhalte von Drittanbietern geladen – auch die Schrift liegt auf unserem eigenen Server. Google Maps wird erst geladen, wenn du ausdrücklich darauf klickst.</p>
+    <p>Beim Besuch dieser Website werden keine Cookies gesetzt, und sie kommt ohne Analyse- oder Tracking-Werkzeuge und ohne Werbung aus. Beim Aufruf werden keine Inhalte von Drittanbietern geladen – auch die Schrift liegt auf unserem eigenen Server. Google Maps wird erst geladen, wenn du ausdrücklich darauf klickst.</p>
 
     <h2>Verantwortlicher</h2>
     <p>{FULL}<br>Inhaber: {OWNER}<br>{STREET}<br>{CITY}<br>Telefon: <a href="{TEL_HREF}">{TEL}</a><br>E-Mail: <a href="mailto:{MAIL}">{MAIL}</a></p>
@@ -1083,6 +1259,9 @@ DATENSCHUTZ = f"""    <h2>Auf einen Blick</h2>
     <h2>Links zu Facebook</h2>
     <p>Wir verlinken auf unsere Facebook-Seite. Es handelt sich um einen einfachen Link, kein eingebundenes Plugin: Daten werden erst übertragen, wenn du den Link anklickst und Facebook (Meta Platforms Ireland Ltd.) aufrufst.</p>
 
+    <h2>Redaktionsbereich</h2>
+    <p>Einige Inhalte (zum Beispiel Bürozeiten und Termine) pflegen wir selbst über einen geschützten Redaktionsbereich, der auf unserem Webspace bei IONOS läuft. Nur wenn sich dort eine berechtigte Person von uns anmeldet, wird ein technisch notwendiges Sitzungs-Cookie gesetzt. Es endet mit dem Schließen des Browsers oder nach zwei Stunden ohne Aktivität. Besucher der Website betrifft das nicht. Zum Schutz vor unbefugten Anmeldeversuchen speichern wir nach einem fehlgeschlagenen Versuch einen gekürzten Hashwert der IP-Adresse und löschen ihn nach spätestens 24 Stunden. Rechtsgrundlage ist §&nbsp;25 Abs.&nbsp;2 Nr.&nbsp;2 TDDDG und Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO; unser berechtigtes Interesse liegt im sicheren Betrieb der Website.</p>
+
     <h2>Deine Rechte</h2>
     <p>Du hast das Recht auf Auskunft (Art.&nbsp;15 DSGVO), Berichtigung (Art.&nbsp;16), Löschung (Art.&nbsp;17), Einschränkung der Verarbeitung (Art.&nbsp;18), Datenübertragbarkeit (Art.&nbsp;20) und Widerspruch (Art.&nbsp;21 DSGVO). Eine erteilte Einwilligung kannst du jederzeit widerrufen (Art.&nbsp;7 Abs.&nbsp;3 DSGVO). Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren (Art.&nbsp;77 DSGVO), zum Beispiel beim Unabhängigen Landeszentrum für Datenschutz Schleswig-Holstein (ULD).</p>
 
@@ -1090,8 +1269,8 @@ DATENSCHUTZ = f"""    <h2>Auf einen Blick</h2>
 
 PAGES["datenschutz.html"] = legal_page(
     "datenschutz.html", "datenschutz", "Datenschutzerklärung", "Datenschutz&shy;erklärung",
-    "Datenschutzerklärung der Fahrschule Let’s Drive Kiel: keine Cookies, kein Tracking, selbst gehostete "
-    "Schrift, Google Maps nur nach deinem Klick.",
+    "Datenschutzerklärung der Fahrschule Let’s Drive Kiel: keine Cookies für Besucher, kein Tracking, selbst "
+    "gehostete Schrift, Google Maps nur nach deinem Klick.",
     DATENSCHUTZ)
 
 if AGB_TEXT:
@@ -1112,7 +1291,7 @@ NF_BODY = hero_page(
     {section_head("Vielleicht suchst du", "Beliebte <em>Seiten</em>")}
     <div class="grid-3">
       <a class="card rv rv-d1" href="fahrerlaubnisklassen.html"><h3>Führerscheinklassen</h3><p>Auto, Anhänger und Motorrad im Überblick.</p><span class="link-arrow">Ansehen</span></a>
-      <a class="card rv rv-d2" href="theorieunterricht.html"><h3>Theorieunterricht</h3><p>Dienstags und donnerstags, 19:00&nbsp;Uhr.</p><span class="link-arrow">Ansehen</span></a>
+      <a class="card rv rv-d2" href="theorieunterricht.html"><h3>Theorieunterricht</h3><p>{TH_LANG_GROSS}, {TH_VON}&nbsp;Uhr.</p><span class="link-arrow">Ansehen</span></a>
       <a class="card rv rv-d3" href="kontakt.html"><h3>Kontakt</h3><p>Telefon, E-Mail, Bürozeiten und Anfahrt.</p><span class="link-arrow">Ansehen</span></a>
     </div>
   </div>
@@ -1139,7 +1318,7 @@ def sitemap():
             f"{urls}\n</urlset>\n")
 
 
-ROBOTS = f"User-agent: *\nAllow: /\n\nSitemap: {BASE}sitemap.xml\n"
+ROBOTS = f"User-agent: *\nAllow: /\nDisallow: /verwaltung/\nDisallow: /daten/\n\nSitemap: {BASE}sitemap.xml\n"
 
 # ==================================================================
 # .htaccess (IONOS-Webhosting = Apache)
@@ -1211,6 +1390,7 @@ AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application
 ExpiresActive On
 ExpiresDefault "access plus 1 hour"
 ExpiresByType text/html "access plus 0 seconds"
+ExpiresByType application/json "access plus 0 seconds"
 ExpiresByType text/css "access plus 7 days"
 ExpiresByType application/javascript "access plus 7 days"
 ExpiresByType image/webp "access plus 30 days"
@@ -1229,6 +1409,42 @@ AddType application/manifest+json .webmanifest
 # ==================================================================
 KONTAKT_PHP = (Path(__file__).parent / "kontakt.tpl.php").read_text(encoding="utf-8")
 
+# ==================================================================
+# Redaktion (baukaesten/redaktion-php) einbauen
+# ==================================================================
+REDAKTION_KIT = ROOT / "baukaesten" / "redaktion-php"
+
+
+def redaktion_schreiben():
+    v = SITE / "verwaltung"
+    v.mkdir(exist_ok=True)
+    for f in ["index.html", "redaktion.js", "redaktion.css", "api.php", ".htaccess"]:
+        shutil.copy2(REDAKTION_KIT / "verwaltung" / f, v / f)
+    (v / "schema.json").write_text(json.dumps(SCHEMA, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    for rel in ["daten/.htaccess", "daten/privat/.htaccess", "daten/archiv/.htaccess"]:
+        (SITE / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REDAKTION_KIT / rel, SITE / rel)
+    (SITE / "daten" / "inhalte.standard.json").write_text(
+        json.dumps(REDAKTION, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    shutil.copy2(REDAKTION_KIT / "js" / "cms-kern.js", SITE / "js" / "cms-kern.js")
+    shutil.copy2(Path(__file__).parent / "inhalte_letsdrive.js", SITE / "js" / "inhalte.js")
+
+
+# Was nie ins Kunden-ZIP darf: gespeicherte Inhalte, Zugang, Archiv (sonst überschreibt ein Update Kundendaten)
+ZIP_AUSSCHLUSS = ("daten/inhalte.json", "daten/privat/zugang.php", "daten/privat/einrichtungscode.php",
+                  "daten/privat/sperre.json", "daten/.schreibsperre")
+
+
+def zip_bauen(ziel):
+    import zipfile
+    with zipfile.ZipFile(ziel, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+        for f in sorted(SITE.rglob("*")):
+            rel = f.relative_to(SITE).as_posix()
+            if f.is_dir() or rel in ZIP_AUSSCHLUSS or rel.startswith("daten/archiv/inhalte-") or ".tmp-" in rel:
+                continue
+            z.write(f, "lets-drive-kiel/" + rel)
+    return ziel
+
 
 if __name__ == "__main__":
     SITE.mkdir(parents=True, exist_ok=True)
@@ -1240,6 +1456,11 @@ if __name__ == "__main__":
     (SITE / ".htaccess").write_text(htaccess(), encoding="utf-8")
     (SITE / "kontakt.php").write_text(
         KONTAKT_PHP.replace("__MAIL__", MAIL).replace("__HOST__", HOST), encoding="utf-8")
+    redaktion_schreiben()
     if not AGB_TEXT and (SITE / "agb.html").exists():
         (SITE / "agb.html").unlink()            # AGB-Seite erst mit Text veröffentlichen
-    print("wrote sitemap.xml, robots.txt, .htaccess, kontakt.php →", SITE)
+    print("wrote sitemap.xml, robots.txt, .htaccess, kontakt.php, Redaktion →", SITE)
+    import sys
+    if "--zip" in sys.argv:
+        z = zip_bauen(ROOT / "auslieferung" / "lets-drive-kiel-website.zip")
+        print(f"ZIP {z.stat().st_size / 1e6:.2f} MB →", z)

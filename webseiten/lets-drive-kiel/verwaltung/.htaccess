@@ -1,0 +1,10 @@
+# Redaktion: nicht in Suchmaschinen, nichts zwischenspeichern, kein Verzeichnislisting
+Options -Indexes
+DirectoryIndex index.html
+
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow"
+  Header always set Cache-Control "no-store"
+  Header always set Referrer-Policy "same-origin"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+</IfModule>

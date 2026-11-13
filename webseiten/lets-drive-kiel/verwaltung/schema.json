@@ -1,0 +1,212 @@
+{
+ "titel": "Let’s Drive Kiel · Redaktion",
+ "akzent": "#0e7a1e",
+ "akzent_dunkel": "#065611",
+ "seite": "index.html",
+ "bereiche": [
+  {
+   "id": "hinweis",
+   "titel": "Hinweis",
+   "kurz": "Urlaub, Schließtage, Neuigkeiten",
+   "seite": "index.html",
+   "hilfe": "Ein kurzer Hinweis oben auf jeder Seite, zum Beispiel „Vom 23.12. bis 2.1. ist das Büro geschlossen.“ Nach dem Anlass einfach wieder ausschalten.",
+   "felder": [
+    {
+     "id": "aktiv",
+     "typ": "schalter",
+     "label": "Hinweis auf der Website anzeigen"
+    },
+    {
+     "id": "text",
+     "typ": "text",
+     "label": "Text",
+     "max": 160,
+     "platzhalter": "Vom 23.12. bis 2.1. ist das Büro geschlossen."
+    },
+    {
+     "id": "link",
+     "typ": "auswahl",
+     "label": "Link (optional)",
+     "optionen": [
+      [
+       "",
+       "Kein Link"
+      ],
+      [
+       "kontakt.html",
+       "Kontakt"
+      ],
+      [
+       "theorieunterricht.html",
+       "Theorieunterricht"
+      ],
+      [
+       "theorieunterricht.html#motorrad-termine",
+       "Motorrad-Termine"
+      ],
+      [
+       "fahrerlaubnisklassen.html",
+       "Führerscheinklassen"
+      ],
+      [
+       "jobs.html",
+       "Jobs"
+      ],
+      [
+       "tel:+4943186923",
+       "Anrufen"
+      ]
+     ]
+    },
+    {
+     "id": "link_text",
+     "typ": "text",
+     "label": "Linktext",
+     "max": 40,
+     "platzhalter": "Mehr erfahren"
+    }
+   ]
+  },
+  {
+   "id": "buerozeiten",
+   "typ": "liste",
+   "titel": "Bürozeiten",
+   "kurz": "Beratung und Anmeldung",
+   "eintrag": "Zeitraum",
+   "max": 7,
+   "titelfelder": [
+    "tage"
+   ],
+   "seite": "kontakt.html",
+   "hilfe": "Eine Zeile je Zeitraum. Tage ohne Zeile gelten als geschlossen. Die Anzeige „Jetzt geöffnet“ rechnet automatisch mit.",
+   "neu": {
+    "tage": [],
+    "von": "12:00",
+    "bis": "16:00"
+   },
+   "felder": [
+    {
+     "id": "tage",
+     "typ": "wochentage",
+     "label": "Tage",
+     "pflicht": true
+    },
+    {
+     "id": "von",
+     "typ": "uhrzeit",
+     "label": "Von",
+     "pflicht": true
+    },
+    {
+     "id": "bis",
+     "typ": "uhrzeit",
+     "label": "Bis",
+     "pflicht": true
+    }
+   ]
+  },
+  {
+   "id": "theorie",
+   "titel": "Theorieunterricht",
+   "kurz": "Tage und Uhrzeit",
+   "seite": "theorieunterricht.html",
+   "hilfe": "Gilt überall auf der Website: Startseite, Theorie-Seite und Ablauf.",
+   "felder": [
+    {
+     "id": "tage",
+     "typ": "wochentage",
+     "label": "Tage",
+     "pflicht": true
+    },
+    {
+     "id": "von",
+     "typ": "uhrzeit",
+     "label": "Beginn",
+     "pflicht": true
+    },
+    {
+     "id": "bis",
+     "typ": "uhrzeit",
+     "label": "Ende",
+     "pflicht": true
+    },
+    {
+     "id": "hinweis",
+     "typ": "text",
+     "label": "Zusatzhinweis (optional)",
+     "max": 160,
+     "platzhalter": "In den Herbstferien findet kein Unterricht statt."
+    }
+   ]
+  },
+  {
+   "id": "motorrad",
+   "typ": "liste",
+   "titel": "Motorrad-Theorie",
+   "kurz": "Termine der A-Lektionen",
+   "eintrag": "Termin",
+   "max": 20,
+   "sortieren": "datum",
+   "titelfelder": [
+    "datum",
+    "titel"
+   ],
+   "seite": "theorieunterricht.html#motorrad-termine",
+   "hilfe": "Termine für die motorradspezifischen Lektionen. Vergangene Termine verschwinden auf der Website von selbst.",
+   "leer": "Noch keine Termine. Die Website sagt dann, dass die Termine bekannt gegeben werden.",
+   "neu": {
+    "von": "19:00",
+    "bis": "20:30"
+   },
+   "felder": [
+    {
+     "id": "datum",
+     "typ": "datum",
+     "label": "Datum",
+     "pflicht": true
+    },
+    {
+     "id": "von",
+     "typ": "uhrzeit",
+     "label": "Beginn",
+     "pflicht": true
+    },
+    {
+     "id": "bis",
+     "typ": "uhrzeit",
+     "label": "Ende",
+     "pflicht": true
+    },
+    {
+     "id": "titel",
+     "typ": "text",
+     "label": "Inhalt (optional)",
+     "max": 60,
+     "platzhalter": "Lektion 15 und 16"
+    }
+   ]
+  },
+  {
+   "id": "stelle",
+   "titel": "Stellenanzeige",
+   "kurz": "Fahrlehrer gesucht",
+   "seite": "jobs.html",
+   "hilfe": "Ausgeschaltet zeigt die Jobs-Seite, dass gerade keine Stelle offen ist, und lädt zur Initiativbewerbung ein.",
+   "felder": [
+    {
+     "id": "aktiv",
+     "typ": "schalter",
+     "label": "Stelle ist offen"
+    },
+    {
+     "id": "klassen",
+     "typ": "text",
+     "label": "Gesuchte Fahrlehrerlaubnis (Klassen)",
+     "max": 40,
+     "pflicht": true,
+     "platzhalter": "A, B und BE"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+
+# Redaktion (redaktion-php): Laufzeitdaten aus lokalen Tests nie committen
+webseiten/*/daten/inhalte.json
+webseiten/*/daten/privat/*.php
+webseiten/*/daten/privat/sperre.json
+webseiten/*/daten/archiv/*.json
+webseiten/*/daten/.schreibsperre

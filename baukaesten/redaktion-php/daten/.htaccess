@@ -1,6 +1,14 @@
 # Inhalte der Redaktion: nur die beiden Inhaltsdateien sind öffentlich lesbar, alles andere bleibt zu.
 Options -Indexes
 
+# Noch nichts gespeichert? Dann die Grundfassung ausliefern statt 404 (saubere Browser-Konsole)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteOptions Inherit
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^inhalte\.json$ inhalte.standard.json [L]
+</IfModule>
+
 <IfModule mod_authz_core.c>
   Require all denied
   <FilesMatch "^inhalte(\.standard)?\.json$">
@@ -16,6 +24,9 @@ Options -Indexes
   </FilesMatch>
 </IfModule>
 
+<IfModule mod_expires.c>
+  ExpiresActive Off
+</IfModule>
 <IfModule mod_headers.c>
   <FilesMatch "\.json$">
     Header set Cache-Control "no-cache"

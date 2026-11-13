@@ -123,6 +123,14 @@ function fehlversuch(string $datei): void {
     schreibe_atomar($datei, json_encode($s));
     sleep(1);
 }
+function bereinige_sperre(string $datei, bool $auchEigene = false): void {
+    if (!is_file($datei)) return;
+    $s = lese_json($datei) ?? [];
+    $vorher = count($s);
+    foreach ($s as $k => $v) if (time() - ($v['seit'] ?? 0) > 86400 || ($auchEigene && $k === ip_schluessel())) unset($s[$k]);
+    if (!$s) { @unlink($datei); return; }
+    if (count($s) !== $vorher) schreibe_atomar($datei, json_encode($s));
+}
 function einrichtungscode(string $datei): string {
     if (is_file($datei)) { $c = include $datei; if (is_string($c) && $c !== '') return $c; }
     $z = strtoupper(bin2hex(random_bytes(4)));
@@ -180,6 +188,9 @@ function pruefe_objekt(array $felder, $obj, string $wo): array {
     if (!is_array($obj)) throw new RuntimeException("$wo: ungültige Daten.");
     $raus = [];
     foreach ($felder as $f) $raus[$f['id']] = pruefe_feld($f, $obj[$f['id']] ?? null, $wo);
+    // Konvention: Felder „von“ und „bis“ (Uhrzeit) müssen eine sinnvolle Spanne bilden
+    if (!empty($raus['von']) && !empty($raus['bis']) && is_string($raus['von']) && is_string($raus['bis']) && $raus['bis'] <= $raus['von'])
+        throw new RuntimeException("$wo: Das Ende ({$raus['bis']}) muss nach dem Beginn ({$raus['von']}) liegen.");
     return $raus;
 }
 function pruefe_inhalte(array $schema, $inhalte): array {
@@ -201,6 +212,7 @@ function pruefe_inhalte(array $schema, $inhalte): array {
 
 /* ---------- Aktionen ---------- */
 ordner($PRIVAT);
+bereinige_sperre($SPERRE);
 $eingerichtet = zugang_hash($ZUGANG) !== null;
 
 if ($aktion === 'status') {
@@ -228,6 +240,7 @@ if ($aktion === 'anmelden') {
     if (!$eingerichtet) fehler(409, 'Die Redaktion ist noch nicht eingerichtet.');
     if (($w = gesperrt($SPERRE)) > 0) fehler(429, 'Zu viele Versuche. Bitte in ' . ceil($w / 60) . ' Minuten erneut.');
     if (!password_verify((string)($body['passwort'] ?? ''), (string)zugang_hash($ZUGANG))) { fehlversuch($SPERRE); fehler(403, 'Das Passwort stimmt nicht.'); }
+    bereinige_sperre($SPERRE, true);
     session_regenerate_id(true);
     $_SESSION['an'] = true; $_SESSION['zuletzt'] = time(); $_SESSION['csrf'] = bin2hex(random_bytes(24));
     antwort(200, ['ok' => true, 'csrf' => $_SESSION['csrf']]);

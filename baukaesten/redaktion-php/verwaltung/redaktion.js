@@ -88,6 +88,10 @@
         return { ok: false, fehler: 'Der Server antwortet nicht wie erwartet (' + r.status + '). Läuft PHP auf dem Webspace?' };
       }).then(function (j) {
         if (j.csrf) csrf = j.csrf;
+        if (r.status === 401 && !wiederholt && (aktion === 'anmelden' || aktion === 'einrichten')) {
+          /* Token veraltet (abgemeldet, Tab lange offen): frisches Token holen, einmal neu versuchen */
+          return api('status').then(function () { return api(aktion, daten, true); });
+        }
         if (r.status === 401 && !wiederholt && !AUTH[aktion] && S.schema) {
           return neuAnmelden().then(function () { return api(aktion, daten, true); });
         }
@@ -400,7 +404,7 @@
       input = el('input', { type: 'text', id: id, maxlength: String(max), autocomplete: 'off' });
       input.value = wert || '';
       input.addEventListener('input', function () { setzeWert(input.value); });
-      if (max > 60) klasse += ' voll';
+      if (max > 30) klasse += ' voll';
     }
     if (f.platzhalter) input.placeholder = f.platzhalter;
     if (f.pflicht) input.required = true;
@@ -430,9 +434,28 @@
     });
   }
 
+  /* Konvention wie in api.php: „von“ und „bis“ müssen eine sinnvolle Spanne bilden */
+  function pruefeZeiten() {
+    var fehlerText = '';
+    S.schema.bereiche.some(function (b) {
+      if (!feldDef(b, 'von') || !feldDef(b, 'bis')) return false;
+      var eintraege = b.typ === 'liste' ? (S.inhalte[b.id] || []) : [S.inhalte[b.id] || {}];
+      return eintraege.some(function (e, i) {
+        if (e.von && e.bis && e.bis <= e.von) {
+          fehlerText = b.titel + (b.typ === 'liste' ? ', ' + eintragTitel(b, e, i) : '') + ': Das Ende (' + e.bis + ') muss nach dem Beginn (' + e.von + ') liegen.';
+          return true;
+        }
+        return false;
+      });
+    });
+    return fehlerText;
+  }
+
   var speichertGerade = false;
   function speichern() {
     if (!offen() || speichertGerade) return;
+    var problem = pruefeZeiten();
+    if (problem) { toast(problem, true); return; }
     speichertGerade = true;
     sortiereListen();
     ui.speichern.disabled = true;
@@ -568,8 +591,8 @@
     api('abmelden', {}).catch(function () {}).then(function () {
       S.inhalte = null;
       ui = {};
-      zeigeAnmelden();
-    });
+      return api('status').catch(function () {});
+    }).then(zeigeAnmelden);
   }
 
   /* ---------- Tastatur, Verlassen, Start ---------- */

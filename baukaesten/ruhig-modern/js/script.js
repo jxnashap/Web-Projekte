@@ -192,6 +192,8 @@
     };
     update();
     setInterval(update, 60000);
+    /* Redaktion (cms-kern.js) hat Zeiten getauscht → sofort neu rechnen */
+    d.addEventListener('cms:geladen', update);
   });
 
   /* ---- Kontaktformular: Prüfung → Versand über kontakt.php, sonst vorbereitete E-Mail ---- */
