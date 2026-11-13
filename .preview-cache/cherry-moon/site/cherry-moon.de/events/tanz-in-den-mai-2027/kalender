@@ -1,0 +1,24 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Bywater GmbH//Cherry Moon//DE
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:cmv9unjex00dfdw43860aes1n@cherry-moon
+DTSTAMP:20261106T215128Z
+DTSTART:20270430T210000Z
+DTEND:20270501T020000Z
+SUMMARY:Tanz in den Mai x Cherry Moon
+LOCATION:Alsterinsel\, Alsterufer 1
+DESCRIPTION:Tanz in den Mai Special auf der Alsterinsel: Cherry Moon holt
+  den Mai mitten auf der Alster ab. Ab 23 Uhr House\, Drinks und eine Nac
+ ht bis in den ersten Maimorgen.\n\nhttps://cherry-moon.de/events/tanz-in
+ -den-mai-2027
+URL:https://cherry-moon.de/events/tanz-in-den-mai-2027
+BEGIN:VALARM
+TRIGGER:-PT3H
+ACTION:DISPLAY
+DESCRIPTION:Tanz in den Mai x Cherry Moon — heute Abend
+END:VALARM
+END:VEVENT
+END:VCALENDAR
