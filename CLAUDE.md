@@ -14,7 +14,7 @@ Repo für alle Website-Projekte. Struktur:
 - `webseiten/lets-drive-kiel/` – Fahrschule Let's Drive Kiel (Ruhig-Modern, Anthrazit
   #151414/Fahrschul-Grün #139d27/Off-White, Manrope selbst gehostet, 0 Fremd-Requests,
   Original-Logo vektorisiert (hell/dunkel + „L"-Favicon), IONOS-fertig mit .htaccess +
-  kontakt.php, 1,6 MB) · Branch `claude/lets-drive-kiel` (vorher `claude/tender-edison-vwar5s`) ·
+  kontakt.php, 1,6 MB) · PR #12, Branch `claude/lets-drive-kiel` (vorher `claude/tender-edison-vwar5s`) ·
   Upload: `auslieferung/lets-drive-kiel-IONOS-Anleitung.md`. Mit PHP-Redaktion unter `/verwaltung/`
   (Hinweis, Bürozeiten, Theorie, Motorrad-Termine, Stelle); Grundfassung = `REDAKTION` im Generator,
   ZIP per `build_letsdrive.py --zip` (ohne Kundendaten).
