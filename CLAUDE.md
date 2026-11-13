@@ -14,7 +14,10 @@ Repo für alle Website-Projekte. Struktur:
 - `webseiten/lets-drive-kiel/` – Fahrschule Let's Drive Kiel (Ruhig-Modern, Anthrazit
   #151414/Fahrschul-Grün #139d27/Off-White, Manrope selbst gehostet, 0 Fremd-Requests,
   Original-Logo vektorisiert (hell/dunkel + „L"-Favicon), IONOS-fertig mit .htaccess +
-  kontakt.php, 1,6 MB) · Branch `claude/tender-edison-vwar5s` · Upload: `auslieferung/lets-drive-kiel-IONOS-Anleitung.md`
+  kontakt.php, 1,6 MB) · Branch `claude/lets-drive-kiel` (vorher `claude/tender-edison-vwar5s`) ·
+  Upload: `auslieferung/lets-drive-kiel-IONOS-Anleitung.md`. Mit PHP-Redaktion unter `/verwaltung/`
+  (Hinweis, Bürozeiten, Theorie, Motorrad-Termine, Stelle); Grundfassung = `REDAKTION` im Generator,
+  ZIP per `build_letsdrive.py --zip` (ohne Kundendaten).
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
@@ -37,6 +40,10 @@ ihren ursprünglichen Branches (PR #1/#2).
   (Font lokal, Maps per 2-Klick), WCAG-AA-Kontraste. QA-Tool `tools/shot.js` meldet
   zusätzlich Fremd-Hosts + Gesamtgröße. Logo-Pipeline `generatoren/trace_logo.py`
   (JPG-Logo → SVG hell/dunkel/Icon) + `tools/render_brand.js`. Erstes Projekt: lets-drive-kiel.
+- `baukaesten/redaktion-php/` – Kunde pflegt Inhalte selbst auf normalem Webspace mit PHP
+  (IONOS, STRATO …), ohne Datenbank und Zusatzkosten. `schema.json` beschreibt Bereiche und
+  Felder, die Oberfläche baut die Formulare selbst (Live-Vorschau, Archiv, Einrichtungscode
+  statt Standardpasswort). Gegenstück für Vercel: Supabase-Redaktion des SSV. README dort.
 
 ## Arbeitsweise
 - Pro Projekt ein Branch `claude/<projekt>` + ein PR; Auslieferung als ZIP nach `auslieferung/`.
@@ -46,3 +53,9 @@ ihren ursprünglichen Branches (PR #1/#2).
 - Recherche-Regeln: nur belegte Fakten verwenden, Unbelegtes als `[PLATZHALTER]`
   markieren; Design-Referenzen inspirieren, werden aber nie kopiert.
 - QA immer über die Screenshot-Tools der Baukästen (Reveal-Zählung muss n/n sein).
+- Ablauf und Vorlagen stehen in der Memory-Vault (privates Repo `jxnashap/Memory`):
+  Playbook `procedural/website-projekt-2-tage.md`, Vorlagen in `03 - InnoWeb/Prozess/`
+  (Kunden-Fragebogen, Kunden-Uebergabe, Domain-verbinden, Redaktion-Baustein).
+  **Nach jedem Projekt** neue Lehren in `03 - InnoWeb/Prozess/Erkenntnisse.md`
+  nachtragen und das Projekt in `semantic/projects/innoweb.md` vermerken
+  (Vault-Commits direkt auf `main`). Keine Passwörter in Repo oder Vault.

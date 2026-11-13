@@ -1,6 +1,8 @@
 # Let's Drive Kiel – neue Website bei IONOS veröffentlichen
 
-Stand: 10.11.2026 · Paket: `auslieferung/lets-drive-kiel-website.zip` (≈ 1,5 MB)
+Stand: 13.11.2026 · Paket: `auslieferung/lets-drive-kiel-website.zip` (≈ 1,5 MB)
+Neu: **Redaktion** unter `/verwaltung/` (Schritt 3b) für Hinweis, Bürozeiten,
+Theoriezeiten, Motorrad-Termine und Stellenanzeige.
 
 ## Wichtig vorab
 
@@ -31,7 +33,7 @@ bei IONOS. Es wird nur umgestellt, *wohin* die Domain zeigt.
 3. Die ZIP-Datei markieren → **Entpacken**. Es entsteht der Ordner
    **`/lets-drive-kiel/`**. Die ZIP-Datei danach löschen.
 4. Kontrolle: Im Ordner liegen u. a. `index.html`, `kontakt.php`, `css/`, `js/`,
-   `assets/` und die versteckte Datei **`.htaccess`** (ggf. „versteckte Dateien
+   `assets/`, `verwaltung/`, `daten/` und die versteckte Datei **`.htaccess`** (ggf. „versteckte Dateien
    anzeigen" einschalten). Ohne `.htaccess` fehlen Weiterleitungen und HTTPS-Zwang.
 
 *Alternative:* per SFTP (z. B. FileZilla) den **Inhalt** des Ordners
@@ -68,6 +70,30 @@ IONOS-Hilfe „Domain ist im falschen Vertrag" oder kurz beim IONOS-Support anru
       `info@lets-drive-kiel.de` ankommen (Absender „Website Let's Drive Kiel",
       „Antworten" geht direkt an die Person aus dem Formular).
 - [ ] Eine nicht vorhandene Adresse (z. B. `…/test123`) zeigt die eigene 404-Seite.
+- [ ] `…/daten/privat/` und `…/daten/archiv/` zeigen **„Forbidden“** (Schutz greift).
+
+## Schritt 3b · Redaktion einrichten (5 Minuten, am besten gemeinsam mit dem Kunden)
+
+Der Kunde legt sein Passwort **selbst** fest. Es steht nirgends, auch nicht bei uns.
+
+1. `https://www.lets-drive-kiel.de/verwaltung/` aufrufen. Es erscheint
+   „Redaktion einrichten“ und fragt nach einem **Einrichtungscode**.
+2. Den Code holen: im **Webspace Explorer** den Ordner
+   `/lets-drive-kiel/daten/privat/` öffnen, Datei **`einrichtungscode.php`**
+   herunterladen und mit einem Texteditor öffnen. Oben steht
+   `// Einrichtungscode für die Redaktion: XXXX-XXXX`.
+   (Die Datei entsteht erst beim ersten Aufruf von `/verwaltung/`.)
+3. Code eintragen, eigenes Passwort festlegen (mindestens 10 Zeichen) →
+   **Redaktion einrichten**. Die Code-Datei löscht sich dabei selbst.
+4. Kurzer Rundgang: links die fünf Bereiche, in der Mitte das Formular, rechts die
+   Vorschau mit den ungespeicherten Änderungen. Erst **Speichern** macht sie live.
+   **Ältere Fassungen** holt einen früheren Stand zurück (die letzten 30).
+5. Test: Hinweis einschalten, Text eingeben, speichern, Website neu laden →
+   Hinweis steht oben. Danach wieder ausschalten und speichern.
+
+**Passwort vergessen?** Im Webspace Explorer `daten/privat/zugang.php` löschen,
+dann `/verwaltung/` aufrufen: ein neuer Einrichtungscode entsteht, weiter ab Punkt 2.
+Die Inhalte bleiben dabei erhalten.
 
 ## Schritt 4 · Abschließen
 
@@ -88,9 +114,21 @@ IONOS-Hilfe „Domain ist im falschen Vertrag" oder kurz beim IONOS-Support anru
 | „500 Internal Server Error" | `.htaccess` im Webspace Explorer in `htaccess.txt` umbenennen → Seite lädt wieder (dann ohne Weiterleitungen). Bitte melden. |
 | Formular-Nachricht kommt nicht an | Postfach `info@lets-drive-kiel.de` im IONOS-Konto prüfen (muss existieren), Spam-Ordner prüfen. Besucher sehen in dem Fall automatisch die E-Mail-Variante. |
 | Zurück zur alten Seite | Domain unter Domains & SSL wieder mit MyWebsite Now verbinden. |
+| Redaktion: „Der Server antwortet nicht wie erwartet … Läuft PHP?“ | Im Webhosting-Paket PHP aktivieren (Hosting → PHP-Einstellungen, Version 8.x). |
+| Redaktion: „Speichern auf dem Server nicht möglich“ | Im Webspace Explorer beim Ordner `daten/` die Rechte prüfen: Schreiben für den Besitzer erlaubt (755). |
+| Redaktion: „Zu viele Versuche“ | Nach 5 falschen Passwörtern ist die Anmeldung 15 Minuten gesperrt. Abwarten. |
+| Änderung erscheint nicht | Seite neu laden (Strg + F5). Im Zweifel in der Redaktion prüfen, ob „Alles gespeichert“ unten steht. |
 
 ## Später ändern
 
-Inhalte werden im Repo über `baukaesten/ruhig-modern/generatoren/build_letsdrive.py`
-gepflegt. Danach nur die geänderten Dateien erneut hochladen (überschreiben).
+**Was der Kunde selbst ändert** (Redaktion): Hinweis oben auf jeder Seite,
+Bürozeiten (inkl. „Jetzt geöffnet“ und Google-Daten), Tage und Uhrzeit des
+Theorieunterrichts, Motorrad-Termine, Stellenanzeige an/aus.
+
+**Alles andere** wird im Repo über `baukaesten/ruhig-modern/generatoren/build_letsdrive.py`
+gepflegt. Neues ZIP: `python3 baukaesten/ruhig-modern/generatoren/build_letsdrive.py --zip`.
+Das ZIP enthält **keine** gespeicherten Inhalte und keinen Zugang, ein erneutes
+Entpacken über den alten Ordner überschreibt also nichts vom Kunden.
+**Wichtig:** Beim Update den Ordner `daten/` **nie löschen**, nur überschreiben lassen.
+Dauerhaft geänderte Bürozeiten zusätzlich im Google-Unternehmensprofil eintragen.
 **AGB:** Sobald der Text vorliegt, wird die AGB-Seite eingeschaltet (`AGB_TEXT`).
