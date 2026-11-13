@@ -1,0 +1,64 @@
+# Let's Drive Kiel – Apache-Konfiguration (IONOS Webhosting)
+# Erzeugt von build_letsdrive.py – Änderungen dort vornehmen.
+
+Options -Indexes
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# 1) Immer HTTPS (mehrfach abgesichert, kein Schleifenrisiko hinter Proxys)
+RewriteCond %{HTTPS} !=on
+RewriteCond %{SERVER_PORT} !=443
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# 2) Ohne www → mit www (wie Canonical-URLs)
+RewriteCond %{HTTP_HOST} ^lets-drive-kiel[.]de$ [NC]
+RewriteRule ^ https://www.lets-drive-kiel.de%{REQUEST_URI} [R=301,L]
+
+# 3) Alte Adressen der bisherigen Website
+RewriteRule ^kontakt/?$ https://www.lets-drive-kiel.de/kontakt.html [R=301,L,NE]
+RewriteRule ^fahrerlaubnisklassen/?$ https://www.lets-drive-kiel.de/fahrerlaubnisklassen.html [R=301,L,NE]
+RewriteRule ^theorieunterricht/?$ https://www.lets-drive-kiel.de/theorieunterricht.html [R=301,L,NE]
+RewriteRule ^jobs/?$ https://www.lets-drive-kiel.de/jobs.html [R=301,L,NE]
+RewriteRule ^impressum/?$ https://www.lets-drive-kiel.de/impressum.html [R=301,L,NE]
+RewriteRule ^datenschutzerklarung/?$ https://www.lets-drive-kiel.de/datenschutz.html [R=301,L,NE]
+RewriteRule ^preisliste/?$ https://www.lets-drive-kiel.de/fahrerlaubnisklassen.html#preise [R=301,L,NE]
+RewriteRule ^landingpage/?$ https://www.lets-drive-kiel.de/ [R=301,L,NE]
+# AGB-Seite folgt – bis dahin vorübergehend zur Kontaktseite
+RewriteRule ^agb/?$ https://www.lets-drive-kiel.de/kontakt.html [R=302,L]
+RewriteRule ^wp-sitemap.*\.xml$ https://www.lets-drive-kiel.de/sitemap.xml [R=301,L]
+RewriteRule ^(feed|comments/feed|wp-json|wp-content|wp-includes|wp-admin|wp-login\.php|xmlrpc\.php)(/.*)?$ - [G,L]
+</IfModule>
+
+# Sicherheit
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+</IfModule>
+
+# Kompression
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json application/xml application/manifest+json image/svg+xml
+</IfModule>
+
+# Caching (Dateinamen ohne Versionsnummer → moderate Zeiten)
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresDefault "access plus 1 hour"
+ExpiresByType text/html "access plus 0 seconds"
+ExpiresByType application/json "access plus 0 seconds"
+ExpiresByType text/css "access plus 7 days"
+ExpiresByType application/javascript "access plus 7 days"
+ExpiresByType image/webp "access plus 30 days"
+ExpiresByType image/jpeg "access plus 30 days"
+ExpiresByType image/png "access plus 30 days"
+ExpiresByType image/svg+xml "access plus 30 days"
+ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+AddType font/woff2 .woff2
+AddType application/manifest+json .webmanifest

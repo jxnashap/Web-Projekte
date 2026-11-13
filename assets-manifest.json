@@ -1,16 +1,10 @@
 [
-  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260729_181717_8a62b96d-73b2-4c70-a566-7680ade24bd5.mp4", "path": ".preview-cache/mia-assets/hero-video.mp4" },
-  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260729_181735_bae7f0f9-7829-452f-9a61-f740d2fb1a67.mp4", "path": ".preview-cache/mia-assets/strand-video.mp4" },
-  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260729_181759_039b7900-ccc2-487f-8a01-00fb32b58a0c.png", "path": ".preview-cache/mia-assets/papier-still.png" },
-  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20260729_181802_789b2017-362e-4ed9-86a4-4fb9247605d0.png", "path": ".preview-cache/mia-assets/modern-still.png" },
-  { "url": "https://myimmoapp.de/landing/dashboard.webp", "path": ".preview-cache/mia-assets/app-dashboard.webp" },
-  { "url": "https://myimmoapp.de/landing/mieterportal.webp", "path": ".preview-cache/mia-assets/app-mieterportal.webp" },
-  { "url": "https://myimmoapp.de/landing/steuer.webp", "path": ".preview-cache/mia-assets/app-steuer.webp" },
-  { "url": "https://myimmoapp.de/landing/immobilien.webp", "path": ".preview-cache/mia-assets/app-immobilien.webp" },
-  { "url": "https://myimmoapp.de/landing/banking.webp", "path": ".preview-cache/mia-assets/app-banking.webp" },
-  { "url": "https://myimmoapp.de/landing/termine.webp", "path": ".preview-cache/mia-assets/app-termine.webp" },
-  { "url": "https://myimmoapp.de/icon.svg?715329b45b300188", "path": ".preview-cache/mia-assets/icon.svg" },
-  { "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces%5Bopsz,SOFT,WONK,wght%5D.ttf", "path": ".preview-cache/fonts/Fraunces.ttf" },
-  { "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces-Italic%5Bopsz,SOFT,WONK,wght%5D.ttf", "path": ".preview-cache/fonts/Fraunces-Italic.ttf" },
-  { "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/outfit/Outfit%5Bwght%5D.ttf", "path": ".preview-cache/fonts/Outfit.ttf" }
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011126_6987585a-ec40-484e-b692-cdade6612a2e.png", "path": ".preview-cache/ldk-assets/hf-hero.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011024_f16e3d1e-e9e5-4570-aa7b-7b87a9c5a91c.png", "path": ".preview-cache/ldk-assets/hf-theorie.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011125_4585cc51-3b9d-4aea-9334-469bb88bcf3f.png", "path": ".preview-cache/ldk-assets/hf-fahrstunde.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011024_f7f812dd-390b-4d1b-8929-e8ac2df39ff2.png", "path": ".preview-cache/ldk-assets/hf-motorrad.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011024_9adda808-03cf-4fe5-96a9-29a56c0e9d16.png", "path": ".preview-cache/ldk-assets/hf-anhaenger.png" },
+  { "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3FdVYzs9syuCDaylaFJg4376uxW/hf_20261026_011024_0e6f8213-85c3-40f0-b95f-e25ba363ddc0.png", "path": ".preview-cache/ldk-assets/hf-schluessel.png" },
+  { "url": "https://www.lets-drive-kiel.de/preisliste/", "path": ".preview-cache/ldk/preisliste.html" },
+  { "url": "https://www.lets-drive-kiel.de/landingpage/", "path": ".preview-cache/ldk/landingpage.html" }
 ]
