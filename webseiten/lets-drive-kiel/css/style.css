@@ -182,7 +182,7 @@ html.js body.nav-open .site-header,html.js body.nav-open.has-dark-hero .site-hea
 
 /* Original-Logo (2000:1050): hell = Originalfarben, dunkel = über Hero/Footer */
 .brand{display:inline-flex;align-items:center;min-height:44px;margin-right:auto}
-.brand-logo{flex:none;display:block;width:auto;height:80px;transform-origin:left center;transition:scale .6s var(--ease)}
+.brand-logo{flex:none;display:block;width:auto;height:72px;transform-origin:left center;transition:scale .6s var(--ease)}
 .brand-logo-dark{display:none}
 html.js body.has-dark-hero .site-header:not(.is-scrolled) .brand-logo-light{display:none}
 html.js body.has-dark-hero .site-header:not(.is-scrolled) .brand-logo-dark{display:block}
@@ -208,7 +208,7 @@ html.js body.has-dark-hero .site-header:not(.is-scrolled) .nav a::after{backgrou
 @media (min-width:961px){
   html.js .site-header.is-scrolled{transform:translateY(calc(var(--header-h-s) - var(--header-h)))}
   html.js .site-header.is-scrolled .header-in{transform:translateY(calc((var(--header-h) - var(--header-h-s))/2))}
-  html.js .site-header.is-scrolled .brand-logo{scale:.76}
+  html.js .site-header.is-scrolled .brand-logo{scale:.8}
 }
 
 /* Menü-Knopf */
@@ -552,7 +552,7 @@ html:not(.js) .tabs{display:none}
 /* ---------- 17 · Footer ---------- */
 .site-footer{padding-top:clamp(64px,8vw,104px);font-size:.9375rem}
 .footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px clamp(24px,4vw,56px)}
-.footer-brand .brand-logo{height:100px}
+.footer-brand .brand-logo{height:96px}
 .footer-brand p{max-width:30ch;margin-top:20px;color:var(--muted)}
 .site-footer h2,.site-footer h3,.footer-title{
   margin-bottom:14px;font-size:.8rem;font-weight:700;letter-spacing:.14em;line-height:1.4;
@@ -634,7 +634,7 @@ html:not(.js) .tabs{display:none}
 }
 @media (max-width:960px){
   :root{--header-h:76px;--header-h-s:76px}
-  .brand-logo{height:60px}
+  .brand-logo{height:56px}
   .nav,.header-cta{display:none}
   .menu-toggle{display:inline-flex}
   .scroll-cue{display:none}

@@ -14,7 +14,8 @@ ruhig-modern/
 ├── js/script.js             Header, Mobile-Nav, Reveals, Tabs, Bürozeiten, Formular, Map-Consent
 ├── generatoren/build_letsdrive.py   erzeugt alle Seiten + sitemap.xml + robots.txt + .htaccess + kontakt.php
 ├── generatoren/kontakt.tpl.php      Vorlage Formularversand (PHP mail(), IONOS-tauglich)
-├── generatoren/trace_logo.py        Original-Logo (JPG/PNG) → logo.svg, logo-dark.svg, Icon-SVG
+├── generatoren/trace_logo_dark.py   Logo auf dunklem Grund → logo.svg, logo-dark.svg, Icon-SVG
+├── generatoren/trace_logo.py        Logo auf Weiß → logo.svg, logo-dark.svg, Icon-SVG
 ├── tools/render_brand.js    Favicon-PNG, Touch-/Manifest-Icons, logo.png, og-image.jpg aus den SVGs
 └── tools/shot.js            QA: Screenshots Desktop/Mobil, Reveal-Zählung, Fremd-Host-Check, Größe
 ```
@@ -86,24 +87,29 @@ Noch vom Kunden (Checkliste als Artifact verschickt):
 einer Direktive legt die ganze Seite mit „500" lahm. **Stolperstein IONOS-Mail:** From muss
 eine Adresse der eigenen Vertragsdomain sein (seit 29.01.2024), Besucher-Adresse in Reply-To.
 
-## Original-Logo übernehmen (Logo-Pipeline)
+## Logo übernehmen (Logo-Pipeline)
 
-Kunden-Logos liegen oft nur als kleines JPG vor. `trace_logo.py` vektorisiert sie
-farbschichtweise (Grün- und Dunkelanteil getrennt maskiert, 2× hochskaliert,
-potrace) zu gestochen scharfen SVGs in Originalfarben – ~57 KB, gzip ~19 KB:
+Kunden-Logos liegen oft nur als Pixelbild vor. Zwei Skripte vektorisieren sie
+farbschichtweise (Masken je Farbe, 2× hochskaliert, potrace) zu scharfen SVGs:
+
+| Logo liegt auf … | Skript | Beispiel |
+|---|---|---|
+| **dunklem Grund** | `generatoren/trace_logo_dark.py` | Let's Drive Logo 2026 (Auto + Schriftzug, aktuell im Einsatz) |
+| **Weiß** | `generatoren/trace_logo.py` | bisheriges Let's-Drive-Schreibschrift-Logo (Schwellen logo-spezifisch) |
 
 ```
-pip install potracer numpy pillow
-python3 generatoren/trace_logo.py logo.jpg <site>/assets/img   # logo.svg, logo-dark.svg, logo-icon.svg
+pip install potracer numpy pillow scipy
+python3 generatoren/trace_logo_dark.py logo.png <site>/assets/img   # logo.svg, logo-dark.svg, logo-icon.svg
 mv <site>/assets/img/logo-icon.svg <site>/favicon.svg
-node tools/render_brand.js <site>                                # PNG-Icons, logo.png, og-image.jpg
+node tools/render_brand.js <site>                                     # PNG-Icons, logo.png, og-image.jpg
 ```
 
-- **Hell** (`logo.svg`): Originalfarben – Header auf Papier, Mobilmenü.
-- **Dunkel** (`logo-dark.svg`): wie auf dem Original-Flyer – grüner Schriftzug, dunkel
-  gefüllte Wörter („Kiel", „FAHRSCHULE") hell mit grüner Kontur. Header über dem
-  dunklen Hero + Footer; CSS schaltet über `body.has-dark-hero`/`.is-scrolled`/`nav-open`.
-- **Icon**: einzelner Buchstabe per Flood-Fill isoliert, Strich optisch verstärkt
-  (16–32 px lesbar). Schwellen (`split_y`, `kiel_x`, Startspalte) sind logo-spezifisch.
-- Header 100 px (Logo 80 px, gescrollt ×0,76), mobil 76 px (Logo 60 px): Schreibschrift-
-  Logos brauchen Höhe, sonst wird der dünne Strich unlesbar.
+`trace_logo_dark.py` (Quelle: `.preview-cache/ldk-assets/logo-2026.png`):
+- Ebenen: Akzentgrün (automatisch erkannt, hier `#0afb33`), weiße Kontur, Buchstabenkörper.
+  Punzen (Loch im „e", „D") per **Strahl-Paritätsregel** offen gelassen – Flut-Füllen
+  versagt, weil sich die Konturen benachbarter Buchstaben berühren.
+- **Dunkel** (`logo-dark.svg`, 23 KB): Original-Look – Hero und Footer.
+- **Hell** (`logo.svg`, 18 KB): Buchstaben vollflächig dunkel, grüne Teile mit feiner
+  dunkler Kontur (reines Neongrün ist auf Off-White nicht lesbar) – Header, Mobilmenü.
+- **Icon**: nur das Auto, Strich optisch verstärkt, auf dunklem Quadrat.
+- Header 100 px (Logo 72 px, gescrollt ×0,8), mobil 76 px (Logo 56 px), Footer 96 px.

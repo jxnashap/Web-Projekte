@@ -13,7 +13,7 @@ Repo für alle Website-Projekte. Struktur:
   echte App-Screenshots) · PR #8
 - `webseiten/lets-drive-kiel/` – Fahrschule Let's Drive Kiel (Ruhig-Modern, Anthrazit
   #151414/Fahrschul-Grün #139d27/Off-White, Manrope selbst gehostet, 0 Fremd-Requests,
-  Original-Logo vektorisiert (hell/dunkel + „L"-Favicon), IONOS-fertig mit .htaccess +
+  Logo 2026 (Auto-Motiv) vektorisiert: hell/dunkel + Auto-Favicon, IONOS-fertig mit .htaccess +
   kontakt.php, 1,6 MB) · Branch `claude/tender-edison-vwar5s` · Upload: `auslieferung/lets-drive-kiel-IONOS-Anleitung.md`
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
@@ -35,8 +35,8 @@ ihren ursprünglichen Branches (PR #1/#2).
 - `baukaesten/ruhig-modern/` – helle, ruhige Dienstleister-Bauweise (eine Akzentfarbe,
   eine Schrift, Weißraum, dezente Reveals), DSGVO-sauber ohne externe Requests
   (Font lokal, Maps per 2-Klick), WCAG-AA-Kontraste. QA-Tool `tools/shot.js` meldet
-  zusätzlich Fremd-Hosts + Gesamtgröße. Logo-Pipeline `generatoren/trace_logo.py`
-  (JPG-Logo → SVG hell/dunkel/Icon) + `tools/render_brand.js`. Erstes Projekt: lets-drive-kiel.
+  zusätzlich Fremd-Hosts + Gesamtgröße. Logo-Pipeline `generatoren/trace_logo_dark.py`
+  (Logo auf Schwarz) bzw. `trace_logo.py` (Logo auf Weiß) → SVG hell/dunkel/Icon + `tools/render_brand.js`. Erstes Projekt: lets-drive-kiel.
 
 ## Arbeitsweise
 - Pro Projekt ein Branch `claude/<projekt>` + ein PR; Auslieferung als ZIP nach `auslieferung/`.

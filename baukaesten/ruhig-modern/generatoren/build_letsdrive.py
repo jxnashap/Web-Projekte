@@ -63,9 +63,9 @@ LEGAL_NAV = [
 # ------------------------------------------------------------------
 # SVG-Bausteine
 # ------------------------------------------------------------------
-# Original-Logo, vektorisiert mit trace_logo.py (Seitenverhältnis 2000:1050):
-# logo.svg = Originalfarben (helle Flächen), logo-dark.svg = für dunkle Flächen
-LOGO_W, LOGO_H = 200, 105
+# Logo 2026 (Auto + Schriftzug), vektorisiert mit trace_logo_dark.py (2000:823):
+# logo.svg = für helle Flächen, logo-dark.svg = Original-Look für dunkle Flächen
+LOGO_W, LOGO_H = 243, 100
 
 # Manrope enthält kein ★ → Sterne als SVG (Vorgabe Integrator)
 STAR = ('<svg class="star" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.3 5.9.9-4.25 '

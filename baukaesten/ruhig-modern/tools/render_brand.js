@@ -37,8 +37,10 @@ const hero = uri(path.join(IMG, 'hero-1600.webp'), 'image/webp');
   await shot(180, 180, full(180), path.join(SITE, 'apple-touch-icon.png'));
   await shot(192, 192, full(192), path.join(IMG, 'icon-192.png'));
   await shot(512, 512, full(512), path.join(IMG, 'icon-512.png'));
-  /* Logo-PNG für JSON-LD (Google verlangt Raster, ≥ 112 px) */
-  await shot(800, 420, `<img src="${logo}" width="800" height="420">`, path.join(IMG, 'logo.png'), { transparent: true });
+  /* Logo-PNG für JSON-LD (Google verlangt Raster, ≥ 112 px); Höhe aus der viewBox */
+  const [, , vw, vh] = fs.readFileSync(path.join(IMG, 'logo.svg'), 'utf8').match(/viewBox="([^"]+)"/)[1].split(/\s+/).map(Number);
+  const lh = Math.round(800 * vh / vw);
+  await shot(800, lh, `<img src="${logo}" width="800" height="${lh}">`, path.join(IMG, 'logo.png'), { transparent: true });
 
   /* Social-Vorschau 1200×630: Hero rechts, dunkler Verlauf links, Original-Logo */
   await shot(1200, 630, `
