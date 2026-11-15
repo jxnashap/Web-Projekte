@@ -65,10 +65,28 @@ Formular (Validierung → `mailto:`), Google-Maps-2-Klick-Lösung, CTA-Band, Foo
 - **SEO lokal:** JSON-LD (`DrivingSchool`/`LocalBusiness`) mit Adresse, Zeiten,
   `sameAs`; sprechende Titles/Descriptions, Canonical, Sitemap, Rechtsseiten `noindex`.
 
+## Fahrschul-Animationen (lets-drive-kiel)
+
+Alle Animationen respektieren `prefers-reduced-motion` (dann Endzustand ohne Bewegung)
+und funktionieren ohne JS als ruhiges Standbild.
+
+| Wo | Was | Technik |
+|---|---|---|
+| Startseite, Hero | 7-s-Videoschleife: Kamera folgt dem Auto an der Förde | Higgsfield Gemini Omni Flash 1.2 (Start- = Endbild = Hero-Still, 26 Cr.), Naht per ffmpeg-`xfade` 1 s; AV1-WebM 1,4 MB + H.264-MP4 2,3 MB (1600×900). Lädt erst nach `load`, nur ≥ 768 px, nicht bei Datensparmodus; pausiert außerhalb des Bildes. Standbild bleibt LCP. |
+| Hero | Scroll-Hinweis als fließende Fahrbahnmarkierung | CSS `repeating-linear-gradient` + `background-position` |
+| „Dein Weg" | Fahrschulauto mit Dachschild fährt beim Scrollen die 4 Stationen ab, Räder drehen mit, erreichte Station wird grün | SVG `FS_CAR`, ein rAF mit Nachlauf (Faktor .1), `.is-reached`; mobil: Station wird beim Erscheinen grün |
+| Klassen-Karten | Auto / Gespann / Motorrad fahren beim Überfahren durch | Linien-SVG `RIDE`, CSS-Keyframes nur bei `hover:hover` |
+| CTA-Band (alle Seiten) | Ampel Rot → Rot-Gelb → Grün (deutsche Folge), danach Impuls am Anruf-Knopf | IntersectionObserver + Klassen |
+| Theorie | Uhr läuft von 19:00 auf 20:30 | SVG-Zeiger, CSS-`transform` beim Reveal |
+
+Video neu erzeugen: Start-/Endbild = Hero-Still, Prompt „tracking shot follows the car
+from behind … keeps the same position in the frame", dann
+`ffmpeg … xfade=transition=fade:duration=1:offset=6` → `libsvtav1 -crf 42` / `libx264 -crf 27`.
+
 ## Projektstand lets-drive-kiel (Übergabe)
 
 QA (`tools/shot.js`): 9 Seiten × Desktop/Mobil – Reveals n/n, 0 Fehler, 0 Fremd-Requests,
-kein Overflow, Ordner 1,6 MB (ZIP in `auslieferung/`).
+kein Overflow, Ordner 5,1 MB inkl. Hero-Video (Desktop-Startseite 1,7 MB, mobil 0,27 MB).
 
 Erledigt ohne Kunden (10.11.2026): Steuernummer korrekt beschriftet, IONOS als Hoster in
 der Datenschutzerklärung, AGB-Seite ausgeblendet bis Text da (`AGB_TEXT`), Kontaktformular

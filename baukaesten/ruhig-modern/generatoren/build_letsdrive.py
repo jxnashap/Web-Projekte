@@ -67,6 +67,54 @@ LEGAL_NAV = [
 # logo.svg = für helle Flächen, logo-dark.svg = Original-Look für dunkle Flächen
 LOGO_W, LOGO_H = 243, 100
 
+# ------------------------------------------------------------------
+# Animations-Bildzeichen (Fahrschul-Motive). Räder in <g class="fs-rot">,
+# damit JS/CSS sie um die eigene Mitte drehen kann.
+# ------------------------------------------------------------------
+def _wheel(x, y, r):
+    return (f'<g transform="translate({x} {y})"><g class="fs-rot"><circle class="fs-tyre" r="{r}"/>'
+            f'<circle class="fs-hub" r="{r * .4:.1f}"/>'
+            f'<path class="fs-spoke" d="M0-{r * .72:.1f}V{r * .72:.1f}M-{r * .62:.1f}-{r * .36:.1f}L{r * .62:.1f} {r * .36:.1f}'
+            f'M-{r * .62:.1f} {r * .36:.1f}L{r * .62:.1f}-{r * .36:.1f}"/></g></g>')
+
+
+# Fahrschulauto (Seitenansicht, fährt nach rechts) mit Dachschild „FAHRSCHULE“
+FS_CAR = (
+    '<svg class="fs-car" viewBox="0 0 76 40" aria-hidden="true" focusable="false">'
+    '<rect class="fs-sign" x="27" y="1" width="22" height="7" rx="1.8"/>'
+    '<path class="fs-sign-txt" d="M30.5 4.5h15"/>'
+    '<rect class="fs-sign-foot" x="36" y="8" width="4" height="2"/>'
+    '<path class="fs-body" d="M5 29.5v-6.2c0-2.2 1.4-3.8 3.6-4.2l9.4-1.8 7.6-6.6c1.3-1.1 2.9-1.7 4.6-1.7h15.6'
+    'c1.9 0 3.6.8 4.9 2.1l6.3 6.4 8.4 1.7c2.5.5 4.1 2.6 4.1 5.1v5.2c0 1-.8 1.8-1.8 1.8H6.8c-1 0-1.8-.8-1.8-1.8z"/>'
+    '<path class="fs-glass" d="M21.5 17.4l6.2-5.3c.8-.7 1.8-1 2.8-1h6.3v6.3zM39.6 11.1h6.8c1.2 0 2.3.5 3.1 1.3l5 5H39.6z"/>'
+    '<rect class="fs-light" x="67" y="21" width="4.5" height="2.6" rx="1"/>'
+    + _wheel(19, 30, 6.2) + _wheel(57, 30, 6.2) + '</svg>')
+
+# Linien-Bildzeichen für die Klassen-Karten (fahren beim Überfahren durch)
+_CAR_LINE = ('M4 19.5v-4c0-1.2.8-2.2 2-2.5l7-1.6 5.6-5c.9-.8 2-1.2 3.2-1.2h12.4c1.4 0 2.6.6 3.5 1.6'
+             'l4.8 4.2 9 1.8c1.7.3 2.9 1.8 2.9 3.5v3.2zM18.5 11.4h24M30 5.6v5.8')
+RIDE = {
+    "auto": ('<svg viewBox="0 0 60 26" aria-hidden="true" focusable="false">'
+             f'<path class="ride-line" d="{_CAR_LINE}"/>' + _wheel(14, 19.5, 4.2) + _wheel(45, 19.5, 4.2) + '</svg>'),
+    "anhaenger": ('<svg viewBox="0 0 96 26" aria-hidden="true" focusable="false">'
+                  '<path class="ride-line" d="M2 7.5h26v11H2zM28 15.5h8"/>'
+                  f'<path class="ride-line" transform="translate(36 0)" d="{_CAR_LINE}"/>'
+                  + _wheel(15, 19.5, 4.2) + _wheel(50, 19.5, 4.2) + _wheel(81, 19.5, 4.2) + '</svg>'),
+    "motorrad": ('<svg viewBox="0 0 60 26" aria-hidden="true" focusable="false">'
+                 '<path class="ride-line" d="M12 19l12-2.5h12l5.5-8.5M41.5 8l6.5 11M17 10.5h11c2 0 3.5-1 5-2.5h6.5M39 5.5l4.5-1.2M24 16.5l-3-6"/>'
+                 + _wheel(12, 19, 6) + _wheel(48, 19, 6) + '</svg>'),
+}
+
+# Uhr für die Theorie-Zeiten: Zeiger laufen von 19:00 auf 20:30
+CLOCK = ('<svg class="clock" viewBox="0 0 48 48" aria-hidden="true" focusable="false">'
+         '<circle cx="24" cy="24" r="21.5"/>'
+         '<path class="clock-ticks" d="M24 5.5v4M42.5 24h-4M24 42.5v-4M5.5 24h4"/>'
+         '<path class="clock-h" d="M24 24V13.5"/><path class="clock-m" d="M24 24V8"/>'
+         '<circle class="clock-dot" cx="24" cy="24" r="2.2"/></svg>')
+
+# Ampel im CTA-Band (Rot → Rot-Gelb → Grün)
+AMPEL = '<span class="ampel" data-ampel aria-hidden="true"><i></i><i></i><i></i></span>'
+
 # Manrope enthält kein ★ → Sterne als SVG (Vorgabe Integrator)
 STAR = ('<svg class="star" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5l2.6 5.3 5.9.9-4.25 '
         '4.1 1 5.85L10 14.9l-5.25 2.75 1-5.85L1.5 7.7l5.9-.9z" fill="currentColor"/></svg>')
@@ -204,9 +252,12 @@ def cta(eyebrow, h2, actions=None):
     return f"""<section class="cta-band section-dark">
   <svg class="cta-road" viewBox="0 0 1440 420" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path data-draw d="M-40 372C220 372 330 150 610 158s430 214 640 118c120-55 170-170 230-226" fill="none"/></svg>
   <div class="wrap cta-in">
-    <div>
-      <p class="eyebrow rv">{eyebrow}</p>
-      <h2 class="rv rv-d1">{h2}</h2>
+    <div class="cta-head">
+      {AMPEL}
+      <div>
+        <p class="eyebrow rv">{eyebrow}</p>
+        <h2 class="rv rv-d1">{h2}</h2>
+      </div>
     </div>
     <div class="cta-actions rv rv-d2">{actions}</div>
   </div>
@@ -425,6 +476,7 @@ CLASS_CARDS = [
     ("klasse-be", "BE", "Anhänger", "BE · B96"),
     ("klasse-a1", "A", "Motorrad", "A1 · A2 · A"),
 ]
+RIDE_OF = {"klasse-b": "auto", "klasse-be": "anhaenger", "klasse-a1": "motorrad"}
 
 STEPS = [
     ("Beratung &amp; Anmeldung",
@@ -456,6 +508,7 @@ class_cards_html = "\n".join(
         <span class="class-badge">{badge}</span>
         <h3>{t}</h3><p>{sub}</p>
         <span class="link-arrow">Mehr erfahren</span>
+        <span class="card-ride">{RIDE[RIDE_OF[cid]]}</span>
       </a>""" for i, (cid, badge, t, sub) in enumerate(CLASS_CARDS))
 
 steps_html = "\n".join(
@@ -472,7 +525,7 @@ quotes_html = "\n".join(
       </figure>""" for i, (q, who) in enumerate(QUOTES))
 
 INDEX_BODY = f"""<section class="hero hero-home">
-  <div class="hero-media"><img src="assets/img/hero-1600.webp" srcset="{HERO_SRCSET}" sizes="100vw" alt="Weißes Auto auf einer Uferstraße an der Förde, im Hintergrund Hafenkräne und Segelmasten" width="2400" height="1350" fetchpriority="high" decoding="async"></div>
+  <div class="hero-media" data-video data-webm="assets/video/hero-loop.webm" data-mp4="assets/video/hero-loop.mp4"><img src="assets/img/hero-1600.webp" srcset="{HERO_SRCSET}" sizes="100vw" alt="Weißes Auto auf einer Uferstraße an der Förde, im Hintergrund Hafenkräne und Segelmasten" width="2400" height="1350" fetchpriority="high" decoding="async"></div>
   <div class="wrap hero-in">
     <p class="eyebrow rv">Fahrschule in Kiel-Ravensberg</p>
     <h1 class="hero-title rv rv-d1">Mehr als nur fahren.<br><em>Wir bringen dich sicher ans Ziel.</em></h1>
@@ -524,6 +577,10 @@ INDEX_BODY = f"""<section class="hero hero-home">
 <section class="section section-alt">
   <div class="wrap">
     {section_head("Dein Weg", "In vier Schritten <em>zum Führerschein</em>")}
+    <div class="drive" data-drive aria-hidden="true">
+      <div class="drive-road"><span class="drive-lane"></span></div>
+      <span class="drive-car">{FS_CAR}</span>
+    </div>
     <ol class="steps">
 {steps_html}
     </ol>
@@ -828,6 +885,7 @@ THEORIE_BODY = hero_page(
       <p class="rv rv-d3">Du kommst einfach zu einem der nächsten Termine in unseren Schulungsraum am Knooper Weg – ganz gleich, mit welcher Lektion es gerade weitergeht.</p>
     </div>
     <div class="schedule card rv rv-d2">
+      {CLOCK}
       <p class="eyebrow">Theorieunterricht</p>
       <p class="schedule-time"><time datetime="19:00">19:00</time> – <time datetime="20:30">20:30</time></p>
       <ul class="day-chips" aria-hidden="true">{days_html}</ul>
@@ -1218,8 +1276,12 @@ ExpiresByType image/jpeg "access plus 30 days"
 ExpiresByType image/png "access plus 30 days"
 ExpiresByType image/svg+xml "access plus 30 days"
 ExpiresByType font/woff2 "access plus 1 year"
+ExpiresByType video/webm "access plus 30 days"
+ExpiresByType video/mp4 "access plus 30 days"
 </IfModule>
 AddType font/woff2 .woff2
+AddType video/webm .webm
+AddType video/mp4 .mp4
 AddType application/manifest+json .webmanifest
 """
 

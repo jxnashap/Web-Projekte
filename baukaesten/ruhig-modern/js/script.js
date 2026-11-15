@@ -307,4 +307,93 @@
 
   /* ---- Jahr im Footer ---- */
   run(() => $$('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); }));
+
+  /* ---- „Dein Weg": Fahrschulauto fährt beim Scrollen die Stationen ab ----
+     Scrollfortschritt der Schritt-Liste → Zielposition; ein rAF glättet den
+     Weg (Nachlauf), die Räder drehen passend zur gefahrenen Strecke. */
+  run(() => $$('[data-drive]').forEach(drive => {
+    const list = drive.nextElementSibling;
+    const car = drive.querySelector('.drive-car');
+    if (!list || !car) return;
+    const steps = $$('.step', list);
+    const wheels = $$('.fs-rot', car);
+    const stops = steps.map(() => {
+      const s = d.createElement('span'); s.className = 'drive-stop'; drive.appendChild(s); return s;
+    });
+    let xs = [], maxX = 0, cur = 0, target = 0, busy = false;
+    const visible = () => drive.offsetParent !== null;
+    const measure = () => {
+      if (!visible()) return;
+      const left = drive.getBoundingClientRect().left;
+      xs = steps.map(st => { const n = st.querySelector('.step-no').getBoundingClientRect(); return n.left + n.width / 2 - left; });
+      stops.forEach((s, i) => { s.style.left = xs[i] + 'px'; });
+      maxX = Math.max(0, xs[xs.length - 1] - car.offsetWidth * 0.86 + 6);   // Front erreicht letzte Station
+    };
+    const paint = () => {
+      busy = false;
+      cur = prm ? target : cur + (target - cur) * 0.1;
+      if (Math.abs(target - cur) < 0.4) cur = target;
+      car.style.transform = 'translate3d(' + cur.toFixed(1) + 'px,0,0)';
+      const r = car.offsetHeight * 6.2 / 40;                                // Radradius in px
+      wheels.forEach(w => { w.style.transform = 'rotate(' + (cur / r * 57.3).toFixed(1) + 'deg)'; });
+      const nose = cur + car.offsetWidth * 0.86;
+      steps.forEach((st, i) => {
+        const on = nose >= xs[i] - 2;
+        st.classList.toggle('is-reached', on);
+        stops[i].classList.toggle('is-on', on);
+      });
+      if (cur !== target) { busy = true; raf(paint); }
+    };
+    const update = () => {
+      if (!visible()) return;
+      const r = list.getBoundingClientRect(), vh = innerHeight;
+      const p = prm ? 1 : Math.min(1, Math.max(0, (vh * 0.9 - r.top) / (vh * 0.6)));
+      target = p * maxX;
+      if (!busy) { busy = true; raf(paint); }
+    };
+    measure(); update();
+    if (!prm) addEventListener('scroll', update, { passive: true });
+    addEventListener('resize', () => { measure(); update(); }, { passive: true });
+    addEventListener('load', () => { measure(); update(); }, { once: true });
+  }));
+
+  /* ---- Ampel im CTA-Band: Rot → Rot-Gelb → Grün, dann ein kurzer Impuls am Knopf ---- */
+  run(() => $$('[data-ampel]').forEach(a => {
+    const band = a.closest('.cta-band');
+    const set = s => { a.classList.remove('is-red', 'is-redyellow', 'is-green'); a.classList.add(s); };
+    const go = () => { set('is-green'); if (band) band.classList.add('is-go'); };
+    if (prm || !('IntersectionObserver' in window)) return go();
+    set('is-red');
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      setTimeout(() => set('is-redyellow'), 1000);
+      setTimeout(go, 1900);
+    }), { threshold: 0.6 });
+    io.observe(a);
+  }));
+
+  /* ---- Hero-Video: erst nach dem Laden, nur ab Tablet-Breite, nicht bei
+     reduzierter Bewegung oder Datensparmodus; pausiert außerhalb des Bildschirms ---- */
+  run(() => $$('.hero-media[data-video]').forEach(box => {
+    const c = navigator.connection;
+    if (prm || innerWidth < 768 || (c && (c.saveData || /(^|-)2g/.test(c.effectiveType || '')))) return;
+    const start = () => {
+      const v = d.createElement('video');
+      v.className = 'hero-video';
+      v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+      v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('aria-hidden', 'true');
+      v.tabIndex = -1;
+      v.src = v.canPlayType('video/webm; codecs="av01.0.08M.08"') ? ga(box, 'data-webm') : ga(box, 'data-mp4');
+      v.addEventListener('playing', () => box.classList.add('has-video'), { once: true });
+      box.appendChild(v);
+      const play = () => { const p = v.play(); if (p && p.catch) p.catch(() => {}); };
+      play();
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(es => es.forEach(e => (e.isIntersecting ? play() : v.pause()))).observe(box);
+      }
+    };
+    if (d.readyState === 'complete') setTimeout(start, 400);
+    else addEventListener('load', () => setTimeout(start, 400), { once: true });
+  }));
 })();

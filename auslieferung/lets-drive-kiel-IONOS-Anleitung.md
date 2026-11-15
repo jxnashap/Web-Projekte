@@ -1,13 +1,13 @@
 # Let's Drive Kiel – neue Website bei IONOS veröffentlichen
 
-Stand: 10.11.2026 · Paket: `auslieferung/lets-drive-kiel-website.zip` (≈ 1,5 MB)
+Stand: 10.11.2026 · Paket: `auslieferung/lets-drive-kiel-website.zip` (≈ 5 MB inkl. Hero-Video)
 
 ## Wichtig vorab
 
 Die bisherige Seite läuft im IONOS-Baukasten **„MyWebsite Now"** (steht so im
 Quelltext der alten Seite). In diesen Baukasten kann man **keine eigenen Dateien
 hochladen**. Die neue Seite braucht deshalb ein **IONOS-Webhosting-Paket**
-(Webspace mit PHP – das kleinste Paket reicht, die Seite hat 1,6 MB).
+(Webspace mit PHP – das kleinste Paket reicht, die Seite hat rund 5 MB).
 
 Domain `lets-drive-kiel.de` und das Postfach `info@lets-drive-kiel.de` bleiben
 bei IONOS. Es wird nur umgestellt, *wohin* die Domain zeigt.
@@ -27,7 +27,7 @@ bei IONOS. Es wird nur umgestellt, *wohin* die Domain zeigt.
    **„Webspace nutzen"** klicken. Der Webspace Explorer öffnet sich.
 2. Links das Hauptverzeichnis **/** wählen → **Hochladen** →
    `lets-drive-kiel-website.zip` auswählen → **Hochladen**
-   (Limit im Explorer: 50 MB, die Datei hat 1,5 MB).
+   (Limit im Explorer: 50 MB, die Datei hat rund 5 MB).
 3. Die ZIP-Datei markieren → **Entpacken**. Es entsteht der Ordner
    **`/lets-drive-kiel/`**. Die ZIP-Datei danach löschen.
 4. Kontrolle: Im Ordner liegen u. a. `index.html`, `kontakt.php`, `css/`, `js/`,

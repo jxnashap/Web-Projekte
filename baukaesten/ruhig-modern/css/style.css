@@ -251,6 +251,8 @@ html.js .mobile-nav-meta{--i:6}
 }
 .hero-media{position:absolute;inset:0;z-index:-1;overflow:hidden;background:var(--ink)}
 .hero-media img{width:100%;height:100%;object-fit:cover;object-position:62% 50%}
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% 50%;opacity:0;transition:opacity 1.4s var(--ease)}
+.hero-media.has-video .hero-video{opacity:1}
 .hero-media::after{ /* Veil: links + unten + leicht oben (Header-Lesbarkeit) */
   content:"";position:absolute;inset:0;
   background:
@@ -273,8 +275,10 @@ html.js .mobile-nav-meta{--i:6}
 .hero-facts strong span{display:inline;margin:0;font-size:inherit;line-height:inherit;color:inherit}
 
 .scroll-cue{position:absolute;right:var(--gutter);bottom:clamp(40px,6vw,88px);display:grid;place-items:center;width:44px;height:72px}
-.scroll-cue span{position:relative;display:block;width:1px;height:56px;overflow:hidden;background:rgba(255,255,255,.22)}
-.scroll-cue span::after{content:"";position:absolute;left:0;top:0;width:1px;height:22px;background:#fff;transform:translateY(-22px)}
+/* Fahrbahnmarkierung, die nach unten „fließt" */
+.scroll-cue span{display:block;width:2px;height:60px;border-radius:1px;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.9) 0 9px,transparent 9px 18px);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent)}
 
 /* Unterseiten-Hero: hell, ruhig */
 .hero-page{padding-top:clamp(40px,6vw,88px);padding-bottom:clamp(48px,6vw,88px)}
@@ -338,6 +342,20 @@ h3+[data-open-badge]{margin-top:14px}
 .class-card h3{margin-top:28px}
 .class-card p{margin-top:6px;font-size:.9375rem;color:var(--muted)}
 .class-card .link-arrow{margin-top:auto;padding-top:20px}
+.class-card{position:relative}
+.card-ride{position:absolute;right:28px;bottom:26px;width:45%;height:26px;overflow:hidden;color:var(--muted);pointer-events:none;transition:color .3s var(--ease)}
+.card-ride svg{position:absolute;right:0;bottom:0;height:100%;width:auto;overflow:visible}
+.ride-line{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.card-ride .fs-tyre{fill:var(--surface);stroke:currentColor;stroke-width:1.6}
+.card-ride .fs-hub{fill:currentColor}
+.card-ride .fs-spoke{stroke:currentColor;stroke-width:1}
+.class-card:hover .card-ride,.class-card:focus-visible .card-ride{color:var(--green-ink)}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  .class-card:hover .card-ride svg{animation:ride 1.6s var(--ease) 1}
+  .class-card:hover .card-ride .fs-rot{animation:spin .4s linear 4}
+}
+@keyframes ride{0%{transform:none}45%{transform:translateX(130%)}45.01%{transform:translateX(-200%)}100%{transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
 .class-badge{
   flex:none;display:inline-grid;place-items:center;width:64px;height:64px;border-radius:16px;
   background:var(--ink);color:#fff;font-size:1.5rem;font-weight:700;letter-spacing:-.02em;line-height:1;
@@ -362,6 +380,28 @@ h3+[data-open-badge]{margin-top:14px}
 }
 .step h3{margin-top:24px}
 .step p{margin-top:8px;color:var(--muted)}
+.step-no{transition:background .5s var(--ease),border-color .5s var(--ease),color .5s var(--ease)}
+.step.is-reached .step-no{background:var(--green-ink);border-color:var(--green-ink);color:#fff}
+
+/* Straße, auf der das Fahrschulauto beim Scrollen die Stationen abfährt */
+.drive{position:relative;height:62px;margin-bottom:30px}
+html:not(.js) .drive{display:none}
+.drive-road{position:absolute;left:0;right:0;bottom:6px;height:16px;border-radius:8px;background:rgba(21,20,20,.075)}
+.drive-lane{position:absolute;left:12px;right:12px;top:7px;height:2px;background:repeating-linear-gradient(90deg,#fff 0 16px,transparent 16px 30px)}
+.drive-stop{position:absolute;bottom:2px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--paper-2);border:2px solid rgba(21,20,20,.18);transition:background .4s var(--ease),border-color .4s var(--ease)}
+.drive-stop.is-on{background:var(--green);border-color:var(--green-ink)}
+.drive-car{position:absolute;left:0;bottom:12px;width:84px;height:44px;will-change:transform}
+.fs-car{display:block;width:100%;height:100%;overflow:visible}
+.fs-body{fill:#fff;stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round}
+.fs-glass{fill:#2f3a40;opacity:.85}
+.fs-sign{fill:var(--green-ink)}
+.fs-sign-txt{stroke:#fff;stroke-width:1.3;stroke-dasharray:1.6 1.1}
+.fs-sign-foot{fill:var(--ink)}
+.fs-light{fill:#ffd24d}
+.fs-tyre{fill:var(--ink)}
+.fs-hub{fill:#d9dcd9}
+.fs-spoke{stroke:var(--ink);stroke-width:1.1;stroke-linecap:round}
+.fs-rot{transform-box:fill-box;transform-origin:center}
 
 /* ---------- 10 · Klassen-Detail ---------- */
 .tabs{
@@ -407,7 +447,17 @@ html:not(.js) .tabs{display:none}
 .facts dd{margin-top:4px;font-weight:600;line-height:1.4;overflow-wrap:break-word}
 
 /* ---------- 11 · Theorie: Termin + Lektionen ---------- */
-.schedule{padding:clamp(28px,4vw,48px)}
+.schedule{position:relative;padding:clamp(28px,4vw,48px)}
+.clock{position:absolute;top:clamp(22px,3.4vw,40px);right:clamp(22px,3.4vw,40px);width:58px;height:58px;color:var(--green-ink);fill:none;stroke:currentColor;stroke-linecap:round}
+.clock>circle:first-child{stroke-width:2;stroke:var(--line);fill:var(--surface)}
+.clock-ticks{stroke-width:2;opacity:.5}
+.clock-h,.clock-m{stroke-width:2.6;transform-box:view-box;transform-origin:24px 24px;transition:transform 2.8s cubic-bezier(.45,0,.2,1) .5s}
+.clock-m{stroke-width:2}
+.clock-dot{fill:currentColor;stroke:none}
+.clock-h{transform:rotate(255deg)}         /* 20:30 */
+.clock-m{transform:rotate(540deg)}
+html.js .schedule:not(.is-in) .clock-h{transform:rotate(210deg)}   /* 19:00 */
+html.js .schedule:not(.is-in) .clock-m{transform:rotate(0deg)}
 .schedule-time{font-size:clamp(2.5rem,5.5vw,4rem);font-weight:700;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;color:var(--text)}
 .schedule-time small{margin-left:.3em;font-size:.32em;font-weight:600;letter-spacing:0;color:var(--muted)}
 .day-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
@@ -544,6 +594,16 @@ html:not(.js) .tabs{display:none}
 .cta-band{position:relative;overflow:hidden;isolation:isolate;padding-block:clamp(72px,9vw,128px)}
 .cta-in{position:relative;z-index:1;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:32px clamp(32px,6vw,96px)}
 .cta-in>div:first-child{max-width:680px}
+.cta-head{display:flex;align-items:flex-start;gap:clamp(18px,3vw,32px)}
+.ampel{flex:none;display:grid;gap:6px;margin-top:4px;padding:7px;border-radius:12px;background:#0b0b0b;border:1px solid var(--line-d);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.ampel i{display:block;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.08);transition:background .3s,box-shadow .3s}
+.ampel.is-red i:nth-child(1),.ampel.is-redyellow i:nth-child(1){background:#ff4d3d;box-shadow:0 0 12px 2px rgba(255,77,61,.5)}
+.ampel.is-redyellow i:nth-child(2){background:#ffc23d;box-shadow:0 0 12px 2px rgba(255,194,61,.45)}
+.ampel.is-green i:nth-child(3),html:not(.js) .ampel i:nth-child(3){background:#3fcf52;box-shadow:0 0 14px 3px rgba(63,207,82,.5)}
+@media (prefers-reduced-motion:no-preference){
+  .cta-band.is-go .cta-actions .btn:first-child{animation:go 1.6s var(--ease) 1}
+}
+@keyframes go{0%{box-shadow:0 0 0 0 rgba(63,207,82,.6)}100%{box-shadow:0 0 0 18px rgba(63,207,82,0)}}
 .cta-in h2{max-width:16em}
 .cta-actions{display:flex;flex-wrap:wrap;gap:12px}
 .cta-road{position:absolute;z-index:0;left:0;top:0;width:100%;height:100%;pointer-events:none}
@@ -616,15 +676,15 @@ html:not(.js) .tabs{display:none}
   html.js [data-draw].is-in{stroke-dashoffset:0}
   html.js .hero-media img{opacity:0;scale:1.06;transition:opacity .9s var(--ease),scale 2.4s var(--ease)}
   html.js .hero-media img.is-loaded{opacity:1;scale:1}
-  .scroll-cue span::after{animation:cue 2.6s var(--ease) infinite}
-  @keyframes cue{0%{transform:translateY(-22px)}60%,100%{transform:translateY(58px)}}
+  .scroll-cue span{animation:lane 1.2s linear infinite}
+  @keyframes lane{to{background-position:0 18px}}
 }
 .rv-d1{--d:.08s}.rv-d2{--d:.16s}.rv-d3{--d:.24s}.rv-d4{--d:.32s}
 .rv-img{overflow:hidden;border-radius:var(--radius)}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
-  .scroll-cue span::after{display:none}
+  .scroll-cue span{animation:none}
 }
 
 /* ---------- 20 · Responsiv ---------- */
@@ -653,6 +713,8 @@ html:not(.js) .tabs{display:none}
   .grid-2,.grid-3{grid-template-columns:1fr}
   .grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
   .steps{grid-template-columns:1fr;gap:36px}
+  .drive{display:none}
+  .step.is-in .step-no{background:var(--green-ink);border-color:var(--green-ink);color:#fff}
   .step{padding-left:68px}
   .step-no{position:absolute;left:0;top:-9px}
   .step h3{margin-top:0}

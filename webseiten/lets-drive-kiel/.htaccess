@@ -58,6 +58,10 @@ ExpiresByType image/jpeg "access plus 30 days"
 ExpiresByType image/png "access plus 30 days"
 ExpiresByType image/svg+xml "access plus 30 days"
 ExpiresByType font/woff2 "access plus 1 year"
+ExpiresByType video/webm "access plus 30 days"
+ExpiresByType video/mp4 "access plus 30 days"
 </IfModule>
 AddType font/woff2 .woff2
+AddType video/webm .webm
+AddType video/mp4 .mp4
 AddType application/manifest+json .webmanifest
