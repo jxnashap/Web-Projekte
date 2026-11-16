@@ -15,7 +15,8 @@ Repo für alle Website-Projekte. Struktur:
   #151414/Fahrschul-Grün #139d27/Off-White, Manrope selbst gehostet, 0 Fremd-Requests,
   Logo 2026 (Auto-Motiv) vektorisiert: hell/dunkel + Auto-Favicon, IONOS-fertig mit .htaccess +
   kontakt.php, Fahrschul-Animationen: Hero-Videoloop, Auto auf „Dein Weg", Ampel, Uhr; PHP-Redaktion unter
-  /redaktion/ – Kunde pflegt Zeiten/Hinweise/Preise/Stellen, „Veröffentlichen" = sofort live; 5,2 MB) · Branch `claude/tender-edison-vwar5s` · Upload: `auslieferung/lets-drive-kiel-IONOS-Anleitung.md`
+  /redaktion/ – Kunde pflegt Zeiten/Hinweise/Preise/Stellen + tauscht 7 Fotos selbst (Zuschnitt, WebP, Sicherungen),
+  „Veröffentlichen" = sofort live; 5,2 MB) · Branch `claude/tender-edison-vwar5s` · Upload: `auslieferung/lets-drive-kiel-IONOS-Anleitung.md`
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).

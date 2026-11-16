@@ -78,18 +78,28 @@ Formular (Validierung → `mailto:`), Google-Maps-2-Klick-Lösung, CTA-Band, Foo
 | `redaktion/index.php` | Einrichtung (Einrichtungscode → Passwort), Anmeldung, Formular, Entwurf/Vorschau/Veröffentlichen, Versionen, Passwort ändern, „Jetzt angleichen" |
 | `redaktion/vorschau.php` | Seite mit Entwurf rendern (nicht veröffentlicht), Vorschau-Leiste |
 | `redaktion/inc/cli.php` | `render` (Build), `check`, `setup-code` (neuer Code, nur Hash gespeichert) |
-| `daten/` | `inhalte.vorlage.json` (vom Generator), `einrichtung.json` (Hash); Laufzeit: `inhalte.json`, `entwurf.json`, `zugang.json`, `sperre.json`, `versionen/` |
+| `redaktion/inc/fotos.php` | Fotos tauschen: Bildplätze `CMS_PHOTOS` (Seitenverhältnis, Dateinamen + Breiten, Mindestbreite), Zuschnitt mit Fokus, EXIF-Drehung, WebP via GD, Sicherungen (Original + 4 neueste), `?v=`-Version in allen Seiten (Browser-Cache), Alt-Text, Hero-Video an/aus |
+| `redaktion/redaktion.js` | Rückfragen, Zuschnitt-Vorschau, große Fotos im Browser verkleinern (unter die Upload-Grenze des Servers, `data-max`) |
+| `daten/` | `inhalte.vorlage.json` (vom Generator), `einrichtung.json` (Hash); Laufzeit: `inhalte.json`, `entwurf.json`, `zugang.json`, `sperre.json`, `versionen/`, `fotos.json`, `bilder/` |
 
 Bereiche lets-drive-kiel: `hinweis` (Leiste, alle Seiten), `zeiten` (+ `zeiten-kurz`, `jsonld`),
 `neuigkeit`, `theorie-hinweis`, `preise-kurz`, `preise` (+ Preisliste), `stimmen`,
 `stelle-intro`, `stelle`. Neue Bereiche: Renderer in `cms_renderers()` + Feld in
 `cms_from_post()`/Formular + `cms("name", …)` im Generator.
 
+Fotos: Neues Projekt → `CMS_PHOTOS` in `inc/fotos.php` an die Bilddateien der Seite
+anpassen (Dateinamen exakt wie in `assets/img/`). Ein Upload ist sofort live (unabhängig
+vom Entwurf); nach einem ZIP-Neu-Upload holt „Jetzt angleichen" die Kundenfotos aus
+`daten/bilder/<platz>/aktuell/` zurück. `.user.ini` hebt bei PHP-FPM-Hostern die
+Upload-Grenze an (wird sonst ignoriert).
+
 Sicherheit: Daten-/Programmordner per `.htaccess` gesperrt (403), Passwort nur als
 bcrypt-Hash, Sitzung `Secure`/`HttpOnly`/`SameSite=Strict`, 60-min-Timeout, CSRF-Token,
 Sperre nach 5 Fehlversuchen (15 min), alle Eingaben als Klartext maskiert, CSP auf der
 Oberfläche, Schreiben atomar (tmp + rename). Getestet mit Apache 2.4 + mod_php 8.3
-(Einrichtung, Vorschau, Veröffentlichen auf allen Seiten, Versionen, CSRF, Sperre).
+(Einrichtung, Vorschau, Veröffentlichen auf allen Seiten, Versionen, CSRF, Sperre;
+Fotos: Upload, zu klein/kaputt/zu groß, EXIF-Drehung, Wiederherstellen, Video an/aus,
+Angleichen nach Neu-Upload, Verkleinern im Browser per Playwright).
 
 Auslieferung: `tools/zip_site.py` packt die Website **ohne** Laufzeitdaten der Redaktion.
 

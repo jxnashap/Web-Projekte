@@ -4,7 +4,7 @@
 Aufruf:  python3 zip_site.py <site-ordner> <ziel.zip>
 
 Ausgelassen werden Arbeitsdateien (_*.html) und die LAUFZEITDATEN der Redaktion
-(Inhalte, Entwurf, Zugang, Sperren, Versionen) – sonst würde ein erneuter Upload
+(Inhalte, Entwurf, Zugang, Sperren, Versionen, Foto-Sicherungen) – sonst würde ein erneuter Upload
 die Pflege des Kunden und sein Passwort überschreiben.
 """
 import os
@@ -13,14 +13,15 @@ import zipfile
 from pathlib import Path
 
 site, out = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve()
-SKIP_DATA = {"inhalte.json", "entwurf.json", "zugang.json", "sperre.json", ".gitignore"}
+SKIP_DATA = {"inhalte.json", "entwurf.json", "zugang.json", "sperre.json", "fotos.json", ".gitignore"}
+SKIP_DIRS = {"versionen", "bilder"}
 
 tmp = out.with_suffix(".zip.tmp")
 n = 0
 with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
     for root, dirs, files in os.walk(site):
         rel_root = Path(root).relative_to(site)
-        dirs[:] = sorted(d for d in dirs if not (rel_root == Path("redaktion/daten") and d == "versionen"))
+        dirs[:] = sorted(d for d in dirs if not (rel_root == Path("redaktion/daten") and d in SKIP_DIRS))
         for f in sorted(files):
             rel = rel_root / f
             if f.startswith("_") or f.endswith(".tmp"):

@@ -457,3 +457,5 @@ function cms_setup_ok(string $code): bool {
     $s = cms_read_json(CMS_DATA . '/einrichtung.json');
     return $s && !cms_account() && password_verify(strtoupper(trim($code)), $s['hash'] ?? '');
 }
+
+require __DIR__ . '/fotos.php';

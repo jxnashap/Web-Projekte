@@ -28,6 +28,7 @@ Ein Klick auf **„Veröffentlichen"** – und die Änderung ist sofort auf der 
 | **Preise** | Texte auf Startseite und Klassen-Seite, optional eine Preisliste |
 | **Bewertungen** | Startseite (nur mit Einverständnis der Personen) |
 | **Stellenanzeige** | Seite „Jobs" – Stelle an/aus, Texte und Stichpunkte |
+| **Fotos** | 7 Fotos: Startbild, „Über uns", Fahrzeuge, Theorie, Motorrad, Anhänger, Jobs (siehe Abschnitt 4) |
 
 Telefon, Adresse, Rechtstexte und die übrigen Seiten ändert Ihr Webmaster.
 
@@ -41,12 +42,39 @@ Telefon, Adresse, Rechtstexte und die übrigen Seiten ändert Ihr Webmaster.
 
 Tipp: Laden Sie die Website danach einmal neu, um die Änderung zu sehen.
 
-## 4 · Etwas rückgängig machen
+## 4 · Fotos austauschen
 
-Bei jedem Veröffentlichen wird der vorherige Stand gesichert (die letzten 15).
-Unter **„Frühere Versionen"** → **„Als Entwurf laden"** → prüfen → **„Veröffentlichen"**.
+Im Bereich **„Fotos austauschen"** sehen Sie jedes Foto der Website mit dem Hinweis, wo es
+erscheint und welches Format passt.
 
-## 5 · Sicherheit
+1. **„Neues Foto auswählen"** – JPG, PNG oder WebP, gern direkt vom Handy. Große Handyfotos
+   werden vor dem Hochladen automatisch verkleinert.
+2. Die gestrichelte Vorschau zeigt, **wie das Foto zugeschnitten wird**. Ist der wichtige Teil
+   abgeschnitten, unter **„Bildausschnitt"** oben, unten, links oder rechts wählen.
+3. **„Bildbeschreibung"** kurz anpassen: Was ist auf dem neuen Foto zu sehen?
+   (Wird blinden Besuchern vorgelesen und hilft bei Google.)
+4. **„Foto ersetzen"** – nach einer Rückfrage ist das Foto **sofort live**
+   (ohne „Veröffentlichen").
+
+Gut zu wissen:
+- **Nur eigene Fotos** oder Fotos mit Nutzungsrecht verwenden. Sind Personen erkennbar,
+  vorher deren Einverständnis einholen.
+- Ist ein Foto zu klein, meldet die Redaktion das (z. B. „mindestens 1400 Pixel Breite"
+  beim Startbild) – dann ein größeres Foto nehmen.
+- **Startbild:** Am Computer läuft über dem Startbild ein kurzes Video. Weil es noch das
+  alte Motiv zeigt, wird es beim Austausch des Startbilds automatisch **ausgeschaltet**.
+  Mit **„Video einschalten"** lässt es sich jederzeit wieder einschalten.
+- Unter **„Frühere Fotos"** können Sie jedes vorherige Foto mit **„Wiederherstellen"**
+  zurückholen. Das Original der Auslieferung bleibt immer erhalten.
+
+## 5 · Etwas rückgängig machen
+
+**Texte:** Bei jedem Veröffentlichen wird der vorherige Stand gesichert (die letzten 15).
+Unter **„Frühere Versionen der Texte"** → **„Als Entwurf laden"** → prüfen → **„Veröffentlichen"**.
+
+**Fotos:** unter dem jeweiligen Foto → **„Frühere Fotos"** → **„Wiederherstellen"**.
+
+## 6 · Sicherheit
 
 - Nach 5 falschen Passwörtern ist die Anmeldung 15 Minuten gesperrt.
 - Nach 60 Minuten ohne Aktivität werden Sie automatisch abgemeldet.
@@ -56,7 +84,7 @@ Unter **„Frühere Versionen"** → **„Als Entwurf laden"** → prüfen → *
 `redaktion/daten/zugang.json`. Danach erscheint wieder die Einrichtungsseite,
 und Sie vergeben mit dem Einrichtungscode ein neues Passwort.
 
-## 6 · Hinweis „Website-Dateien entsprechen nicht dem veröffentlichten Stand"
+## 7 · Hinweis „Website-Dateien entsprechen nicht dem veröffentlichten Stand"
 
 Das erscheint, wenn Ihr Webmaster neue Website-Dateien hochgeladen hat.
-Ein Klick auf **„Jetzt angleichen"** stellt Ihre Inhalte wieder her.
+Ein Klick auf **„Jetzt angleichen"** stellt Ihre Inhalte und Ihre Fotos wieder her.

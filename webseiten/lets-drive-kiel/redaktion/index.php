@@ -5,7 +5,7 @@ require __DIR__ . '/inc/cms.php';
 
 cms_session_start();
 header('X-Frame-Options: DENY');
-header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
+header("Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
 header('X-Robots-Tag: noindex, nofollow');
 header('Cache-Control: no-store');
 header('Referrer-Policy: same-origin');
@@ -76,6 +76,8 @@ if (!cms_logged_in()) {
 
 /* ---------- 3. Aktionen (angemeldet) ---------- */
 if ($post) {
+    // Upload größer als post_max_size: PHP liefert dann gar keine Formulardaten
+    if (!$_POST && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) go('Die Datei ist zu groß für den Server. Bitte ein kleineres Foto wählen.', 'err');
     if (!cms_csrf_ok()) go('Die Sitzung ist abgelaufen – bitte noch einmal versuchen.', 'err');
     $a = (string)($_POST['aktion'] ?? '');
     try {
@@ -99,8 +101,21 @@ if ($post) {
                 cms_write_json(CMS_DATA . '/entwurf.json', $data);
                 go('Die ältere Version ist als Entwurf geladen. Prüfen Sie sie und klicken Sie dann auf „Veröffentlichen".');
             case 'aktualisieren':
-                $n = count(cms_render_site(cms_published()));
-                go('Website-Dateien aktualisiert (' . $n . ' Seiten).');
+                cms_render_site(cms_published());
+                cms_photo_resync();
+                go('Website-Dateien angeglichen – Ihre Inhalte und Fotos sind wieder aktuell.');
+            case 'foto':
+                $slot = (string)($_POST['platz'] ?? '');
+                cms_photo_replace($slot, $_FILES['foto'] ?? [], (string)($_POST['fokus'] ?? 'mitte'), (string)($_POST['alt'] ?? ''));
+                go('Foto „' . (CMS_PHOTOS[$slot]['label'] ?? '') . '" ersetzt – es ist jetzt live.'
+                    . ($slot === 'hero' ? ' Das Startseiten-Video zeigt noch das alte Motiv und ist deshalb ausgeschaltet.' : ''));
+            case 'foto_zurueck':
+                $slot = (string)($_POST['platz'] ?? '');
+                cms_photo_restore($slot, (string)($_POST['stand'] ?? ''));
+                go('Früheres Foto „' . (CMS_PHOTOS[$slot]['label'] ?? '') . '" wiederhergestellt.');
+            case 'video':
+                cms_video_set(($_POST['video'] ?? '') === 'an');
+                go(($_POST['video'] ?? '') === 'an' ? 'Startseiten-Video eingeschaltet.' : 'Startseiten-Video ausgeschaltet – es wird nur das Startbild gezeigt.');
             case 'passwort':
                 $acc = cms_account();
                 $new = (string)($_POST['pw_neu'] ?? '');
@@ -114,6 +129,8 @@ if ($post) {
                 session_destroy();
                 header('Location: ./', true, 303); exit;
         }
+    } catch (RuntimeException $ex) {
+        go($ex->getMessage(), 'err');                     // verständliche Meldung (z. B. Foto zu klein)
     } catch (Throwable $ex) {
         error_log('[redaktion] ' . $ex->getMessage());
         go('Das hat leider nicht geklappt: Die Dateien konnten nicht geschrieben werden. Bitte später erneut versuchen oder den Webmaster informieren.', 'err');
@@ -127,7 +144,7 @@ unset($_SESSION['flash']);
 $hasDraft = is_file(CMS_DATA . '/entwurf.json');
 $c = cms_draft();
 $pub = cms_published();
-$sync = cms_out_of_sync();
+$sync = array_merge(cms_out_of_sync(), cms_photo_out_of_sync());
 
 function v(array $a, string $k): string { return e((string)($a[$k] ?? '')); }
 function chk($on): string { return !empty($on) ? ' checked' : ''; }
@@ -289,8 +306,70 @@ page_start('Redaktion');
     </div>
   </form>
 
+  <section class="box" id="fotos">
+    <h2>Fotos austauschen</h2>
+    <p class="help">Ein neues Foto ist <strong>sofort nach dem Hochladen</strong> auf der Website – unabhängig von „Veröffentlichen". Es wird automatisch passend zugeschnitten und verkleinert. Erlaubt sind JPG, PNG oder WebP, gern direkt vom Handy. Das vorherige Foto lässt sich jederzeit wiederherstellen.</p>
+    <?php if (!cms_photo_supported()): ?><p class="msg msg-err">Der Server kann keine Bilder verarbeiten (PHP-Erweiterung GD mit WebP fehlt). Bitte den Webmaster informieren.</p><?php endif; ?>
+    <div class="photos">
+    <?php foreach (CMS_PHOTOS as $slot => $def):
+        $ratioCls = 'ratio-' . $def['ratio'][0] . '-' . $def['ratio'][1];
+        $backups = cms_photo_backups($slot); ?>
+      <article class="photo" id="foto-<?= e($slot) ?>">
+        <figure class="photo-now <?= $ratioCls ?>"><img src="<?= e(cms_photo_thumb($slot)) ?>" alt="Aktuelles Foto: <?= e($def['label']) ?>"></figure>
+        <div class="photo-body">
+          <h3><?= e($def['label']) ?></h3>
+          <p class="help"><?= e($def['wo']) ?>. <?= e($def['tipp']) ?></p>
+          <form method="post" enctype="multipart/form-data" class="photo-form" data-max="<?= cms_upload_limit() ?>">
+            <input type="hidden" name="csrf" value="<?= e(cms_csrf()) ?>">
+            <input type="hidden" name="platz" value="<?= e($slot) ?>">
+            <label>Neues Foto auswählen<input type="file" name="foto" accept="image/jpeg,image/png,image/webp" required></label>
+            <figure class="crop-preview <?= $ratioCls ?>" hidden><img alt="So wird das Foto zugeschnitten"><figcaption>So wird es zugeschnitten</figcaption></figure>
+            <div class="row-2">
+              <label>Bildausschnitt
+                <select name="fokus"><?php foreach (PHOTO_FOCUS as $k => $l): ?><option value="<?= $k ?>"><?= e($l) ?></option><?php endforeach; ?></select>
+              </label>
+              <label>Bildbeschreibung <small>(was zeigt das neue Foto? – für Blinde und Google)</small>
+                <input name="alt" maxlength="180" value="<?= e(cms_photo_alt($slot)) ?>">
+              </label>
+            </div>
+            <button class="b b-main" name="aktion" value="foto" data-confirm="Foto jetzt ersetzen? Es ist danach sofort auf der Website sichtbar.">Foto ersetzen</button>
+          </form>
+          <?php if ($backups): ?>
+            <details class="photo-old">
+              <summary>Frühere Fotos (<?= count($backups) ?>)</summary>
+              <ul>
+              <?php foreach ($backups as $i => $stamp):
+                  $label = $i === count($backups) - 1 ? 'Original (Auslieferung)' : preg_replace('/^(\d{4})-(\d\d)-(\d\d)_(\d\d)-(\d\d)-\d\d$/', 'Stand vom $3.$2.$1, $4:$5 Uhr', $stamp); ?>
+                <li>
+                  <span><?= e($label) ?></span>
+                  <form method="post">
+                    <input type="hidden" name="csrf" value="<?= e(cms_csrf()) ?>">
+                    <input type="hidden" name="platz" value="<?= e($slot) ?>">
+                    <input type="hidden" name="stand" value="<?= e($stamp) ?>">
+                    <button class="b b-small" name="aktion" value="foto_zurueck" data-confirm="Dieses frühere Foto wiederherstellen? Es ist danach sofort auf der Website sichtbar.">Wiederherstellen</button>
+                  </form>
+                </li>
+              <?php endforeach; ?>
+              </ul>
+            </details>
+          <?php endif; ?>
+          <?php if ($slot === 'hero'): $videoOn = cms_video_on(); ?>
+            <form method="post" class="video-toggle">
+              <input type="hidden" name="csrf" value="<?= e(cms_csrf()) ?>">
+              <input type="hidden" name="video" value="<?= $videoOn ? 'aus' : 'an' ?>">
+              <p>Startseiten-Video (läuft am Computer über dem Startbild): <strong><?= $videoOn ? 'an' : 'aus' ?></strong>
+                <?php if (!$videoOn && !empty(cms_photo_state()['hero']['v'])): ?><br><small>Hinweis: Das Video zeigt das ursprüngliche Motiv, nicht Ihr neues Startbild.</small><?php endif; ?></p>
+              <button class="b b-small" name="aktion" value="video"><?= $videoOn ? 'Video ausschalten' : 'Video einschalten' ?></button>
+            </form>
+          <?php endif; ?>
+        </div>
+      </article>
+    <?php endforeach; ?>
+    </div>
+  </section>
+
   <section class="box">
-    <h2>Frühere Versionen</h2>
+    <h2>Frühere Versionen der Texte</h2>
     <?php $vers = cms_versions(); if (!$vers): ?>
       <p class="help">Noch keine. Bei jedem Veröffentlichen wird der vorherige Stand hier gesichert (die letzten <?= CMS_KEEP_VERSIONS ?>).</p>
     <?php else: ?>

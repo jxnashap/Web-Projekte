@@ -5,6 +5,6 @@ DirectoryIndex index.php
 Header always set X-Robots-Tag "noindex, nofollow"
 Header always set Cache-Control "no-store"
 </IfModule>
-<FilesMatch "\.(json|md|txt)$">
+<FilesMatch "\.(json|md|txt|ini)$">
 Require all denied
 </FilesMatch>

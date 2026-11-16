@@ -1,6 +1,6 @@
 # Let's Drive Kiel – neue Website bei IONOS veröffentlichen
 
-Stand: 10.11.2026 · Paket: `auslieferung/lets-drive-kiel-website.zip` (≈ 5,2 MB inkl. Hero-Video und Redaktion)
+Stand: 16.11.2026 · Paket: `auslieferung/lets-drive-kiel-website.zip` (≈ 5,2 MB inkl. Hero-Video und Redaktion)
 
 ## Wichtig vorab
 
@@ -108,13 +108,16 @@ gesperrt und enthält Inhalte, Entwürfe, Versionen und den Passwort-Hash.
 
 ## Später ändern
 
-- **Bürozeiten, Hinweise, Neuigkeit, Preise, Bewertungen, Stellenanzeige:** pflegt der
-  Kunde selbst in der Redaktion – sofort live, kein Upload nötig.
-- **Alles andere** (Texte, Bilder, Design): im Repo über
+- **Bürozeiten, Hinweise, Neuigkeit, Preise, Bewertungen, Stellenanzeige und die 7 Fotos:**
+  pflegt der Kunde selbst in der Redaktion – sofort live, kein Upload nötig.
+  (Fotos: braucht die PHP-Erweiterung GD mit WebP-Unterstützung. Fehlt sie im Paket,
+  zeigt die Redaktion das deutlich an – dann in den PHP-Einstellungen nachsehen. Das Vorschaubild für Social Media `og-image.jpg`
+  bleibt unverändert.)
+- **Alles andere** (Texte, Design): im Repo über
   `baukaesten/ruhig-modern/generatoren/build_letsdrive.py`, dann neues ZIP mit
   `python3 baukaesten/ruhig-modern/tools/zip_site.py webseiten/lets-drive-kiel auslieferung/lets-drive-kiel-website.zip`
   hochladen und entpacken. Das ZIP enthält **keine** Redaktions-Daten des Kunden
-  (Inhalte, Passwort, Versionen bleiben erhalten). Danach in der Redaktion einmal
-  **„Jetzt angleichen"** klicken, damit die Kunden-Inhalte wieder in den Seiten stehen.
+  (Inhalte, Fotos, Passwort, Versionen bleiben erhalten). Danach in der Redaktion einmal
+  **„Jetzt angleichen"** klicken, damit die Kunden-Inhalte und -Fotos wieder in den Seiten stehen.
 - Den Ordner `redaktion/daten/` im Webspace **nie löschen**.
 **AGB:** Sobald der Text vorliegt, wird die AGB-Seite eingeschaltet (`AGB_TEXT`).
