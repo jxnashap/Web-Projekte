@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cherry Moon//Events//DE
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:1d253450b8c225eb@cherry-moon.de
+DTSTAMP:20261106T222106Z
+DTSTART:20270430T210000Z
+DTEND:20270501T020000Z
+SUMMARY:Tanz in den Mai x Cherry Moon
+LOCATION:Alsterinsel\, Alsterufer 1\, Hamburg
+URL:https://cherry-moon.de/events/tanz-in-den-mai-2027
+DESCRIPTION:Tickets: https://cherry-moon.de/events/tanz-in-den-mai-2027
+END:VEVENT
+END:VCALENDAR

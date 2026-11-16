@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cherry Moon//Events//DE
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:41dc7e901fa2856e@cherry-moon.de
+DTSTAMP:20261106T222106Z
+DTSTART:20261231T200000Z
+DTEND:20270101T040000Z
+SUMMARY:Silvester x Cherry Moon
+LOCATION:Sands\, Dammtordamm 2\, 20354 Hamburg
+URL:https://cherry-moon.de/events/silvester
+DESCRIPTION:Tickets: https://cherry-moon.de/events/silvester
+END:VEVENT
+END:VCALENDAR
