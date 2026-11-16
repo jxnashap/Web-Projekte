@@ -1,6 +1,6 @@
 # Let's Drive Kiel – neue Website bei IONOS veröffentlichen
 
-Stand: 10.11.2026 · Paket: `auslieferung/lets-drive-kiel-website.zip` (≈ 5 MB inkl. Hero-Video)
+Stand: 10.11.2026 · Paket: `auslieferung/lets-drive-kiel-website.zip` (≈ 5,2 MB inkl. Hero-Video und Redaktion)
 
 ## Wichtig vorab
 
@@ -69,7 +69,22 @@ IONOS-Hilfe „Domain ist im falschen Vertrag" oder kurz beim IONOS-Support anru
       „Antworten" geht direkt an die Person aus dem Formular).
 - [ ] Eine nicht vorhandene Adresse (z. B. `…/test123`) zeigt die eigene 404-Seite.
 
-## Schritt 4 · Abschließen
+## Schritt 4 · Redaktion einrichten (für den Kunden)
+
+1. **https://www.lets-drive-kiel.de/redaktion/** öffnen.
+2. **Einrichtungscode** eingeben (wird separat übergeben, nicht in dieser Datei) und
+   ein Passwort festlegen. Danach ist die Redaktion nur noch mit diesem Passwort erreichbar.
+3. Test: Hinweis-Leiste einschalten → **Vorschau** → **Veröffentlichen** → Website neu laden.
+   Danach Hinweis wieder ausschalten und erneut veröffentlichen.
+4. Dem Kunden `auslieferung/lets-drive-kiel-Redaktion-Anleitung.md` und den Einrichtungscode
+   geben. Bewahrt er den Code auf, kann ein vergessenes Passwort zurückgesetzt werden
+   (Datei `redaktion/daten/zugang.json` im Webspace löschen → Einrichtung erscheint erneut).
+
+Die Redaktion schreibt die HTML-Dateien selbst um – PHP braucht dafür Schreibrechte im
+Webspace (bei IONOS-Webhosting Standard). Der Ordner `redaktion/daten/` ist per `.htaccess`
+gesperrt und enthält Inhalte, Entwürfe, Versionen und den Passwort-Hash.
+
+## Schritt 5 · Abschließen
 
 - **Auftragsverarbeitung:** Im IONOS-Konto den **Vertrag zur
   Auftragsverarbeitung (AV-Vertrag)** abschließen – die Datenschutzerklärung
@@ -88,9 +103,18 @@ IONOS-Hilfe „Domain ist im falschen Vertrag" oder kurz beim IONOS-Support anru
 | „500 Internal Server Error" | `.htaccess` im Webspace Explorer in `htaccess.txt` umbenennen → Seite lädt wieder (dann ohne Weiterleitungen). Bitte melden. |
 | Formular-Nachricht kommt nicht an | Postfach `info@lets-drive-kiel.de` im IONOS-Konto prüfen (muss existieren), Spam-Ordner prüfen. Besucher sehen in dem Fall automatisch die E-Mail-Variante. |
 | Zurück zur alten Seite | Domain unter Domains & SSL wieder mit MyWebsite Now verbinden. |
+| Redaktion meldet „konnten nicht geschrieben werden" | Schreibrechte des Webspace prüfen (Dateien müssen dem Webspace-Benutzer gehören, bei Upload über den Webspace Explorer der Fall). |
+| Redaktion: Passwort vergessen | `redaktion/daten/zugang.json` löschen → Einrichtung mit dem Einrichtungscode erneut. |
 
 ## Später ändern
 
-Inhalte werden im Repo über `baukaesten/ruhig-modern/generatoren/build_letsdrive.py`
-gepflegt. Danach nur die geänderten Dateien erneut hochladen (überschreiben).
+- **Bürozeiten, Hinweise, Neuigkeit, Preise, Bewertungen, Stellenanzeige:** pflegt der
+  Kunde selbst in der Redaktion – sofort live, kein Upload nötig.
+- **Alles andere** (Texte, Bilder, Design): im Repo über
+  `baukaesten/ruhig-modern/generatoren/build_letsdrive.py`, dann neues ZIP mit
+  `python3 baukaesten/ruhig-modern/tools/zip_site.py webseiten/lets-drive-kiel auslieferung/lets-drive-kiel-website.zip`
+  hochladen und entpacken. Das ZIP enthält **keine** Redaktions-Daten des Kunden
+  (Inhalte, Passwort, Versionen bleiben erhalten). Danach in der Redaktion einmal
+  **„Jetzt angleichen"** klicken, damit die Kunden-Inhalte wieder in den Seiten stehen.
+- Den Ordner `redaktion/daten/` im Webspace **nie löschen**.
 **AGB:** Sobald der Text vorliegt, wird die AGB-Seite eingeschaltet (`AGB_TEXT`).

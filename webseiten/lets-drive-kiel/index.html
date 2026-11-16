@@ -22,7 +22,7 @@
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" href="assets/img/hero-1600.webp" imagesrcset="assets/img/hero-960.webp 960w, assets/img/hero-1600.webp 1600w, assets/img/hero-2400.webp 2400w" imagesizes="100vw" fetchpriority="high">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "DrivingSchool", "name": "Fahrschule Let’s Drive Kiel", "url": "https://www.lets-drive-kiel.de/", "image": "https://www.lets-drive-kiel.de/assets/img/og-image.jpg", "logo": "https://www.lets-drive-kiel.de/assets/img/logo.png", "telephone": "+49 431 86923", "faxNumber": "+49 431 8065298", "email": "info@lets-drive-kiel.de", "address": {"@type": "PostalAddress", "streetAddress": "Knooper Weg 193", "postalCode": "24118", "addressLocality": "Kiel", "addressRegion": "Schleswig-Holstein", "addressCountry": "DE"}, "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Wednesday", "Friday"], "opens": "12:00", "closes": "16:00"}, {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Tuesday", "Thursday"], "opens": "15:00", "closes": "19:00"}], "sameAs": ["https://www.facebook.com/people/Fahrschule-Lets-Drive-Kiel/100004820191887"]}</script>
+<!--cms:jsonld--><script type="application/ld+json">{"@context":"https://schema.org","@type":"DrivingSchool","name":"Fahrschule Let’s Drive Kiel","url":"https://www.lets-drive-kiel.de/","image":"https://www.lets-drive-kiel.de/assets/img/og-image.jpg","logo":"https://www.lets-drive-kiel.de/assets/img/logo.png","telephone":"+49 431 86923","faxNumber":"+49 431 8065298","email":"info@lets-drive-kiel.de","address":{"@type":"PostalAddress","streetAddress":"Knooper Weg 193","postalCode":"24118","addressLocality":"Kiel","addressRegion":"Schleswig-Holstein","addressCountry":"DE"},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Wednesday","Friday"],"opens":"12:00","closes":"16:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":["Tuesday","Thursday"],"opens":"15:00","closes":"19:00"}],"sameAs":["https://www.facebook.com/people/Fahrschule-Lets-Drive-Kiel/100004820191887"]}</script><!--/cms:jsonld-->
 <link rel="stylesheet" href="css/style.css">
 <script>document.documentElement.classList.add('js')</script>
 </head>
@@ -56,12 +56,13 @@
       </nav>
       <div class="mobile-nav-meta">
         <a class="btn btn-primary" href="tel:+4943186923">0431&nbsp;86923 anrufen</a>
-        <p><strong>Bürozeiten</strong><br>Mo, Mi, Fr 12–16&nbsp;Uhr · Di, Do 15–19&nbsp;Uhr</p>
+        <p><strong>Bürozeiten</strong><br><!--cms:zeiten-kurz-->Mo, Mi, Fr 12–16&nbsp;Uhr · Di, Do 15–19&nbsp;Uhr<!--/cms:zeiten-kurz--></p>
       </div>
     </div>
   </div>
 </header>
 <main id="main">
+<!--cms:hinweis--><!--/cms:hinweis-->
 <section class="hero hero-home">
   <div class="hero-media" data-video data-webm="assets/video/hero-loop.webm" data-mp4="assets/video/hero-loop.mp4"><img src="assets/img/hero-1600.webp" srcset="assets/img/hero-960.webp 960w, assets/img/hero-1600.webp 1600w, assets/img/hero-2400.webp 2400w" sizes="100vw" alt="Weißes Auto auf einer Uferstraße an der Förde, im Hintergrund Hafenkräne und Segelmasten" width="2400" height="1350" fetchpriority="high" decoding="async"></div>
   <div class="wrap hero-in">
@@ -201,15 +202,12 @@
       <p class="eyebrow rv">Unsere Fahrzeuge</p>
       <h2 class="rv rv-d1">Ausbildung auf <em>modernen Fahrzeugen.</em></h2>
       <p class="rv rv-d2">Du lernst bei uns auf modernen Schalt- oder Automatikfahrzeugen – so, wie es zu dir und deinem Ziel passt. Mit B197 kombinierst du beides.</p>
-      <div class="news rv rv-d3">
-        <p class="eyebrow">Neuigkeit</p>
-        <p><strong>Verstärkung im Team!</strong> Fahrstunden sind bei uns innerhalb von 14&nbsp;Tagen buchbar – wir freuen uns auf deinen Besuch.</p>
-      </div>
+      <!--cms:neuigkeit--><div class="news rv rv-d3"><p class="eyebrow">Neuigkeit</p><p><strong>Verstärkung im Team!</strong> Fahrstunden sind bei uns innerhalb von 14&nbsp;Tagen buchbar – wir freuen uns auf deinen Besuch.</p></div><!--/cms:neuigkeit-->
     </div>
   </div>
 </section>
 
-<section class="section">
+<!--cms:stimmen--><section class="section">
   <div class="wrap">
     <div class="section-head center">
       <p class="eyebrow rv">Stimmen</p>
@@ -234,7 +232,7 @@
       </figure>
     </div>
   </div>
-</section>
+</section><!--/cms:stimmen-->
 
 <section class="section section-mint">
   <div class="wrap split">
@@ -243,7 +241,7 @@
       <h2 class="rv rv-d1">Transparente Preise, <em>ehrliche Beratung.</em></h2>
     </div>
     <div>
-      <p class="rv rv-d2">Unsere aktuellen Preise erfragst du ganz einfach in der Fahrschule zu den Bürozeiten – gerne auch telefonisch oder per Mail. Was dein Führerschein am Ende kostet, hängt von deinem individuellen Lernerfolg ab. Genau darüber sprechen wir offen mit dir.</p>
+      <!--cms:preise-kurz--><p class="rv rv-d2">Unsere aktuellen Preise erfragst du ganz einfach in der Fahrschule zu den Bürozeiten – gerne auch telefonisch oder per Mail. Was dein Führerschein am Ende kostet, hängt von deinem individuellen Lernerfolg ab. Genau darüber sprechen wir offen mit dir.</p><!--/cms:preise-kurz-->
       <div class="actions rv rv-d3"><a class="btn btn-primary" href="kontakt.html">Preise erfragen<svg class="btn-arrow" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10h12M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="btn btn-ghost" href="tel:+4943186923">0431&nbsp;86923</a></div>
     </div>
   </div>
@@ -256,7 +254,7 @@
       <h2 class="rv rv-d1">Komm vorbei – <em>wir beraten dich gern.</em></h2>
       <p class="rv rv-d2">Beratung und Anmeldung finden zu unseren Bürozeiten in der Fahrschule am Knooper Weg statt.</p>
       <p class="rv rv-d2" data-open-badge aria-live="polite"></p>
-      <div class="rv rv-d3"><dl class="hours"><div data-days="1,3,5" data-from="12:00" data-to="16:00"><dt>Mo, Mi, Fr</dt><dd>12:00&nbsp;– 16:00&nbsp;Uhr</dd></div><div data-days="2,4" data-from="15:00" data-to="19:00"><dt>Di, Do</dt><dd>15:00&nbsp;– 19:00&nbsp;Uhr</dd></div><div data-days="6,0"><dt>Sa, So</dt><dd>geschlossen</dd></div></dl></div>
+      <div class="rv rv-d3"><!--cms:zeiten--><dl class="hours"><div data-days="1,3,5" data-from="12:00" data-to="16:00"><dt>Mo, Mi, Fr</dt><dd>12:00&nbsp;– 16:00&nbsp;Uhr</dd></div><div data-days="2,4" data-from="15:00" data-to="19:00"><dt>Di, Do</dt><dd>15:00&nbsp;– 19:00&nbsp;Uhr</dd></div><div data-days="6,0"><dt>Sa, So</dt><dd>geschlossen</dd></div></dl><!--/cms:zeiten--></div>
     </div>
     <div class="card rv rv-d2">
       <h3>So erreichst du uns</h3>
@@ -298,7 +296,7 @@
     </div>
     <div class="footer-col">
       <h2 class="footer-title">Bürozeiten</h2>
-      <dl class="hours"><div data-days="1,3,5" data-from="12:00" data-to="16:00"><dt>Mo, Mi, Fr</dt><dd>12:00&nbsp;– 16:00&nbsp;Uhr</dd></div><div data-days="2,4" data-from="15:00" data-to="19:00"><dt>Di, Do</dt><dd>15:00&nbsp;– 19:00&nbsp;Uhr</dd></div><div data-days="6,0"><dt>Sa, So</dt><dd>geschlossen</dd></div></dl>
+      <!--cms:zeiten--><dl class="hours"><div data-days="1,3,5" data-from="12:00" data-to="16:00"><dt>Mo, Mi, Fr</dt><dd>12:00&nbsp;– 16:00&nbsp;Uhr</dd></div><div data-days="2,4" data-from="15:00" data-to="19:00"><dt>Di, Do</dt><dd>15:00&nbsp;– 19:00&nbsp;Uhr</dd></div><div data-days="6,0"><dt>Sa, So</dt><dd>geschlossen</dd></div></dl><!--/cms:zeiten-->
     </div>
     <div class="footer-col">
       <h2 class="footer-title">Seiten</h2>

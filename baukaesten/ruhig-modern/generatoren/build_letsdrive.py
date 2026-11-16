@@ -12,6 +12,7 @@ Aufruf (vom Repo-Root):
     python3 baukaesten/ruhig-modern/generatoren/build_letsdrive.py
 """
 import json
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]          # …/Web-Projekte
@@ -216,6 +217,12 @@ def facts(rows, cls="facts rv rv-d2"):
     return f'<dl class="{cls}">{items}</dl>'
 
 
+def cms(name, html=""):
+    """Pflegbarer Bereich: wird von der Redaktion (redaktion/inc/cms.php) beim
+    Veröffentlichen neu gerendert. Der Inhalt hier ist nur der Fallback."""
+    return f"<!--cms:{name}-->{html}<!--/cms:{name}-->"
+
+
 def hours_dl():
     rows = []
     for label, days, a, b in HOURS:
@@ -224,7 +231,7 @@ def hours_dl():
                         f'<dd>{a}&nbsp;– {b}&nbsp;Uhr</dd></div>')
         else:
             rows.append(f'<div data-days="{days}"><dt>{label}</dt><dd>geschlossen</dd></div>')
-    return '<dl class="hours">' + "".join(rows) + "</dl>"
+    return cms("zeiten", '<dl class="hours">' + "".join(rows) + "</dl>")
 
 
 def contact_list(fax=True, address=True, facebook=False):
@@ -364,12 +371,13 @@ def header(active, body_cls):
       </nav>
       <div class="mobile-nav-meta">
         <a class="btn btn-primary" href="{TEL_HREF}">{TEL} anrufen</a>
-        <p><strong>Bürozeiten</strong><br>Mo, Mi, Fr 12–16&nbsp;Uhr · Di, Do 15–19&nbsp;Uhr</p>
+        <p><strong>Bürozeiten</strong><br>{cms("zeiten-kurz", "Mo, Mi, Fr 12–16&nbsp;Uhr · Di, Do 15–19&nbsp;Uhr")}</p>
       </div>
     </div>
   </div>
 </header>
 <main id="main">
+{cms("hinweis")}
 """
 
 
@@ -453,7 +461,7 @@ LD = {
 INDEX_HEAD = (
     f'<link rel="preload" as="image" href="assets/img/hero-1600.webp" imagesrcset="{HERO_SRCSET}" '
     f'imagesizes="100vw" fetchpriority="high">\n'
-    f'<script type="application/ld+json">{json.dumps(LD, ensure_ascii=False)}</script>\n'
+    + cms("jsonld", f'<script type="application/ld+json">{json.dumps(LD, ensure_ascii=False)}</script>') + "\n"
 )
 
 USPS = [
@@ -496,6 +504,46 @@ QUOTES = [
     ("Super Organisation und eine fundierte, zugleich aber auch humorvolle Ausbildung.", "Maria R."),
 ]
 
+# ------------------------------------------------------------------
+# Startinhalte der Redaktion → redaktion/daten/inhalte.vorlage.json
+# (Klartext; die Redaktion rendert daraus die markierten Bereiche)
+# ------------------------------------------------------------------
+SEED = {
+    "hinweis": {"aktiv": False, "text": ""},
+    "zeiten": [{"label": lbl, "tage": [int(x) for x in days.split(",")], "von": a or "", "bis": b or ""}
+               for lbl, days, a, b in HOURS],
+    "neuigkeit": {"aktiv": True, "titel": "Verstärkung im Team!",
+                  "text": "Fahrstunden sind bei uns innerhalb von 14 Tagen buchbar – wir freuen uns auf deinen Besuch."},
+    "theorie_hinweis": {"aktiv": False, "titel": "", "text": ""},
+    "preise": {
+        "kurz": "Unsere aktuellen Preise erfragst du ganz einfach in der Fahrschule zu den Bürozeiten – gerne auch "
+                "telefonisch oder per Mail. Was dein Führerschein am Ende kostet, hängt von deinem individuellen "
+                "Lernerfolg ab. Genau darüber sprechen wir offen mit dir.",
+        "text": "Unsere aktuellen Preise erfragst du ganz einfach in der Fahrschule zu den Bürozeiten – gerne auch "
+                "telefonisch oder per Mail.\n\nWie teuer dein Führerschein insgesamt wird, können wir pauschal nicht "
+                "beantworten: Der Lernerfolg ist immer individuell, denn jeder Fahrschüler und jede Fahrschülerin ist "
+                "unterschiedlich. Lass es auf dich zukommen – bei Fragen sprich uns gerne an. Es gelten unsere AGB.",
+        "liste": [], "hinweis": ""},
+    "stimmen": {"aktiv": True, "einleitung": "Auszüge aus öffentlichen Google-Bewertungen.",
+                "liste": [{"text": q, "name": who, "quelle": "Google-Bewertung · 08/2025"} for q, who in QUOTES]},
+    "stelle": {
+        "aktiv": True,
+        "einleitung": "Wir suchen Verstärkung: Du bist Fahrlehrer der Klassen A, B und BE und suchst eine neue "
+                      "Herausforderung an der Ostseeküste? Prima!",
+        "titel": "Fahrlehrer (w/m/d)", "zusatz": "Klassen A, B und BE",
+        "text": "Wir suchen für unser Team Verstärkung. Bei uns schulst du auf modernen Fahrzeugen – in einem Team, "
+                "das mit Herz und Erfahrung arbeitet.",
+        "bieten": "\n".join(["Ein familiäres Umfeld", "Ein freundliches und humorvolles Team",
+                             "Ausbildung auf modernen Fahrzeugen", "Eine faire Bezahlung"]),
+        "erwarten": "\n".join(["Fahrlehrerlaubnis der Klassen A, B und BE", "Engagement und Interesse für den Job",
+                               "Einfühlungsvermögen im Umgang mit jungen Menschen",
+                               "Eine zuverlässige und selbstständige Arbeitsweise"]),
+        "einleitung_ohne": "Wir freuen uns immer über engagierte Fahrlehrerinnen und Fahrlehrer, die unser Team "
+                           "verstärken möchten.",
+        "text_ohne": "Gerade ist keine Stelle ausgeschrieben. Initiativbewerbungen sind uns trotzdem jederzeit "
+                     "willkommen – am liebsten per Mail."},
+}
+
 usp_html = "\n".join(
     f"""      <article class="card usp rv {d(i)}">
         <span class="card-icon">{icon(ic)}</span>
@@ -523,6 +571,16 @@ quotes_html = "\n".join(
         <blockquote><p>{q}</p></blockquote>
         <figcaption><strong>{who}</strong><span>Google-Bewertung · 08/2025</span></figcaption>
       </figure>""" for i, (q, who) in enumerate(QUOTES))
+
+STIMMEN_SECTION = f"""<section class="section">
+  <div class="wrap">
+    {section_head("Stimmen", "Was Fahrschüler <em>über uns sagen</em>",
+                  "Auszüge aus öffentlichen Google-Bewertungen.", center=True)}
+    <div class="grid-3">
+{quotes_html}
+    </div>
+  </div>
+</section>"""
 
 INDEX_BODY = f"""<section class="hero hero-home">
   <div class="hero-media" data-video data-webm="assets/video/hero-loop.webm" data-mp4="assets/video/hero-loop.mp4"><img src="assets/img/hero-1600.webp" srcset="{HERO_SRCSET}" sizes="100vw" alt="Weißes Auto auf einer Uferstraße an der Förde, im Hintergrund Hafenkräne und Segelmasten" width="2400" height="1350" fetchpriority="high" decoding="async"></div>
@@ -594,23 +652,12 @@ INDEX_BODY = f"""<section class="hero hero-home">
       <p class="eyebrow rv">Unsere Fahrzeuge</p>
       <h2 class="rv rv-d1">Ausbildung auf <em>modernen Fahrzeugen.</em></h2>
       <p class="rv rv-d2">Du lernst bei uns auf modernen Schalt- oder Automatikfahrzeugen – so, wie es zu dir und deinem Ziel passt. Mit B197 kombinierst du beides.</p>
-      <div class="news rv rv-d3">
-        <p class="eyebrow">Neuigkeit</p>
-        <p><strong>Verstärkung im Team!</strong> Fahrstunden sind bei uns innerhalb von 14&nbsp;Tagen buchbar – wir freuen uns auf deinen Besuch.</p>
-      </div>
+      {cms("neuigkeit", '<div class="news rv rv-d3"><p class="eyebrow">Neuigkeit</p><p><strong>Verstärkung im Team!</strong> Fahrstunden sind bei uns innerhalb von 14&nbsp;Tagen buchbar – wir freuen uns auf deinen Besuch.</p></div>')}
     </div>
   </div>
 </section>
 
-<section class="section">
-  <div class="wrap">
-    {section_head("Stimmen", "Was Fahrschüler <em>über uns sagen</em>",
-                  "Auszüge aus öffentlichen Google-Bewertungen.", center=True)}
-    <div class="grid-3">
-{quotes_html}
-    </div>
-  </div>
-</section>
+{cms("stimmen", STIMMEN_SECTION)}
 
 <section class="section section-mint">
   <div class="wrap split">
@@ -619,7 +666,7 @@ INDEX_BODY = f"""<section class="hero hero-home">
       <h2 class="rv rv-d1">Transparente Preise, <em>ehrliche Beratung.</em></h2>
     </div>
     <div>
-      <p class="rv rv-d2">Unsere aktuellen Preise erfragst du ganz einfach in der Fahrschule zu den Bürozeiten – gerne auch telefonisch oder per Mail. Was dein Führerschein am Ende kostet, hängt von deinem individuellen Lernerfolg ab. Genau darüber sprechen wir offen mit dir.</p>
+      {cms("preise-kurz", f'<p class="rv rv-d2">{SEED["preise"]["kurz"]}</p>')}
       <div class="actions rv rv-d3">{btn("kontakt.html", "Preise erfragen")}{btn(TEL_HREF, TEL, "ghost", arrow=False)}</div>
     </div>
   </div>
@@ -784,8 +831,7 @@ PRICE_BLOCK = f"""<section class="section section-mint" id="preise">
       <h2 class="rv rv-d1">Was kostet <em>dein Führerschein?</em></h2>
     </div>
     <div>
-      <p class="rv rv-d2">Unsere aktuellen Preise erfragst du ganz einfach in der Fahrschule zu den Bürozeiten – gerne auch telefonisch oder per Mail.</p>
-      <p class="rv rv-d2">Wie teuer dein Führerschein insgesamt wird, können wir pauschal nicht beantworten: Der Lernerfolg ist immer individuell, denn jeder Fahrschüler und jede Fahrschülerin ist unterschiedlich. Lass es auf dich zukommen – bei Fragen sprich uns gerne an. Es gelten unsere {'<a href="agb.html">AGB</a>' if AGB_TEXT else 'AGB'}.</p>
+      {cms("preise", "".join(f'<p class="rv rv-d2">{x}</p>' for x in SEED["preise"]["text"].split(chr(10) * 2)))}
       <div class="actions rv rv-d3">{btn(TEL_HREF, f"{TEL} anrufen")}{btn(f"mailto:{MAIL}", "E-Mail schreiben", "ghost", arrow=False)}</div>
     </div>
   </div>
@@ -883,6 +929,7 @@ THEORIE_BODY = hero_page(
       <h2 class="rv rv-d1">Zweimal pro Woche – <em>Einstieg jederzeit.</em></h2>
       <p class="lead rv rv-d2">Ein Einstieg in den Theorieunterricht ist jederzeit möglich. Die aktuellen Termine liegen in der Fahrschule aus.</p>
       <p class="rv rv-d3">Du kommst einfach zu einem der nächsten Termine in unseren Schulungsraum am Knooper Weg – ganz gleich, mit welcher Lektion es gerade weitergeht.</p>
+      {cms("theorie-hinweis")}
     </div>
     <div class="schedule card rv rv-d2">
       {CLOCK}
@@ -942,11 +989,9 @@ def checklist(items):
 
 JOBS_BODY = hero_page(
     "Jobs", "Karriere", "Komm in <em>unser Team.</em>",
-    "Wir suchen Verstärkung: Du bist Fahrlehrer der Klassen A, B und BE und suchst eine neue "
-    "Herausforderung an der Ostseeküste? Prima!",
+    cms("stelle-intro", SEED["stelle"]["einleitung"]),
     media=img("schluessel", "Hand hält einen Autoschlüssel mit grünem Lederanhänger im Innenraum eines Autos",
-              SIZES_WIDE, lazy=False)) + f"""
-<section class="section">
+              SIZES_WIDE, lazy=False)) + "\n" + cms("stelle", f"""<section class="section">
   <div class="wrap">
     <article class="job">
       <div class="section-head">
@@ -981,9 +1026,7 @@ JOBS_BODY = hero_page(
       <div class="actions rv rv-d3">{btn(APPLY, "Jetzt per Mail bewerben")}{btn(TEL_HREF, TEL, "ghost", arrow=False)}</div>
     </div>
   </div>
-</section>
-
-""" + cta("Fragen vorab?", "Ruf uns einfach <em>an.</em>")
+</section>""") + "\n\n" + cta("Fragen vorab?", "Ruf uns einfach <em>an.</em>")
 
 PAGES["jobs.html"] = page(
     "jobs.html", "jobs", "Jobs: Fahrlehrer (w/m/d)",
@@ -1197,7 +1240,7 @@ def sitemap():
             f"{urls}\n</urlset>\n")
 
 
-ROBOTS = f"User-agent: *\nAllow: /\n\nSitemap: {BASE}sitemap.xml\n"
+ROBOTS = f"User-agent: *\nAllow: /\nDisallow: /redaktion/\n\nSitemap: {BASE}sitemap.xml\n"
 
 # ==================================================================
 # .htaccess (IONOS-Webhosting = Apache)
@@ -1302,6 +1345,16 @@ if __name__ == "__main__":
     (SITE / ".htaccess").write_text(htaccess(), encoding="utf-8")
     (SITE / "kontakt.php").write_text(
         KONTAKT_PHP.replace("__MAIL__", MAIL).replace("__HOST__", HOST), encoding="utf-8")
+    data = SITE / "redaktion" / "daten"
+    data.mkdir(parents=True, exist_ok=True)
+    (data / "inhalte.vorlage.json").write_text(
+        json.dumps(SEED, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    # Pflegbare Bereiche mit demselben Renderer füllen, den die Redaktion live nutzt
+    res = subprocess.run(["php", str(SITE / "redaktion" / "inc" / "cli.php"), "render"],
+                         capture_output=True, text=True)
+    if res.returncode != 0:
+        raise SystemExit("Redaktion-Render fehlgeschlagen:\n" + res.stdout + res.stderr)
+    print("Redaktion:", res.stdout.strip())
     if not AGB_TEXT and (SITE / "agb.html").exists():
         (SITE / "agb.html").unlink()            # AGB-Seite erst mit Text veröffentlichen
     print("wrote sitemap.xml, robots.txt, .htaccess, kontakt.php →", SITE)

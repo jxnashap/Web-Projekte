@@ -1,0 +1,8 @@
+/* Leiste in der Vorschau (liegt über der Website, unten rechts) */
+.cms-vorschau{position:fixed;right:16px;bottom:16px;z-index:9999;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;max-width:calc(100vw - 32px);padding:10px 14px;border-radius:14px;background:#151414;color:#f6f5f1;font:500 14px/1.4 "Manrope",system-ui,sans-serif;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.cms-vorschau strong{padding:3px 8px;border-radius:6px;background:#ffc23d;color:#151414;font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:12px}
+.cms-vorschau span{opacity:.75}
+.cms-vorschau nav{display:flex;gap:10px}
+.cms-vorschau a{color:#f6f5f1;text-decoration:none;border-bottom:1px solid transparent}
+.cms-vorschau a[aria-current]{border-color:#3fcf52;color:#3fcf52}
+.cms-vorschau .cms-zurueck{padding:6px 12px;border-radius:999px;background:#0e7a1e;border:0}

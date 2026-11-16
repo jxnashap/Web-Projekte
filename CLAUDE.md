@@ -14,7 +14,8 @@ Repo für alle Website-Projekte. Struktur:
 - `webseiten/lets-drive-kiel/` – Fahrschule Let's Drive Kiel (Ruhig-Modern, Anthrazit
   #151414/Fahrschul-Grün #139d27/Off-White, Manrope selbst gehostet, 0 Fremd-Requests,
   Logo 2026 (Auto-Motiv) vektorisiert: hell/dunkel + Auto-Favicon, IONOS-fertig mit .htaccess +
-  kontakt.php, Fahrschul-Animationen: Hero-Videoloop, Auto auf „Dein Weg", Ampel, Uhr; 5,1 MB) · Branch `claude/tender-edison-vwar5s` · Upload: `auslieferung/lets-drive-kiel-IONOS-Anleitung.md`
+  kontakt.php, Fahrschul-Animationen: Hero-Videoloop, Auto auf „Dein Weg", Ampel, Uhr; PHP-Redaktion unter
+  /redaktion/ – Kunde pflegt Zeiten/Hinweise/Preise/Stellen, „Veröffentlichen" = sofort live; 5,2 MB) · Branch `claude/tender-edison-vwar5s` · Upload: `auslieferung/lets-drive-kiel-IONOS-Anleitung.md`
 
 Ältere Projekte (bbi-mbh, autohaus-bad-schwartau, propp-elektrotechnik) liegen auf
 ihren ursprünglichen Branches (PR #1/#2).
@@ -36,7 +37,9 @@ ihren ursprünglichen Branches (PR #1/#2).
   eine Schrift, Weißraum, dezente Reveals), DSGVO-sauber ohne externe Requests
   (Font lokal, Maps per 2-Klick), WCAG-AA-Kontraste. QA-Tool `tools/shot.js` meldet
   zusätzlich Fremd-Hosts + Gesamtgröße. Logo-Pipeline `generatoren/trace_logo_dark.py`
-  (Logo auf Schwarz) bzw. `trace_logo.py` (Logo auf Weiß) → SVG hell/dunkel/Icon + `tools/render_brand.js`. Erstes Projekt: lets-drive-kiel.
+  (Logo auf Schwarz) bzw. `trace_logo.py` (Logo auf Weiß) → SVG hell/dunkel/Icon + `tools/render_brand.js`.
+  `redaktion/` = Mini-CMS ohne Datenbank (markierte Bereiche, Veröffentlichen schreibt HTML),
+  `tools/zip_site.py` packt ohne Kundendaten. Erstes Projekt: lets-drive-kiel.
 
 ## Arbeitsweise
 - Pro Projekt ein Branch `claude/<projekt>` + ein PR; Auslieferung als ZIP nach `auslieferung/`.

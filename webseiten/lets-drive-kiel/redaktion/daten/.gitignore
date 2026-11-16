@@ -1,0 +1,7 @@
+# Laufzeitdaten der Redaktion (entstehen auf dem Server, nie ins Repo/ZIP)
+inhalte.json
+entwurf.json
+zugang.json
+sperre.json
+versionen/
+*.tmp

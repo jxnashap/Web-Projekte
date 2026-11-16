@@ -308,6 +308,18 @@
   /* ---- Jahr im Footer ---- */
   run(() => $$('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); }));
 
+  /* ---- Hinweis-Leiste (aus der Redaktion): Schließen merkt sich der Tab;
+     ein neuer Hinweistext erscheint wieder ---- */
+  run(() => $$('[data-hinweis]').forEach(bar => {
+    const key = 'ldk-hinweis-' + Array.from(bar.textContent.trim()).reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, 7);
+    try { if (sessionStorage.getItem(key)) { bar.classList.add('is-zu'); return; } } catch (e) { /* privat */ }
+    const btn = bar.querySelector('.hinweis-zu');
+    if (btn) btn.addEventListener('click', () => {
+      bar.classList.add('is-zu');
+      try { sessionStorage.setItem(key, '1'); } catch (e) { /* privat */ }
+    });
+  }));
+
   /* ---- „Dein Weg": Fahrschulauto fährt beim Scrollen die Stationen ab ----
      Scrollfortschritt der Schritt-Liste → Zielposition; ein rAF glättet den
      Weg (Nachlauf), die Räder drehen passend zur gefahrenen Strecke. */

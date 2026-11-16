@@ -65,6 +65,34 @@ Formular (Validierung → `mailto:`), Google-Maps-2-Klick-Lösung, CTA-Band, Foo
 - **SEO lokal:** JSON-LD (`DrivingSchool`/`LocalBusiness`) mit Adresse, Zeiten,
   `sameAs`; sprechende Titles/Descriptions, Canonical, Sitemap, Rechtsseiten `noindex`.
 
+## Redaktion (Kunde pflegt selbst, „Veröffentlichen" = sofort live)
+
+`redaktion/` – schlankes PHP-Redaktionssystem ohne Datenbank für IONOS-Webhosting
+(PHP 7.4–8.x). Die Seiten bleiben statisches HTML; pflegbare Bereiche sind markiert:
+`<!--cms:name-->…<!--/cms:name-->`. „Veröffentlichen" rendert nur diese Bereiche aus
+`daten/inhalte.json` neu und schreibt die HTML-Dateien zurück.
+
+| Teil | Aufgabe |
+|---|---|
+| `redaktion/inc/cms.php` | Renderer je Bereich (einzige Quelle – auch der Build nutzt ihn), Speichern, Versionen (15), Login, CSRF, Sperre |
+| `redaktion/index.php` | Einrichtung (Einrichtungscode → Passwort), Anmeldung, Formular, Entwurf/Vorschau/Veröffentlichen, Versionen, Passwort ändern, „Jetzt angleichen" |
+| `redaktion/vorschau.php` | Seite mit Entwurf rendern (nicht veröffentlicht), Vorschau-Leiste |
+| `redaktion/inc/cli.php` | `render` (Build), `check`, `setup-code` (neuer Code, nur Hash gespeichert) |
+| `daten/` | `inhalte.vorlage.json` (vom Generator), `einrichtung.json` (Hash); Laufzeit: `inhalte.json`, `entwurf.json`, `zugang.json`, `sperre.json`, `versionen/` |
+
+Bereiche lets-drive-kiel: `hinweis` (Leiste, alle Seiten), `zeiten` (+ `zeiten-kurz`, `jsonld`),
+`neuigkeit`, `theorie-hinweis`, `preise-kurz`, `preise` (+ Preisliste), `stimmen`,
+`stelle-intro`, `stelle`. Neue Bereiche: Renderer in `cms_renderers()` + Feld in
+`cms_from_post()`/Formular + `cms("name", …)` im Generator.
+
+Sicherheit: Daten-/Programmordner per `.htaccess` gesperrt (403), Passwort nur als
+bcrypt-Hash, Sitzung `Secure`/`HttpOnly`/`SameSite=Strict`, 60-min-Timeout, CSRF-Token,
+Sperre nach 5 Fehlversuchen (15 min), alle Eingaben als Klartext maskiert, CSP auf der
+Oberfläche, Schreiben atomar (tmp + rename). Getestet mit Apache 2.4 + mod_php 8.3
+(Einrichtung, Vorschau, Veröffentlichen auf allen Seiten, Versionen, CSRF, Sperre).
+
+Auslieferung: `tools/zip_site.py` packt die Website **ohne** Laufzeitdaten der Redaktion.
+
 ## Fahrschul-Animationen (lets-drive-kiel)
 
 Alle Animationen respektieren `prefers-reduced-motion` (dann Endzustand ohne Bewegung)

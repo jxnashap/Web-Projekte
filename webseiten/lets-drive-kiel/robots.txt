@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /redaktion/
 
 Sitemap: https://www.lets-drive-kiel.de/sitemap.xml

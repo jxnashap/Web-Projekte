@@ -1,0 +1,84 @@
+{
+  "hinweis": {
+    "aktiv": false,
+    "text": ""
+  },
+  "zeiten": [
+    {
+      "label": "Mo, Mi, Fr",
+      "tage": [
+        1,
+        3,
+        5
+      ],
+      "von": "12:00",
+      "bis": "16:00"
+    },
+    {
+      "label": "Di, Do",
+      "tage": [
+        2,
+        4
+      ],
+      "von": "15:00",
+      "bis": "19:00"
+    },
+    {
+      "label": "Sa, So",
+      "tage": [
+        6,
+        0
+      ],
+      "von": "",
+      "bis": ""
+    }
+  ],
+  "neuigkeit": {
+    "aktiv": true,
+    "titel": "Verstärkung im Team!",
+    "text": "Fahrstunden sind bei uns innerhalb von 14 Tagen buchbar – wir freuen uns auf deinen Besuch."
+  },
+  "theorie_hinweis": {
+    "aktiv": false,
+    "titel": "",
+    "text": ""
+  },
+  "preise": {
+    "kurz": "Unsere aktuellen Preise erfragst du ganz einfach in der Fahrschule zu den Bürozeiten – gerne auch telefonisch oder per Mail. Was dein Führerschein am Ende kostet, hängt von deinem individuellen Lernerfolg ab. Genau darüber sprechen wir offen mit dir.",
+    "text": "Unsere aktuellen Preise erfragst du ganz einfach in der Fahrschule zu den Bürozeiten – gerne auch telefonisch oder per Mail.\n\nWie teuer dein Führerschein insgesamt wird, können wir pauschal nicht beantworten: Der Lernerfolg ist immer individuell, denn jeder Fahrschüler und jede Fahrschülerin ist unterschiedlich. Lass es auf dich zukommen – bei Fragen sprich uns gerne an. Es gelten unsere AGB.",
+    "liste": [],
+    "hinweis": ""
+  },
+  "stimmen": {
+    "aktiv": true,
+    "einleitung": "Auszüge aus öffentlichen Google-Bewertungen.",
+    "liste": [
+      {
+        "text": "Top Fahrschule! Super geduldiger Fahrlehrer, faire Preise, kein Druck.",
+        "name": "Luisa N.",
+        "quelle": "Google-Bewertung · 08/2025"
+      },
+      {
+        "text": "Andreas und sein Team nehmen sich Zeit für jeden Schüler und erklären alles verständlich und mit viel Ruhe. Man fühlt sich hier wirklich gut aufgehoben.",
+        "name": "Ilke M.",
+        "quelle": "Google-Bewertung · 08/2025"
+      },
+      {
+        "text": "Super Organisation und eine fundierte, zugleich aber auch humorvolle Ausbildung.",
+        "name": "Maria R.",
+        "quelle": "Google-Bewertung · 08/2025"
+      }
+    ]
+  },
+  "stelle": {
+    "aktiv": true,
+    "einleitung": "Wir suchen Verstärkung: Du bist Fahrlehrer der Klassen A, B und BE und suchst eine neue Herausforderung an der Ostseeküste? Prima!",
+    "titel": "Fahrlehrer (w/m/d)",
+    "zusatz": "Klassen A, B und BE",
+    "text": "Wir suchen für unser Team Verstärkung. Bei uns schulst du auf modernen Fahrzeugen – in einem Team, das mit Herz und Erfahrung arbeitet.",
+    "bieten": "Ein familiäres Umfeld\nEin freundliches und humorvolles Team\nAusbildung auf modernen Fahrzeugen\nEine faire Bezahlung",
+    "erwarten": "Fahrlehrerlaubnis der Klassen A, B und BE\nEngagement und Interesse für den Job\nEinfühlungsvermögen im Umgang mit jungen Menschen\nEine zuverlässige und selbstständige Arbeitsweise",
+    "einleitung_ohne": "Wir freuen uns immer über engagierte Fahrlehrerinnen und Fahrlehrer, die unser Team verstärken möchten.",
+    "text_ohne": "Gerade ist keine Stelle ausgeschrieben. Initiativbewerbungen sind uns trotzdem jederzeit willkommen – am liebsten per Mail."
+  }
+}

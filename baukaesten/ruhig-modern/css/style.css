@@ -321,6 +321,26 @@ h3+[data-open-badge]{margin-top:14px}
 .news .eyebrow{margin-bottom:8px}
 .news p+p{margin-top:0}
 .notice{padding:24px 28px}
+
+/* Redaktion: Hinweis-Kasten (hell), Preisliste, Hinweis-Leiste */
+.info-box{margin-top:28px;padding:20px 22px;border-radius:var(--radius-sm);background:var(--mint);border:1px solid rgba(19,157,39,.22)}
+.info-box .eyebrow{margin-bottom:6px}
+.price-list{display:grid;margin-top:24px;border-top:1px solid var(--line)}
+.price-list>div{display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:12px 0;border-bottom:1px solid var(--line)}
+.price-list dd{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.price-note{margin-top:12px;font-size:.875rem;color:var(--muted)}
+.hinweis-leiste{position:fixed;z-index:90;left:max(16px,env(safe-area-inset-left,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));
+  display:flex;align-items:flex-start;gap:10px;max-width:min(440px,calc(100vw - 32px));padding:14px 12px 14px 18px;
+  border-radius:var(--radius-sm);background:var(--ink);color:#f6f5f1;box-shadow:0 18px 40px -16px rgba(21,20,20,.55);
+  font-size:.9375rem;line-height:1.5;border-left:4px solid var(--green-glow)}
+.hinweis-leiste p{margin:0}
+.hinweis-zu{flex:none;display:grid;place-items:center;width:32px;height:32px;margin:-4px -2px 0 0;border:0;border-radius:50%;background:transparent;color:inherit;cursor:pointer}
+.hinweis-zu:hover{background:rgba(255,255,255,.1)}
+.hinweis-leiste.is-zu{display:none}
+@media (prefers-reduced-motion:no-preference){
+  html.js .hinweis-leiste{animation:hinweis-ein .7s var(--ease) 1.2s both}
+  @keyframes hinweis-ein{from{opacity:0;translate:0 16px}to{opacity:1;translate:none}}
+}
 .notice>*+*{margin-top:.6em}
 .notice .eyebrow{margin-bottom:0}
 
