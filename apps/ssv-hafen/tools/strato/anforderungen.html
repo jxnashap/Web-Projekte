@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>SSV – Alles über Strato: Was wir brauchen</title>
+<style>
+  @font-face { font-family: 'Playfair'; src: url('../../fonts/PlayfairDisplay.woff2') format('woff2'); }
+  @font-face { font-family: 'Inter'; src: url('../../fonts/Inter.woff2') format('woff2'); }
+  @page { size: A4; margin: 14mm 15mm 14mm 15mm; }
+  :root { --navy: #0E1B45; --rot: #B8232B; --sand: #F4F1EA; --ink: #1C2440; --muted: #5E6478; --linie: #DAD6CC; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Inter', Arial, sans-serif; color: var(--ink); font-size: 9pt; line-height: 1.38; }
+  h1, h2 { font-family: 'Playfair', Georgia, serif; font-weight: 400; color: var(--navy); }
+  h1 { font-size: 21pt; margin: 0 0 1mm; line-height: 1.1; }
+  h2 { font-size: 13pt; margin: 4mm 0 1.6mm; padding-bottom: 1.2mm; border-bottom: 1.5px solid var(--rot); break-after: avoid; }
+  p { margin: 0 0 1.8mm; }
+  .kopf { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 4mm; border-bottom: 1px solid var(--linie); margin-bottom: 3mm; }
+  .kopf svg { width: 26mm; height: 13mm; }
+  .adresse { text-align: right; font-size: 8.4pt; color: var(--muted); line-height: 1.4; }
+  .adresse strong { color: var(--navy); display: block; }
+  .unter { color: var(--muted); margin-bottom: 3mm; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.8pt; margin: 0 0 1mm; break-inside: avoid; }
+  th { text-align: left; font-size: 7.6pt; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--linie); padding: 1.3mm 2mm; }
+  td { border-bottom: 1px solid var(--linie); padding: 1.05mm 2mm; vertical-align: top; }
+  td:first-child { font-weight: 600; color: var(--navy); width: 30%; }
+  .mitte td:nth-child(2) { width: 25%; white-space: nowrap; }
+  .karte { background: var(--sand); border-radius: 2.5mm; padding: 2.5mm 4mm; margin: 2mm 0; break-inside: avoid; }
+  .warn { background: #fff6d6; border-left: 3px solid #c7811b; padding: 2.2mm 3.5mm; border-radius: 1.5mm; margin: 2mm 0; break-inside: avoid; }
+  ol { margin: 0 0 1mm; padding-left: 5mm; } li { margin-bottom: 1mm; }
+  .schritte { counter-reset: s; list-style: none; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2mm; }
+  .schritte li { background: var(--sand); border-radius: 2mm; padding: 2mm 2.5mm; font-size: 8.3pt; margin: 0; }
+  .schritte li b { display: block; color: var(--rot); font-size: 10pt; }
+  .fuss { margin-top: 4mm; font-size: 7.6pt; color: var(--muted); border-top: 1px solid var(--linie); padding-top: 1.8mm; }
+  .seite { break-before: page; }
+  code { font-family: inherit; font-weight: 600; white-space: nowrap; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><clipPath id="sc"><path d="M14 8L118 33L14 58Z"/></clipPath>
+  <symbol id="stander" viewBox="12 6 108 54"><path d="M14 8L118 33L14 58Z" fill="#132a6b"/><g clip-path="url(#sc)"><path d="M14 8L70 58M14 58L70 8" stroke="#fff" stroke-width="8"/><path d="M14 8L70 58M14 58L70 8" stroke="#d3252c" stroke-width="4.5"/></g></symbol></defs></svg>
+
+<div class="kopf"><svg><use href="#stander"/></svg>
+  <div class="adresse"><strong>Schwartauer Segler-Verein e.V.</strong>Zur Teerhofsinsel 5B<br>23554 Lübeck<br>info@ssv-net.de</div></div>
+
+<h1>Alles über Strato – was wir brauchen</h1>
+<p class="unter">Website, Hafen-Manager, Getränkekasse, Datenbank und E-Mail auf dem Strato-Server des Vereins · Stand 24.11.2026</p>
+
+<h2>1. Was auf dem Server laufen soll</h2>
+<table>
+  <thead><tr><th>Teil</th><th>Wofür</th></tr></thead>
+  <tbody>
+    <tr><td>Webserver mit HTTPS</td><td>Website mit Redaktion, Hafen-Manager, Mein SSV, Gast-Anmeldung, Aufnahmeantrag, Getränkekasse (fertige Dateien)</td></tr>
+    <tr><td>Datenbank (PostgreSQL)</td><td>Mitglieder, Boote, Liegeplätze, Belegungen, Rechnungen, Getränke-Buchungen</td></tr>
+    <tr><td>Anmeldung</td><td>Zugang für Vorstand, Kassenwart, Brückenwartin, Hafenmeister und Mitglieder; Mails „Passwort vergessen“</td></tr>
+    <tr><td>Zugriffsschutz</td><td>Jede Rolle sieht nur, was sie sehen darf – Regeln liegen in der Datenbank</td></tr>
+    <tr><td>Dateiablage</td><td>Fotos der Website, Dokumente bei den Mitgliedern</td></tr>
+    <tr><td>Server-Funktionen</td><td>Rechnung als PDF per E-Mail an genau die eingetragene Adresse, Push-Mitteilungen</td></tr>
+  </tbody>
+</table>
+<p style="font-size:8.4pt;color:var(--muted)">Datenbank, Anmeldung, Zugriffsschutz, Dateiablage und Server-Funktionen sind zusammen „Supabase“. Das läuft heute in Frankfurt und kann auf dem eigenen Server als Docker-Paket betrieben werden – Programm und Daten ziehen dann einfach um.</p>
+
+<h2>2. Was der Server mindestens haben muss</h2>
+<table class="mitte">
+  <thead><tr><th>Anforderung</th><th>Mindestens</th><th>Wofür</th></tr></thead>
+  <tbody>
+    <tr><td>Betriebssystem</td><td>Ubuntu 24.04 LTS oder Debian 12</td><td>Docker läuft darauf, Updates gibt es noch Jahre</td></tr>
+    <tr><td>Zugang</td><td>Root bzw. sudo per SSH</td><td>Einrichten und später Updates einspielen</td></tr>
+    <tr><td>Docker</td><td>Docker + Docker Compose</td><td>Supabase kommt als fertiges Docker-Paket</td></tr>
+    <tr><td>Prozessor</td><td>2 Kerne (besser 4)</td><td>Supabase-Dienste und Webserver</td></tr>
+    <tr><td>Arbeitsspeicher</td><td>4 GB (besser 8 GB)</td><td>Angabe von Supabase: 4 GB Minimum, 8 GB empfohlen</td></tr>
+    <tr><td>Festplatte (SSD)</td><td>40 GB frei (besser 80 GB)</td><td>Datenbank, Fotos, Sicherungen der letzten Tage</td></tr>
+    <tr><td>Netz</td><td>feste IPv4, Ports 80 und 443 offen</td><td>Adresse für die Domain, HTTPS-Zertifikat (Let’s Encrypt)</td></tr>
+    <tr><td>Mailversand</td><td>ausgehend Port 465 erlaubt</td><td>Rechnungen und Passwort-Mails über smtp.strato.de</td></tr>
+    <tr><td>Sicherung</td><td>tägliche Sicherung außerhalb des Servers</td><td>Bei Strato nicht immer im Preis – z. B. Backup-Speicher oder HiDrive</td></tr>
+  </tbody>
+</table>
+<div class="warn"><strong>Wichtig:</strong> Ein „Managed Server“ ohne Root-Zugang oder ein normales Webhosting-Paket reicht nicht – dort gibt es nur PHP und MySQL, kein Docker und kein PostgreSQL. Ist auf dem Server <em>Plesk</em> installiert, geht es, wenn die Docker-Erweiterung verfügbar ist.</div>
+
+<h2 class="seite">3. Domain und E-Mail</h2>
+<table>
+  <thead><tr><th>Was</th><th>Wofür</th></tr></thead>
+  <tbody>
+    <tr><td>Domain + Zugriff auf DNS</td><td>Einträge für die Website und eine Unteradresse für die Datenbank (z. B. <code>api.ssv-net.de</code>). Website und Hafen-Manager unter <strong>derselben</strong> Adresse – sonst geht die eingebettete Hafenkarte nicht.</td></tr>
+    <tr><td>Postfach für den Versand</td><td>z. B. <code>rechnungen@ssv-net.de</code> mit SMTP-Zugang. Das Passwort wird direkt auf dem Server eingetragen – nie per Mail oder Chat weitergeben.</td></tr>
+    <tr><td>SPF, DKIM, DMARC</td><td>Drei DNS-Einträge, damit Rechnungen nicht im Spam landen</td></tr>
+    <tr><td>Versandgrenze des Postfachs</td><td>Ein Rechnungslauf sind ca. 90–140 Mails am Stück – Strato fragen, wie viele pro Stunde/Tag gehen</td></tr>
+    <tr><td>Sammeladressen (Verteiler)</td><td>z. B. <code>vorstand@</code>, <code>hafen@</code>, <code>kasse@</code> als Weiterleitung an mehrere Personen</td></tr>
+  </tbody>
+</table>
+
+<h2>4. Diese Angaben brauche ich</h2>
+<div class="karte"><ol>
+  <li><strong>Welcher Server genau?</strong> Tarif (V-Server, Dedicated, Managed), Prozessor, Arbeitsspeicher, Festplatte, Betriebssystem.</li>
+  <li><strong>Gibt es Root-/SSH-Zugang?</strong> Wer hat ihn heute?</li>
+  <li><strong>Was läuft schon darauf?</strong> Alte Website, Plesk, E-Mail – und wie viel ist noch frei?</li>
+  <li><strong>Ist Docker installiert oder installierbar?</strong></li>
+  <li><strong>Welche Domain(s)</strong> – und wer verwaltet die DNS-Einträge?</li>
+  <li><strong>E-Mail-Paket:</strong> Welche Postfächer gibt es, welcher SMTP-Server, welche Versandgrenze?</li>
+  <li><strong>Sicherungen:</strong> Gibt es welche, wie oft, wohin?</li>
+  <li><strong>Wer kümmert sich danach?</strong> Etwa 30 Minuten im Monat für Updates und einen Blick auf die Sicherung.</li>
+</ol></div>
+
+<h2>5. So würde der Umzug laufen</h2>
+<ol class="schritte">
+  <li><b>1</b>Server prüfen: Größe, Zugang, Docker, Domain</li>
+  <li><b>2</b>Supabase per Installationsskript einrichten, HTTPS und Sicherung</li>
+  <li><b>3</b>Daten aus Frankfurt umziehen (Export → Import, ca. 1 Stunde Pause)</li>
+  <li><b>4</b>Dateien hochladen, Adressen umstellen, Mailversand auf Strato</li>
+  <li><b>5</b>Alles testen – dann Vercel und Supabase-Cloud abschalten</li>
+</ol>
+<div class="warn"><strong>Zum Abwägen:</strong> Auf dem eigenen Server ist der Verein selbst für Updates, Sicherheit und Sicherungen verantwortlich. Fällt der Server aus, stehen Kasse und Hafen-Manager still (die Getränkekasse merkt sich Buchungen und trägt sie nach). Die heutige Lösung liegt ebenfalls in Deutschland (Frankfurt) und wird vom Anbieter gepflegt.</div>
+<p style="font-size:8.4pt;color:var(--muted)">Zur Einrichtung: Ich kann direkt auf den Server, wenn der SSH-Zugang für meine Arbeitsumgebung freigegeben wird. Sonst bekommt der Betreuer ein fertiges Skript, das er Schritt für Schritt ausführt.</p>
+
+<div class="fuss">Quellen: Supabase, „Self-Hosting with Docker“ (Hardware-Angaben) · Strato FAQ (SMTP smtp.strato.de, Port 465; Webhosting nur PHP/MySQL; V-Server mit Root und Docker). Preise und Versandgrenzen bitte bei Strato erfragen – dazu gibt es keine verbindliche öffentliche Angabe.</div>
+</body>
+</html>
