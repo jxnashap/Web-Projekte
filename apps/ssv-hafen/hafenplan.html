@@ -104,7 +104,7 @@
   const melden = () => { if (!EINGEBETTET) return; try { window.parent.postMessage({ ssvKarte: { zustand: zustandKarte, hoehe: document.documentElement.scrollHeight } }, location.origin); } catch (x) { /* fremde Seite: keine Meldung */ } };
   if (EINGEBETTET && window.ResizeObserver) new ResizeObserver(melden).observe(document.body);
   const T = {
-    de: { titel: 'Freie Gastliegeplätze', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', anreise: 'Anreise', naechte: 'Nächte', passt: 'Passt mein Boot? Maße eingeben', laenge: 'Länge (m)', breite: 'Breite (m)', abend: 'Abend',
+    de: { tippTouch: 'Mit zwei Fingern zoomen · Doppeltipp = näher', tippMaus: 'Ziehen = verschieben · Mausrad = zoomen', titel: 'Freie Gastliegeplätze', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', anreise: 'Anreise', naechte: 'Nächte', passt: 'Passt mein Boot? Maße eingeben', laenge: 'Länge (m)', breite: 'Breite (m)', abend: 'Abend',
       lgFrei: 'grüne Boje: frei', lgBelegt: 'rote Boje: belegt', lgKlein: 'frei, aber zu klein für dein Boot', soGehts: 'So geht’s', s1: 'Freien Platz mit grüner Boje aussuchen – am Steg hängt dort das grüne Schild.', s2: 'Festmachen und hier online anmelden.', s3: 'Gleich bezahlen – du musst auf niemanden warten.',
       preisT: 'Liegegebühr', preisU: 'pro Nacht, unabhängig von der Bootsgröße. Strom und Wasser am Steg.', anmelden: 'Als Gast anmelden', kontaktT: 'Hafenmeister', anfahrt: 'Zur Teerhofsinsel 5B, 23554 Lübeck · nördlicher Travearm',
       fuss: 'Die Karte zeigt nur, ob ein Platz frei oder belegt ist – ohne Gewähr; vor Ort gilt das grüne Schild am Steg.', quelle: 'Plan gezeichnet nach amtlichem Luftbild',
@@ -112,7 +112,7 @@
       platz: 'Platz', laengs: 'Längsseits', frei: 'frei', belegt: 'belegt', zuKlein: 'frei, aber zu klein für dein Boot', bis: 'bis {l} × {b} m', hier: 'Hier anmelden', andere: 'Bitte einen Platz mit grüner Boje wählen.', freieListe: 'Freie Plätze – antippen zeigt den Platz auf der Karte',
       winterT: 'Winterpause', winter: 'Der Hafen ist zurzeit nicht in Betrieb – die Boote stehen an Land.', oeffnet: 'Die Saison beginnt am {d}.', ausT: 'Karte nicht verfügbar', aus: 'Freie Plätze bitte direkt beim Hafenmeister erfragen.', fehlerT: 'Keine Verbindung', fehler: 'Die Karte konnte nicht geladen werden. Bitte später noch einmal versuchen.', neu: 'Noch einmal versuchen',
       stand: 'Stand: {t} Uhr.', demo: 'Demo mit erfundenen Daten – zeigt einen Sommertag.', ruf: 'Anrufen: ', apple: 'Apple Karten' },
-    en: { titel: 'Free guest berths', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', anreise: 'Arrival', naechte: 'Nights', passt: 'Will my boat fit? Enter size', laenge: 'Length (m)', breite: 'Beam (m)', abend: 'Evening',
+    en: { tippTouch: 'Pinch with two fingers to zoom · double-tap = closer', tippMaus: 'Drag = move · mouse wheel = zoom', titel: 'Free guest berths', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', anreise: 'Arrival', naechte: 'Nights', passt: 'Will my boat fit? Enter size', laenge: 'Length (m)', breite: 'Beam (m)', abend: 'Evening',
       lgFrei: 'green buoy: free', lgBelegt: 'red buoy: occupied', lgKlein: 'free, but too small for your boat', soGehts: 'How it works', s1: 'Pick a berth with a green buoy – it has a green sign on the jetty.', s2: 'Moor and register here online.', s3: 'Pay right away – no need to wait for anyone.',
       preisT: 'Berthing fee', preisU: 'per night, regardless of boat size. Power and water on the jetty.', anmelden: 'Register as guest', kontaktT: 'Harbour master', anfahrt: 'Zur Teerhofsinsel 5B, 23554 Lübeck · northern arm of the Trave',
       fuss: 'The map only shows whether a berth is free or occupied – without guarantee; on site the green sign on the jetty applies.', quelle: 'Plan drawn from official aerial imagery',
@@ -120,7 +120,7 @@
       platz: 'Berth', laengs: 'Alongside', frei: 'free', belegt: 'occupied', zuKlein: 'free, but too small for your boat', bis: 'up to {l} × {b} m', hier: 'Register here', andere: 'Please choose a berth with a green buoy.', freieListe: 'Free berths – tap to show on the map',
       winterT: 'Winter break', winter: 'The harbour is closed for the season – the boats are ashore.', oeffnet: 'The season starts on {d}.', ausT: 'Map not available', aus: 'Please ask the harbour master for free berths.', fehlerT: 'No connection', fehler: 'The map could not be loaded. Please try again later.', neu: 'Try again',
       stand: 'As of {t}.', demo: 'Demo with made-up data – shows a summer day.', ruf: 'Call: ', apple: 'Apple Maps' },
-    da: { titel: 'Ledige gæstepladser', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', anreise: 'Ankomst', naechte: 'Nætter', passt: 'Passer min båd? Indtast mål', laenge: 'Længde (m)', breite: 'Bredde (m)', abend: 'Aften',
+    da: { tippTouch: 'Zoom med to fingre · dobbelttryk = tættere på', tippMaus: 'Træk = flyt · musehjul = zoom', titel: 'Ledige gæstepladser', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', anreise: 'Ankomst', naechte: 'Nætter', passt: 'Passer min båd? Indtast mål', laenge: 'Længde (m)', breite: 'Bredde (m)', abend: 'Aften',
       lgFrei: 'grøn bøje: ledig', lgBelegt: 'rød bøje: optaget', lgKlein: 'ledig, men for lille til din båd', soGehts: 'Sådan gør du', s1: 'Vælg en plads med grøn bøje – der hænger et grønt skilt på broen.', s2: 'Fortøj og tilmeld dig her online.', s3: 'Betal med det samme – du skal ikke vente på nogen.',
       preisT: 'Havnepenge', preisU: 'pr. nat, uanset bådens størrelse. Strøm og vand på broen.', anmelden: 'Tilmeld som gæst', kontaktT: 'Havnefoged', anfahrt: 'Zur Teerhofsinsel 5B, 23554 Lübeck · nordlige Trave-arm',
       fuss: 'Kortet viser kun, om en plads er ledig eller optaget – uden garanti; på stedet gælder det grønne skilt på broen.', quelle: 'Plan tegnet efter officielt luftfoto',
@@ -189,7 +189,7 @@
         karte: (id) => { const p = d.liegeplaetze.find((x) => x.id === id); if (!p) return '';
           return '<strong>' + esc((p.box === 'L' ? t('laengs') : t('platz')) + ' ' + p.nr) + '</strong><span class="pk-st ' + (p.lage === 'frei' ? 'gruen' : p.lage === 'zuklein' ? 'aus' : 'rot') + '">' + esc(p.lage === 'frei' ? t('frei') : p.lage === 'zuklein' ? t('zuKlein') : t('belegt')) + '</span>' + (p.max_laenge ? '<p class="pk-leise">' + esc(t('bis', { l: zahlDe(p.max_laenge), b: zahlDe(p.max_breite) })) + '</p>' : ''); },
         onKlick: (id) => { S.platz = id; waehlen(d, svg); } });
-      PLAN.kamera(svg, { onAnsicht: (v) => { S.vb = v.slice(); } });
+      PLAN.kamera(svg, { tipp: { touch: t('tippTouch'), maus: t('tippMaus') }, onAnsicht: (v) => { S.vb = v.slice(); } });
       return { d, svg };
     };
     if (!D || !D.ok) {

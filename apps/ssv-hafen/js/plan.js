@@ -447,7 +447,7 @@
       const inhalt = opts.karte || ((id) => {
         const p = Q.platz(id); if (!p) return '';
         if (p.bez) { const bel = Q.belegungPlatz(opts.saison, per, id); const b = bel && Q.boot(bel.boot_id);
-          return `<strong>${esc(p.bez)}</strong><span class="pk-st ${b ? 'rot' : 'gruen'}">${b ? 'belegt' : 'frei'}</span>` + (b && opts.namen ? `<p>„${esc(b.name)}“ · ${esc(Q.name(Q.mitglied(b.eigner_id)))}${bel.nicht_kranen ? ' · nicht kranen' : ''}</p>` : ''); }
+          return `<strong>${esc(Q.platzName ? Q.platzName(p) : p.bez)}</strong><span class="pk-st ${b ? 'rot' : 'gruen'}">${b ? 'belegt' : 'frei'}</span>` + (b && opts.namen ? `<p>„${esc(b.name)}“ · ${esc(Q.name(Q.mitglied(b.eigner_id)))}${bel.nicht_kranen ? ' · nicht kranen' : ''}</p>` : ''); }
         const x = lageVon(p); const st = x.status; const aw = st === 'unterwegs' && Q.abwesendAm(p.id, opts.datum);
         let h = `<strong>${p.box === 'L' ? 'Längsseits' : 'Platz'} ${esc(p.nr)}</strong><span class="pk-st ${st === 'gesperrt' || st === 'leer' ? 'aus' : FREI[st] ? 'gruen' : 'rot'}">${esc(st === 'leer' ? 'Winterpause' : st === 'unterwegs' ? 'frei · grünes Schild' : STATUS_TEXT[st] || st)}</span>`;
         if (aw) h += `<p>frei bis ${H.kurz(aw.bis)}</p>`;
@@ -599,7 +599,10 @@
       mass = document.createElement('div'); mass.className = 'plan-mass'; mass.setAttribute('aria-hidden', 'true'); mass.innerHTML = '<span class="pm-n"><svg viewBox="-10 -12 20 24"><path d="M0 -11 L5 9 L0 5 L-5 9 Z" fill="#B8232B"/></svg>N</span><span class="pm-leiste"><i></i><b></b></span>';
       huelle.appendChild(mass); svg.classList.add('mit-kamera'); massZeigen(cur);
       let gesehen = false; try { gesehen = sessionStorage.getItem('ssv-plan-hinweis') === '1'; sessionStorage.setItem('ssv-plan-hinweis', '1'); } catch (x) { /* egal */ }
-      if (!gesehen) { const h = document.createElement('div'); h.className = 'plan-tipp'; h.textContent = matchMedia('(pointer: coarse)').matches ? 'Mit einem Finger verschieben · mit zwei Fingern zoomen · Doppeltipp = näher' : 'Ziehen = verschieben · Mausrad = zoomen · Doppelklick = näher'; huelle.appendChild(h); setTimeout(() => h.remove(), 4200); }
+      // Kurzer Bedienhinweis je Gerät (Finger oder Maus), verschwindet nach 4 s; steht immer über der Maßstabs-Einblendung, nie darauf
+      if (!gesehen) { const t = Object.assign({ touch: 'Mit zwei Fingern zoomen · Doppeltipp = näher', maus: 'Ziehen = verschieben · Mausrad = zoomen' }, opt.tipp || {});
+        const h = document.createElement('div'); h.className = 'plan-tipp'; h.textContent = matchMedia('(pointer: coarse)').matches ? t.touch : t.maus;
+        h.style.bottom = Math.max(58, (mass.offsetHeight || 0) + (parseFloat(getComputedStyle(mass).bottom) || 10) + 10) + 'px'; huelle.appendChild(h); setTimeout(() => h.remove(), 4000); }
     }
     svg._kamera = { zu, auf, zoom, get ansicht() { return ziel.slice(); } };
     return svg._kamera;

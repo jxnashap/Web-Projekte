@@ -23,10 +23,10 @@ a { color: var(--navy-3); }
 .btn.primaer { background: var(--rot); color: #fff; box-shadow: none; }
 .btn.primaer:hover { background: var(--rot-2); }
 .btn.dunkel { background: var(--navy); color: #fff; box-shadow: none; }
-.btn.klein { padding: 7px 11px; font-size: 13px; }
+.btn.klein { padding: 7px 11px; font-size: 13px; min-height: 40px; }
 .btn.gefahr { color: var(--rot); }
 .btn.breit { width: 100%; margin-top: 10px; }
-.btn.icon { width: 36px; height: 36px; padding: 0; }
+.btn.icon { width: 40px; height: 40px; min-height: 40px; padding: 0; flex: none; }
 .btn:disabled { opacity: .45; cursor: default; }
 
 /* Anmeldung */
@@ -102,7 +102,8 @@ a { color: var(--navy-3); }
 .galerie-raster figure { margin: 0; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: var(--schatten); }
 .galerie-raster img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
 .galerie-raster figcaption { padding: 8px 10px 4px; font-size: 13px; min-height: 2.6em; }
-.galerie-raster .knoepfe { display: flex; gap: 4px; padding: 0 8px 8px; }
+.galerie-raster .knoepfe { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 8px 8px; }
+.galerie-raster .knoepfe [data-edit] { flex: 1 0 auto; }   /* passt „Bearbeiten“ nicht neben die Pfeile, rückt es in eine eigene Zeile (nichts wird abgeschnitten) */
 .drop { border: 2px dashed rgba(14,27,69,.25); border-radius: 14px; padding: 22px; text-align: center; color: var(--muted); background: rgba(255,255,255,.6); cursor: pointer; display: block; }
 .drop strong { color: var(--navy); }
 .drop.ueber { border-color: var(--rot); background: #fff; }
@@ -183,4 +184,14 @@ a { color: var(--navy-3); }
   html.schrift-gross .liste .text small { font-size: 16px; } html.schrift-gross .hinweis { font-size: 16.5px; }
   html.schrift-gross .galerie-raster figcaption { font-size: 16px; } html.schrift-gross .vorschau-kopf { font-size: 14.5px; }
   html.schrift-gross .modal-karte h2 { font-size: 27px; }
+}
+
+/* Fingerbedienung (Handy, Tablet): alles Antippbare mindestens 44 px. Steht hinter der Lesbarkeits-Ebene,
+   damit diese die Höhe nicht wieder auf 40–42 px senkt; „Schrift größer“ (46 px) bleibt darüber. */
+@media screen and (pointer: coarse) {
+  .btn, .btn.klein, html.schrift-gross .btn.klein { min-height: 44px; }
+  .btn.icon { width: 44px; height: 44px; min-height: 44px; }
+  html.schrift-gross .btn.icon { width: 46px; height: 46px; min-height: 46px; }
+  .feld input:not([type=checkbox]):not([type=radio]), .feld select { min-height: 44px; }
+  .feld.check { min-height: 44px; }
 }

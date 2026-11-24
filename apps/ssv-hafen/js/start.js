@@ -8,7 +8,7 @@
   if (!SB) return oberflaeche();
 
   const ROLLEN = { vorstand: ['Vorstand', 'alles sehen und bearbeiten'], kassenwart: ['Kassenwart', 'Abrechnung, Lastschrift, Gebühren, Bankdaten'],
-    brueckenwart: ['Brückenwartin', 'Belegung, Boote, Warteliste, Ein-/Auslagern'], hafenmeister: ['Hafenmeister', 'Hafenplan, Gastlieger, Abwesenheiten, Kran'] };
+    brueckenwart: ['Brückenwartin', 'Belegung, Boote, Warteliste, Kran & Termine'], hafenmeister: ['Hafenmeister', 'Hafenplan, Gastlieger, grünes Schild, Kran'] };
   const login = document.getElementById('login'); const box = login.querySelector('.karte-login');
   const kopf = '<svg class="stander" style="color:#0E1B45"><use href="#stander"/></svg><h1>Hafen-Manager</h1><p style="color:var(--muted);margin:0">Schwartauer Segler-Verein e.V.</p>';
   const fuss = '<p style="margin:16px 0 0;font-size:13px"><a href="mein-ssv.html">Mitglied? Zu „Mein SSV“ →</a></p><p style="margin:10px 0 0;font-size:12px;color:var(--muted)">Passwort vergessen? Über „Mein SSV“ zurücksetzen. · <a href="../website/impressum.html">Impressum</a> · <a href="../website/datenschutz.html">Datenschutz</a></p>';

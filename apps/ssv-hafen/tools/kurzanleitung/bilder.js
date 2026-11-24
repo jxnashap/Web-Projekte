@@ -1,6 +1,6 @@
 // Bildschirmfotos für die Kurzanleitung (Demo)
 const { chromium, devices } = require('playwright');
-const B = 'http://localhost:8695/'; const OUT = __dirname;
+const B = process.env.SSV_BASIS || 'http://localhost:8695/'; const OUT = __dirname;   // z. B. SSV_BASIS=http://localhost:8692/ (Quelltext statt Paket)
 (async () => {
   const b = await chromium.launch();
   const h = await b.newContext({ ...devices['iPhone 13'] }); const m = await h.newPage();

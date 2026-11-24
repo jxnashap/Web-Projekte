@@ -411,7 +411,23 @@
     tab = t;
     document.querySelectorAll('#nav [data-tab]').forEach((b) => b.classList.toggle('aktiv', b.dataset.tab === t));
     T[t](); window.scrollTo(0, 0); history.replaceState(null, '', '#' + t);
+    reiterInsBild();
   }
+  /* Am Handy ist die Leiste eine waagerechte Rolle: den aktiven Reiter mittig ins Bild holen, damit er nie
+     abgeschnitten am Rand steht (z. B. „Termin…“). Am großen Bildschirm (senkrechte Leiste) passiert nichts. */
+  let reiterSchonGezeigt = false;
+  function reiterInsBild() {
+    const nav = $('#nav'), b = nav.querySelector('[data-tab].aktiv');
+    if (!b || nav.scrollWidth <= nav.clientWidth + 1) { reiterSchonGezeigt = true; return; }
+    const n = nav.getBoundingClientRect(), r = b.getBoundingClientRect();
+    const ziel = nav.scrollLeft + (r.left - n.left) - (nav.clientWidth - r.width) / 2;
+    const ruhig = !reiterSchonGezeigt || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    nav.scrollTo({ left: Math.max(0, Math.min(ziel, nav.scrollWidth - nav.clientWidth)), behavior: ruhig ? 'auto' : 'smooth' });
+    reiterSchonGezeigt = true;
+  }
+  /* Nur wenn sich die Breite ändert (Handy gedreht) – am Handy feuert „resize“ auch beim Ein-/Ausblenden der Adressleiste */
+  let breiteVorher = window.innerWidth;
+  window.addEventListener('resize', () => { if (window.innerWidth === breiteVorher) return; breiteVorher = window.innerWidth; if (!$('#app').hidden) reiterInsBild(); });
   $('#nav').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) zeige(b.dataset.tab); });
   $('#abmelden').addEventListener('click', async () => { await SP.abmelden(); start(); });
 

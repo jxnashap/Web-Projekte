@@ -60,7 +60,11 @@ Nach 60 Sekunden ohne Eingabe meldet sich die Kasse von allein ab.
   (Demo: Hafen-Manager, Datenbank: `mitglieder_bank`), Vereins-IBAN/Gläubiger-ID aus den
   Kassen-Einstellungen, sonst aus dem Hafen-Manager. Schon eingereichte Rechnungen merkt
   sich die Kasse (`einstellungen.sepa_laeufe`), damit nichts doppelt eingezogen wird.
-  Lange Rechnungen/Anlagen laufen im Druck auf Folgeseiten weiter; knapp zu lange werden etwas enger gesetzt und bleiben einseitig (nie eine Seite nur mit Fußzeile).
+  Druckseiten (`js/drucken.js`): jedes Blatt ist genau eine A4-Seite mit Briefkopf oben und Fußzeile unten. Knapp zu lange
+  Blätter werden etwas enger gesetzt („knapp“); passt es dann noch nicht, teilt `seitenAufbauen()` die Tabelle auf Folgeblätter
+  auf (Briefkopf, „Fortsetzung · Seite 2 von 3“, Zwischensumme/Übertrag; Zahlungstext, Gruß und Steuerhinweis stehen immer mit
+  mindestens einer Position auf der letzten Seite). Gemessen wird ohne die Handy-Verkleinerung, geprüft wird auch die Blatthöhe
+  (≤ 297 mm) – so gibt es nie eine Seite nur mit Fußzeile oder Steuerhinweis und keine Seite ohne Fußzeile.
 - **Einstellungen:** Vereinsdaten, Bankverbindung, Steuerhinweis,
   Zahlungsziel, Storno- und Abmeldezeit, Code selbst festlegen (an/aus) und
   Mitgliedsnummer abfragen (an/aus).

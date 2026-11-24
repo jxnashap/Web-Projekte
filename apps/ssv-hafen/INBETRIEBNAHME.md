@@ -40,11 +40,11 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    (ohne PayPal-Namen sehen Gäste nur Überweisung und bar).
 8. `apps/ssv-hafen/supabase/nachtrag-08.sql` – Arbeitsbereiche (z. B. Kran, Boote fahren, Lager, Steg): Bereiche mit
    Aufgabenliste, Mitglieder mit Rolle „Leitung“/„Mitglied“, Stunden und Arbeitseinsätze je Bereich, PDF je Bereich,
-   „Deine Arbeitsbereiche“ in Mein SSV. Nach dem Einspielen ist die Liste leer – Bereiche unter Betrieb →
-   Arbeitsbereiche anlegen (die Demo zeigt Beispiele mit typischen Aufgaben).
+   „Deine Arbeitsgruppen“ in Mein SSV. Nach dem Einspielen ist die Liste leer – Gruppen unter Arbeitsdienst →
+   Arbeitsgruppen anlegen (die Demo zeigt Beispiele mit typischen Aufgaben).
    **Stand 10.11.2026:** Die 12 Arbeitsgruppen des Vereins (plus „Weitere Aufgaben – noch zuordnen“) mit allen Aufgaben aus
    „Aktionsliste2024“ und „Arbeitsdienst 2025“ sind in der Live-Datenbank angelegt (Quelle `js/bereiche-vorlage.js`).
-   Mitglieder zuordnen: Betrieb → Arbeitsgruppen → „Zuordnung aus Excel“.
+   Mitglieder zuordnen: Arbeitsdienst → Arbeitsgruppen → „Weitere ▾“ → „Zuordnung aus Excel“.
 9. `apps/ssv-hafen/supabase/nachtrag-09.sql` – Toilettencode für Gastlieger: eigene Tabelle `gast_toilette`
    (der Hafenmeister ändert den Code selbst unter Gäste & Schild → „Code ändern“), Regel „sofort nach
    Zahlungsmeldung“ oder „erst nach bestätigtem Eingang“; Gast-Seite fragt den Stand über `gast_status` ab.
@@ -61,7 +61,7 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    „nicht vorhanden“ markiert (`vorhanden = false`, gesperrt) und im Hafen-Manager ausgeblendet.
 13. `apps/ssv-hafen/supabase/nachtrag-13.sql` – Veranstaltungen mit Zu-/Absage: Tabellen `veranstaltungen` und
    `zusagen`; Mitglieder antworten in „Mein SSV“ über `meine_zusage` (prüft Frist, Begleitpersonen und freie Plätze),
-   sehen über `meine_veranstaltungen` nur die Zahl der Zusagen, keine Namen. Pflege im Hafen-Manager unter Betrieb → Veranstaltungen.
+   sehen über `meine_veranstaltungen` nur die Zahl der Zusagen, keine Namen. Pflege im Hafen-Manager unter Mitteilungen & Veranstaltungen → Veranstaltungen.
 14. `apps/ssv-hafen/supabase/nachtrag-14.sql` – Veranstaltungskosten abrechnen: Rechnungsart `veranstaltung`
    (Nummern `SSV-V-…`), Spalte `hafen_rechnungen.veranstaltung_id`, Doppelschutz je Mitglied und Veranstaltung.
    Der Kontoauszug-Abgleich (Finanzen → Kontoauszug) braucht keinen Nachtrag.

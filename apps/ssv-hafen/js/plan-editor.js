@@ -30,7 +30,7 @@
 
     const el = document.createElement('div'); el.className = 'pe'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Lageplan bearbeiten');
     const WZ = [['wahl', 'Auswählen', 'Antippen wählt aus, Ziehen verschiebt'], ['steg', 'Steg', 'Anfang und Ende antippen'], ['flaeche', 'Fläche', 'Ecken antippen (Gebäude, Hof, Wasser …)'], ['linie', 'Linie', 'Punkte antippen (Weg, Zaun, Bahn)'],
-      ['punkt', 'Punkt', 'Kran, Slip, WC, Strom … setzen'], ['lager', 'Lagerfeld', 'Mehrere Landplätze als Raster setzen'], ['lagerplatz', 'Lagerplatz', 'Einen einzelnen Landplatz setzen'], ['laengs', 'Einzelbox', 'Einzelnen Wasserplatz ohne Steg-Raster setzen (z. B. längsseits)']];
+      ['punkt', 'Punkt', 'Kran, Slip, WC, Strom … setzen'], ['lager', 'Lagerfeld', 'Mehrere Lagerplätze als Raster setzen'], ['lagerplatz', 'Lagerplatz', 'Einen einzelnen Lagerplatz setzen'], ['laengs', 'Einzelbox', 'Einzelnen Wasserplatz ohne Steg-Raster setzen (z. B. längsseits)']];
     el.innerHTML = '<div class="pe-leiste"><strong>' + esc(o.titel || 'Lageplan') + '</strong><div class="pe-wz" role="toolbar" aria-label="Werkzeuge">' + WZ.map(([k, n, t]) => '<button type="button" data-wz="' + k + '" title="' + t + '">' + n + '</button>').join('') + '</div>' +
       '<div class="pe-rechts"><button type="button" id="pe-undo" title="Letzten Schritt zurücknehmen">↶ Zurück</button><button type="button" id="pe-zm" aria-label="Verkleinern">−</button><button type="button" id="pe-zp" aria-label="Vergrößern">+</button><button type="button" id="pe-ganz">Ganz</button>' +
       (o.onPlanung ? '<button type="button" id="pe-planung" title="Als Entwurf sichern – der gültige Plan bleibt, wie er ist">Als Planung sichern</button>' : '') + '<button type="button" class="pe-prim" id="pe-ok">' + (o.entwurf ? 'Planung speichern' : 'Speichern') + '</button><button type="button" id="pe-zu">Schließen</button></div></div>' +
@@ -148,7 +148,7 @@
       if (p.fehlen.length) t.push('<span class="pe-warn">Fehlen im Plan: ' + esc(bereiche(p.fehlen)) + '</span>');
       if (p.doppelt.length) t.push('<span class="pe-warn">Doppelt: ' + esc(bereiche(p.doppelt)) + '</span>');
       const neu = p.unbekannt.concat(p.landUnbekannt || []); if (neu.length) t.push('<span class="pe-leise">Neu im Plan – ' + (o.entwurf ? 'werden angelegt, sobald die Planung gültig wird' : 'beim Speichern kannst du sie anlegen') + ': ' + esc(bereiche(neu)) + '</span>');
-      if (p.landFehlen.length) t.push('<span class="pe-warn">Landplätze ohne Lagerfeld: ' + esc(bereiche(p.landFehlen)) + '</span>');
+      if (p.landFehlen.length) t.push('<span class="pe-warn">Lagerplätze ohne Lagerfeld: ' + esc(bereiche(p.landFehlen)) + '</span>');
       return t.join('<br>');
     }
 
@@ -197,7 +197,7 @@
           '<div class="pe-zwei">' + feld('Feldbreite (m)', 'bw', r1(x.bw * M), 'me') + feld('Feldlänge (m)', 'bh', r1(x.bh * M), 'me') + '</div>' + feld('Drehung (°)', 'rot', x.rot, 'zahl') + feld('Ziffern (2 = P01)', 'stellen', x.stellen, 'ganz') +
           '<div class="pe-zwei">' + feld('Boote schräg (°)', 'neig', x.neig || 0, 'zahl') + feld('Bug (1 = zum Weg, −1 = weg)', 'bug', x.bug || 1, 'ganz') + '</div>' +
           '<div class="pe-knoepfe"><button type="button" data-akt="platz-dazu">+ Platz anhängen</button></div><p class="pe-leise"><strong>Einzelnen Platz ändern:</strong> den Platz im Plan antippen. Ist das Feld gewählt, verschiebt Ziehen das ganze Feld.</p>' + einzelListe(x.aus, (k) => (PLAN.lagerVon({ lager: [{ ...x, aus: {} }] }).find((z) => z.nr === Number(k)) || {}).id || k) +
-          '<p class="pe-leise">Die Nummern müssen zu den Landplätzen im Programm passen (P01–P36 Nordlager, P41–P48 West, A1–A6 Außenlager). „Boote schräg“ dreht jedes Boot im Feld, z. B. 40° für die schrägen Reihen vorn links.</p>';
+          '<p class="pe-leise">Die Nummern müssen zu den Lagerplätzen im Programm passen (P01–P36 Nordlager, P41–P48 West, A1–A6 Außenlager). „Boote schräg“ dreht jedes Boot im Feld, z. B. 40° für die schrägen Reihen vorn links.</p>';
       } else if (sel.typ === 'box') {
         const p = boxGeo(x.steg, x.nr), a = (x.steg.aus && x.steg.aus[x.nr]) || {};
         h = '<h3>Box ' + esc(x.nr) + '</h3><p class="pe-leise" style="margin-top:-6px">' + esc(x.steg.name || 'Steg') + ' · jetzt ' + m1(p.voll) + ' × ' + m1(p.tiefe) + ' m' + (p.frei ? ' · frei verschoben' : '') + '</p>' +

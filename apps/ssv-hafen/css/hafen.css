@@ -31,7 +31,7 @@ a { color: var(--navy-3); }
 .feld input:focus, .feld select:focus, .feld textarea:focus { outline: 2px solid var(--navy-3); outline-offset: -1px; border-color: transparent; }
 .feld small { font-weight: 400; color: var(--muted-2); }
 .feld.check { flex-direction: row; align-items: center; gap: 8px; color: var(--ink); font-weight: 500; font-size: 14px; }
-.feld.check input { width: 18px; height: 18px; accent-color: var(--rot); }
+.feld.check input { width: 18px; height: 18px; flex: none; accent-color: var(--rot); }
 .form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .form.drei { grid-template-columns: repeat(3, 1fr); }
 .form .voll { grid-column: 1 / -1; }
@@ -276,7 +276,7 @@ table.todo tr[hidden] { display: none !important; }
   .schnell { display: inline-flex; align-items: center; position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 55; min-height: 52px; padding: 0 20px; border: 0; border-radius: 999px;
     background: var(--rot); color: #fff; font: 700 15px/1 inherit; font-family: inherit; box-shadow: 0 10px 26px -8px rgba(14,27,69,.55); cursor: pointer; }
   body.modal-offen .schnell, body.nav-auf .schnell { display: none; }
-  .main { padding-bottom: 88px; }
+  body.mit-schnell .main { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }   /* Knopfhöhe 52 px + Abstand: letzte Zeile bleibt frei */
   .masse-tab input.masse { width: 70px; font-size: 16px; }
 }
 
@@ -287,7 +287,7 @@ table.todo tr[hidden] { display: none !important; }
 .nav-bereiche button.aktiv .nav-icon { opacity: 1; }
 .reiter { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: -6px 0 22px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
 .reiter-titel { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; color: var(--muted-2); }
-.reiter-liste { display: flex; gap: 4px; background: rgba(14,27,69,.06); padding: 4px; border-radius: 12px; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+.reiter-liste { display: flex; flex-wrap: wrap; gap: 4px; background: rgba(14,27,69,.06); padding: 4px; border-radius: 12px; max-width: 100%; }
 .reiter-liste::-webkit-scrollbar { display: none; }
 .reiter-liste button { flex: none; border: 0; background: transparent; color: var(--navy); font: inherit; font-size: 13.5px; font-weight: 600; padding: 8px 14px; border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; white-space: nowrap; }
 .reiter-liste button:hover { background: rgba(255,255,255,.7); }
@@ -300,8 +300,9 @@ table.todo tr[hidden] { display: none !important; }
 @media screen and (max-width: 860px) {
   .reiter { margin: 0 -12px 16px; padding: 0 12px 12px; gap: 6px; }
   .reiter-titel { display: none; }
-  .reiter-liste { width: 100%; }
-  .reiter-liste button { min-height: 40px; }
+  /* Am Handy brechen die Reiter um, statt waagerecht zu scrollen – so ist jeder Reiter zu sehen */
+  .reiter-liste { width: 100%; flex-wrap: wrap; overflow: visible; }
+  .reiter-liste button { min-height: 40px; flex: 1 1 auto; justify-content: center; }
   .nav-bereiche button { padding: 13px 12px; font-size: 16px; }
 }
 
@@ -480,6 +481,7 @@ table.laeufe { margin: 6px 0 4px; }
 .modal-karte.akte { max-width: 980px; }
 .akte-kopf { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .akte-kopf h2 { margin: 0; }
+.modal-karte.akte .akte-kopf { padding-right: 42px; }   /* Platz für das Schließen-× oben rechts: „Bearbeiten“ liegt nie darunter (≥ 8 px Abstand) */
 .akte-unter { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
 .akte-raster { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .akte-teil { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-width: 0; }
@@ -499,21 +501,15 @@ table.tab.kompakt td { padding: 5px 6px; font-size: 13.5px; }
 .geb-info { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; }
 .geb-info small { color: var(--muted); }
 /* Geführter Abrechnungslauf */
-.ablauf { list-style: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 0; margin: 0 0 16px; }
-.ablauf a { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: #fff; border: 1px solid var(--line); text-decoration: none; color: var(--navy); height: 100%; box-sizing: border-box; }
-.ablauf strong { display: block; font-size: 14px; } .ablauf small { display: block; font-size: 12px; color: var(--muted); }
+/* Abrechnen: die fünf Schritte als Liste (.ablauf.schritte, Stil weiter unten bei „Finanzen neu“) */
+.ablauf { list-style: none; padding: 0; margin: 0 0 16px; }
 .ablauf-nr { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--line); color: var(--navy); }
-.ablauf li.ok .ablauf-nr { background: var(--gruen); color: #fff; }
-.ablauf li.warn .ablauf-nr { background: var(--warn); color: #fff; }
-.ablauf li.jetzt a { border-color: var(--navy); box-shadow: inset 0 0 0 1px var(--navy); }
-.ablauf li.jetzt .ablauf-nr { background: var(--navy); color: #fff; }
-.ablauf li.leer a, .ablauf li.offen a { opacity: .6; }
 .pruefliste { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
 .pruefliste li { display: flex; gap: 10px; align-items: baseline; font-size: 14px; }
 .pruefliste li a { margin-left: auto; white-space: nowrap; font-size: 13px; }
 .pl-icon { flex: none; width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 12px; font-weight: 800; background: var(--gruen); color: #fff; transform: translateY(3px); }
 .pruefliste li.warn .pl-icon { background: var(--warn); } .pruefliste li.info .pl-icon { background: #8a94b0; }
-@media screen and (max-width: 860px) { .ablauf { grid-template-columns: 1fr 1fr; } .ablauf li:last-child { grid-column: 1 / -1; } .pruefliste li { flex-wrap: wrap; } }
+@media screen and (max-width: 860px) { .pruefliste li { flex-wrap: wrap; } }
 @media screen and (max-width: 860px) {
   .akte table.kompakt, .akte table.kompakt tbody { display: block; }
   .akte table.kompakt tr { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
@@ -531,7 +527,7 @@ table.tab.kompakt td { padding: 5px 6px; font-size: 13.5px; }
 .plan-ctl button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
 @media (pointer: coarse) { .plan-ctl button { width: 44px; height: 44px; } }
 .plan-tipp { position: absolute; left: 50%; bottom: 58px; transform: translateX(-50%); background: rgba(14,27,69,.86); color: #fff; font-size: 15px; padding: 8px 14px; border-radius: 14px;
-  pointer-events: none; white-space: normal; text-align: center; width: max-content; z-index: 4; animation: tipp 4.2s ease both; max-width: calc(100% - 24px); line-height: 1.35; }   /* bottom 58px: über der Maßstabs-Einblendung (.plan-mass) */
+  pointer-events: none; white-space: normal; text-align: center; width: max-content; z-index: 4; animation: tipp 4s ease both; max-width: calc(100% - 24px); line-height: 1.35; }   /* bottom 58px: über der Maßstabs-Einblendung (.plan-mass) */
 @keyframes tipp { 0% { opacity: 0; transform: translate(-50%, 8px); } 10%, 82% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 4px); } }
 /* Vollbild */
 .plan-box.vollbild { position: fixed; inset: 0; z-index: 85; border-radius: 0; display: flex; flex-direction: column; }
@@ -791,7 +787,6 @@ body.plan-vollbild { overflow: hidden; }
     .karten > .kz { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; align-content: start; }
     .karten > .kz > strong { align-self: end; }
   }
-  .ablauf strong { font-size: 15.5px; } .ablauf small { font-size: 14px; }
   /* Arbeitsgruppen-Karte */
   .ab-zahlen dt { font-size: 14.5px; text-transform: none; letter-spacing: 0; font-weight: 600; }
   /* weitere kleine Großbuchstaben-Etiketten in normaler Schrift */
@@ -828,6 +823,25 @@ body.plan-vollbild { overflow: hidden; }
   .nav .nav-leiste strong { white-space: normal; line-height: 1.15; overflow: visible; }   /* Bereichsname darf zweizeilig sein statt „Gäste & grünes …“ */
 }
 @media screen { html.schrift-gross .tab td { font-size: 17px; } html.schrift-gross .tag { font-size: 16px; } html.schrift-gross .kz small { font-size: 16px; } html.schrift-gross .btn.klein { font-size: 16px; min-height: 44px; } }
+/* Nachlese Nov. 2026: Felder, Etiketten und Tippflächen – steht bewusst HINTER der Lesbarkeits-Ebene, damit nichts davon überschrieben wird */
+@media screen {
+  .feld { font-size: 15px; } html.schrift-gross .feld { font-size: 16px; }
+  .marke span { font-size: 13.5px; letter-spacing: .02em; text-transform: none; opacity: .75; }
+  details.sek > summary { min-height: 44px; }
+  .saison-wahl select { min-height: 36px; padding: 6px 8px; font-size: 15px; }
+  .pe-leiste button { min-height: 40px; }
+  .pe-hinweis button { min-height: 40px; }
+}
+@media screen and (max-width: 860px) {
+  .shell { grid-template-rows: auto 1fr; }   /* Kopfleiste nur so hoch wie nötig – auch auf kurzen Seiten (Verlauf, Mitteilungen, Kontoauszug) */
+  .pe-leiste button { font-size: 14px; padding: 6px 9px; min-height: 40px; }
+}
+/* Fingerbedienung (Tablet, Handy): mind. 44 px – nach allen Schrift-Regeln, sonst gewinnt dort wieder 40 px */
+@media (pointer: coarse) {
+  .btn.klein, html.schrift-gross .btn.klein { min-height: 44px; }
+  details.sek > summary, .link-knopf, .kopf-mehr, .ab-modus button, .chip-btn { min-height: 44px; }
+  .pe-leiste button, .pe-hinweis button { min-height: 44px; }
+}
 @media screen and (min-width: 861px) { .shell { grid-template-columns: 264px 1fr; } }
 @media screen and (max-width: 860px) {
   .nav .such-knopf { display: none; }
@@ -1059,3 +1073,283 @@ body.plan-vollbild { overflow: hidden; }
 html, body { overscroll-behavior: none; }
 /* Grillplatz und Spielplatz im Hafenplan */
 .pkt-grill circle { fill: #f0b36a; } .pkt-spiel circle { fill: #9fd58a; }
+/* ===== Bereiche neu geordnet (Nov. 2026): Kran & Termine, Arbeitsdienst-Regeln/Stundenstand, Arbeitsgruppen als Liste, Gastlieger-Aushang ===== */
+/* Kran & Termine */
+.kt-termine { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.kt-termin { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; background: #fff; }
+.kt-termin small { font-size: 14px; font-weight: 600; color: var(--muted); }
+.kt-termin strong { font-size: 20px; color: var(--navy); font-variant-numeric: tabular-nums; }
+.kt-termin .tag { align-self: flex-start; margin-top: 2px; }
+.kt-termin.kommt { border-color: var(--gast); }
+.kt-winter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; justify-content: space-between; margin-top: 4px; }
+.kt-winter p { margin: 0; font-size: 15px; }
+.kt-aendern { margin: 10px 0 0; }
+/* Arbeitsdienst: Regeln als eine Zeile zum Aufklappen */
+details.ad-regeln { padding: 0; }
+details.ad-regeln > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 14px 18px; font-size: 15px; min-height: 44px; }
+details.ad-regeln > summary::-webkit-details-marker { display: none; }
+details.ad-regeln > summary > span:first-child { flex: 1 1 260px; }
+.ad-regeln-auf { color: var(--navy-3); font-weight: 600; white-space: nowrap; }
+.ad-regeln-auf .zu, details.ad-regeln[open] .ad-regeln-auf .auf { display: none; }
+details.ad-regeln[open] .ad-regeln-auf .zu { display: inline; }
+details.ad-regeln > ul.regeln, details.ad-regeln > .ad-regeln-fuss { margin: 0 18px 14px 36px; }
+details.ad-regeln > .ad-regeln-fuss { margin-left: 18px; }
+.ad-filter { align-items: center; }
+.ad-filter .ab-modus { margin: 0; }
+.ad-filter .suche { flex: 1 1 220px; max-width: 320px; }
+/* Arbeitsgruppen als Liste */
+.ab-ohne-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; justify-content: space-between; }
+.ab-ohne-zeile > span { flex: 1 1 300px; }
+table.ab-gruppen td { vertical-align: middle; }
+table.ab-gruppen .ab-g-name strong { font-size: 16px; color: var(--navy); }
+table.ab-gruppen .ab-g-leit small, table.ab-gruppen .ab-g-std small { color: var(--muted); }
+table.ab-gruppen .ab-g-pfeil { color: var(--navy-3); font-weight: 700; font-size: 18px; width: 28px; }
+.btn.zm-knopf.zm-text { min-width: 0; font-weight: 600; letter-spacing: 0; }
+.ab-akte-dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; margin: 0 0 12px; font-size: 15px; }
+.ab-akte-dl dt { color: var(--muted); font-weight: 600; } .ab-akte-dl dd { margin: 0; }
+.modal .akte-teil + .akte-teil { margin-top: 10px; }
+/* Gastlieger: Aushang & Toilettencode unter der Liste */
+details.gast-aushang { padding: 0; }
+details.gast-aushang > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 14px 18px; min-height: 44px; }
+details.gast-aushang > summary::-webkit-details-marker { display: none; }
+details.gast-aushang > summary::after { content: '▸'; margin-left: auto; color: var(--navy-3); font-weight: 700; }
+details.gast-aushang[open] > summary::after { content: '▾'; }
+.ga-titel { font-family: "Playfair Display", Georgia, serif; font-size: 19px; color: var(--navy); }
+.ga-kurz { font-size: 15px; color: var(--muted); } .ga-kurz strong { color: var(--navy); letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+details.gast-aushang > .wc-panel, details.gast-aushang > .ga-aushang, details.gast-aushang > .ga-text { margin: 0 18px 14px; }
+details.gast-aushang > .wc-panel { padding: 12px 0 14px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.ga-aushang p { margin: 0 0 8px; font-size: 15px; }
+.ga-text { font-size: 14.5px; color: var(--muted); }
+@media screen and (max-width: 860px) {
+  .ad-filter .suche { max-width: none; flex-basis: 100%; }
+  .ad-filter .ab-modus { width: 100%; } .ad-filter .ab-modus button { flex: 1 1 auto; }
+  table.ab-gruppen .ab-g-pfeil { display: none !important; }
+  table.ab-gruppen .ab-g-std { margin-left: auto; }
+}
+
+/* ===== Finanzen neu (Nov. 2026): Auf einen Blick · Abrechnen in Schritten · Rechnungen & Offenes · Zahlungseingang · Hafengeld · Gebührenordnung lesen/ändern */
+.fin-leiste { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin: 0 0 16px; }
+.fin-leiste .ab-modus { margin: 0; }
+.fin-wahl { display: flex; gap: 6px; align-items: center; }
+.fin-wahl select { min-height: 42px; padding: 8px 12px; border: 1px solid #8A8FA3; border-radius: 9px; background: #fff; font: inherit; font-size: 16px; color: var(--ink); min-width: 0; }
+.fin-pfeil { min-width: 42px; justify-content: center; }
+.fin-wie { margin: -4px 0 12px; color: var(--muted); font-size: 15px; line-height: 1.45; }
+.fin-leise { color: var(--muted); }
+.fin-getr { margin: -4px 0 16px; font-size: 15px; color: var(--ink); }
+.fin-ohne { margin: 12px 0 0; }
+.fin-tab td:first-child, .fin-monate td:first-child { white-space: nowrap; }
+.fin-monate .summe-sp { border-left: 1px solid var(--line); }
+.fin-monate tfoot td, .fin-tab tfoot td { font-weight: 700; }
+.fin-monate tr.fin-vorjahr td { font-weight: 500; color: var(--muted); border-top: 0; }
+.fin-einzel > summary { cursor: pointer; list-style: none; } .fin-einzel > summary h2 { display: inline; font-size: 17px; }
+.fin-einzel > summary::before { content: '▸ '; color: var(--muted); } .fin-einzel[open] > summary::before { content: '▾ '; }
+.fin-einzel table { margin-top: 12px; }
+.kp-liste { margin: 0 0 12px; padding-left: 20px; } .kp-liste li { margin: 6px 0; }
+.kz-link { cursor: pointer; } .kz-link:hover, .kz-link:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+.ze-zuletzt { margin: 4px 2px 24px; color: var(--muted); font-size: 15px; }
+.ka-ablage > h2 { margin-bottom: 4px; }
+/* Abrechnen: Zeitraum, Schritte (nur der gewählte offen), Stand der Rechnungen */
+.abr-zeitraum { margin-bottom: 14px; }
+.ablauf.schritte > li { list-style: none; }
+.panel.schritt { padding: 0; overflow: visible; margin-bottom: 10px; }
+.schritt-kopf { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 18px; min-height: 56px; background: none; border: 0; border-radius: 16px; font: inherit; color: var(--navy); text-align: left; cursor: pointer; }
+.schritt-kopf:hover { background: rgba(14,27,69,.03); }
+.schritt-kopf .ablauf-nr { width: 30px; height: 30px; font-size: 15px; }
+.schritt-titel { flex: 1 1 auto; min-width: 0; } .schritt-titel strong { display: block; font-size: 17px; } .schritt-titel small { display: block; color: var(--muted); font-size: 14.5px; margin-top: 1px; }
+.schritt-auf { white-space: nowrap; font-weight: 600; font-size: 15px; color: var(--navy); opacity: .8; }
+.schritt.ok .schritt-kopf .ablauf-nr { background: var(--gruen); color: #fff; }
+.schritt.warn .schritt-kopf .ablauf-nr { background: var(--warn); color: #fff; }
+.schritt.auf { box-shadow: inset 0 0 0 2px var(--navy), 0 12px 28px -18px rgba(14,27,69,.28); }
+.schritt.auf .schritt-kopf { cursor: default; } .schritt.auf .schritt-kopf:hover { background: none; }
+.schritt.auf .schritt-kopf .ablauf-nr { background: var(--navy); color: #fff; }
+.schritt.ok.auf .schritt-kopf .ablauf-nr { background: var(--gruen); }
+.schritt:not(.auf) .schritt-kopf { min-height: 52px; }
+.schritt.offen:not(.auf), .schritt.leer:not(.auf) { opacity: .75; }
+.schritt-inhalt { padding: 0 18px 18px; }
+.schritt-fuss { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.schritt-fuss [data-schritt]:last-child { margin-left: auto; }
+.abr-stand-kopf { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+.abr-stand-kopf h2 { margin: 0; }
+.abr-stand-kopf .link-knopf, .panel .link-knopf { font-size: 15px; font-weight: 600; min-height: 40px; }
+/* Rechnungen & Offenes */
+.re-filter { align-items: end; } .re-filter .suche { flex: 2 1 200px; } .re-filter .feld { flex: 1 1 150px; margin: 0; } .re-filter .feld:last-child { flex-basis: 210px; }
+.re-summe { font-size: 15px; color: var(--muted); margin: 0 0 6px; }
+.re-tab td { vertical-align: top; } .re-tab .re-datum { color: var(--muted); }
+.re-tab td.aktion { white-space: nowrap; }
+.tab .nw, .tab td.nw { white-space: nowrap; }
+/* Gebührenordnung: Leseansicht und Bearbeiten */
+.geb-stand small { color: var(--muted); }
+.geb-edit { box-shadow: inset 0 0 0 2px var(--warn), 0 12px 28px -18px rgba(14,27,69,.28); }
+.geb-feld[aria-invalid=true] { border-color: var(--rot) !important; outline: 2px solid var(--rot); }
+.geb-einzel td:first-child { width: 60%; }
+.ab-modus button:disabled { opacity: .5; cursor: default; }
+@media print { .fin-leiste, .schritt-fuss, .re-filter, .fin-pfeil { display: none !important; } }
+@media screen and (max-width: 430px) { .re-filter .feld { flex-basis: 100%; } }
+
+/* Handy: Finanz-Tabellen als Karten (keine Tabelle zum seitlichen Schieben). Erste Spalte = Überschrift der Karte, jede weitere Spalte mit Beschriftung. */
+@media screen and (max-width: 860px) {
+  .panel table.tab.fk thead { display: none; }
+  .panel table.tab.fk, .panel table.tab.fk tbody, .panel table.tab.fk tfoot { display: block; width: 100%; }
+  .panel table.tab.fk tr { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .panel table.tab.fk tfoot tr { border-bottom: 0; border-top: 2px solid var(--navy); }
+  .panel table.tab.fk td { display: block; padding: 0; border: 0; position: static; box-shadow: none; background: none; min-width: 0; }
+  .panel table.tab.fk td:first-child { flex: 1 1 100%; font-size: 17px; white-space: normal; }
+  .panel table.tab.fk td[data-l]:not(:first-child) { flex: 1 1 100%; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; text-align: right; }
+  .panel table.tab.fk td[data-l]:not(:first-child)::before { content: attr(data-l); color: var(--muted); text-align: left; font-weight: 500; flex: none; }
+  .panel table.tab.fk td[data-l]:not(:first-child) > * { min-width: 0; }
+  .panel table.tab.fk td.aktion { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; text-align: left; white-space: normal; margin-top: 4px; }
+  .panel table.tab.fk td.aktion:empty { display: none; }
+  .panel table.tab.fk td.null[data-l], .panel table.tab.fk td[data-l]:empty { display: none; }
+  .panel table.tab.fk td[colspan]:not([data-l]):empty { display: none; }
+  .panel table.tab.fk tr.blass { opacity: .6; }
+  .panel table.tab.fk.re-tab td[data-l="Stand"] { display: block; text-align: left; } .panel table.tab.fk.re-tab td[data-l="Stand"]::before { display: block; margin-bottom: 2px; }
+  .panel table.tab.fk.re-tab td[data-l="Mitglied"], .panel table.tab.fk.re-tab td[data-l="Boot"] { font-weight: 600; }
+  .fin-monate tr.blass { display: none !important; }   /* Monate ohne Eingang nicht als leere Karte */
+  .fin-leiste { gap: 10px; } .fin-leiste .ab-modus { width: 100%; } .fin-leiste .ab-modus button { flex: 1 1 0; }
+  .fin-wahl { width: 100%; } .fin-wahl select { flex: 1 1 auto; }
+  .abr-zeitraum { display: flex; width: 100%; } .abr-zeitraum button { flex: 1 1 40%; }
+  .schritt-kopf { padding: 12px 14px; } .schritt-inhalt { padding: 0 14px 14px; }
+  .schritt-auf { display: none; }
+  .schritt-fuss .btn { flex: 1 1 40%; }
+  .re-filter .feld { flex: 1 1 45%; }
+  .re-panel .kette-kopf { gap: 6px; } .re-panel .kette-box, .abr-stand .kette-box { padding: 6px 10px; } .re-panel .kette-box strong, .abr-stand .kette-box strong { font-size: 19px; }
+  .re-panel .kette-kopf + .hinweis, .abr-stand .kette-kopf + .hinweis { display: none; }
+  .geb-info .geb-stand { flex-basis: 100%; }
+}
+
+/* =====================================================================
+   Hafenplan-Leiste: eine Zeile mit vier Bedienelementen
+   (Sommer | Winter mit Stichtag · Ausschnitt · Ansicht ▾ · Plan ▾ bzw. Drucken)
+   ===================================================================== */
+@media screen {
+  .plan-leiste { gap: 8px 10px; flex-wrap: wrap; overflow: visible; }
+  .plan-seg { display: inline-flex; flex: none; padding: 3px; gap: 2px; border-radius: 11px; background: rgba(14,27,69,.06); }
+  .plan-seg .btn { box-shadow: none; background: transparent; min-width: 82px; }
+  .plan-seg .btn.aktiv { background: var(--navy); color: #fff; }
+  .plan-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--muted); flex: none; }
+  .plan-tag input { min-height: 42px; padding: 6px 10px; border: 1px solid #8A8FA3; border-radius: 9px; font: inherit; font-size: 15px; font-weight: 600; color: var(--navy); background: #fff; }
+  .plan-aus { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .plan-aus select { min-height: 40px; border-radius: 9px; border: 1px solid #8A8FA3; padding: 4px 30px 4px 10px; font: inherit; font-size: 15px; font-weight: 600; color: var(--navy); background-color: #fff; max-width: 100%; }
+  .plan-zm { display: inline-flex; flex: none; }
+  .zm-titel { display: block; padding: 8px 12px 4px; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .zm-trenn { display: block; height: 1px; margin: 4px 6px; background: var(--line); }
+  .zm-haken { display: inline-block; width: 1.2em; font-weight: 800; color: var(--navy); }
+  .zm-punkt[aria-checked=true] { font-weight: 700; }
+  [role=menuitemcheckbox] .zm-haken { width: 18px; height: 18px; margin-right: 10px; vertical-align: -3px; border: 2px solid #8A8FA3; border-radius: 5px; font-size: 13px; line-height: 14px; text-align: center; }
+  [role=menuitemcheckbox][aria-checked=true] .zm-haken { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .plan-tipp { white-space: normal; }
+  /* Anfahrt in der Seitenkarte */
+  .detail .anfahrt .aktionen { display: flex; flex-wrap: wrap; gap: 8px; }
+  html.schrift-gross .plan-aus, html.schrift-gross .plan-aus select, html.schrift-gross .plan-tag, html.schrift-gross .plan-tag input { font-size: 16.5px; }
+}
+@media screen and (max-width: 860px) {
+  /* Zwei feste Zeilen für jede Rolle: 1) Sommer | Winter · Ansicht ▾ · Plan ▾ (Vorstand) bzw. Drucken (Hafenmeister, Brückenwartin)
+     2) Ausschnitt über die ganze Breite. Als Raster, damit „Drucken“ nie allein in eine eigene Zeile rutscht. */
+  .plan-leiste { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; overflow: visible; padding: 10px; }
+  .plan-seg { grid-column: 1; grid-row: 1; min-width: 0; } .plan-seg .btn { flex: 1 1 0; min-width: 0; padding-left: 6px; padding-right: 6px; }
+  .plan-zm, .plan-leiste > #plan-druck { grid-row: 1; }
+  .plan-zm > .btn, .plan-leiste > #plan-druck { padding-left: 10px; padding-right: 10px; }
+  .plan-aus { grid-column: 1 / -1; grid-row: 2; min-width: 0; } .plan-aus select { flex: 1 1 auto; min-width: 0; }
+}
+/* Passt die erste Zeile nicht (Sommer | Winter gleich breit + beide Knöpfe), steht „Sommer | Winter“ allein oben,
+   darunter die beiden Knöpfe nebeneinander, dann „Ausschnitt“ – nie ein Knopf allein, nie abgeschnittener Text.
+   Grenzen gemessen: Vorstand braucht 364 px, mit „Drucken“ 382 px; mit „Schrift größer“ 383 bzw. 403 px. */
+@media screen and (max-width: 369px) {
+  .plan-leiste { grid-template-columns: 1fr 1fr; }
+  .plan-leiste > .plan-seg { grid-column: 1 / -1; }
+  .plan-leiste > .plan-zm, .plan-leiste > #plan-druck { grid-row: 2; }
+  .plan-leiste > .plan-zm > .btn { flex: 1 1 auto; }
+  .plan-leiste > .plan-aus { grid-row: 3; }
+}
+@media screen and (max-width: 389px) {
+  .plan-leiste.mit-druck, html.schrift-gross .plan-leiste { grid-template-columns: 1fr 1fr; }
+  .plan-leiste.mit-druck > .plan-seg, html.schrift-gross .plan-leiste > .plan-seg { grid-column: 1 / -1; }
+  .plan-leiste.mit-druck > .plan-zm, html.schrift-gross .plan-leiste > .plan-zm, .plan-leiste.mit-druck > #plan-druck, html.schrift-gross .plan-leiste > #plan-druck { grid-row: 2; }
+  .plan-leiste.mit-druck > .plan-zm > .btn, html.schrift-gross .plan-leiste > .plan-zm > .btn { flex: 1 1 auto; }
+  .plan-leiste.mit-druck > .plan-aus, html.schrift-gross .plan-leiste > .plan-aus { grid-row: 3; }
+}
+@media screen and (max-width: 419px) {
+  html.schrift-gross .plan-leiste.mit-druck { grid-template-columns: 1fr 1fr; }
+  html.schrift-gross .plan-leiste.mit-druck > .plan-seg { grid-column: 1 / -1; }
+  html.schrift-gross .plan-leiste.mit-druck > .plan-zm, html.schrift-gross .plan-leiste.mit-druck > #plan-druck { grid-row: 2; }
+  html.schrift-gross .plan-leiste.mit-druck > .plan-zm > .btn { flex: 1 1 auto; }
+  html.schrift-gross .plan-leiste.mit-druck > .plan-aus { grid-row: 3; }
+}
+/* PC und Tablet: Die Breite der Leiste hängt am Kasten (Seitenkarte daneben oder darunter), nicht am Fenster.
+   Darum Container-Abfrage am .plan-box: breit genug → eine Zeile, „Ausschnitt“ gibt Platz ab;
+   sonst feste zwei Zeilen (Sommer | Winter + Ausschnitt / die Knöpfe) – nie ein Knopf allein. */
+@media screen and (min-width: 861px) {
+  .plan-box { container-type: inline-size; }
+  .plan-leiste { flex-wrap: nowrap; }
+  .plan-leiste > .plan-seg { order: 1; }
+  .plan-leiste > .plan-aus { order: 2; flex: 1 1 auto; min-width: 0; }
+  .plan-leiste > .plan-aus select { flex: 1 1 auto; min-width: 0; width: 100%; max-width: 280px; }
+  .plan-leiste > .plan-zm, .plan-leiste > #plan-druck { order: 4; flex: none; }
+  .plan-leiste > #plan-druck { white-space: nowrap; }
+  @container (max-width: 699px) {
+    .plan-leiste { flex-wrap: wrap; row-gap: 4px; }
+    .plan-leiste::after { content: ''; order: 3; flex: 0 0 100%; height: 0; }
+  }
+}
+
+/* Einstellungen: aufklappbare Abschnitte mit Zusammenfassung, Speichern fest unten, Sicherung ganz unten */
+@media screen {
+  details.panel.einst { padding: 0; overflow: visible; margin-bottom: 10px; }
+  details.einst > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 14px; padding: 16px 18px; min-height: 60px; border-radius: 16px; }
+  details.einst > summary::-webkit-details-marker { display: none; }
+  details.einst > summary:hover { background: rgba(14,27,69,.03); }
+  details.einst > summary:focus-visible { outline: 2px solid var(--signal, var(--navy)); outline-offset: 2px; }
+  .einst-kopf { display: grid; gap: 4px; flex: 1; min-width: 0; }
+  .einst-kopf strong { font-size: 18px; color: var(--navy); }
+  .einst-zus { color: var(--muted); font-size: 15px; line-height: 1.45; }
+  .einst-offen { color: #8a5a10; font-weight: 600; }
+  .einst-auf { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: rgba(14,27,69,.06); color: var(--navy); }
+  .einst-auf::after { content: '▸'; font-size: 15px; } details.einst[open] .einst-auf::after { content: '▾'; }
+  details.einst[open] > summary { border-bottom: 1px solid var(--line); border-radius: 16px 16px 0 0; }
+  .einst-inhalt { padding: 16px 18px 18px; }
+  .einst-fuss { position: sticky; bottom: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 22px; padding: 12px 16px;
+    background: #fff; border-radius: 14px; box-shadow: 0 -4px 22px rgba(14,27,69,.14), inset 0 0 0 1px var(--line); }
+  .einst-status { color: var(--muted); font-size: 15px; } .einst-status.warn { color: #8a5a10; font-weight: 700; }
+  .einst-fuss .btn { flex: none; min-width: 140px; }
+  .einst-sicherung h2 { margin-bottom: 6px; }
+  html.schrift-gross .einst-kopf strong { font-size: 20px; } html.schrift-gross .einst-zus, html.schrift-gross .einst-status { font-size: 16.5px; }
+}
+@media screen and (max-width: 640px) {
+  details.einst > summary { padding: 14px; gap: 10px; }
+  .einst-inhalt { padding: 14px; }
+  .einst-fuss { margin-left: -4px; margin-right: -4px; padding: 10px 12px; }
+  .einst-fuss .btn { min-width: 0; flex: 1 1 auto; max-width: 55%; }
+}
+@media print { .einst-fuss { display: none; } details.einst > .einst-inhalt { display: grid; } }
+
+/* Liegeplätze und Belegung: am PC Tabelle, am Handy je Zeile eine Karte
+   (oben fett Platz · Lage, darunter Boot und Eigner, rechts Status und die eine Aktion). Maße brechen nie um. */
+.k-nur { display: none; }
+@media screen {
+  .bel-tab .frei-zeile td { background: rgba(46,212,124,.07); }
+  .frei-inhalt { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; }
+  .frei-liste { max-height: min(60vh, 420px); overflow-y: auto; }
+}
+@media screen and (max-width: 700px) {
+  .k-nur { display: inline; }
+  .panel table.tab.kt thead { display: none; }
+  .panel table.tab.kt, .panel table.tab.kt tbody { display: block; width: 100%; }
+  .panel table.tab.kt tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "titel status" "boot aktion" "eigner aktion" "mass aktion"; align-items: start; gap: 3px 12px; padding: 12px 2px; border-bottom: 1px solid var(--line); }
+  .panel table.tab.kt td { display: block; padding: 0; border: 0; min-width: 0; text-align: left; white-space: normal; background: none; position: static; box-shadow: none; }
+  .panel table.tab.kt td:empty, .panel table.tab.kt td.k-weg { display: none; }
+  .panel table.tab.kt td.k-titel { grid-area: titel; font-size: 17px; color: var(--navy); }
+  .panel table.tab.kt td.k-status { grid-area: status; text-align: right; }
+  .panel table.tab.kt td.k-boot { grid-area: boot; font-weight: 600; }
+  .panel table.tab.kt td.k-eigner { grid-area: eigner; color: var(--muted); }
+  .panel table.tab.kt td.k-mass { grid-area: mass; color: var(--muted); }
+  .panel table.tab.kt td.k-aktion { grid-area: aktion; align-self: end; text-align: right; }
+  .panel table.tab.kt td.leer { grid-column: 1 / -1; }
+  .panel table.tab.kt tr.frei-zeile { display: block; padding: 12px; margin: 6px 0; border-radius: 12px; border-bottom: 0; background: rgba(46,212,124,.08); }
+  .panel table.tab.kt tr.frei-zeile td { background: none; }
+  .frei-inhalt .zm { margin-left: auto; }
+}
+/* Gebühren „Gäste, Land, Kran“ am Handy: Bezeichnung links, Betrag rechts – ohne Schatten der festen ersten Spalte */
+@media screen and (max-width: 700px) {
+  .panel table.tab.geb-einzel td:first-child { position: static; box-shadow: none; }
+  .panel table.tab.geb-einzel td.r { white-space: nowrap; }
+}

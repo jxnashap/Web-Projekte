@@ -76,8 +76,8 @@
         const faktor = periode === 'sommer' ? Math.pow(2, Math.max(0, (bel.sommer_an_land_jahr || 1) - 1)) : 1;
         const zusatz = faktor > 1 ? ' (' + bel.sommer_an_land_jahr + '. Sommer an Land, ×' + faktor + ')' : '';
         const was = periode === 'sommer' ? 'Sommerstellplatz an Land' : 'Winterlager';
-        // Platzname wie im Hafenplan (P13, A1, H4), die Art davor – nicht mehr „Palette 13“
-        const platzTxt = ({ palette: 'Palette ', aussen: 'Außenlager ', halle: 'Halle ' }[lp.art] || '') + lp.id;
+        // Platzname wie im Hafenplan mit Lage: „Lagerplatz P13 (Nordlager)“ – zentral in daten.js (Q.platzName), nicht mehr „Palette 13“
+        const platzTxt = window.HAFEN.Q.platzName(lp, 'text');
         if (lp.art === 'palette') pos(m.id, P(was + ', ' + platzTxt + zusatz + bootTxt, 1, 'Halbjahr', gb.palette_halbjahr * faktor));
         else {
           const m2 = flaeche(d, bel, boot);
@@ -93,7 +93,7 @@
       const boot = d.boote.find((x) => x.id === k.boot_id); if (!boot) return;
       const std = Math.max(1, Math.ceil(k.minuten / 60));
       const preis = k.art === 'mast' ? gb.mastenkran_std : gb.schiffskran_std;
-      const p = P((k.art === 'mast' ? 'Mastenkran' : 'Schiffskran') + ' am ' + new Date(k.datum + 'T12:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' (' + k.minuten + ' Min.)' + ' · „' + boot.name + '“', std, 'angef. Std.', preis);
+      const p = P((k.art === 'mast' ? 'Mastenkran' : 'Schiffskran') + ' am ' + window.HAFEN.H.datum(k.datum) + ' (' + k.minuten + ' Min.)' + ' · „' + boot.name + '“', std, 'angef. Std.', preis);
       p.kran_id = k.id;
       pos(boot.eigner_id, p);
     });
@@ -153,5 +153,63 @@
     return { pflicht, befreit, soll: sollJ, ist, gemeldet, vorjahr, fehl: Math.max(0, sollJ - ist) + vorjahr, erfasst: erfasstIm(jahr) };
   }
 
-  window.HAFEN_GEBUEHREN = { arbeitsdienst, vorschau, saisonAbrechnen, stornieren, gebuehrenFuer, saisonDaten, flaeche };
+  /* ---------------------------------------------------------- Finanzen (Hafen-Manager „Finanzen“ und Druckseiten)
+   * Zwei Sichten, klar getrennt:
+   *   Eingänge  – nach Zahlungsdatum (Kontoauszug, Quittung, „bezahlt am“): „Was kam im Monat/Geschäftsjahr rein?“
+   *   Abgerechnet – nach Abrechnungsjahr (r.saison; Gäste nach Ankunftsjahr, Getränke nach Rechnungsdatum): Soll, Ist, Offen
+   * kasse = Monatsrechnungen der Getränkekasse ([] wenn die Kasse nicht verbunden ist). Ausgaben und Bankbestand gibt es hier nicht. */
+  const FIN_BEREICHE = [['beitrag', 'Beiträge'], ['sommer', 'Sommerliegeplatz'], ['winter', 'Winterlager'], ['gast', 'Gastlieger-Hafengeld'], ['veranstaltung', 'Veranstaltungen'], ['getraenke', 'Getränke']];
+  const FIN_ZAHLART = { bar: 'bar', ueberweisung: 'Überweisung', paypal: 'PayPal', karte: 'Karte', offen: 'Zahlart offen' };
+  const t10 = (x) => String(x || '').slice(0, 10);
+  const wer = (em) => em ? ((em.vorname || '') + ' ' + (em.nachname || '')).trim() + (em.nr ? ' (' + em.nr + ')' : '') : '';
+  function finEingaenge(d, kasse) {
+    const l = [];
+    d.rechnungen.filter((r) => !r.storniert_am).forEach((r) => {
+      const z = r.zahlungen || [];
+      if (z.length) z.forEach((x) => { const rueck = x.art === 'ruecklastschrift'; const n = String(x.notiz || '');
+        const art = rueck ? 'Rücklastschrift' : /^Lastschrift/.test(n) ? 'Lastschrift' : /Überweisung/.test(n) ? 'Überweisung' : 'von Hand gebucht';
+        l.push({ datum: t10(x.datum), betrag: (rueck ? -1 : 1) * Number(x.betrag || 0), bereich: r.periode, nr: r.nr, wer: wer(r.empfaenger), zahlart: art, beleg: [n, x.ref ? 'Umsatz ' + x.ref : ''].filter(Boolean).join(' · ') }); });
+      else if (r.bezahlt_am) l.push({ datum: t10(r.bezahlt_am), betrag: Number(r.summe), bereich: r.periode, nr: r.nr, wer: wer(r.empfaenger), zahlart: r.sepa && r.sepa_lauf ? 'Lastschrift' : 'Überweisung', beleg: r.sepa && r.sepa_lauf ? 'Lastschrift ' + r.sepa_lauf : '' });
+    });
+    d.gaeste.filter((g) => g.bezahlt_am && g.status !== 'storniert').forEach((g) => l.push({ datum: t10(g.bezahlt_am), betrag: Number(g.betrag || 0), bereich: 'gast', nr: g.quittung_nr || '', wer: '„' + g.bootsname + '“ (Gast)',
+      zahlart: FIN_ZAHLART[g.zahlung] || g.zahlung || '', bar: g.zahlung === 'bar', beleg: g.quittung_nr ? 'Quittung ' + g.quittung_nr : '' }));
+    (kasse || []).filter((r) => r.bezahlt_am && !r.storniert_am).forEach((r) => l.push({ datum: t10(r.bezahlt_am), betrag: Number(r.summe), bereich: 'getraenke', nr: r.nr, wer: wer(r.empfaenger), zahlart: r.sepa ? 'Lastschrift' : 'Überweisung', beleg: '' }));
+    return l.sort((a, b) => a.datum.localeCompare(b.datum) || String(a.nr).localeCompare(String(b.nr)));
+  }
+  // Summe je Bereich in einem Zeitraum (von/bis einschließlich, JJJJ-MM-TT)
+  function finSumme(eing, von, bis) {
+    const s = { summe: 0, n: 0, bar: 0 }; FIN_BEREICHE.forEach(([k]) => { s[k] = 0; });
+    eing.forEach((x) => { if (x.datum < von || x.datum > bis) return; s[x.bereich] = (s[x.bereich] || 0) + x.betrag; s.summe += x.betrag; s.n++; if (x.bar) s.bar += x.betrag; });
+    Object.keys(s).forEach((k) => { if (k !== 'n') s[k] = eur(ct(s[k])); }); return s;
+  }
+  // Was war am Stichtag noch offen? Rechnungen mit Datum bis zum Stichtag, Gäste mit Ankunft bis zum Stichtag, Getränke-Monatsrechnungen
+  function finOffenAm(d, kasse, tag) {
+    const o = { hafen: 0, nHafen: 0, gast: 0, nGast: 0, getraenke: 0, nGetraenke: 0 };
+    d.rechnungen.forEach((r) => { if (!r.datum || r.datum > tag || (r.storniert_am && t10(r.storniert_am) <= tag)) return;
+      let bez = (r.zahlungen || []).filter((x) => t10(x.datum) <= tag).reduce((s, x) => s + (x.art === 'ruecklastschrift' ? -1 : 1) * Number(x.betrag || 0), 0);
+      if (r.bezahlt_am && t10(r.bezahlt_am) <= tag) bez = Number(r.summe);
+      const rest = Math.max(0, eur(ct(r.summe) - ct(bez))); if (rest > 0) { o.hafen += rest; o.nHafen++; } });
+    d.gaeste.forEach((g) => { if (g.status === 'storniert' || g.ankunft > tag || (g.bezahlt_am && t10(g.bezahlt_am) <= tag)) return; o.gast += Number(g.betrag || 0); o.nGast++; });
+    (kasse || []).forEach((r) => { if (!r.datum || t10(r.datum) > tag || (r.storniert_am && t10(r.storniert_am) <= tag) || (r.bezahlt_am && t10(r.bezahlt_am) <= tag)) return; o.getraenke += Number(r.summe); o.nGetraenke++; });
+    o.hafen = eur(ct(o.hafen)); o.gast = eur(ct(o.gast)); o.getraenke = eur(ct(o.getraenke)); o.summe = eur(ct(o.hafen) + ct(o.gast) + ct(o.getraenke)); return o;
+  }
+  // „Abgerechnet für [Jahr]“: Soll, Ist, Offen je Bereich (Stand heute)
+  function finAbgerechnet(d, kasse, jahr, heute) {
+    const Q = window.HAFEN.Q; const J = String(jahr);
+    const zeile = (k, n, soll, offen, kl, klText) => ({ k, n, soll: eur(ct(soll)), ist: eur(ct(soll) - ct(offen)), offen: eur(ct(offen)), kl, klText });
+    const z = ['beitrag', 'sommer', 'winter', 'veranstaltung'].map((k) => { const rs = d.rechnungen.filter((r) => !r.storniert_am && r.periode === k && String(r.saison) === J);
+      return zeile(k, rs.length, rs.reduce((s, r) => s + Number(r.summe), 0), rs.reduce((s, r) => s + Q.rest(r), 0), rs.filter((r) => ['ueberfaellig', 'ruecklastschrift'].includes(Q.rstatus(r, heute))).length, 'überfällig/Rücklastschrift'); });
+    const gs = d.gaeste.filter((g) => g.status !== 'storniert' && String(g.ankunft).startsWith(J)); const go = gs.filter((g) => !g.bezahlt_am);
+    z.splice(3, 0, zeile('gast', gs.length, gs.reduce((s, g) => s + Number(g.betrag || 0), 0), go.reduce((s, g) => s + Number(g.betrag || 0), 0), go.filter((g) => g.zahlung_gemeldet).length, 'gemeldet, ungeprüft'));
+    const kr = (kasse || []).filter((r) => !r.storniert_am && String(r.datum).startsWith(J)); const ko = kr.filter((r) => !r.bezahlt_am);
+    z.push(zeile('getraenke', kr.length, kr.reduce((s, r) => s + Number(r.summe), 0), ko.reduce((s, r) => s + Number(r.summe), 0), ko.filter((r) => r.faellig && r.faellig < heute).length, 'überfällig'));
+    return z;
+  }
+  const monatsEnde = (m) => { const [j, mo] = m.split('-').map(Number); const t = new Date(Date.UTC(j, mo, 0)); return m + '-' + String(t.getUTCDate()).padStart(2, '0'); };
+  const monatPlus = (m, n) => { const [j, mo] = m.split('-').map(Number); const t = new Date(Date.UTC(j, mo - 1 + n, 1)); return t.getUTCFullYear() + '-' + String(t.getUTCMonth() + 1).padStart(2, '0'); };
+  const MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+  const monatText = (m) => MONATE[Number(m.slice(5, 7)) - 1] + ' ' + m.slice(0, 4);
+  const finanz = { BEREICHE: FIN_BEREICHE, ZAHLART: FIN_ZAHLART, MONATE, eingaenge: finEingaenge, summe: finSumme, offenAm: finOffenAm, abgerechnet: finAbgerechnet, monatsEnde, monatPlus, monatText };
+
+  window.HAFEN_GEBUEHREN = { arbeitsdienst, vorschau, saisonAbrechnen, stornieren, gebuehrenFuer, saisonDaten, flaeche, finanz };
 })();

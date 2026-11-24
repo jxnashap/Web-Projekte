@@ -62,6 +62,18 @@
     @page quer { size: A4 landscape; margin: 12mm 0 14mm; } .blatt.quer.mehrseitig { page: quer; min-height: 0; }
     /* Rechnung mit sehr vielen Positionen: läuft mit Rand und wiederholtem Spaltenkopf auf weitere Blätter, Blatt 1 bleibt wie gewohnt (Anschrift im Fenster) */
     .blatt.mehrseitig.r-lang { padding-top: 6mm; } .r-lang .r-tab thead { display: table-header-group; } .r-lang .r-tab tr { break-inside: avoid; } .r-lang .r-tab tfoot { display: table-row-group; } .r-lang .r-zahlung, .r-lang .r-zahlung ~ p { break-inside: avoid; } .r-lang .r-zahlung ~ p + p { break-before: avoid; } }
+  /* Finanzberichte (Monatsbericht, Kassenprüfung, offene Posten, Gästeliste) */
+  .f-kz { display: grid; grid-template-columns: repeat(auto-fit, minmax(32mm, 1fr)); gap: 3mm; margin: 2mm 0 3mm; }
+  .f-kz > div { background: #f6f4ef; border-left: 2px solid var(--rot); border-radius: 0 3mm 3mm 0; padding: 2.5mm 3.5mm; }
+  .f-kz span { display: block; font-size: 7.5pt; color: #555; } .f-kz strong { display: block; font-size: 12.5pt; color: var(--navy); white-space: nowrap; } .f-kz small { display: block; font-size: 7.5pt; color: #666; }
+  .bericht .r-tab td.r, .bericht .r-tab th.r { white-space: nowrap; }
+  .f-monate td, .f-monate th { padding-left: 1mm !important; padding-right: 1mm !important; } .f-monate { font-size: 8.5pt; }
+  .r-tab tr.f-vorjahr td { font-weight: 400; font-size: 9pt; color: #555; border-top: 0; }
+  .f-unterschrift { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8mm; margin: 14mm 0 2mm; font-size: 8pt; color: #555; }
+  .f-unterschrift span { display: block; border-bottom: 1px solid #333; height: 10mm; margin-bottom: 1mm; }
+  .f-bar { margin: 5mm 0 2mm; padding: 3mm 4mm; border: 1px solid #bbb; border-radius: 2mm; font-size: 9.5pt; }
+  .bericht .b-tab tfoot { display: table-row-group; }
+  .f-einzel { font-size: 8.5pt; } .f-einzel small { color: #555; }
   @media print { @page { margin: 0; } body { background: #fff; } .leiste { display: none; } .blatt { margin: 0; box-shadow: none; page-break-after: always; } .blatt:last-child { page-break-after: auto; } }
   @media screen and (max-width: 840px) { .blatt { zoom: .5; } }
 </style>
@@ -78,6 +90,9 @@
 <script src="js/gebuehren.js"></script>
 <script src="js/qrcode.js"></script>
 <script src="js/qrcode_UTF8.js"></script>
+<!-- Getränkekasse (nur lesend für Monatsbericht und Kassenprüfung; fehlt sie, steht das im Bericht) -->
+<script src="../ssv-getraenke/js/config.js"></script>
+<script src="../ssv-getraenke/js/store.js"></script>
 <script src="js/druck-start.js"></script>
 </body>
 </html>

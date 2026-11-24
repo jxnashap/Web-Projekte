@@ -161,7 +161,7 @@
     for (let t = new Date(g.ankunft + 'T12:00:00'); H.tag(t) < bis; t = new Date(t.getTime() + 864e5)) {
       const tag = H.tag(t);
       if (d.belegungen.some((b) => b.platz_id === p.id && b.periode === 'sommer' && b.saison === t.getFullYear()) && !d.abwesenheiten.some((a) => a.platz_id === p.id && a.von <= tag && a.bis >= tag))
-        return 'Platz ' + p.nr + ': Eigner hat für den ' + H.datum(tag) + ' keine Abwesenheit (grünes Schild) gemeldet.';
+        return 'Platz ' + p.nr + ': Eigner hat für den ' + H.datum(tag) + ' kein grünes Schild gemeldet.';
     }
     return '';
   }

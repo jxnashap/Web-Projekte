@@ -23,11 +23,24 @@ cd apps/ssv-hafen && python3 -m http.server 8080
 
 ## Rollen
 
+## Menü
+
+Acht Bereiche mit Reitern oben (`BEREICHE` in `js/app.js`):
+
+- **Übersicht**
+- **Hafen**: Hafenplan · Liegeplätze · Belegung · Kran & Termine · Warteliste
+- **Gäste & grünes Schild**: Gastlieger · Karte & Kalender · Grünes Schild
+- **Mitglieder & Boote**: Mitglieder · Boote · Aufnahmeanträge
+- **Arbeitsdienst**: Stunden · Arbeitsgruppen · Schäden & Wartung
+- **Mitteilungen & Veranstaltungen**: Mitteilungen · Veranstaltungen
+- **Finanzen**: Auf einen Blick (Monat | Jahr, Monatsbericht, Unterlagen Kassenprüfung) · Abrechnen · Rechnungen & Offenes · Zahlungseingang (Kontoauszug) · Hafengeld (Monat | Saison, Liegegebühren + Gastlieger) · Gebührenordnung
+- **Verwaltung**: Einstellungen (aufklappbare Abschnitte, Sicherung unten) · Verbandsmeldung · Änderungsverlauf
+
 | Rolle | sieht |
 |---|---|
 | Vorstand | alles, entscheidet über Aufnahmeanträge |
-| Brückenwartin | Plan, Plätze, Boote, Eigner (ohne Bankdaten), Belegung, Abwesenheiten, Gäste, Warteliste, Ein-/Auslagern |
-| Hafenmeister | Plan, Plätze, Gastlieger, Abwesenheiten, Ein-/Auslagern & Kran |
+| Brückenwartin | Plan, Plätze, Boote, Eigner (ohne Bankdaten), Belegung, grünes Schild, Gäste, Warteliste, Kran & Termine |
+| Hafenmeister | Plan, Plätze, Gastlieger, grünes Schild, Kran & Termine |
 | Kassenwart | Plan, Mitglieder inkl. Bankdaten und Import, Aufnahmeanträge (nur lesen), Verbandsmeldung, Abrechnung, Gebührenordnung, Arbeitsdienst, Einstellungen |
 
 ## Was umgesetzt ist

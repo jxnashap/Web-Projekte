@@ -197,13 +197,15 @@
     belegungen.push({ id: uid('BL'), saison: 2026, periode: 'sommer', boot_id: bLand1.id, platz_typ: 'land', platz_id: 'P48', art: 'dauer', flaeche_m2: null, sommer_an_land_jahr: 1, nicht_kranen: true, notiz: '' });
     belegungen.push({ id: uid('BL'), saison: 2026, periode: 'sommer', boot_id: bLand2.id, platz_typ: 'land', platz_id: 'A6', art: 'dauer', flaeche_m2: Math.ceil(bLand2.laenge * bLand2.breite), sommer_an_land_jahr: 2, nicht_kranen: true, notiz: 'Zweiter Sommer an Land – Gebühr verdoppelt' });
 
-    // Winter 2026/27: Mitglieder-Boote an Land (Paletten, Halle, außen); Gäste & Fördernde nicht (Landplätze nur für ausübende/Probe)
+    // Winter 2026/27: Mitglieder-Boote an Land (Nordlager, Winterlager West, außen); Gäste & Fördernde nicht (Landplätze nur für ausübende/Probe).
+    // Große Boote stehen auf den 8 großen Plätzen West P41–P48 (12 × 4,5 m); die Halle steht nicht im Plan und bleibt in der Demo leer.
     const landBerechtigt = boote.filter((b) => { const m = mitglieder.find((x) => x.id === b.eigner_id); return m.art === 'ausuebend' || m.art === 'probe'; });
-    let p = 0, h = 0, a = 0; const paletten = landplaetze().filter((x) => x.art === 'palette').map((x) => x.id);
+    let p = 0, w = 0, a = 0; const lpAlle = landplaetze(); const paletten = lpAlle.filter((x) => x.art === 'palette' && x.bereich !== 'west').map((x) => x.id);
+    const west = lpAlle.filter((x) => x.bereich === 'west').map((x) => x.id);
     landBerechtigt.forEach((b, i) => {
       if (i % 9 === 4) return; // einige bleiben woanders im Winterlager
       let platz, typ, fl = null;
-      if (b.laenge >= 9.5 && h < 4) { platz = 'H' + (++h); typ = 'halle'; fl = Math.ceil(b.laenge * b.breite); }
+      if (b.laenge >= 9.5 && b.laenge <= 12 && b.breite <= 4.5 && w < west.length) { platz = west[w++]; typ = 'palette'; }
       else if (p < paletten.length) { platz = paletten[p++]; typ = 'palette'; }
       else if (a < 5) { platz = 'A' + (++a); typ = 'aussen'; fl = Math.ceil(b.laenge * b.breite); }
       else return;
@@ -228,8 +230,8 @@
 
     gaeste.forEach((g) => { g.tiefgang = null; g.bezahlt_am = g.zahlung === 'bar' || g.quittung_nr ? g.ankunft : ''; });
     gaeste[2].quittung_nr = ''; gaeste[2].bezahlt_am = '';   // Überweisung vereinbart, aber noch nicht eingegangen
-    // Gast hat selbst Platz 33 angegeben (Schild grün), der Eigner hat aber keine Abwesenheit eingetragen → Hafenmeister klärt
-    gaeste[3].platz_angabe = '33'; gaeste[3].platz_hinweis = 'Platz 33: Eigner hat für den 15.08.2026 keine Abwesenheit (grünes Schild) gemeldet.'; gaeste[3].zahlung = 'paypal'; gaeste[3].zahlung_gemeldet = '2026-08-15T19:14:00';
+    // Gast hat selbst Platz 33 angegeben (Schild grün), der Eigner hat aber kein grünes Schild eingetragen → Hafenmeister klärt
+    gaeste[3].platz_angabe = '33'; gaeste[3].platz_hinweis = 'Platz 33: Eigner hat für den 15.08.2026 kein grünes Schild gemeldet.'; gaeste[3].zahlung = 'paypal'; gaeste[3].zahlung_gemeldet = '2026-08-15T19:14:00';
 
     // Schäden und Wartung
     const aufgaben = [
@@ -248,7 +250,7 @@
     const bereicheDemo = demoBereiche(mitglieder);
     const steg = bereicheDemo.arbeitsbereiche.find((x) => /Brücken/.test(x.name)); if (steg) arbeitseinsaetze[0].bereich_id = steg.id;   // Einsatz „Steg und Gelände“
     const arbeitseinsatz_codes = [{ einsatz_id: arbeitseinsaetze[0].id, code: 'STEG26' }, { einsatz_id: arbeitseinsaetze[1].id, code: 'PUTZ27' }];
-    const mitteilungen = [{ id: uid('N'), titel: 'Wintertreffen am 28.11. in der Messe', text: 'Ab 18 Uhr – Rückblick auf die Saison, Grünkohl und Planung für 2027. Bitte bis 25.11. unten bei „Veranstaltungen“ zu- oder absagen.', wichtig: false, zielgruppe: 'alle', gueltig_bis: '2026-11-28', erstellt: '2026-11-05T10:00:00', erstellt_von: 'Vorstand', push_gesendet: null }];
+    const mitteilungen = [{ id: uid('N'), titel: 'Wintertreffen am 28.11. in der Messe', text: 'Ab 18 Uhr – Rückblick auf die Saison, Grünkohl und Planung für 2027. Bitte bis 25.11. im Abschnitt „Veranstaltungen“ zu- oder absagen.', wichtig: false, zielgruppe: 'alle', gueltig_bis: '2026-11-28', erstellt: '2026-11-05T10:00:00', erstellt_von: 'Vorstand', push_gesendet: null }];
 
     // Warteliste (Anspruch laut Satzung § 10 I)
     const warteliste = [];
@@ -361,6 +363,13 @@
       d.belegungen = (d.belegungen || []).filter((b) => { if (!weg.has(b.platz_id)) return true;
         const frei = bleiben.find((x) => x.art === 'palette' && !d.belegungen.some((y) => y !== b && y.saison === b.saison && y.periode === b.periode && y.platz_id === x.id)); if (!frei) return false; b.platz_id = frei.id; return true; });
       d.landplaetze = bleiben; sichern();
+    }
+    // Demo: Boote aus der Halle (steht nicht im Plan) auf freie große Plätze West P41–P48 umsetzen – einmalig, nur ohne eigenen Lageplan
+    if (!d.demo_halle_west && !(d.einstellungen && d.einstellungen.lageplan)) {
+      (d.belegungen || []).filter((b) => b.periode === 'winter' && /^H\d/.test(b.platz_id)).forEach((b) => {
+        const frei = (d.landplaetze || []).find((x) => x.bereich === 'west' && !d.belegungen.some((y) => y.saison === b.saison && y.periode === b.periode && y.platz_id === x.id));
+        if (frei) { b.platz_id = frei.id; b.flaeche_m2 = null; } });
+      d.demo_halle_west = true; sichern();
     }
     if (!d.arbeitsbereiche || (window.SSV_BEREICHE_VORLAGE && d.bereiche_v !== window.SSV_BEREICHE_VORLAGE.version)) {
       const alt = new Set((d.arbeitsbereiche || []).map((x) => x.id));
@@ -775,6 +784,8 @@
   // Zwei Grenzen: Kran (Standard 9 t) und Steg/Wasserliegeplatz (Standard 10 t) – nur hier, aus den Einstellungen
   const maxT = (art = 'kran') => { const e = (d && d.einstellungen) || {}; const v = Number(art === 'steg' ? e.max_gewicht_t : e.kran_max_t); return v > 0 ? v : (art === 'steg' ? 10 : 9); };
   const zuSchwer = (b, art = 'kran') => !!b && Number(b.gewicht_t) > maxT(art);
+  // Lage der Lagerplätze (aus dem Feld „bereich“ der Landplätze)
+  const LAGE = { nord: 'Nordlager', west: 'Winterlager West', aussen: 'Außenlager', halle: 'Halle' };
   const Q = {
     maxT, zuSchwer, maxTxt: (art = 'kran') => maxT(art).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' t',
     mitglied: (id) => d.mitglieder.find((m) => m.id === id),
@@ -784,6 +795,17 @@
     naechsteNr: () => String(d.mitglieder.reduce((mx, m) => Math.max(mx, /^\d+$/.test(m.nr) ? Number(m.nr) : 0), 2000) + 1),
     boot: (id) => d.boote.find((b) => b.id === id),
     platz: (id) => d.liegeplaetze.find((p) => p.id === id) || d.landplaetze.find((p) => p.id === id),
+    // Anzeigename eines Platzes – überall gleich (nur Anzeige, die gespeicherte Bezeichnung „bez“ bleibt unverändert):
+    // Wasserplatz „Platz 12“ / „Längsseits L1“, Lagerplatz mit der Nummer aus dem Hafenplan plus Lage: „P01 · Nordlager“.
+    // art 'kurz' → nur „P01“, art 'text' (Rechnungen, Druck) → „Lagerplatz P01 (Nordlager)“.
+    platzName: (x, art) => {
+      const p = typeof x === 'string' ? Q.platz(x) : x; if (!p) return typeof x === 'string' ? x : '–';
+      if (!p.bez) return (p.box === 'L' ? 'Längsseits ' : 'Platz ') + p.nr;
+      if (art === 'kurz') return p.id;
+      const lage = LAGE[p.bereich] || LAGE[p.art] || '';
+      return art === 'text' ? 'Lagerplatz ' + p.id + (lage ? ' (' + lage + ')' : '') : p.id + (lage ? ' · ' + lage : '');
+    },
+    lage: (p) => (p && (LAGE[p.bereich] || LAGE[p.art])) || '',
     name: (m) => m ? m.vorname + ' ' + m.nachname : '–',
     belegungen: (saison, periode) => d.belegungen.filter((b) => b.saison === saison && b.periode === periode),
     belegungPlatz: (saison, periode, platzId) => d.belegungen.find((b) => b.saison === saison && b.periode === periode && b.platz_id === platzId),

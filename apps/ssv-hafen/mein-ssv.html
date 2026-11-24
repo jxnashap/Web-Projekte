@@ -22,6 +22,22 @@
   .mein-bereich { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 0 8px; font-size: 15px; }
   .mein-bereich p { margin: 4px 0; } .mein-bereich ul { margin: 6px 0 0; padding-left: 18px; } .mein-bereich li { margin: 2px 0; } .mein-bereich small { color: var(--muted); }
   .mein-bereich-kopf strong { font-size: 16px; color: var(--navy); }
+  /* Arbeitsgruppen als Zeile „Krancrew · 14 offene Aufgaben ▸“ – Aufgaben klappen auf */
+  .mb-titel { margin: 16px 0 8px; font-size: 16px; }
+  .mein-bereich > details > summary { list-style: none; cursor: pointer; min-height: 40px; display: block; padding: 8px 22px 8px 0; position: relative; line-height: 1.45; }
+  .mein-bereich > details > summary::-webkit-details-marker { display: none; }
+  .mein-bereich > details > summary strong { font-size: 16px; color: var(--navy); }
+  .mein-bereich > details > summary::after { content: '▸'; position: absolute; right: 2px; top: calc(50% - .75em); color: var(--muted); transition: transform .2s; }
+  .mein-bereich > details[open] > summary::after { transform: rotate(90deg); }
+  .mb-zahl { color: var(--muted); } .mb-kontakt { margin: 6px 0 2px !important; }
+  .ad-kurz { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; }
+  .ad-kurz p { margin: 0; font-size: 16px; } .ad-kurz strong { color: var(--navy); font-size: 18px; }
+  .ad-notiz { margin: 8px 0 0; font-size: 14.5px; color: var(--muted); }
+  details.mein-mehr { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 6px; }
+  details.mein-mehr > summary { list-style: none; cursor: pointer; font-weight: 600; color: var(--navy); min-height: 40px; display: flex; align-items: center; gap: 8px; }
+  details.mein-mehr > summary::-webkit-details-marker { display: none; }
+  details.mein-mehr > summary::after { content: '▸'; margin-left: auto; color: var(--muted); transition: transform .2s; } details.mein-mehr[open] > summary::after { transform: rotate(90deg); }
+  .mein .detail dd .tag { border-radius: 10px; }
   .mein-suche { background: #fff; border-radius: 16px; box-shadow: var(--schatten); padding: 14px 16px; margin: 0 0 14px; }
   .mein-suche > label { display: block; font-family: 'Playfair Display', Georgia, serif; font-size: 19px; color: var(--navy); margin: 0 0 8px; }
   .mein-such-erg { margin-top: 6px; } .mein-such-erg:empty { display: none; }
@@ -32,8 +48,13 @@
   .schrift-m { margin-left: auto; background: rgba(255,255,255,.14) !important; color: #fff !important; box-shadow: none !important; }
   #wer + .schrift-m { margin-left: 0; }
   html.schrift-gross .chip { font-size: 16.5px; } html.schrift-gross .mein-suche > label { font-size: 21px; }
-  .ver-karte { display: grid; grid-template-columns: 54px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .ver-karte { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
   .ver-karte:first-child { border-top: 0; padding-top: 2px; }
+  .ver-karte[hidden] { display: none; }
+  .ver-liste:not(.alle) .ver-karte.ver-fest { border-top: 0; padding-top: 2px; } .ver-liste:not(.alle) .ver-karte.ver-fest ~ .ver-karte.ver-fest { border-top: 1px solid var(--line); padding-top: 14px; }
+  .ver-text { min-width: 0; overflow-wrap: break-word; } .ver-text h3 { hyphens: auto; -webkit-hyphens: auto; } .ver-text .tag { white-space: normal; border-radius: 10px; }
+  .ver-weitere { margin-top: 4px; white-space: normal; text-align: left; max-width: 100%; height: auto; }
+  #rmehr { white-space: normal; text-align: left; max-width: 100%; height: auto; }
   .ver-datum { display: flex; flex-direction: column; align-items: center; justify-content: center; align-self: start; padding: 6px 0; border-radius: 10px; background: #E7EEF3; color: var(--navy); line-height: 1.1; }
   .ver-datum strong { font-size: 22px; } .ver-datum small { font-size: 13px; letter-spacing: 0; color: var(--muted); }
   .ver-text h3 { margin: 0; font-size: 17px; color: var(--navy); } .ver-text p { margin: 6px 0 0; font-size: 15px; }
@@ -56,12 +77,16 @@
   .blick strong { display: block; font-size: 19px; color: var(--navy); margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .blick span { display: block; font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* Aufklappbare Bereiche */
-  details.sek > summary { list-style: none; display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 44px; }
+  details.sek > summary { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; cursor: pointer; min-height: 44px; position: relative; padding-right: 22px; }
   details.sek > summary::-webkit-details-marker { display: none; }
   details.sek > summary h2 { margin: 0; flex: none; white-space: nowrap; }
-  details.sek > summary::after { content: ''; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--muted-2); border-bottom: 2px solid var(--muted-2); transform: rotate(45deg); margin: -4px 2px 0 0; transition: transform .2s; }
-  details.sek[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
-  .sek-info { margin-left: auto; min-width: 0; font-size: 14px; color: var(--muted); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  details.sek > summary::after { content: ''; position: absolute; right: 2px; top: calc(50% - 6px); width: 8px; height: 8px; border-right: 2px solid var(--muted-2); border-bottom: 2px solid var(--muted-2); transform: rotate(45deg); transition: transform .2s; }
+  details.sek[open] > summary::after { transform: rotate(-135deg); top: calc(50% - 2px); }
+  /* Zusammenfassung: eine Zeile neben dem Titel, zu lange Texte enden mit „…“ (ganzer Text im Tooltip).
+     Ein Schild (.mit-schild, z. B. „3 Einladungen offen“) wird nie gekürzt – passt es nicht daneben, steht es in der Zeile darunter. */
+  .sek-info { flex: 1 1 0; margin-left: auto; min-width: 0; font-size: 14px; color: var(--muted); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sek-info.mit-schild { flex: 0 1 auto; overflow: visible; max-width: 100%; }
+  .sek-info .tag { white-space: normal; }
   .sek-inhalt { margin-top: 14px; }
   .panel.sek { display: block; width: 100%; box-sizing: border-box; }
   .login-karte { max-width: 440px; margin: 30px auto; }
@@ -101,13 +126,9 @@
     .demo-band { font-size: 14px; padding: 7px 10px; margin-bottom: 10px; }
   }
   @media (max-width: 860px) { .mein-raster { grid-template-columns: 1fr; } }
-  /* Schmale Handys: Passt die Kurzinfo nicht neben die Überschrift, rutscht sie ganz in eine zweite Zeile darunter
-     (statt abgeschnitten zu werden – Schilder wie „3 Einladungen offen“ bleiben vollständig). Der Pfeil steht dafür fest rechts. */
+  /* Schmale Handys: Passt die Kurzinfo nicht neben die Überschrift, rutscht sie ganz in eine zweite Zeile darunter (einzeilig, notfalls mit „…“). */
   @media (max-width: 480px) {
-    details.sek > summary { position: relative; flex-wrap: wrap; row-gap: 2px; padding-right: 22px; }
-    details.sek > summary::after { position: absolute; right: 2px; top: calc(50% - 6px); margin: 0; }
-    details.sek[open] > summary::after { top: calc(50% - 2px); margin: 0; }
-    .sek-info { max-width: 100%; }
+    .sek-info { flex: 0 1 auto; max-width: 100%; }
   }
   /* Lesbarkeit (Zielgruppe 50+): Tabellen, Schilder, kleine Knöpfe und Felder hier mindestens wie in der Getränkekasse */
   @media screen {

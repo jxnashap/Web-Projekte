@@ -23,6 +23,7 @@ Repo für alle Website-Projekte. Struktur:
 - `apps/ssv-getraenke/` – Getränkekasse für den SSV: iPad-Kiosk (Name → PIN → Kacheln →
   Stück/Kasten), Kassenwart-Bereich (Mitglieder, CSV-Import, PIN-Zettel, Preise,
   Abrechnung, A4-Rechnungen im persönlichen Ton mit Lastschrift-Ankündigung, SEPA-/CSV-Export). Demo-Modus (localStorage);
+  Druck: jedes `.r-blatt` = genau eine A4-Seite mit Briefkopf + Fußzeile; zu lang → erst „knapp“, dann Folgeblätter mit Übertrag (`seitenAufbauen()` in `js/drucken.js`, Test `t_kasse_seiten.js`);
   Gestaltung wie Hafen-Manager: dezenter Nautik-Stil am Ende von `css/app.css` (nur `@media screen`, Rechnungen `r-…` unberührt);
   Code (4-stellig) legt das Mitglied beim ersten Mal selbst fest (Mitgliedsnummer-Abfrage, abschaltbar),
   ändern in „Mein SSV“; Demo teilt den Mitgliederstamm mit `../ssv-hafen/js/daten.js` (gleiche IDs);
@@ -36,7 +37,13 @@ Repo für alle Website-Projekte. Struktur:
   **Ersetzt easyVerein:** Mitgliederstamm (Arten laut Satzung, Geburtsdatum/Geschlecht/Eintritt), CSV-Import,
   Online-Aufnahmeantrag `aufnahme.html` → Vorstand nimmt auf, Beitragseinzug (Gebührenordnung 2024, `SSV-B-…`),
   Verbandsmeldung (Bestandserhebung 1.1.). Website verlinkt Antrag + Mein SSV (`../ssv-hafen/`).
-  Menü: 7 Bereiche (`BEREICHE` in `js/app.js`; „Betrieb“ heißt jetzt „Arbeit & Termine“) mit Reitern oben, Zurück-Taste über `#tab`-Verlauf.
+  Menü: 8 Bereiche (`BEREICHE` in `js/app.js`, Liste auch in `README.md`) mit Reitern oben, Zurück-Taste über `#tab`-Verlauf: Übersicht · Hafen (Hafenplan, Liegeplätze,
+  Belegung, Kran & Termine = `#lagern`, Warteliste) · Gäste & grünes Schild · Mitglieder & Boote · Arbeitsdienst (Stunden, Arbeitsgruppen, Schäden & Wartung) ·
+  Mitteilungen & Veranstaltungen · Finanzen · Verwaltung (Einstellungen in aufklappbaren Abschnitten mit fester Speichern-Leiste, Sicherung unten; Verbandsmeldung; Verlauf).
+  Alte `#tab`-Namen werden umgeleitet. Am Handy zeigen Belegung/Liegeplätze/Gebühren Karten statt breiter Tabellen.
+  **Hafenplan-Leiste:** Sommer | Winter · Ausschnitt (`#plan-ausschnitt`) · Ansicht ▾ (`#plan-ansicht`: Luftbild, Abendstimmung) · Plan ▾ (`#plan-menue`, nur wer
+  Einstellungen darf: Planungen, Lageplan bearbeiten, Plan drucken) bzw. „Drucken“ (`#plan-druck`). Nie ein Knopf allein in einer Zeile: bis 860 px Raster,
+  darüber Container-Abfrage am `.plan-box` (≥ 700 px eine Zeile, sonst feste zwei Zeilen). Anfahrt (Google/Apple) steht in der Seitenkarte.
   Hafenplan maßstäblich (1000 × 750 Einheiten = 400 × 300 m) aus einem Lageplan-Datensatz (`STANDARD` in `js/plan.js`, eigener Plan des Vereins in
   `einstellungen.lageplan`, Zeichenfenster `js/plan-editor.js`); Luftbild `img/luftbild-dop20.jpg` = amtliches DOP20, Quellenvermerk
   „© GeoBasis-DE/LVermGeo SH/CC BY 4.0“ muss sichtbar bleiben (Details `RECHERCHE.md`).
@@ -53,7 +60,7 @@ Repo für alle Website-Projekte. Struktur:
   Zeichenfenster: Box/Lagerplatz antippen = einzeln wählen (ziehen, Griffe für Maße, Entf = entfernen, „wieder einsetzen“ am Steg/Feld);
   ist ein Lagerfeld gewählt, verschiebt Ziehen das ganze Feld. Neue Nummern legt `plaetzeAnlegen()` nach Rückfrage als Liege-/Landplatz an
   (`zeilen()` schreibt `liegeplaetze.vorhanden = true`, damit ein nach Nachtrag 12 ausgeblendeter Platz wieder erscheint).
-  **Planungen:** `einstellungen.lageplan_planungen = [{ id, name, plan, stand }]` – Entwürfe neben dem gültigen Plan (Auswahl `#plan-wahl`,
+  **Planungen:** `einstellungen.lageplan_planungen = [{ id, name, plan, stand }]` – Entwürfe neben dem gültigen Plan (Auswahl im Menü „Plan ▾“, Liste `#plan-wahl`,
   „Gültig schalten“ tauscht und sichert den bisherigen Plan als Planung). **Plan drucken:** `planDrucken()` baut eine Druckseite im SSV-Briefkopf
   (Flagge links, Adresse rechts) mit Legende und Belegungsliste (A4/A3 quer, „hell“ spart Tinte).
   **Gäste → „Karte & Kalender“** (`V.gastkarte`): Anreise + Nächte → Karte mit `zeitraumLage()`, Platz antippen → Monatskalender des Platzes,
@@ -80,13 +87,18 @@ Repo für alle Website-Projekte. Struktur:
   Nordlager laut Verein: Lagerweg mittig als Sackgasse (vorne an der Messe vorbei), links eine Reihe P11–P22, rechts zwei Reihen P23–P36, vorne links zwei schräge Reihen P01–P10 mit Bug zur Messe (Lager-Felder `neig`/`bug`/`lw`/`lh`).
   Gewichtsgrenzen nur über die Einstellungen: **Kran 9 t** (`kran_max_t`, Entscheidung des Nutzers, so auch auf der Website) und **Steg/Wasserliegeplatz 10 t** (`max_gewicht_t`, HBO 3.1.4); `Q.maxT(art)/Q.zuSchwer(b, art)/Q.maxTxt(art)` mit art 'kran' (Standard) | 'steg' (nur `Q.passt` für Wasserplätze).
   Gastlieger: Status wird aus Daten berechnet (`gastLage()` in app.js: Aufenthalt/Platz/Zahlung, Ansichten Heute & offen/Anreisen/Im Hafen/Abreisen/Archiv);
-  Finanzen: Reiter „Übersicht“ (`V.finanzen`, liest die Getränkekasse über `window.SSV.speicher` – index.html lädt dafür `../ssv-getraenke/js/store.js`), Rechnungskette `stufe()`/`kette()` mit „Gutschrift ist da“ je SEPA-Lauf;
+  **Finanzen (6 Reiter):** Auf einen Blick (`#finanzen`, Monat | Jahr, Monatsbericht drucken, Unterlagen Kassenprüfung PDF + CSV) · Abrechnen (`#abrechnung`,
+  Beitrag/Sommer/Winter/Veranstaltungen in Schritten) · Rechnungen & Offenes (`#rechnungen`, Filter, Zahlung, Offene Posten drucken) · Zahlungseingang (`#kontoauszug`,
+  Kontoauszug + Lastschrift-Gutschriften + gemeldete Gast-Zahlungen) · Hafengeld (`#hafengeld`, Monat | Saison: Liegegebühren + Gastlieger mit Zahlart, Gästeliste drucken;
+  Kassenwart sieht je Gast nur Boot, Platz, Nächte, Betrag, Zahlart) · Gebührenordnung (`#gebuehren`, erst Leseansicht, dann „Diese Fassung ändern“).
+  Mahnlauf/Kassenbuch bewusst nicht gebaut (nur mit DB-Nachtrag + Zustimmung des Vereins).
+  Auf einen Blick (`V.finanzen`, liest die Getränkekasse über `window.SSV.speicher` – index.html lädt dafür `../ssv-getraenke/js/store.js`), Rechnungskette `stufe()`/`kette()` mit „Gutschrift ist da“ je SEPA-Lauf;
   Sicherung zurückspielen: `HAFEN.sicherungLesen()/zurueckspielen()` (nur Vorstand, über den normalen Speicherweg – Mitglieder/Rechnungen werden nie gelöscht).
   Mitgliedsakte `mitgliedAkte(m)` (Zeilenklick; Verlauf über `HAFEN.verlauf({ datensaetze })` für Mitglied+Boote+Belegungen+Rechnungen+Stunden), Bearbeiten → `mitgliedForm` → zurück zur Akte;
   Gebührenordnung in Fassungen (`d.gebuehren[jahr]` = gültig ab Saison, `fassungen()`), Abrechnung als 5-Schritte-Ablauf (Prüfliste, Zustell-Vermerk `einstellungen.abrechnung_zugestellt['periode-jahr']`).
   Gestaltung: dezenter Nautik-Stil am Ende von `css/hafen.css` (nur `@media screen`: Seekarten-Gradnetz, Tau-Linien in Messing `--tau`, Kompassrose `--kompass`, Wellenkanten `--wellen-hell`; Druck/PDF unberührt).
-  Veranstaltungen (Betrieb → Veranstaltungen, Vorstand/Kassenwart/Brückenwartin): Mitglieder sagen in „Mein SSV“ zu/ab (Frist, Begleitung, max. Plätze – Regeln doppelt in `HAFEN.zusageSetzen` und SQL `meine_zusage`), Teilnehmerliste mit Druck/CSV, Antworten vom Verein `quelle = 'verein'`, vom Getränke-iPad `quelle = 'kasse'` (Kiosk zeigt nach Code-Anmeldung Einladungen, `S.kasseVeranstaltungen/kasseZusage`); „Kosten abrechnen“ erzeugt je Zusage eine Rechnung `SSV-V-…` (periode `veranstaltung`).
-  Kontoauszug (Finanzen → Kontoauszug, Vorstand/Kassenwart): `js/kontoauszug.js` liest CAMT.053/CSV (Windows-1252 erkannt) und ordnet zu (Rechnungsnr. im Verwendungszweck/End-to-End, Sammellastschrift `SSV-SEPA-…` oder Betrag, Rücklastschrift, Gast Bootsname+Betrag, Mitglied per IBAN/Name = Vorschlag); gebucht wird in `zahlungen` mit `ref` = Umsatz-Schlüssel (kein Doppelbuchen), Getränke über `SSV.speicher.rechnungBezahlt`.
+  Veranstaltungen (Mitteilungen & Veranstaltungen → Veranstaltungen, Vorstand/Kassenwart/Brückenwartin): Mitglieder sagen in „Mein SSV“ zu/ab (Frist, Begleitung, max. Plätze – Regeln doppelt in `HAFEN.zusageSetzen` und SQL `meine_zusage`), Teilnehmerliste mit Druck/CSV, Antworten vom Verein `quelle = 'verein'`, vom Getränke-iPad `quelle = 'kasse'` (Kiosk zeigt nach Code-Anmeldung Einladungen, `S.kasseVeranstaltungen/kasseZusage`); „Kosten abrechnen“ erzeugt je Zusage eine Rechnung `SSV-V-…` (periode `veranstaltung`).
+  Kontoauszug (Finanzen → Zahlungseingang, Vorstand/Kassenwart): `js/kontoauszug.js` liest CAMT.053/CSV (Windows-1252 erkannt) und ordnet zu (Rechnungsnr. im Verwendungszweck/End-to-End, Sammellastschrift `SSV-SEPA-…` oder Betrag, Rücklastschrift, Gast Bootsname+Betrag, Mitglied per IBAN/Name = Vorschlag); gebucht wird in `zahlungen` mit `ref` = Umsatz-Schlüssel (kein Doppelbuchen), Getränke über `SSV.speicher.rechnungBezahlt`.
   Rechnungen per E-Mail: Edge Function `rechnung-mail` (deployt; Quelle `supabase/functions/rechnung-mail`, Inhalt/PDF in `inhalt.js` mit pdf-lib) – Browser schickt nur IDs, Adresse kommt serverseitig aus `mitglieder.email` des Rechnungs-Mitglieds, `erwartet` (beim Prüfen gesehene Adressen) muss übereinstimmen, je Mail genau 1 Empfänger + 1 PDF, Protokoll `rechnung_versand`; Mail-Dienst Brevo/Resend per Secrets `MAIL_API_KEY`/`MAIL_ABSENDER` (noch einzutragen). Dialog `mailVersandDialog()` in app.js (Abrechnung Schritt 3, Zeilenmenü, Veranstaltung) und `mailDialog()` in ssv-getraenke/js/admin.js; Demo vermerkt nur im Browser.
   Verständlichkeit (Zielgruppe 50+): Suche „Was suchen Sie?“ (`sucheOeffnen()` in app.js, Strg+K oder „/“, Knopf in Seitenleiste/Kopfleiste) findet Aufgaben (`AUFGABEN` mit Alltagswörtern), Hilfe in Schritten (`HILFE`), Seiten und Datensätze je Rolle – Umlaute/Tippfehler egal; Mein SSV hat „Was möchtest du tun?“ (`TUN`/`FRAGEN` in mein.js);
   Lesbarkeits-Ebene am Ende von `css/hafen.css` und `ssv-getraenke/css/app.css` (16 px Grundschrift, Knöpfe ≥ 40 px, keine Mini-Großbuchstaben), Schalter „Schrift größer“ (`html.schrift-gross`, localStorage `ssv-schrift-gross`, gilt geräteweit); lange `.hinweis`-Texte klappt `einklappen()` hinter „Erklärung anzeigen“ (Warnungen/Hinweise mit Knöpfen nie), lange Untertitel zeigen erst den ersten Satz.

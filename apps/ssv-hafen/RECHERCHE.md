@@ -122,7 +122,10 @@ ersetzt es nicht.
 - **Angabe des Vereins:** etwa zwei Drittel – der Plan hat jetzt **54 Plätze**: Ost 1–16 (je ca. 5,5 m), West 25–34 und 35–56
   (je ca. 5,4 m, bis zum T-Stück), Schwimmbrücke 71–76 (je ca. 4,6 m), dazu längsseits L1/L2.
 - Die übrigen Nummern (17–24, 57–70, 77–79) sind in der Datenbank nur ausgeblendet (`vorhanden = false`, Nachtrag 12).
-- Offen: Welche Nummer an welcher Box hängt, und ob die Website-Angabe „80 Liegeplätze“ angepasst werden soll.
+- Offen: Welche Nummer an welcher Box hängt (Lage der Nummern im Plan ist weiter **[ANNAHME]**).
+- **Erledigt (Nov. 2026):** Die Zahl der Liegeplätze ist geklärt – **54 laut Verein**. Die Website nennt jetzt 54 statt „etwa 80“
+  (Generator `build_ssv.py`: Einleitung, Zahlen-Band „54 Liegeplätze“, Seitenbeschreibung). Hat die Redaktion im Echtbetrieb
+  „Zahlen“ schon einmal gespeichert, steht dort noch der alte Wert – dann in der Redaktion unter „Zahlen“ auf 54 setzen.
 
 ## Angaben des Vereins zum Lageplan (12.11.2026)
 

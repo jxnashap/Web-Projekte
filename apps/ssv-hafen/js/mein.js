@@ -30,15 +30,15 @@
   sel.value = mid;
   sel.addEventListener('change', () => { mid = sel.value; try { sessionStorage.setItem('ssv-mein', mid); } catch (e) { /* egal */ } zeigen(); });
 
-  /* Kurze Startansicht: offen sind nur Rechnungen, Boot und Arbeitsdienst (am Handy nur die Rechnungen),
-     alles andere zeigt im Kopf eine Zusammenfassung und klappt bei Bedarf auf; die Wahl wird gemerkt */
+  /* Weniger auf einmal: aufgeklappt sind beim Öffnen nur Kästen, in denen etwas zu tun ist (offene Rechnungen, offene Einladungen) –
+     am Rechner wie am Handy. Alles andere zeigt im Kopf eine einzeilige Zusammenfassung und klappt bei Bedarf auf; die Wahl wird gemerkt. */
   const AUF = {};
-  const istHandy = () => window.matchMedia('(max-width: 860px)').matches;
-  const START_OFFEN = ['rechnungen', 'boot', 'arbeitsdienst', 'arbeitsbereiche'];
-  function sektion(key, titel, info, inhalt, klasse, offenAmHandy) {
-    const offen = key in AUF ? AUF[key] : (istHandy() ? !!offenAmHandy : START_OFFEN.includes(key) || offenAmHandy === 'immer');
+  function sektion(key, titel, info, inhalt, klasse, handlungsbedarf) {
+    const offen = key in AUF ? AUF[key] : !!handlungsbedarf;
+    // Ein Schild (z. B. „3 Einladungen offen“) wird nie abgeschnitten: passt es nicht neben die Überschrift, rutscht es in die Zeile darunter
+    const mitSchild = /class="tag/.test(info);
     return '<details class="panel sek' + (klasse ? ' ' + klasse : '') + '" data-sek="' + key + '"' + (offen ? ' open' : '') + '><summary><h2>' + titel + '</h2>' +
-      '<span class="sek-info" id="info-' + key + '">' + info + '</span></summary><div class="sek-inhalt">' + inhalt + '</div></details>';
+      '<span class="sek-info' + (mitSchild ? ' mit-schild' : '') + '" id="info-' + key + '">' + info + '</span></summary><div class="sek-inhalt">' + inhalt + '</div></details>';
   }
   const kachel = (ziel, titel, wert, unter, id) => '<button type="button" data-ziel="' + ziel + '"' + (id ? ' id="' + id + '"' : '') + '><small>' + titel + '</small><strong>' + wert + '</strong><span>' + unter + '</span></button>';
 
@@ -56,7 +56,23 @@
   const vOffen = (v) => !v.abgesagt && heute <= (v.anmeldung_bis || v.datum);
   const vZeit = (v) => [v.beginn ? v.beginn + (v.ende ? '–' + v.ende : '') + ' Uhr' : '', v.ort].filter(Boolean).join(' · ');
   const vTag = (s) => new Date(s + 'T12:00:00');
-  function vKarte(v) {
+  // Nur die nächste Einladung steht voll da, die übrigen hinter „n weitere Einladungen ▸“ (Sprung #veranstaltungen zeigt alle)
+  let verAlle = location.hash === '#veranstaltungen'; let verZuletzt = '';
+  function verListe(vers, offeneIds) {
+    const haupt = (vers.find((v) => offeneIds.includes(v.id)) || vers[0]).id;
+    const fest = (v) => v.id === haupt || v.id === verZuletzt;
+    const rest = vers.filter((v) => !fest(v)); const restOffen = rest.filter((v) => offeneIds.includes(v.id)).length;
+    const knopfText = verAlle ? 'Weniger anzeigen ▴' : rest.length + (rest.length === 1 ? ' weitere Einladung' : ' weitere Einladungen') + (restOffen ? ', ' + restOffen + ' davon offen' : '') + ' ▸';
+    return '<div class="ver-liste' + (verAlle ? ' alle' : '') + '">' + vers.map((v) => vKarte(v, fest(v))).join('') + '</div>' +
+      (rest.length ? '<button type="button" class="btn klein ver-weitere" aria-expanded="' + verAlle + '" data-text="' + esc(rest.length + (rest.length === 1 ? ' weitere Einladung' : ' weitere Einladungen') + (restOffen ? ', ' + restOffen + ' davon offen' : '') + ' ▸') + '">' + esc(knopfText) + '</button>' : '');
+  }
+  document.addEventListener('click', (e) => {
+    const k = e.target.closest('.ver-weitere'); if (!k) return;
+    verAlle = !verAlle; const liste = k.previousElementSibling;
+    liste.classList.toggle('alle', verAlle); liste.querySelectorAll('.ver-karte:not(.ver-fest)').forEach((x) => { x.hidden = !verAlle; });
+    k.setAttribute('aria-expanded', verAlle); k.textContent = verAlle ? 'Weniger anzeigen ▴' : k.dataset.text;
+  });
+  function vKarte(v, fest) {
     const me = v.meine; const frei = v.max_personen ? Math.max(0, v.max_personen - (Number(v.belegt) || 0)) : null; const offen = vOffen(v);
     const stand = v.abgesagt ? '<span class="tag rot">abgesagt</span>'
       : me && me.antwort === 'ja' ? '<span class="tag ok">Du hast zugesagt' + (me.personen > 1 ? ' · ' + me.personen + ' Personen' : '') + '</span>'
@@ -72,7 +88,7 @@
       : !me ? '<div class="aktionen"><button class="btn primaer" data-ver-ja="' + v.id + '"' + (frei === 0 ? ' disabled' : '') + '>Ich komme</button><button class="btn" data-ver-nein="' + v.id + '">Ich komme nicht</button></div>'
       : me.antwort === 'ja' ? '<div class="aktionen"><button class="btn klein" data-ver-ja="' + v.id + '">Zusage ändern</button></div>'
       : '<div class="aktionen"><button class="btn klein" data-ver-ja="' + v.id + '"' + (frei === 0 ? ' disabled' : '') + '>Doch zusagen</button></div>';
-    return '<article class="ver-karte' + (v.abgesagt ? ' abgesagt' : '') + '" data-ver="' + v.id + '"><div class="ver-datum" aria-hidden="true"><small>' + vTag(v.datum).toLocaleDateString('de-DE', { weekday: 'short' }) + '</small><strong>' + vTag(v.datum).getDate() + '</strong><small>' +
+    return '<article class="ver-karte' + (v.abgesagt ? ' abgesagt' : '') + (fest ? ' ver-fest' : '') + '" data-ver="' + v.id + '"' + (fest || verAlle ? '' : ' hidden') + '><div class="ver-datum" aria-hidden="true"><small>' + vTag(v.datum).toLocaleDateString('de-DE', { weekday: 'short' }) + '</small><strong>' + vTag(v.datum).getDate() + '</strong><small>' +
       vTag(v.datum).toLocaleDateString('de-DE', { month: 'short' }) + '</small></div><div class="ver-text"><h3>' + esc(v.titel) + '</h3><p class="ver-zeit">' + H.datum(v.datum) + (vZeit(v) ? ' · ' + esc(vZeit(v)) : '') + '</p>' +
       '<p class="ver-stand">' + stand + (me && me.bemerkung ? ' <small>„' + esc(me.bemerkung) + '“</small>' : '') + '</p>' +
       (v.text ? '<p>' + esc(v.text) + '</p>' : '') + (fakten.length ? '<p class="ver-fakten">' + fakten.map((f) => '<span>' + f + '</span>').join('') + '</p>' : '') + knoepfe + '</div></article>';
@@ -97,7 +113,7 @@
   }
   async function antworten(v, antwort, personen, bemerkung) {
     await HF.zusageSetzen(mid, { veranstaltung_id: v.id, antwort, personen: Number(personen) || 1, bemerkung: bemerkung || '' });
-    d = HF.d; AUF.veranstaltungen = true;
+    d = HF.d; AUF.veranstaltungen = true; verZuletzt = v.id;   // die gerade beantwortete Einladung bleibt sichtbar
     toast(antwort === 'ja' ? 'Schön, dass du kommst! Deine Zusage ist gespeichert.' : 'Schade – deine Absage ist gespeichert.');
     zeigen();
   }
@@ -124,7 +140,7 @@
     ['Mein Liegeplatz und Winterlager', 'liegeplatz platz box winterlager hafenplan wo boot', 'boot'],
     ['Meine Termine', 'termine datum wann einzug auslagern einlagern kalender', 'termine'],
     ['Warteliste', 'warteliste liegeplatz warten platz bekommen', 'warteliste'],
-    ['Meine Arbeitsgruppe', 'arbeitsgruppe gruppe aufgaben ansprechpartner leitung', 'arbeitsbereiche'],
+    ['Deine Arbeitsgruppen', 'arbeitsgruppe arbeitsgruppen gruppe aufgaben ansprechpartner leitung', 'arbeitsbereiche'],
     ['Benachrichtigungen aufs Handy', 'push benachrichtigung handy nachricht mitteilung', 'daten', '#push-box'],
     ['Schrift größer oder kleiner', 'schrift groesser kleiner lesen brille sehen', '', 'schrift']
   ];
@@ -136,14 +152,19 @@
   function tunTreffer(q) {
     const w = norm(q).split(' ').filter(Boolean); if (!w.length) return [];
     const passt = (text) => { const ws = norm(text).split(' '); return w.every((x) => ws.some((y) => y.startsWith(x) || (x.length >= 4 && y.includes(x)))); };
-    const da = (sek) => !sek || document.querySelector('details.sek[data-sek="' + sek + '"]');
+    const da = (sek) => !sek || sekFinden(sek);
     return TUN.filter(([t, s, sek]) => da(sek) && passt(t + ' ' + s)).map((x) => ({ art: 'tun', x }))
       .concat(FRAGEN.filter(([t, s]) => passt(t + ' ' + s)).map((x) => ({ art: 'frage', x })));
   }
+  // Arbeitsgruppen stehen bei Mitgliedern mit Arbeitsdienst im Kasten „Arbeitsdienst“, sonst in einem eigenen Kasten
+  function sekFinden(sek) {
+    const el = document.querySelector('details.sek[data-sek="' + sek + '"]'); if (el || sek !== 'arbeitsbereiche') return el;
+    const ad = document.querySelector('details.sek[data-sek=arbeitsdienst]'); return ad && ad.querySelector('.mein-bereich') ? ad : null;
+  }
   function tunAusfuehren(sek, ziel) {
     if (ziel === 'schrift') { schriftUmschalten(); return; }
-    const el = document.querySelector('details.sek[data-sek="' + sek + '"]'); if (!el) return;
-    el.open = true; AUF[sek] = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const el = sekFinden(sek); if (!el) return;
+    el.open = true; AUF[el.dataset.sek] = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     if (ziel) setTimeout(() => { const z = document.querySelector(ziel); if (!z) return; if (z.tagName === 'BUTTON') z.click(); else if (z.focus) z.focus(); }, 450);
   }
   const SCHRIFT = 'ssv-schrift-gross';
@@ -185,11 +206,11 @@
     const auslagernNeu = heute < sd.auslagern ? sd.auslagern : naechste && naechste.auslagern;
     const yy = String(SAISON + 1).slice(2);
     // Wo ist das Boot gerade? Saison und tatsächlicher Ort getrennt
-    const ortJetzt = !b ? '' : inSaisonF() ? (platzS ? (platzS.bez ? esc(platzS.bez) + ' (Sommer an Land)' : 'im Wasser, ' + (platzS.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(platzS.nr)) : 'kein Sommerplatz bei uns')
-      : (platzW ? 'im Winterlager, ' + esc(platzW.bez) : 'im Winter ' + SAISON + '/' + yy + ' kein Landplatz bei uns gebucht');
+    const ortJetzt = !b ? '' : inSaisonF() ? (platzS ? (platzS.bez ? esc(Q.platzName(platzS)) + ' (Sommer an Land)' : 'im Wasser, ' + (platzS.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(platzS.nr)) : 'kein Sommerplatz bei uns')
+      : (platzW ? 'im Winterlager, ' + esc(Q.platzName(platzW)) : 'im Winter ' + SAISON + '/' + yy + ' kein Landplatz bei uns gebucht');
     const NW = { geprueft: ['Nachweis geprüft' + (b && b.vers_geprueft_am ? ' am ' + H.datum(b.vers_geprueft_am) : ''), 'ok'], eingereicht: ['Nachweis eingereicht – wird geprüft', 'gast'], selbst: ['selbst angegeben – bitte Nachweis hochladen', 'warn'] };
     const nw = b ? (NW[b.vers_status] || ['noch kein Nachweis – bitte hochladen', 'warn']) : null;
-    const platzText = platzS ? (platzS.bez ? esc(platzS.bez) : (platzS.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(platzS.nr)) : '';
+    const platzText = platzS ? (platzS.bez ? esc(Q.platzName(platzS)) : (platzS.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(platzS.nr)) : '';
     const wasser = sommer && sommer.platz_typ === 'wasser';
     const inSaison = inSaisonF();   // grünes Schild nur, solange die Boote im Wasser sind
 
@@ -218,32 +239,38 @@
       return { ...b, rolle: z.rolle, leitung };
     }).filter(Boolean);
     const telLink = (t) => { t = String(t || '').replace(/[^\d+]/g, ''); return t.startsWith('0') ? '+49' + t.slice(1) : t; };
-    const bereicheHtml = meineBereiche.length ? '<h3 style="margin:14px 0 6px;font-size:16px">Deine Arbeitsgruppen</h3>' + meineBereiche.map((b) =>
-      '<div class="mein-bereich"><div class="mein-bereich-kopf"><strong>' + esc(b.name) + '</strong>' + (b.rolle === 'leitung' ? ' <span class="tag ok">du leitest</span>' : '') + '</div>' +
-      ((b.leitung || []).length && b.rolle !== 'leitung' ? '<p>Ansprechpartner: ' + b.leitung.map((l) => esc(l.name) + (l.tel ? ' · <a href="tel:' + esc(telLink(l.tel)) + '">' + esc(l.tel) + '</a>' : '')).join(', ') + '</p>' : '') +
-      (b.treffpunkt ? '<p><small>' + esc(b.treffpunkt) + '</small></p>' : '') +
-      (() => { const offen = (b.aufgaben || []).filter((a) => a.art !== 'besorgen' && !a.erledigt);   // nur offene Aufgaben, ohne Einkaufsliste
-        return offen.length ? '<p style="margin-top:8px"><strong>Offene Aufgaben</strong></p><ul>' + offen.slice(0, 8).map((a) => '<li>' + esc(a.titel) + (a.zeitraum ? ' <small>· ' + esc(a.zeitraum) + '</small>' : '') + '</li>').join('') +
-          (offen.length > 8 ? '<li><small>und ' + (offen.length - 8) + ' weitere – frag die Leitung</small></li>' : '') + '</ul>' : '<p><small>Gerade keine offenen Aufgaben.</small></p>'; })() + '</div>').join('') : '';
+    // Arbeitsgruppen kompakt: je Gruppe eine Zeile „Krancrew · 14 offene Aufgaben ▸“, die Aufgaben klappen auf; Ansprechpartner steht immer sichtbar darunter
+    const bereichZeile = (b) => { const offen = (b.aufgaben || []).filter((a) => a.art !== 'besorgen' && !a.erledigt);   // nur offene Aufgaben, ohne Einkaufsliste
+      return '<div class="mein-bereich"><details><summary><strong>' + esc(b.name) + '</strong>' + (b.rolle === 'leitung' ? ' <span class="tag ok">du leitest</span>' : '') +
+        ' <span class="mb-zahl">·</span> <span class="mb-zahl nw">' + (offen.length ? offen.length + (offen.length === 1 ? ' offene Aufgabe' : ' offene Aufgaben') : 'keine offenen Aufgaben') + '</span></summary>' +
+        (b.treffpunkt ? '<p><small>' + esc(b.treffpunkt) + '</small></p>' : '') +
+        (offen.length ? '<p style="margin-top:8px"><strong>Offene Aufgaben</strong></p><ul>' + offen.slice(0, 8).map((a) => '<li>' + esc(a.titel) + (a.zeitraum ? ' <small>· ' + esc(a.zeitraum) + '</small>' : '') + '</li>').join('') +
+          (offen.length > 8 ? '<li><small>und ' + (offen.length - 8) + ' weitere – frag die Leitung</small></li>' : '') + '</ul>' : '<p><small>Gerade keine offenen Aufgaben.</small></p>') + '</details>' +
+        ((b.leitung || []).length && b.rolle !== 'leitung' ? '<p class="mb-kontakt">Ansprechpartner: ' + b.leitung.map((l) => esc(l.name) + (l.tel ? ' · <a class="nw" href="tel:' + esc(telLink(l.tel)) + '">' + esc(l.tel) + '</a>' : '')).join(', ') + '</p>' : '') + '</div>'; };
+    const bereicheListe = meineBereiche.map(bereichZeile).join('');
+    const bereicheHtml = meineBereiche.length ? '<h3 class="mb-titel">Deine Arbeitsgruppen</h3>' + bereicheListe : '';
+    const stdZahl = (x) => H.zahl(x, x % 1 ? 1 : 0);
+    // Arbeitsdienst kompakt: Stand + „Stunden melden“, Gruppen als Zeilen; eigene Stunden, nächste Einsätze und Regeln zum Aufklappen
     const adInhalt = ad ? (ad.befreit ? '<p style="margin:0">Du bist vom Arbeitsdienst befreit (' + esc(ad.befreit) + ').</p>'
-      : '<div class="kasse-zahlen"><div><small>bestätigt</small><strong>' + H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' Std.</strong></div><div><small>noch offen</small><strong>' + H.zahl(ad.fehl, ad.fehl % 1 ? 1 : 0) + ' Std.</strong></div></div>' +
-        (ad.gemeldet ? '<p style="margin:0 0 8px;font-size:13px;color:var(--muted)">Dazu ' + H.zahl(ad.gemeldet, ad.gemeldet % 1 ? 1 : 0) + ' Std. gemeldet – der Verein bestätigt sie noch.</p>' : '') +
-        (meineStunden.length ? '<table class="tab"><tbody>' + meineStunden.map((a) => '<tr><td class="nw">' + H.datum(a.datum) + '</td><td>' + esc(a.taetigkeit || 'Arbeitseinsatz') + (STAND[a.status] ? ' <span class="tag ' + STAND[a.status][1] + '">' + STAND[a.status][0] + '</span>' : '') + '</td><td class="r">' + H.zahl(a.stunden, a.stunden % 1 ? 1 : 0) + ' Std.</td></tr>').join('') + '</tbody></table>' : '<p class="leer">Noch keine Stunden erfasst.</p>') +
-        '<div class="aktionen" style="margin-top:10px"><button class="btn" id="ad-melden">Stunden melden</button></div>' +
+      : '<div class="ad-kurz"><p><strong>' + stdZahl(ad.ist) + ' von ' + ad.soll + ' Std.</strong> bestätigt' + (ad.fehl > 0 ? ' · noch ' + stdZahl(ad.fehl) + ' Std. offen' : ' – geschafft, danke!') + '</p>' +
+        '<button class="btn" id="ad-melden">Stunden melden</button></div>' +
+        (ad.gemeldet ? '<p class="ad-notiz">Dazu ' + stdZahl(ad.gemeldet) + ' Std. gemeldet – der Verein bestätigt sie noch.</p>' : '') +
         bereicheHtml +
-        (kommend.length ? '<h3 style="margin:14px 0 6px;font-size:15px">Nächste Arbeitseinsätze</h3><table class="tab"><tbody>' + kommend.slice(0, 3).map((x) => '<tr><td class="nw">' + H.datum(x.datum) + '</td><td>' + esc(x.titel) + (x.beginn ? '<br><small style="color:var(--muted)">' + esc(x.beginn) + (x.ende ? '–' + esc(x.ende) : '') + ' Uhr' + (x.notiz ? ' · ' + esc(x.notiz) : '') + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') +
-        '<p class="hinweis" style="margin-top:10px">Soll: ' + ad.soll + ' Stunden im Jahr' + (ad.vorjahr ? ' (dazu ' + ad.vorjahr + ' aus dem Vorjahr)' : '') + '. Beim Arbeitseinsatz einfach den QR-Code am Vereinsheim scannen – oder hier Stunden melden; der Verein bestätigt sie.' + (d.einstellungen.arbeitsdienst_bestaetigt ? '' : ' Die genauen Regeln legt der Vorstand noch fest.') + '</p>') : '';
+        '<details class="mein-mehr"><summary>Deine Stunden' + (kommend.length ? ' und nächste Einsätze' : '') + '</summary>' +
+        (meineStunden.length ? '<table class="tab"><tbody>' + meineStunden.map((a) => '<tr><td class="nw">' + H.datum(a.datum) + '</td><td>' + esc(a.taetigkeit || 'Arbeitseinsatz') + (STAND[a.status] ? ' <span class="tag ' + STAND[a.status][1] + '">' + STAND[a.status][0] + '</span>' : '') + '</td><td class="r">' + stdZahl(a.stunden) + ' Std.</td></tr>').join('') + '</tbody></table>' : '<p class="leer">Noch keine Stunden erfasst.</p>') +
+        (kommend.length ? '<h3 style="margin:14px 0 6px;font-size:16px">Nächste Arbeitseinsätze</h3><table class="tab"><tbody>' + kommend.slice(0, 3).map((x) => '<tr><td class="nw">' + H.datum(x.datum) + '</td><td>' + esc(x.titel) + (x.beginn ? '<br><small style="color:var(--muted)">' + esc(x.beginn) + (x.ende ? '–' + esc(x.ende) : '') + ' Uhr' + (x.notiz ? ' · ' + esc(x.notiz) : '') + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>' : '') +
+        '<p class="hinweis" style="margin-top:10px">Soll: ' + ad.soll + ' Stunden im Jahr' + (ad.vorjahr ? ' (dazu ' + ad.vorjahr + ' aus dem Vorjahr)' : '') + '. Beim Arbeitseinsatz einfach den QR-Code am Vereinsheim scannen – oder hier Stunden melden; der Verein bestätigt sie.' + (d.einstellungen.arbeitsdienst_bestaetigt ? '' : ' Die genauen Regeln legt der Vorstand noch fest.') + '</p></details>') : '';
 
     const bootInhalt = b ? '<div class="detail" style="box-shadow:none;padding:0;position:static"><dl>' +
         '<dt>Typ</dt><dd>' + esc(b.typ) + '</dd><dt>Maße</dt><dd>' + H.zahl(b.laenge) + ' × ' + H.zahl(b.breite) + ' m · Tiefgang ' + H.zahl(b.tiefgang) + ' m · ' + H.zahl(b.gewicht_t, 1) + ' t</dd>' +
         '<dt>Jetzt</dt><dd><strong>' + ortJetzt + '</strong></dd>' +
-        '<dt>Sommer ' + SAISON + '</dt><dd>' + (platzS ? (platzS.bez ? esc(platzS.bez) + ' (an Land)' : platzText + ', ' + H.BRUECKE[platzS.bruecke]) : 'kein Platz') + '</dd>' +
-        '<dt>Winter ' + SAISON + '/' + yy + '</dt><dd>' + (platzW ? esc(platzW.bez) : 'kein Landplatz bei uns') + '</dd>' +
+        '<dt>Sommer ' + SAISON + '</dt><dd>' + (platzS ? (platzS.bez ? esc(Q.platzName(platzS)) + ' (an Land)' : platzText + ', ' + H.BRUECKE[platzS.bruecke]) : 'kein Platz') + '</dd>' +
+        '<dt>Winter ' + SAISON + '/' + yy + '</dt><dd>' + (platzW ? esc(Q.platzName(platzW)) : 'kein Landplatz bei uns') + '</dd>' +
         '<dt>Versicherung</dt><dd>' + esc(b.versicherung || '–') + (b.vers_bis ? ', bis ' + H.datum(b.vers_bis) : '') + '<br><span class="tag ' + nw[1] + '">' + nw[0] + '</span></dd><dt>Kfz</dt><dd>' + esc(m.kfz || '–') + '</dd></dl></div>' +
         (platzS && !platzS.bez ? '<div id="miniplan" class="plan-flaeche mini-plan"></div><p style="font-size:12px;color:var(--muted);margin:4px 0 0">' + (inSaisonF() ? 'Hafenplan heute' : 'Dein Sommerplatz ' + SAISON + ' (Saison beendet)') + '</p>' : '') +
         '<div class="aktionen" style="margin-top:12px"><button class="btn primaer" id="nachweis">Versicherungsnachweis hochladen</button><button class="btn" id="daten">Daten aktualisieren</button></div>' : '';
     const awTabelle = aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td class="nw">' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : a.bis >= heute ? '<button class="btn klein" data-weg="' + a.id + '">Früher zurück</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '';
-    const schildInhalt = wasser && !inSaison ? '<p style="margin:0">Das grüne Schild gibt es, solange die Boote im Wasser sind – wieder ab dem Auslagern' + (auslagernNeu ? ' am ' + H.datum(auslagernNeu) : '') + '. ' + (platzW ? 'Dein Boot steht gerade im Winterlager (' + esc(platzW.bez) + ').' : 'Im Winter ' + SAISON + '/' + yy + ' hast du bei uns keinen Landplatz gebucht.') + '</p>' + (aw.some((a) => a.bis >= heute) ? awTabelle.replace(/<tr class="blass">.*?<\/tr>/g, '') : '') : wasser ? '<p style="margin-top:0;color:var(--muted)">Unterwegs? Dann wird dein Platz grün und der Hafenmeister kann ihn an Gäste geben. Bitte trotzdem das Schild am Steg drehen.</p>' +
+    const schildInhalt = wasser && !inSaison ? '<p style="margin:0">Das grüne Schild gibt es, solange die Boote im Wasser sind – wieder ab dem Auslagern' + (auslagernNeu ? ' am ' + H.datum(auslagernNeu) : '') + '. ' + (platzW ? 'Dein Boot steht gerade im Winterlager (' + esc(Q.platzName(platzW)) + ').' : 'Im Winter ' + SAISON + '/' + yy + ' hast du bei uns keinen Landplatz gebucht.') + '</p>' + (aw.some((a) => a.bis >= heute) ? awTabelle.replace(/<tr class="blass">.*?<\/tr>/g, '') : '') : wasser ? '<p style="margin-top:0;color:var(--muted)">Unterwegs? Dann wird dein Platz grün und der Hafenmeister kann ihn an Gäste geben. Bitte trotzdem das Schild am Steg drehen.</p>' +
         '<form id="awf" class="form"><label class="feld">ab<input type="date" name="von" required min="' + heute + '" value="' + heute + '"></label><label class="feld">zurück am<input type="date" name="bis" required min="' + heute + '"></label><label class="feld voll">Ziel (optional)<input name="notiz" placeholder="z. B. Dänische Südsee"></label></form>' +
         '<div class="aktionen" style="margin-top:10px"><button class="btn gruen" id="awok">Abwesenheit melden</button></div>' +
         awTabelle : '';
@@ -251,9 +278,9 @@
     $('#main').innerHTML = (DBM ? '' : '<div class="demo-band"><strong>Demo</strong> – erfundene Daten. Im Echtbetrieb meldest du dich mit deinem eigenen Zugang an.</div>') +
       '<div class="kopf"><div><h1>Moin ' + esc(m.vorname) + '!</h1><p>' + H.ART[m.art] + ' · Mitgliedsnr. ' + esc(m.nr) + '</p></div></div>' + tunHtml() +
       mitteilungenHtml(!!b, !!wasser) +
-      (vs !== 'ok' && b ? '<p class="hinweis warn">Deine Bootsversicherung ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'ist noch nicht hinterlegt' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte unter „Mein Boot“ einen neuen Nachweis hochladen.</p>' : '') +
+      (vs !== 'ok' && b ? '<p class="hinweis warn">Deine Bootsversicherung ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'ist noch nicht hinterlegt' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte einen neuen Nachweis hochladen.</p><div class="aktionen" style="margin:-4px 0 12px"><button type="button" class="btn klein" data-tun="boot" data-tun-ziel="#nachweis">Nachweis hochladen</button></div>' : '') +
       '<div class="blick">' + kachel('rechnungen', 'Rechnungen', '…', 'wird geladen …', 'k-offen') +
-        (b && !inSaison && platzW ? kachel('boot', 'Winterlager', esc(platzW.bez), SAISON + '/' + yy) : platzS ? kachel(wasser ? 'schild' : 'boot', 'Liegeplatz', platzText, !inSaison ? 'Sommer ' + SAISON + ' (beendet)' : awLaufend ? 'grün bis ' + H.kurz(awLaufend.bis) : awGeplant ? 'grün ab ' + H.kurz(awGeplant.von) : (platzS.bez ? 'an Land' : H.BRUECKE[platzS.bruecke])) : meinW >= 0 ? kachel('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), 'seit ' + H.datum(warte[meinW].datum)) : kachel('rechnungen', 'Mitglied seit', m.eintritt ? m.eintritt.slice(0, 4) : '–', H.ART[m.art])) +
+        (b && !inSaison && platzW ? kachel('boot', 'Winterlager', esc(Q.platzName(platzW, 'kurz')), SAISON + '/' + yy) : platzS ? kachel(wasser ? 'schild' : 'boot', 'Liegeplatz', platzText, !inSaison ? 'Sommer ' + SAISON + ' (beendet)' : awLaufend ? 'grün bis ' + H.kurz(awLaufend.bis) : awGeplant ? 'grün ab ' + H.kurz(awGeplant.von) : (platzS.bez ? 'an Land' : H.BRUECKE[platzS.bruecke])) : meinW >= 0 ? kachel('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), 'seit ' + H.datum(warte[meinW].datum)) : kachel('rechnungen', 'Mitglied seit', m.eintritt ? m.eintritt.slice(0, 4) : '–', H.ART[m.art])) +
         (KASSE ? kachel('kasse', 'Verbrauch ' + new Date().toLocaleDateString('de-DE', { month: 'long' }), '…', 'Getränke · noch nicht abgerechnet', 'k-getraenke') : '') + '</div>' +
       '<div class="mein-raster"><div>' +
       (b ? sektion('boot', 'Mein Boot', '„' + esc(b.name) + '“' + (platzText ? ' · ' + platzText : ''), bootInhalt) : '') +
@@ -268,18 +295,18 @@
       '</div><div>' +
       (wasser ? sektion('schild', 'Grünes Schild', awLaufend ? 'unterwegs ' + H.kurz(awLaufend.von) + '–' + H.kurz(awLaufend.bis) : awGeplant ? 'geplant ' + H.kurz(awGeplant.von) + '–' + H.kurz(awGeplant.bis) : 'Platz frei melden', schildInhalt, 'gruen-box') : '') +
       (vers.length ? sektion('veranstaltungen', 'Veranstaltungen', vUnbeantwortet.length ? '<span class="tag warn">' + (vUnbeantwortet.length === 1 ? '1 Einladung' : vUnbeantwortet.length + ' Einladungen') + ' offen</span>' : esc(vers[0].titel) + ' ' + H.kurz(vers[0].datum),
-        vers.map(vKarte).join('') + '<p class="hinweis" style="margin-top:12px">Zu- und Absagen gehen bis zur Anmeldefrist. Der Verein sieht, wer kommt; andere Mitglieder sehen nur die Zahl.</p>', '', vUnbeantwortet.length ? 'immer' : false) : '') +
-      sektion('rechnungen', 'Meine Rechnungen', '', '<div id="rechnungen"></div><p class="hinweis" style="margin-top:12px">Mit Lastschriftmandat wird alles eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p>', '', true) +
+        verListe(vers, vUnbeantwortet.map((v) => v.id)) + '<p class="hinweis" style="margin-top:12px">Zu- und Absagen gehen bis zur Anmeldefrist. Der Verein sieht, wer kommt; andere Mitglieder sehen nur die Zahl.</p>', '', vUnbeantwortet.length > 0) : '') +
+      sektion('rechnungen', 'Meine Rechnungen', '', '<div id="rechnungen"></div><p class="hinweis" style="margin-top:12px">Mit Lastschriftmandat wird alles eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p>', '', res.some((r) => Q.rest(r) > 0)) +
       (termine.length ? sektion('termine', 'Meine Termine', H.kurz(termine[0][0]) + ' · ' + esc(termine[0][1]), '<table class="tab"><tbody>' + termine.map(([t, txt, zus]) => '<tr><td class="nw">' + H.datum(t) + '</td><td>' + esc(txt) + (zus ? '<br><small style="color:var(--muted)">' + esc(zus) + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>') : '') +
       (ad ? sektion('arbeitsdienst', 'Arbeitsdienst ' + SAISON, ad.befreit ? 'befreit' : H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' von ' + ad.soll + ' Std.', adInhalt) : '') +
-      (!ad && meineBereiche.length ? sektion('arbeitsbereiche', 'Meine Arbeitsgruppen', meineBereiche.map((b) => b.name).join(', '), bereicheHtml.replace('<h3 style="margin:14px 0 6px;font-size:16px">Deine Arbeitsgruppen</h3>', '')) : '') +
+      (!ad && meineBereiche.length ? sektion('arbeitsbereiche', 'Deine Arbeitsgruppen', esc(meineBereiche.map((b) => b.name).join(', ')), bereicheListe) : '') +
       sektion('schaden', 'Schaden melden', 'Steg, Strom, Kran …', '<p style="margin-top:0">Etwas kaputt im Hafen? Kurz melden – die Funktionsträger sehen es sofort und kümmern sich.</p><div class="aktionen"><button class="btn" id="schaden">Schaden melden</button></div>') +
       '</div></div>';
 
     // Schnellwahl nur für Abschnitte, die es bei diesem Mitglied gibt (kein Boot → kein grünes Schild)
     document.querySelectorAll('.mein-schnell [data-tun]').forEach((c) => { if (!document.querySelector('details.sek[data-sek="' + c.dataset.tun + '"]')) c.remove(); });
     // Aufklappen merken; Kacheln springen zum Bereich
-    document.querySelectorAll('details.sek').forEach((el) => el.addEventListener('toggle', () => { AUF[el.dataset.sek] = el.open; }));
+    document.querySelectorAll('details.sek').forEach((el) => el.addEventListener('toggle', () => { if (el.dataset.auto) { delete el.dataset.auto; return; } AUF[el.dataset.sek] = el.open; }));
     document.querySelectorAll('.blick [data-ziel]').forEach((k) => k.addEventListener('click', () => {
       const el = document.querySelector('details.sek[data-sek="' + k.dataset.ziel + '"]'); if (!el) return;
       el.open = true; AUF[el.dataset.sek] = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -303,6 +330,8 @@
         ko.querySelector('span').textContent = naechste ? erklaerung(naechste)[0] : 'nichts offen – danke!';
       }
       $('#info-rechnungen').textContent = offen.length ? H.geld(summeOffen) + ' offen' : 'alles bezahlt';
+      // Getränkerechnungen kommen später dazu: ist dann etwas offen, klappt der Kasten auf (außer das Mitglied hat ihn selbst zugeklappt)
+      const sr = $('details.sek[data-sek=rechnungen]'); if (sr && offen.length && !sr.open && !('rechnungen' in AUF)) { sr.dataset.auto = '1'; sr.open = true; }
       const zeile = (r) => '<tr><td><span class="tag' + (r.art === 'Hafen' ? '' : r.art === 'Beitrag' ? ' gruen' : ' gold') + '">' + r.art + '</span> ' + esc(r.text) +
         '<br><small style="color:var(--muted)">' + esc(r.nr) + '</small>' + (!r.bezahlt_am ? '<br><span class="erkl ' + erklaerung(r)[1] + '">' + erklaerung(r)[0] + '</span>' : '') + '</td><td class="r"><strong>' + H.geld(r.summe) + '</strong>' +
         (r.bezahlt_am ? '<br><span class="tag ok">bezahlt</span>' : '') + '</td><td class="r"><a class="btn klein" href="' + r.href + '" target="_blank">PDF</a></td></tr>';

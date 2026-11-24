@@ -1,4 +1,5 @@
-/* SSV Hafen-Manager – Druckansichten im SSV-Briefkopf (Flagge oben links): Rechnungen, Quittung, Belegungsplan, QR-Plakate, Arbeitsbereiche */
+/* SSV Hafen-Manager – Druckansichten im SSV-Briefkopf (Flagge oben links): Rechnungen, Quittung, Belegungsplan, QR-Plakate, Arbeitsbereiche,
+   Finanzberichte (Monatsbericht, Kassenprüfung, offene Posten, Gästeliste) */
 (function () {
   'use strict';
   const HF = window.HAFEN; const { H, Q } = HF; const esc = H.esc;
@@ -12,8 +13,8 @@
     : e.steuer_hinweis === 'ust19' ? 'Im Betrag von ' + H.geld(betrag) + ' sind 19 % Umsatzsteuer (' + H.geld(Math.round((betrag - betrag / 1.19) * 100) / 100) + ') enthalten.'
     : e.steuer_hinweis === 'frei' ? (e.steuer_text || '') : '';
   const nw = (t) => '<span style="white-space:nowrap">' + esc(t) + '</span>';   // Angabe + Nummer bleiben in einer Zeile
-  // Landplatz einheitlich mit der Nummer aus dem Hafenplan (P13, A1); die Art steht davor: „Palette P13“, „Außenlager A1“, „Halle H4“
-  const landplatzName = (p) => p ? ({ palette: 'Palette ', aussen: 'Außenlager ', halle: 'Halle ' }[p.art] || '') + p.id : '';
+  // Lagerplatz einheitlich mit der Nummer aus dem Hafenplan und der Lage: „P13 · Nordlager“, „A1 · Außenlager“ (zentral in daten.js)
+  const landplatzName = (p) => p ? Q.platzName(p) : '';
   const kopf = '<div class="r-kopf">' + STANDER + '<div class="r-verein"><strong>' + esc(e.verein_name) + '</strong>' + esc(e.verein_strasse) + '<br>' + esc(e.verein_ort) + '<br>' + esc(e.verein_email) + '</div></div>';
 
   function rechnung(r) {
@@ -41,8 +42,8 @@
       '<div class="r-zahlung">' + zahlung + '<p>Kommt dir etwas komisch vor? Dann sprich ' + esc(e.kassenwart_name || 'den Kassenwart') + ' einfach am Steg oder in der Messe an – oder schreib kurz an ' + esc(e.verein_email) + '.</p></div>' +
       '<p style="margin-top:7mm">' + esc(e.fusstext) + '<br><br>Dein Kassenwart ' + esc(e.kassenwart_name) + '<br><span style="color:#555">für den ' + esc(e.verein_name) + '</span></p>' +
       '<p style="margin-top:4mm;font-size:7.5pt;color:#777">' + (beitrag ? 'Beiträge laut Beitragsordnung des Vereins.' : ver ? 'Kostenbeitrag laut Einladung des Vereins. ' + esc(steuer(r.summe)) : 'Gebühren laut Gebührenordnung des Vereins. ' + esc(steuer(r.summe))) + '</p>' +
-      '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort) + '</span><span>' +
-      [r.sepa ? nw('Gläubiger-ID ' + e.glaeubiger_id) : '', r.sepa ? nw('Mandatsreferenz ' + r.mandat_ref) : '', e.steuernummer ? nw('Steuer-Nr. ' + e.steuernummer) : ''].filter(Boolean).join(' · ') + '</span></div></section>';
+      '<div class="r-fuss"><span>' + [nw(e.verein_name), nw(e.verein_strasse), nw(e.verein_ort)].join('&nbsp;· ') + '</span><span>' +
+      [r.sepa ? nw('Gläubiger-ID ' + e.glaeubiger_id) : '', r.sepa ? nw('Mandatsreferenz ' + r.mandat_ref) : '', e.steuernummer ? nw('Steuer-Nr. ' + e.steuernummer) : ''].filter(Boolean).join('&nbsp;· ') + '</span></div></section>';
   }
 
   function quittung(g) {
@@ -61,7 +62,7 @@
     const bel = Q.belegungen(saison, 'winter').slice().sort((a, b) => a.platz_id.localeCompare(b.platz_id));
     return '<section class="blatt quer mehrseitig">' + kopf + '<h1 style="margin-top:5mm">Belegungsplan Winterlager ' + saison + '/' + String(saison + 1).slice(2) + '</h1>' +
       '<p style="font-size:9pt;color:#555">Reihenfolge beim Ein- und Auslagern nach Belegungsplan und Rangiermöglichkeiten. Boote über ' + Q.maxTxt('kran') + ' werden nicht gekrant.</p>' +
-      '<table class="r-tab"><thead><tr><th>Landplatz</th><th>Boot</th><th>Typ</th><th class="r">L × B</th><th class="r">Gewicht</th><th>Eigner</th><th>Telefon</th><th>Hinweis</th><th>gekrant ✓</th></tr></thead><tbody>' +
+      '<table class="r-tab"><thead><tr><th>Lagerplatz</th><th>Boot</th><th>Typ</th><th class="r">L × B</th><th class="r">Gewicht</th><th>Eigner</th><th>Telefon</th><th>Hinweis</th><th>gekrant ✓</th></tr></thead><tbody>' +
       bel.map((b) => { const bt = Q.boot(b.boot_id); const m = Q.mitglied(bt.eigner_id);
         return '<tr><td class="nw">' + esc(landplatzName(Q.platz(b.platz_id)) || b.platz_id) + '</td><td>' + esc(bt.name) + '</td><td>' + esc(bt.typ) + '</td><td class="r">' + H.zahl(bt.laenge) + ' × ' + H.zahl(bt.breite) + '</td><td class="r">' + H.zahl(bt.gewicht_t, 1) + ' t</td><td>' + esc(Q.name(m)) + '</td><td>' + esc(m.tel) + '</td><td>' + (b.nicht_kranen ? 'nicht kranen' : '') + (Q.zuSchwer(bt) ? ' über ' + Q.maxTxt() + ' – nicht kranen!' : '') + '</td><td>☐</td></tr>'; }).join('') +
       '</tbody></table><div class="r-fuss"><span>' + esc(e.verein_name) + ' · Belegungsplan Winterlager</span><span>Stand ' + H.datum(H.tag(new Date())) + '</span></div></section>';
@@ -154,6 +155,123 @@
       '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · Einkaufsliste Arbeitsdienst</span><span>Stand ' + H.datum(heute) + '</span></div></section>';
   }
 
+  /* ---------- Finanzberichte im Briefkopf: Monatsbericht, Unterlagen Kassenprüfung, offene Posten, Gästeliste.
+   * Rechenwege aus HAFEN_GEBUEHREN.finanz – dieselben Zahlen wie in „Finanzen“. Getränke nur, wenn die Getränkekasse erreichbar ist. */
+  const FZ = window.HAFEN_GEBUEHREN.finanz; const BER = Object.fromEntries(FZ.BEREICHE);
+  const heute = H.tag(new Date());
+  const RST = { offen: 'offen', ueberfaellig: 'überfällig', teilbezahlt: 'teilweise bezahlt', ruecklastschrift: 'Rücklastschrift', bezahlt: 'bezahlt', storniert: 'storniert' };
+  const kasseLaden = () => { const k = window.SSV && window.SSV.speicher; return k ? k.rechnungen().catch(() => null) : Promise.resolve(null); };
+  const fuss = (t) => '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · ' + t + '</span><span>Stand ' + H.datum(heute) + '</span></div>';
+  const g0 = (v) => v ? H.geld(v) : '–';
+  const kz = (l) => '<div class="f-kz">' + l.map(([t, w, u]) => '<div><span>' + t + '</span><strong>' + w + '</strong>' + (u ? '<small>' + u + '</small>' : '') + '</div>').join('') + '</div>';
+  const ohneGetr = (kr) => kr ? '' : '<p class="b-klein">Getränkekasse nicht erreichbar – Getränke sind in diesem Bericht nicht enthalten.</p>';
+  const ohneAusgaben = '<p class="b-klein">Nicht enthalten: Ausgaben und Bankbestand – die stehen im Online-Banking bzw. im Kassenbuch.</p>';
+  function einzelTab(l) {
+    const sum = l.reduce((s, x) => s + x.betrag, 0);
+    const KURZ = { beitrag: 'Beitrag', sommer: 'Sommer', winter: 'Winter', gast: 'Gast', veranstaltung: 'Veranstaltung', getraenke: 'Getränke' };
+    return '<table class="r-tab b-tab f-einzel"><thead><tr><th style="width:18mm">Datum</th><th style="width:20mm">Bereich</th><th>Rechnung · Beleg</th><th>Von</th><th style="width:21mm">Zahlart</th><th class="r" style="width:19mm">Betrag</th></tr></thead><tbody>' +
+      l.map((x) => '<tr><td class="nw">' + H.datum(x.datum) + '</td><td>' + KURZ[x.bereich] + '</td><td><span class="nw">' + esc(x.nr || '–') + '</span>' + (x.beleg ? '<br><small>' + esc(x.beleg) + '</small>' : '') + '</td><td>' + esc(x.wer) + '</td><td>' + esc(x.zahlart) + '</td><td class="r">' + H.geld(x.betrag) + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td colspan="5">Summe (' + l.length + (l.length === 1 ? ' Eingang' : ' Eingänge') + ')</td><td class="r">' + H.geld(sum) + '</td></tr></tfoot></table>';
+  }
+  const offenTab = (o, stichtag, kr) => '<table class="r-tab b-tab"><thead><tr><th>Offen am ' + H.datum(stichtag) + '</th><th class="r">Posten</th><th class="r">Betrag</th></tr></thead><tbody>' +
+    '<tr><td>Hafen, Beiträge, Veranstaltungen (Rechnungen)</td><td class="r">' + o.nHafen + '</td><td class="r">' + H.geld(o.hafen) + '</td></tr><tr><td>Gastlieger (angekommen, nicht bezahlt)</td><td class="r">' + o.nGast + '</td><td class="r">' + H.geld(o.gast) + '</td></tr>' +
+    (kr ? '<tr><td>Getränke (Monatsrechnungen)</td><td class="r">' + o.nGetraenke + '</td><td class="r">' + H.geld(o.getraenke) + '</td></tr>' : '') +
+    '</tbody><tfoot><tr><td>Zusammen</td><td class="r">' + (o.nHafen + o.nGast + (kr ? o.nGetraenke : 0)) + '</td><td class="r">' + H.geld(o.summe) + '</td></tr></tfoot></table>';
+  function monatsbericht(m, kr) {
+    const vm = FZ.monatPlus(m, -1), vj = FZ.monatPlus(m, -12); const eing = FZ.eingaenge(d, kr || []);
+    const sum = (mm) => FZ.summe(eing, mm + '-01', FZ.monatsEnde(mm)); const S = sum(m), SV = sum(vm), SJ = sum(vj);
+    const ende = FZ.monatsEnde(m); const stichtag = ende < heute ? ende : heute; const o = FZ.offenAm(d, kr || [], stichtag);
+    const kl = d.rechnungen.filter((r) => ['ueberfaellig', 'ruecklastschrift'].includes(Q.rstatus(r, heute))).length;
+    const gm = d.gaeste.filter((g) => g.zahlung_gemeldet && !g.bezahlt_am && g.status !== 'storniert').length;
+    const l = eing.filter((x) => x.datum.startsWith(m));
+    titel('Monatsbericht ' + FZ.monatText(m));
+    return '<section class="blatt bereich bericht mehrseitig">' + kopf + '<p class="b-ober">Finanzen · Monatsbericht</p><h1>' + FZ.monatText(m) + '</h1>' +
+      '<p class="b-lead">Eingänge nach Zahlungsdatum (Überweisung und Lastschrift am Tag der Buchung, Gäste am Tag der Zahlung, Getränke am „bezahlt am“). Rücklastschriften sind abgezogen.</p>' +
+      kz([['Eingegangen', H.geld(S.summe), 'Vorjahresmonat ' + H.geld(SJ.summe)], ['davon bar (Gäste)', H.geld(S.bar), 'mit der Barkasse abgleichen'], ['Offen am ' + H.datum(stichtag), H.geld(o.summe), ''], ['Zu klären (Hafen)', String(kl + gm), kl + ' überfällig/Rücklastschrift · ' + gm + ' Gastzahlung gemeldet']]) +
+      '<h2>Eingänge nach Bereich</h2><table class="r-tab b-tab"><thead><tr><th>Bereich</th><th class="r">' + FZ.monatText(m) + '</th><th class="r">Vormonat (' + FZ.monatText(vm) + ')</th><th class="r">Vorjahresmonat (' + FZ.monatText(vj) + ')</th></tr></thead><tbody>' +
+      FZ.BEREICHE.map(([k, t]) => '<tr><td>' + t + '</td><td class="r">' + (k === 'getraenke' && !kr ? 'n. v.' : g0(S[k])) + '</td><td class="r">' + (k === 'getraenke' && !kr ? 'n. v.' : g0(SV[k])) + '</td><td class="r">' + (k === 'getraenke' && !kr ? 'n. v.' : g0(SJ[k])) + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td>Summe</td><td class="r">' + H.geld(S.summe) + '</td><td class="r">' + H.geld(SV.summe) + '</td><td class="r">' + H.geld(SJ.summe) + '</td></tr></tfoot></table>' +
+      '<h2>Offene Posten</h2>' + offenTab(o, stichtag, kr) +
+      '<h2>Alle Eingänge im ' + FZ.monatText(m) + '</h2>' + (l.length ? einzelTab(l) : '<p class="b-klein">Keine Eingänge in diesem Monat.</p>') +
+      '<div class="b-ende">' + ohneGetr(kr) + ohneAusgaben + fuss('Monatsbericht ' + FZ.monatText(m)) + '</div></section>';
+  }
+  function kassenpruefung(J, kr) {
+    const eing = FZ.eingaenge(d, kr || []); const SJ = FZ.summe(eing, J + '-01-01', J + '-12-31'), SV = FZ.summe(eing, (J - 1) + '-01-01', (J - 1) + '-12-31');
+    const ab = FZ.abgerechnet(d, kr || [], J, heute).filter((z) => z.k !== 'getraenke' || kr);
+    const abS = ab.reduce((a, z) => ({ n: a.n + z.n, soll: a.soll + z.soll, ist: a.ist + z.ist, offen: a.offen + z.offen }), { n: 0, soll: 0, ist: 0, offen: 0 });
+    const stichtag = J + '-12-31' < heute ? J + '-12-31' : heute; const o = FZ.offenAm(d, kr || [], stichtag);
+    const KURZ = { beitrag: 'Beiträge', sommer: 'Sommer', winter: 'Winter', gast: 'Gäste', veranstaltung: 'Veranst.', getraenke: 'Getränke' };
+    const TIT = { beitrag: 'Beiträge ' + J, sommer: 'Sommerliegeplatz ' + J, winter: 'Winterlager ' + J + '/' + String(J + 1).slice(2), gast: 'Gastlieger (Ankunft ' + J + ')', veranstaltung: 'Veranstaltungen ' + J, getraenke: 'Getränke (Rechnungen ' + J + ')' };
+    const l = eing.filter((x) => x.datum.startsWith(String(J)));
+    titel('Unterlagen Kassenprüfung ' + J);
+    return '<section class="blatt bereich bericht mehrseitig">' + kopf + '<p class="b-ober">Finanzen · Unterlagen für die Kassenprüfung</p><h1>Geschäftsjahr ' + J + '</h1>' +
+      '<p class="b-lead">Eingänge nach Zahlungsdatum vom 1.1. bis 31.12.' + J + ' – Grundlage für den Kassenbericht. „Abgerechnet“ zählt nach Abrechnungsjahr (Stand ' + H.datum(heute) + ').</p>' +
+      kz([['Eingegangen ' + J, H.geld(SJ.summe), 'Vorjahr ' + H.geld(SV.summe)], ['Abgerechnet für ' + J, H.geld(abS.soll), abS.n + ' Posten'], ['davon noch offen', H.geld(abS.offen), ''], ['Offen am ' + H.datum(stichtag), H.geld(o.summe), 'alle Jahre']]) +
+      '<h2>Eingänge je Monat und Bereich</h2><table class="r-tab b-tab f-monate"><thead><tr><th>Monat</th>' + FZ.BEREICHE.map(([k]) => '<th class="r">' + KURZ[k] + '</th>').join('') + '<th class="r">Summe</th></tr></thead><tbody>' +
+      FZ.MONATE.map((n, i) => { const mm = J + '-' + String(i + 1).padStart(2, '0'); const s = FZ.summe(eing, mm + '-01', FZ.monatsEnde(mm));
+        return '<tr><td>' + n + '</td>' + FZ.BEREICHE.map(([k]) => '<td class="r">' + (k === 'getraenke' && !kr ? 'n. v.' : g0(s[k])) + '</td>').join('') + '<td class="r"><strong>' + g0(s.summe) + '</strong></td></tr>'; }).join('') +
+      '</tbody><tfoot><tr><td>Summe ' + J + '</td>' + FZ.BEREICHE.map(([k]) => '<td class="r">' + H.geld(SJ[k]) + '</td>').join('') + '<td class="r">' + H.geld(SJ.summe) + '</td></tr>' +
+      '<tr class="f-vorjahr"><td>Vorjahr ' + (J - 1) + '</td>' + FZ.BEREICHE.map(([k]) => '<td class="r">' + H.geld(SV[k]) + '</td>').join('') + '<td class="r">' + H.geld(SV.summe) + '</td></tr></tfoot></table>' +
+      '<h2>Abgerechnet für ' + J + '</h2><table class="r-tab b-tab"><thead><tr><th>Bereich</th><th class="r">Anzahl</th><th class="r">Soll</th><th class="r">Ist</th><th class="r">Offen</th></tr></thead><tbody>' +
+      ab.map((z) => '<tr><td>' + TIT[z.k] + '</td><td class="r">' + z.n + '</td><td class="r">' + H.geld(z.soll) + '</td><td class="r">' + H.geld(z.ist) + '</td><td class="r">' + H.geld(z.offen) + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td>Summe</td><td class="r">' + abS.n + '</td><td class="r">' + H.geld(abS.soll) + '</td><td class="r">' + H.geld(abS.ist) + '</td><td class="r">' + H.geld(abS.offen) + '</td></tr></tfoot></table>' +
+      '<h2>Offene Posten</h2>' + offenTab(o, stichtag, kr) +
+      '<h2>Einzelaufstellung aller Eingänge ' + J + '</h2>' + (l.length ? einzelTab(l) : '<p class="b-klein">Keine Eingänge.</p>') +
+      '<div class="b-ende">' + ohneGetr(kr) + ohneAusgaben +
+        '<div class="f-unterschrift"><div><span></span>Ort, Datum · Kassenprüfer/in</div><div><span></span>Ort, Datum · Kassenprüfer/in</div><div><span></span>Ort, Datum · Kassenwart</div></div>' +
+        fuss('Unterlagen Kassenprüfung ' + J) + '</div></section>';
+  }
+  function offenePosten(f, kr) {
+    const getr = f.bereich === 'getraenke';
+    const posten = [];
+    if (!getr) {
+      d.rechnungen.filter((r) => Q.rest(r) > 0 && (!f.bereich || r.periode === f.bereich) && (!f.jahr || String(r.saison) === f.jahr) && (!f.monat || String(r.datum).startsWith(f.monat)))
+        .forEach((r) => posten.push({ b: r.periode, nr: r.nr, datum: r.datum, faellig: r.faellig, wer: r.empfaenger.vorname + ' ' + r.empfaenger.nachname + ' (' + r.empfaenger.nr + ')', betrag: r.summe, offen: Q.rest(r), st: RST[Q.rstatus(r, heute)], weg: r.sepa ? (r.sepa_lauf ? 'Lastschrift ' + r.sepa_lauf : 'Lastschrift vorgemerkt') : 'Überweisung' }));
+      if (!f.bereich || f.bereich === 'gast') d.gaeste.filter((g) => g.status !== 'storniert' && !g.bezahlt_am && g.ankunft <= heute && (!f.jahr || g.ankunft.startsWith(f.jahr)) && (!f.monat || g.ankunft.startsWith(f.monat)))
+        .forEach((g) => posten.push({ b: 'gast', nr: g.quittung_nr || '', datum: g.ankunft, faellig: g.ankunft, wer: '„' + g.bootsname + '“ (Gast)', betrag: Number(g.betrag || 0), offen: Number(g.betrag || 0), st: g.zahlung_gemeldet ? 'vom Gast gemeldet' : 'nicht bezahlt', weg: g.zahlung && g.zahlung !== 'offen' ? FZ.ZAHLART[g.zahlung] || g.zahlung : '' }));
+    } else (kr || []).filter((r) => !r.storniert_am && !r.bezahlt_am && (!f.jahr || String(r.datum).startsWith(f.jahr)) && (!f.monat || String(r.datum).startsWith(f.monat)))
+      .forEach((r) => posten.push({ b: 'getraenke', nr: r.nr, datum: String(r.datum).slice(0, 10), faellig: r.faellig, wer: r.empfaenger ? r.empfaenger.vorname + ' ' + r.empfaenger.nachname + ' (' + r.empfaenger.nr + ')' : '', betrag: Number(r.summe), offen: Number(r.summe), st: r.faellig && r.faellig < heute ? 'überfällig' : 'offen', weg: r.sepa ? 'Lastschrift' : 'Überweisung' }));
+    const gruppen = FZ.BEREICHE.map(([k, t]) => ({ k, t, l: posten.filter((p) => p.b === k).sort((a, b) => String(a.datum).localeCompare(String(b.datum)) || String(a.nr).localeCompare(String(b.nr))) })).filter((g) => g.l.length);
+    const gesamt = posten.reduce((s, p) => s + p.offen, 0);
+    const auswahl = [f.bereich ? 'Bereich ' + (f.bereich === 'gast' ? 'Gastlieger' : BER[f.bereich]) : 'alle Bereiche' + (getr ? '' : ' (ohne Getränke)'), f.jahr ? 'Abrechnungsjahr ' + f.jahr : '', f.monat ? 'Monat ' + FZ.monatText(f.monat) : ''].filter(Boolean).join(' · ');
+    titel('Offene Posten');
+    return '<section class="blatt bereich bericht mehrseitig">' + kopf + '<p class="b-ober">Finanzen · Offene Posten</p><h1>Offene Posten am ' + H.datum(heute) + '</h1>' +
+      '<p class="b-lead">' + esc(auswahl) + ' · ' + posten.length + ' Posten · zusammen <strong>' + H.geld(gesamt) + '</strong>' + (getr && !kr ? ' · Getränkekasse nicht erreichbar' : '') + '</p>' +
+      (gruppen.length ? gruppen.map((g) => '<h2>' + g.t + ' <small class="b-anz">' + g.l.length + ' · ' + H.geld(g.l.reduce((s, p) => s + p.offen, 0)) + '</small></h2><table class="r-tab b-tab"><thead><tr><th style="width:28mm">Nr.</th><th style="width:18mm">Datum</th><th style="width:18mm">Fällig</th><th>Mitglied / Boot</th><th class="r" style="width:19mm">Betrag</th><th class="r" style="width:19mm">offen</th><th style="width:36mm">Stand</th></tr></thead><tbody>' +
+        g.l.map((p) => '<tr><td class="nw">' + esc(p.nr || '–') + '</td><td class="nw">' + H.datum(p.datum) + '</td><td class="nw">' + H.datum(p.faellig) + '</td><td>' + esc(p.wer) + '</td><td class="r">' + H.geld(p.betrag) + '</td><td class="r"><strong>' + H.geld(p.offen) + '</strong></td><td>' + esc(p.st) + (p.weg ? '<br><small class="nw">' + esc(p.weg) + '</small>' : '') + '</td></tr>').join('') +
+        '</tbody><tfoot><tr><td colspan="5">Summe ' + g.t + '</td><td class="r">' + H.geld(g.l.reduce((s, p) => s + p.offen, 0)) + '</td><td></td></tr></tfoot></table>').join('') : '<p>Nichts offen – alles bezahlt.</p>') +
+      '<div class="b-ende">' + (getr ? '' : '<p class="b-klein">Getränke-Rechnungen stehen in der Getränkekasse (eigene Liste). Gastlieger: nur angekommene Gäste ohne Zahlung.</p>') + fuss('Offene Posten') + '</div></section>';
+  }
+  function gaesteliste(f) {
+    const monat = !!f.monat; const wann = monat ? FZ.monatText(f.monat) : 'Saison ' + f.saison;
+    const gs = d.gaeste.filter((g) => g.status !== 'storniert' && g.ankunft.startsWith(monat ? f.monat : String(f.saison))).sort((a, b) => a.ankunft.localeCompare(b.ankunft) || a.bootsname.localeCompare(b.bootsname, 'de'));
+    const sum = (l) => l.reduce((s, g) => s + Number(g.betrag || 0), 0);
+    const bez = gs.filter((g) => g.bezahlt_am); const je = (k) => sum(bez.filter((g) => g.zahlung === k));
+    const ab = (g) => H.tag(new Date(new Date(g.ankunft + 'T12:00:00').getTime() + g.naechte * 864e5));
+    const platz = (g) => g.platz_id && Q.platz(g.platz_id) ? Q.platzName(g.platz_id) : g.platz_angabe ? (/^\s*platz/i.test(g.platz_angabe) ? '' : 'Platz ') + String(g.platz_angabe).trim() + ' (laut Gast)' : '–';
+    const stand = (g) => g.bezahlt_am ? 'bezahlt ' + H.kurz(String(g.bezahlt_am).slice(0, 10)) : g.zahlung_gemeldet ? 'gemeldet, ungeprüft' : g.ankunft > heute ? 'angekündigt' : 'offen';
+    const naechte = gs.reduce((s, g) => s + Number(g.naechte || 0), 0);
+    titel('Gästeliste ' + wann);
+    return '<section class="blatt bereich bericht mehrseitig">' + kopf + '<p class="b-ober">Hafengeld · Gastlieger</p><h1>Gästeliste ' + wann + '</h1>' +
+      '<p class="b-lead">Gäste und Nächte zählen nach dem Ankunftstag: ein Aufenthalt über den Monatswechsel steht ganz beim Ankunftsmonat.</p>' +
+      kz([['Gäste · Nächte', gs.length + ' · ' + naechte, ''], ['Einnahmen (bezahlt)', H.geld(sum(bez)), ['ueberweisung', 'paypal', 'karte'].filter((k) => je(k)).map((k) => FZ.ZAHLART[k] + ' ' + H.geld(je(k))).join(' · ')], ['davon bar', H.geld(je('bar')), 'mit der Barkasse abgleichen'],
+        ['offen', H.geld(sum(gs.filter((g) => !g.bezahlt_am && !g.zahlung_gemeldet))), ''], ['gemeldet, ungeprüft', H.geld(sum(gs.filter((g) => !g.bezahlt_am && g.zahlung_gemeldet))), '']]) +
+      (gs.length ? '<table class="r-tab b-tab"><thead><tr><th style="width:24mm">Ankunft</th><th>Boot</th><th style="width:30mm">Platz</th><th class="r" style="width:13mm">Nächte</th><th class="r" style="width:18mm">Betrag</th><th style="width:21mm">Zahlart</th><th style="width:30mm">Stand · Quittung</th></tr></thead><tbody>' +
+        gs.map((g) => '<tr><td class="nw">' + H.datum(g.ankunft) + '<br><small>bis ' + H.datum(ab(g)) + '</small></td><td><strong>„' + esc(g.bootsname) + '“</strong>' + (g.laenge ? '<br><small>' + H.zahl(g.laenge, 1) + ' m</small>' : '') + '</td><td>' + esc(platz(g)) + '</td><td class="r">' + g.naechte + '</td><td class="r">' + H.geld(g.betrag) + '</td><td>' + esc(g.zahlung && g.zahlung !== 'offen' ? FZ.ZAHLART[g.zahlung] || g.zahlung : '–') + '</td><td>' + stand(g) + (g.quittung_nr ? '<br><small class="nw">' + esc(g.quittung_nr) + '</small>' : '') + '</td></tr>').join('') +
+        '</tbody><tfoot><tr><td colspan="3">Summe</td><td class="r">' + naechte + '</td><td class="r">' + H.geld(sum(gs)) + '</td><td colspan="2"></td></tr></tfoot></table>' : '<p>Keine Gastlieger ' + (monat ? 'im ' + wann : 'in der ' + wann) + '.</p>') +
+      '<div class="b-ende"><div class="f-bar">Barkasse: laut Liste <strong>' + H.geld(je('bar')) + '</strong> bar eingenommen · gezählt: ____________ € · Datum/Unterschrift: ______________________</div>' +
+        '<p class="b-klein">Barbestand und Abgabe an den Kassenwart stehen nicht in den Daten – bitte oben eintragen.</p>' + fuss('Gästeliste ' + wann) + '</div></section>';
+  }
+  // Finanzberichte brauchen die Getränkekasse (asynchron)
+  async function finanzDruck(art) {
+    ziel.innerHTML = '<p style="padding:40px;text-align:center">Wird zusammengestellt …</p>';
+    const kr = art === 'gaesteliste' || (art === 'offeneposten' && q.get('bereich') !== 'getraenke') ? [] : await kasseLaden();
+    if (art === 'monatsbericht') ziel.innerHTML = monatsbericht(/^\d{4}-\d{2}$/.test(q.get('monat') || '') ? q.get('monat') : heute.slice(0, 7), kr);
+    else if (art === 'kassenpruefung') ziel.innerHTML = kassenpruefung(Number(q.get('jahr')) || Number(heute.slice(0, 4)), kr);
+    else if (art === 'offeneposten') ziel.innerHTML = offenePosten({ bereich: q.get('bereich') || '', jahr: q.get('jahr') || '', monat: q.get('monat') || '' }, kr);
+    else if (art === 'gaesteliste') ziel.innerHTML = gaesteliste(q.get('monat') ? { monat: q.get('monat') } : { saison: Number(q.get('saison')) || HF.aktuelleSaison() });
+  }
+
   const art = q.get('art');
   if (art === 'rechnungen') {
     const ids = (q.get('ids') || '').split(','); const liste = d.rechnungen.filter((r) => ids.includes(r.id)).sort((a, b) => a.nr.localeCompare(b.nr));
@@ -167,5 +285,6 @@
   else if (art === 'bereiche') bereicheDrucken();
   else if (art === 'aufgabenliste') aufgabenliste();
   else if (art === 'einkauf') einkaufsliste();
+  else if (['monatsbericht', 'kassenpruefung', 'offeneposten', 'gaesteliste'].includes(art)) finanzDruck(art);
   else if (art === 'einsatz') { const x = (d.arbeitseinsaetze || []).find((y) => y.id === q.get('id')); titel('QR-Plakat Arbeitseinsatz'); ziel.innerHTML = x ? einsatzPlakat(x) : ''; }
 })();
