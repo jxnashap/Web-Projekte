@@ -54,24 +54,24 @@
       { id: 'g1', art: 'gebaeude', name: 'Vereinsheim', p: [[459, 282], [528, 265], [542, 314], [516, 321], [518, 332], [489, 337], [483, 318], [462, 310]] },
       { id: 'g2', art: 'dach', name: 'Optis', p: [[553, 266], [562, 264], [572, 298], [563, 301]] },
       { id: 'g5', art: 'slipfl', name: '', p: [[543, 303], [552, 300], [561, 325], [552, 331]] },
-      { id: 'g3', art: 'dach', name: 'Mastenlager · Trecker', t: [584, 263, 0], p: [[576, 257], [604, 249], [614, 280], [587, 289]] },
+      { id: 'g3', art: 'dach', name: 'Mastenlager · Trecker', t: [567, 261, 0], p: [[576, 257], [604, 249], [614, 280], [587, 289]] },
       { id: 'g4', art: 'dach', name: '', p: [[433, 396], [447, 393], [450, 402], [438, 407]] }
     ],
     // Fahrrinne (für das kleine Boot, das über die Karte zieht)
     route: [[232, 760], [300, 650], [390, 560], [480, 490], [600, 412], [740, 340], [880, 282], [1010, 238]],
     // Kran laut Verein 10–15 m weiter östlich an Land; Grillplatz rechts neben dem Mastenlager, Spielplatz etwa mittig auf der Grünfläche
     punkte: [{ id: 'p1', art: 'kran', name: 'Kran', x: 493, y: 354 }, { id: 'p2', art: 'slip', name: 'Slip', x: 551, y: 318 },
-      { id: 'p3', art: 'grill', name: 'Grillplatz', x: 637, y: 266 }, { id: 'p4', art: 'spiel', name: 'Spielplatz', x: 664, y: 228 }],
+      { id: 'p3', art: 'grill', name: 'Grillplatz', x: 632, y: 257 }, { id: 'p4', art: 'spiel', name: 'Spielplatz', x: 728, y: 224 }],   // Lage so, dass keine Beschriftung verdeckt wird
     // Nordlager laut Verein: Lagerweg in der Mitte (Sackgasse), links eine Reihe, rechts zwei Reihen nebeneinander,
     // vorne links zwei Reihen schräg mit dem Bug zur Messe (Vereinsheim). neig = Schräge je Boot, bug = Bugrichtung (1 = zur Straße/nach vorn)
     lager: [
       { id: 'nv', name: 'Nord vorne · schräg', praefix: 'P', ab: 1, anzahl: 10, spalten: 5, stellen: 2, x: 520.7, y: 233.4, rot: -20.4, bw: 13, bh: 13, neig: 40, lw: 5.4, lh: 12.5, bug: 1 },
-      { id: 'nl', name: 'Nord links', praefix: 'P', ab: 11, anzahl: 12, spalten: 12, stellen: 2, x: 623.3, y: 185.1, rot: -20.4, bw: 9, bh: 19, bug: 1 },
+      { id: 'nl', name: 'Nord links', praefix: 'P', ab: 11, anzahl: 12, spalten: 12, stellen: 2, x: 623.3, y: 185.1, rot: -20.4, bw: 9, bh: 19, bug: 1, namenAbstand: 3 },
       { id: 'nr', name: 'Nord rechts · zwei Reihen', praefix: 'P', ab: 23, anzahl: 14, spalten: 7, stellen: 2, x: 645.4, y: 215.8, rot: -20.4, bw: 22, bh: 10, bug: 1 },
       // Winterlager West laut Verein (Nov. 2026): 8 große Plätze (12 × 4,5 m) vor dem Zaun zum Nachbargrundstück –
       // je zwei Boote hintereinander mit dem Bug zur Messe (Vereinsheim), vier solcher Reihen nebeneinander Richtung Wasser.
       // Die östliche Hälfte des Parkplatzes bis zum Kran bleibt frei.
-      { id: 'w', name: 'Winterlager West', praefix: 'P', ab: 41, anzahl: 8, spalten: 2, stellen: 2, x: 408.2, y: 368.2, rot: -63.4, bw: 30, bh: 12, lw: 29.5, lh: 11.25, bug: 1 },
+      { id: 'w', name: 'Winterlager West', praefix: 'P', ab: 41, anzahl: 8, spalten: 2, stellen: 2, x: 408.2, y: 368.2, rot: -63.4, bw: 30, bh: 12, lw: 29.5, lh: 11.25, bug: 1, namenAbstand: 5, namenVersatz: 7 },   // Name neben dem Feld, frei von P41/P42 und vom Zaun
       // Außenlager hinter dem Wendekreis (laut Verein): nur links oben zwei Reihen, etwa 6 Boote, fast bis an den Wendekreis; rechts davon Gestelle.
       // Eine Bootshalle gibt es dort nicht – H1–H4 sind deshalb nicht mehr im Plan (in den Stammdaten bleiben sie, bis der Verein entscheidet).
       { id: 'a', name: 'Außenlager', praefix: 'A', ab: 1, anzahl: 6, spalten: 2, stellen: 0, x: 745, y: 127.5, rot: -7, bw: 30, bh: 11.5, lw: 29, lh: 10.5, bug: -1 }
@@ -321,11 +321,15 @@
     return (plan.punkte || []).map((p) => { const [z, n] = PUNKT[p.art] || ['?', '']; const name = p.name || n;
       return `<g class="pkt pkt-${p.art}" transform="translate(${p.x} ${p.y})"><circle class="pkt-s" cx=".8" cy="1.2" r="7"/><circle r="7"/><text y="2.6" text-anchor="middle" class="pkt-z">${z}</text><text y="15" text-anchor="middle" class="pl-label klein pkt-n">${esc(name)}</text></g>`; }).join('');
   }
-  function massstab(plan) {
-    const e50 = 50 / plan.m; const x = plan.breite - e50 - 60, y = plan.hoehe - 34;
-    return `<g class="massstab" transform="translate(${x} ${y})"><rect x="-10" y="-16" width="${e50 + 20}" height="30" rx="4" class="ms-bg"/><rect width="${e50 / 2}" height="4" class="ms-a"/><rect x="${e50 / 2}" width="${e50 / 2}" height="4" class="ms-b"/>
-      <text y="-4" class="pl-label klein">0</text><text x="${e50 / 2}" y="-4" text-anchor="middle" class="pl-label klein">25</text><text x="${e50}" y="-4" text-anchor="end" class="pl-label klein">50 m</text></g>
-      <g class="rose" transform="translate(${plan.breite - 40} ${plan.hoehe - 84})"><circle r="21" class="rose-bg"/><circle r="15.5" class="rose-ring"/><path d="M0 -15 L3.2 -3.2 L15 0 L3.2 3.2 L0 15 L-3.2 3.2 L-15 0 L-3.2 -3.2 Z" class="rose-stern"/><path d="M0 -18.5 L4.4 0 L-4.4 0 Z" class="rose-n"/><path d="M0 18.5 L4.4 0 L-4.4 0 Z" class="rose-s"/><text y="-23.5" text-anchor="middle" class="pl-label klein">N</text></g>`;
+  // Maßstabsleiste und Nordrose unten rechts im Ausschnitt vb (Standard: ganzer Plan). In kleinen Ausschnitten wird beides
+  // kleiner gezeichnet und die Leiste kürzer (50/20/10 m) – die Länge stimmt immer in Plan-Einheiten.
+  function massstab(plan, vb) {
+    vb = vb || [0, 0, plan.breite, plan.hoehe];
+    const k = Math.min(1, vb[2] / 700); const L = [50, 20, 10].find((m) => m / plan.m <= vb[2] * .3) || 10; const e = L / plan.m, ei = e / k;
+    const x = vb[0] + vb[2] - e - 60 * k, y = vb[1] + vb[3] - 34 * k; const sk = k < 1 ? ` scale(${k.toFixed(3)})` : '';
+    return `<g class="massstab" transform="translate(${+x.toFixed(1)} ${+y.toFixed(1)})${sk}"><rect x="-10" y="-16" width="${+(ei + 20).toFixed(2)}" height="30" rx="4" class="ms-bg"/><rect width="${+(ei / 2).toFixed(2)}" height="4" class="ms-a"/><rect x="${+(ei / 2).toFixed(2)}" width="${+(ei / 2).toFixed(2)}" height="4" class="ms-b"/>
+      <text y="-4" class="pl-label klein">0</text><text x="${+(ei / 2).toFixed(2)}" y="-4" text-anchor="middle" class="pl-label klein">${L / 2}</text><text x="${+ei.toFixed(2)}" y="-4" text-anchor="end" class="pl-label klein">${L} m</text></g>
+      <g class="rose" transform="translate(${+(vb[0] + vb[2] - 40 * k).toFixed(1)} ${+(vb[1] + vb[3] - 84 * k).toFixed(1)})${sk}"><circle r="21" class="rose-bg"/><circle r="15.5" class="rose-ring"/><path d="M0 -15 L3.2 -3.2 L15 0 L3.2 3.2 L0 15 L-3.2 3.2 L-15 0 L-3.2 -3.2 Z" class="rose-stern"/><path d="M0 -18.5 L4.4 0 L-4.4 0 Z" class="rose-n"/><path d="M0 18.5 L4.4 0 L-4.4 0 Z" class="rose-s"/><text y="-23.5" text-anchor="middle" class="pl-label klein">N</text></g>`;
   }
   // Untergrund: Zeichnung oder Luftbild
   function svgGrund(plan, geo, luftbild) {
@@ -418,15 +422,20 @@
     }).join('');
     // Lagernamen über (bzw. bei Lagern unterhalb des Wegs: unter) dem Feld
     const lagerNamen = opts.daten ? '' : (plan.lager || []).filter((L) => L.name).map((L) => { const zeilen = Math.ceil((Number(L.anzahl) || 0) / Math.max(1, Number(L.spalten) || 1));
-      const unten = L.namenUnten || L.id === 'nr'; const dy = (zeilen * (Number(L.bh) || 20) / 2 + (unten ? 7 : 3)) * (unten ? 1 : -1);
-      return `<text class="pl-label klein lager-name" text-anchor="middle" transform="translate(${L.x} ${L.y}) rotate(${Number(L.rot) || 0}) translate(0 ${dy.toFixed(1)})">${esc(L.name)}</text>`; }).join('');
+      const unten = L.namenUnten || L.id === 'nr'; const dy = (zeilen * (Number(L.bh) || 20) / 2 + (unten ? 7 : 3) + (Number(L.namenAbstand) || 0)) * (unten ? 1 : -1);   // namenAbstand: Name weiter vom Feld weg, namenVersatz: entlang des Namens verschoben
+      return `<text class="pl-label klein lager-name" text-anchor="middle" transform="translate(${L.x} ${L.y}) rotate(${Number(L.rot) || 0}) translate(${Number(L.namenVersatz) || 0} ${dy.toFixed(1)})">${esc(L.name)}</text>`; }).join('');
 
     const A = ansichten(plan);
     const vb = Array.isArray(opts.ansicht) ? opts.ansicht : (A[opts.ansicht || 'gesamt'] || A.gesamt);
     const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const G = svgGrund(plan, geo, !!opts.luftbild);
-    el.innerHTML = `<svg class="hafenplan${(vb[2] < 600) ? ' nah' : ''}${vb[2] < 260 ? ' sehr-nah' : ''}${opts.luftbild ? ' mit-bild' : ''}${winter ? ' winter' : ''}${opts.abend ? ' abend' : ''}${opts.intro === false || ruhig ? '' : ' intro'}" viewBox="${vb.join(' ')}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Hafenplan des SSV">` +
+    let html = `<svg class="hafenplan${(vb[2] < 600) ? ' nah' : ''}${vb[2] < 260 ? ' sehr-nah' : ''}${opts.luftbild ? ' mit-bild' : ''}${winter ? ' winter' : ''}${opts.abend ? ' abend' : ''}${opts.intro === false || ruhig ? '' : ' intro'}" viewBox="${vb.join(' ')}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Hafenplan des SSV">` +
       `${G.unten}${land}${lagerNamen}${wasserPlaetze}${laengs}${G.punkte}<rect class="daemmer" x="-400" y="-400" width="${plan.breite + 800}" height="${plan.hoehe + 800}"/><g class="lichter">${G.lichter}${lichter.join('')}</g>${G.oben}</svg>`;
+    // Zweiter Plan auf derselben Seite (z. B. Druckseite): eigene IDs, sonst greifen Verläufe/Muster auf den ersten Plan –
+    // ist der ausgeblendet (Drucken), malt der Browser Wasser und Bojen ohne Farbe. CSS-Verweise (url(#wasser) …) siehe Druckregeln in hafen.css.
+    if (opts.idPraefix) { const pre = opts.idPraefix; const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
+      html = html.replace(/(\s)id="([^"]+)"/g, (m, sp, id) => `${sp}id="${pre}${id}"`).replace(/url\(#([^)]+)\)/g, (m, id) => ids.has(id) ? `url(#${pre}${id})` : m).replace(/href="#([^"]+)"/g, (m, id) => ids.has(id) ? `href="#${pre}${id}"` : m); }
+    el.innerHTML = html;
     const svg = el.firstChild; svg._ansichten = A; svg._plan = plan;
     if (svg.classList.contains('intro')) setTimeout(() => svg.classList.remove('intro'), 2100);
     const klick = (e) => { const g = e.target.closest('[data-platz]'); if (g && opts.onKlick) opts.onKlick(g.dataset.platz); };
@@ -623,6 +632,14 @@
       landFehlen: landSoll.filter((id) => !landIst.has(id)), landUnbekannt: [...landIst].filter((id) => !landSoll.includes(id)), anzahl: soll.length };
   }
 
-  window.HAFEN_PLAN = { zeichnen, zoomen, kamera, lagerEcken, bootSvg, istMotor, voll, STATUS_TEXT, STANDARD, ART, PUNKT, QUELLE, aktiv, gueltig, plaetzeVon, lagerVon, stegGeo, hatPlaetze, ansichten, pruefen, svgDefs, formenSvg, mitte, drehen,
+  // Maßstab und Nordrose an den sichtbaren Ausschnitt (viewBox) eines gezeichneten Plans setzen – für den Druck von Ausschnitten
+  function massstabInAnsicht(svg) {
+    const plan = svg._plan; const v = svg.viewBox && svg.viewBox.baseVal; if (!plan || !v || !v.width) return;
+    const alt = svg.querySelectorAll('.massstab, .rose'); if (!alt.length) return;
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = massstab(plan, [v.x, v.y, v.width, v.height]);
+    alt[0].before(...g.childNodes); alt.forEach((x) => x.remove());
+  }
+
+  window.HAFEN_PLAN = { zeichnen, massstabInAnsicht, zoomen, kamera, lagerEcken, bootSvg, istMotor, voll, STATUS_TEXT, STANDARD, ART, PUNKT, QUELLE, aktiv, gueltig, plaetzeVon, lagerVon, stegGeo, hatPlaetze, ansichten, pruefen, svgDefs, formenSvg, mitte, drehen,
     get ANSICHTEN() { return ansichten(aktiv()); } };
 })();

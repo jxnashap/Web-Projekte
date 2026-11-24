@@ -15,13 +15,13 @@
 <style>
   .mein-kopf { background: var(--navy); color: #fff; padding: 18px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   .mein-kopf h1 { color: #fff; font-size: 24px; } .mein-kopf p { margin: 2px 0 0; opacity: .8; font-size: 14.5px; }
-  .mein-kopf select { margin-left: auto; padding: 8px 10px; border-radius: 9px; border: 0; max-width: 100%; color: var(--ink); background: #fff; }
+  .mein-kopf select { margin-left: auto; padding: 8px 10px; min-height: 42px; font-size: 16px; border-radius: 9px; border: 0; max-width: 100%; color: var(--ink); background: #fff; }
   .mein { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
   .mein-raster { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
   .gruen-box { border: 2px solid var(--gruen); }
-  .mein-bereich { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 0 8px; font-size: 14px; }
+  .mein-bereich { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 0 8px; font-size: 15px; }
   .mein-bereich p { margin: 4px 0; } .mein-bereich ul { margin: 6px 0 0; padding-left: 18px; } .mein-bereich li { margin: 2px 0; } .mein-bereich small { color: var(--muted); }
-  .mein-bereich-kopf strong { font-size: 15px; color: var(--navy); }
+  .mein-bereich-kopf strong { font-size: 16px; color: var(--navy); }
   .mein-suche { background: #fff; border-radius: 16px; box-shadow: var(--schatten); padding: 14px 16px; margin: 0 0 14px; }
   .mein-suche > label { display: block; font-family: 'Playfair Display', Georgia, serif; font-size: 19px; color: var(--navy); margin: 0 0 8px; }
   .mein-such-erg { margin-top: 6px; } .mein-such-erg:empty { display: none; }
@@ -35,15 +35,15 @@
   .ver-karte { display: grid; grid-template-columns: 54px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
   .ver-karte:first-child { border-top: 0; padding-top: 2px; }
   .ver-datum { display: flex; flex-direction: column; align-items: center; justify-content: center; align-self: start; padding: 6px 0; border-radius: 10px; background: #E7EEF3; color: var(--navy); line-height: 1.1; }
-  .ver-datum strong { font-size: 22px; } .ver-datum small { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
-  .ver-text h3 { margin: 0; font-size: 16px; color: var(--navy); } .ver-text p { margin: 6px 0 0; font-size: 14px; }
-  .ver-text .ver-zeit { margin-top: 2px; color: var(--muted); font-size: 13px; } .ver-stand small { color: var(--muted); }
-  .ver-fakten { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--muted); font-size: 13px !important; }
-  .ver-text .aktionen { margin-top: 10px; } .ver-klein { color: var(--muted); font-size: 12px !important; }
+  .ver-datum strong { font-size: 22px; } .ver-datum small { font-size: 13px; letter-spacing: 0; color: var(--muted); }
+  .ver-text h3 { margin: 0; font-size: 17px; color: var(--navy); } .ver-text p { margin: 6px 0 0; font-size: 15px; }
+  .ver-text .ver-zeit { margin-top: 2px; color: var(--muted); font-size: 14.5px; } .ver-stand small { color: var(--muted); }
+  .ver-fakten { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--muted); font-size: 14.5px !important; }
+  .ver-text .aktionen { margin-top: 10px; } .ver-klein { color: var(--muted); font-size: 14px !important; }
   .ver-karte.abgesagt h3 { text-decoration: line-through; color: var(--muted); }
   .kasse-zahlen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 12px; }
   .kasse-zahlen div { background: var(--sand, #f5f1e8); border-radius: 12px; padding: 10px 12px; }
-  .kasse-zahlen small { display: block; color: var(--muted); font-size: 12px; }
+  .kasse-zahlen small { display: block; color: var(--muted); font-size: 14px; }
   .kasse-zahlen strong { font-size: 20px; color: var(--navy); }
   .code-feld { font-size: 26px; letter-spacing: .3em; text-align: center; font-variant-numeric: tabular-nums; }
   .mein-raster > div { min-width: 0; }
@@ -52,28 +52,28 @@
   /* Auf einen Blick */
   .blick { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 12px; margin: 0 0 16px; }
   .blick button { text-align: left; background: #fff; border: 0; border-radius: 14px; box-shadow: var(--schatten); padding: 12px 14px; cursor: pointer; font: inherit; color: inherit; min-width: 0; }
-  .blick small { display: block; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-2); font-weight: 700; }
+  .blick small { display: block; font-size: 14px; letter-spacing: 0; color: var(--muted); font-weight: 700; }
   .blick strong { display: block; font-size: 19px; color: var(--navy); margin: 3px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .blick span { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .blick span { display: block; font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* Aufklappbare Bereiche */
-  details.sek > summary { list-style: none; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  details.sek > summary { list-style: none; display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 44px; }
   details.sek > summary::-webkit-details-marker { display: none; }
-  details.sek > summary h2 { margin: 0; }
+  details.sek > summary h2 { margin: 0; flex: none; white-space: nowrap; }
   details.sek > summary::after { content: ''; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--muted-2); border-bottom: 2px solid var(--muted-2); transform: rotate(45deg); margin: -4px 2px 0 0; transition: transform .2s; }
   details.sek[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
-  .sek-info { margin-left: auto; font-size: 13px; color: var(--muted); text-align: right; }
+  .sek-info { margin-left: auto; min-width: 0; font-size: 14px; color: var(--muted); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sek-inhalt { margin-top: 14px; }
   .panel.sek { display: block; width: 100%; box-sizing: border-box; }
   .login-karte { max-width: 440px; margin: 30px auto; }
   .login-links { margin: 14px 0 0; font-size: 14px; }
   .login-links a { color: var(--navy); }
-  .mein-fuss { text-align: center; font-size: 13px; color: var(--muted); padding: 0 16px 40px; } .mein-fuss a { color: var(--navy); display: inline-block; padding: 10px 4px; }
+  .mein-fuss { text-align: center; font-size: 14px; color: var(--muted); padding: 0 16px 40px; } .mein-fuss a { color: var(--navy); display: inline-block; padding: 10px 4px; }
   table.rechn td { vertical-align: middle; }
   .mitteilung { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; background: #fff; border-left: 4px solid var(--navy); border-radius: 12px; padding: 12px 14px; margin: 0 0 12px; box-shadow: var(--schatten); }
   .mitteilung.wichtig { border-left-color: var(--rot); background: #fff5f5; }
-  .mitteilung p { margin: 4px 0; font-size: 14px; } .mitteilung small { color: var(--muted); font-size: 12px; } .mitteilung .btn { flex: none; }
+  .mitteilung p { margin: 4px 0; font-size: 15px; } .mitteilung small { color: var(--muted); font-size: 14px; } .mitteilung .btn { flex: none; }
   @media (max-width: 860px) { .mein { padding-bottom: 96px; } }
-  .erkl { display: inline-block; font-size: 12.5px; margin-top: 3px; color: var(--muted); } .erkl.warn { color: #8a5e05; font-weight: 600; } .erkl.rot { color: var(--rot); font-weight: 600; }
+  .erkl { display: inline-block; font-size: 14px; margin-top: 3px; color: var(--muted); } .erkl.warn { color: #8a5e05; font-weight: 600; } .erkl.rot { color: var(--rot); font-weight: 600; }
   .blick { grid-template-columns: 1.3fr 1fr 1fr; }
   #k-offen span { white-space: normal; }
   @media (max-width: 600px) {
@@ -97,10 +97,25 @@
     .blick { gap: 8px; margin-bottom: 12px; }
     .blick button { padding: 10px 11px; }
     .blick strong { font-size: 16px; }
-    .sek-info { font-size: 12.5px; }
-    .demo-band { font-size: 12px; padding: 7px 10px; margin-bottom: 10px; }
+    .sek-info { font-size: 13.5px; }
+    .demo-band { font-size: 14px; padding: 7px 10px; margin-bottom: 10px; }
   }
   @media (max-width: 860px) { .mein-raster { grid-template-columns: 1fr; } }
+  /* Schmale Handys: Passt die Kurzinfo nicht neben die Überschrift, rutscht sie ganz in eine zweite Zeile darunter
+     (statt abgeschnitten zu werden – Schilder wie „3 Einladungen offen“ bleiben vollständig). Der Pfeil steht dafür fest rechts. */
+  @media (max-width: 480px) {
+    details.sek > summary { position: relative; flex-wrap: wrap; row-gap: 2px; padding-right: 22px; }
+    details.sek > summary::after { position: absolute; right: 2px; top: calc(50% - 6px); margin: 0; }
+    details.sek[open] > summary::after { top: calc(50% - 2px); margin: 0; }
+    .sek-info { max-width: 100%; }
+  }
+  /* Lesbarkeit (Zielgruppe 50+): Tabellen, Schilder, kleine Knöpfe und Felder hier mindestens wie in der Getränkekasse */
+  @media screen {
+    .mein .tab td { font-size: 15.5px; } .mein .tab small { font-size: 14px; }
+    .mein .tag { font-size: 14px; } .mein .btn.klein, .mein-kopf .btn.klein, .modal .btn.klein { min-height: 40px; }
+    .modal .feld, .mein .feld { font-size: 15px; } .feld .feld-fehler { display: block; color: var(--rot); font-size: 14.5px; font-weight: 600; line-height: 1.35; margin-top: 2px; }
+    .feld input[aria-invalid=true] { border-color: var(--rot); box-shadow: 0 0 0 2px rgba(200,30,40,.15); }
+  }
   .mein { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
 </style>
 </head>

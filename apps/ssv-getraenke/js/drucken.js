@@ -1,4 +1,4 @@
-/* SSV Getränkekasse – Druckansicht: Rechnungen (A4) und PIN-Zettel */
+/* SSV Getränkekasse – Druckansicht: Rechnungen (A4) und Code-Zettel */
 (function () {
   'use strict';
 
@@ -8,6 +8,32 @@
   const ziel = document.getElementById('blaetter');
   const q = new URLSearchParams(location.search);
   const STANDER = '<svg class="k-stander"><use href="#stander"/></svg>';
+  // Zusammengehöriges nicht umbrechen („Steuer-Nr. 22 290 72188“, „23554 Lübeck“)
+  const fest = (s) => '<span style="white-space:nowrap">' + esc(s) + '</span>';
+  // SSV-Briefkopf (Vorgabe): Flagge oben links, Vereinsadresse rechts
+  const vereinsKopf = (e, extra) => '<div class="r-kopf' + (extra ? ' ' + extra : '') + '">' + STANDER + '<div class="r-verein"><strong>' + esc(e.verein_name) + '</strong>' +
+    fest(e.verein_strasse) + '<br>' + fest(e.verein_ort) + '<br>' + esc(e.verein_email) + '</div></div>';
+  // Passt ein Blatt nicht auf eine A4-Seite? Gemessen wird bis zum letzten Inhalt (ohne Fußzeile) plus dem Platz,
+  // den die Fußzeile unten auf der Seite braucht – so steht nie eine Fußzeile allein auf einer Folgeseite.
+  // Stufen: normal → „knapp“ (etwas engere Abstände, bleibt eine Seite) → „mehrseitig“ (läuft im Druck auf Folgeseiten weiter).
+  // „knapp“ fasst deutlich mehr als Seite 1 im mehrseitigen Satz; wird umgebrochen, wandert also immer echter Inhalt mit.
+  function passtAufEineSeite(b) {
+    const r = b.getBoundingClientRect(), mm = 210 / r.width, fuss = b.querySelector('.r-fuss');
+    let unten = 0;
+    [...b.children].forEach((k) => { if (k !== fuss && !k.classList.contains('r-storno')) unten = Math.max(unten, k.getBoundingClientRect().bottom - r.top); });
+    const fussPlatz = fuss ? r.bottom - fuss.getBoundingClientRect().top : 0;   // Fußzeile samt Abstand zum unteren Blattrand
+    return (unten + fussPlatz) * mm + 3 <= 297;                                  // 3 mm Luft über der Fußzeile
+  }
+  function mehrseitigPruefen() {
+    ziel.querySelectorAll('.r-blatt').forEach((b) => {
+      b.classList.remove('mehrseitig', 'knapp');
+      if (passtAufEineSeite(b)) return;
+      b.classList.add('knapp');
+      if (passtAufEineSeite(b)) return;
+      b.classList.remove('knapp');
+      b.classList.add('mehrseitig');
+    });
+  }
 
   function rechnungsBlatt(r, e, buchungen) {
     const em = r.empfaenger;
@@ -23,9 +49,10 @@
       : '<p>Bitte überweise die ' + betrag + ' bis zum <strong>' + H.datum(r.faellig) + '</strong> auf unser Vereinskonto' +
         (e.iban ? ' (IBAN ' + esc(e.iban) + (e.bank ? ', ' + esc(e.bank) : '') + ')' : ' [PLATZHALTER IBAN]') +
         ' – als Verwendungszweck reicht die Rechnungsnummer <strong>' + esc(r.nr) + '</strong>.</p>';
-    const sepaKlein = r.sepa ? 'Gläubiger-ID ' + esc(e.glaeubiger_id || '[PLATZHALTER]') + ' · Mandatsreferenz ' + esc(em.mandatsreferenz || em.nr || '[PLATZHALTER]') + ' · ' : '';
-    const fuss = '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort) + ' · ' + esc(e.verein_email) + '</span>' +
-      '<span>' + sepaKlein + 'Steuer-Nr. ' + esc(e.steuernummer) + '</span></div>';
+    const P = '&nbsp;· ';   // Trennpunkt bleibt am vorigen Teil, keine Zeile beginnt mit „·“
+    const sepaKlein = r.sepa ? fest('Gläubiger-ID ' + (e.glaeubiger_id || '[PLATZHALTER]')) + P + fest('Mandatsreferenz ' + (em.mandatsreferenz || em.nr || '[PLATZHALTER]')) + P : '';
+    const fuss = '<div class="r-fuss"><span>' + esc(e.verein_name) + P + fest(e.verein_strasse) + P + fest(e.verein_ort) + P + esc(e.verein_email) + '</span>' +
+      '<span>' + sepaKlein + fest('Steuer-Nr. ' + e.steuernummer) + '</span></div>';
     // „im September 2026“ für ganze Monate, sonst „vom … bis …“
     const v = new Date(r.von + 'T12:00:00'), bis = new Date(r.bis + 'T12:00:00');
     const ganzerMonat = v.getDate() === 1 && v.getMonth() === bis.getMonth() && v.getFullYear() === bis.getFullYear() &&
@@ -33,7 +60,7 @@
     const zeitraum = ganzerMonat ? 'im ' + v.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }) : 'vom ' + H.datum(r.von) + ' bis ' + H.datum(r.bis);
 
     let html = '<section class="r-blatt">' + (r.storniert_am ? '<div class="r-storno">STORNIERT</div>' : '') +
-      '<div class="r-kopf">' + STANDER + '<div class="r-verein"><strong>' + esc(e.verein_name) + '</strong>' + esc(e.verein_strasse) + '<br>' + esc(e.verein_ort) + '<br>' + esc(e.verein_email) + '</div></div>' +
+      vereinsKopf(e) +
       '<div class="r-absender">' + esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort) + '</div>' +
       '<div class="r-adresse">' + esc(em.vorname + ' ' + em.nachname) + '<br>' + esc(em.strasse || '') + '<br>' + esc(((em.plz || '') + ' ' + (em.ort || '')).trim()) + '</div>' +
       '<div class="r-meta"><span>Rechnungsnummer</span><strong>' + esc(r.nr) + '</strong><span>Rechnungsdatum</span><span>' + H.datum(r.datum) + '</span>' +
@@ -52,8 +79,8 @@
       const zeilen = buchungen.slice().sort((a, b) => a.zeit.localeCompare(b.zeit)).map((b) =>
         '<tr><td>' + H.datum(b.zeit) + '</td><td>' + new Date(b.zeit).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + '</td>' +
         '<td>' + esc(b.produkt_name) + (b.quelle === 'nachtrag' ? ' (Nachtrag)' : '') + '</td><td class="r">' + b.anzahl + ' ' + H.einheitText(b) + '</td><td class="r">' + H.geld(b.betrag) + '</td></tr>').join('');
-      html += '<section class="r-blatt r-anhang"><div class="r-kopf">' + STANDER + '<div class="r-verein"><strong>Anlage zu ' + esc(r.nr) + '</strong>' + esc(em.vorname + ' ' + em.nachname) + '</div></div>' +
-        '<h2>Einzelbuchungen an der Getränkekasse</h2><table class="r-tab"><thead><tr><th>Datum</th><th>Uhrzeit</th><th>Artikel</th><th class="r">Menge</th><th class="r">Betrag</th></tr></thead><tbody>' + zeilen +
+      html += '<section class="r-blatt r-anhang">' + vereinsKopf(e) +
+        '<h2>Einzelbuchungen an der Getränkekasse</h2><p class="r-unterzeile">Anlage zur Rechnung ' + esc(r.nr) + ' · ' + esc(em.vorname + ' ' + em.nachname) + '</p><table class="r-tab"><thead><tr><th>Datum</th><th>Uhrzeit</th><th>Artikel</th><th class="r">Menge</th><th class="r">Betrag</th></tr></thead><tbody>' + zeilen +
         '</tbody><tfoot><tr><td colspan="4">Summe</td><td class="r">' + H.geld(r.summe) + '</td></tr></tfoot></table>' + fuss + '</section>';
     }
     return html;
@@ -72,24 +99,27 @@
     const render = () => {
       const mit = document.getElementById('anhang').checked;
       ziel.innerHTML = liste.map((r) => rechnungsBlatt(r, e, mit ? buchungen.filter((b) => b.rechnung_id === r.id && !b.storniert_am) : null)).join('');
+      mehrseitigPruefen();
     };
     document.getElementById('anhang').addEventListener('change', render);
     render();
   }
 
-  function pinZettel() {
+  async function pinZettel() {
     document.getElementById('anhang-wahl').hidden = true;
     let liste = [];
     try { liste = JSON.parse(sessionStorage.getItem('ssvg-pinzettel')) || []; } catch (e) { /* leer */ }
-    document.getElementById('titel').textContent = 'PIN-Zettel (' + liste.length + ')';
+    document.getElementById('titel').textContent = 'Code-Zettel (' + liste.length + ')';
+    document.title = 'Code-Zettel';
+    const e = await S.einstellungen().catch(() => ({}));
     const seiten = [];
     for (let i = 0; i < liste.length; i += 10) seiten.push(liste.slice(i, i + 10));
-    ziel.innerHTML = seiten.map((s) => '<section class="r-blatt" style="padding:12mm"><div class="r-pinzettel">' + s.map((z) =>
-      '<div><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><small>SSV Getränkekasse</small><br><strong>' + esc(z.vorname + ' ' + z.nachname) + '</strong>' +
-      (z.nr ? '<br><small>Mitgliedsnr. ' + esc(z.nr) + '</small>' : '') + '</div>' + STANDER + '</div>' +
-      '<div><small>Deine persönliche PIN</small><div class="pin">' + esc(z.pin) + '</div><small>Bitte nicht weitergeben. Ändern oder vergessen? In „Mein SSV“ legst du jederzeit einen neuen fest.</small></div></div>').join('') +
-      '</div></section>').join('') || '<p style="padding:40px;text-align:center">Keine PINs zum Drucken vorhanden.</p>';
-    // Die Klartext-PINs nicht länger als nötig aufbewahren
+    ziel.innerHTML = seiten.map((s) => '<section class="r-blatt r-zettelbogen">' + vereinsKopf(e, 'schmal') + '<div class="r-pinzettel">' + s.map((z) =>
+      '<div><div class="r-zettel-kopf">' + STANDER + '<div><small>SSV Getränkekasse</small><br><strong>' + esc(z.vorname + ' ' + z.nachname) + '</strong>' +
+      (z.nr ? '<br><small>Mitgliedsnr. ' + esc(z.nr) + '</small>' : '') + '</div></div>' +
+      '<div><small>Dein persönlicher Code</small><div class="pin">' + esc(z.pin) + '</div><small>Bitte nicht weitergeben. Ändern oder vergessen? In „Mein SSV“ legst du jederzeit einen neuen fest.</small></div></div>').join('') +
+      '</div></section>').join('') || '<p style="padding:40px;text-align:center">Keine Codes zum Drucken vorhanden.</p>';
+    // Die Klartext-Codes nicht länger als nötig aufbewahren
     window.addEventListener('afterprint', () => sessionStorage.removeItem('ssvg-pinzettel'));
   }
 

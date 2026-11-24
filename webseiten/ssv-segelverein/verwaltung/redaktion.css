@@ -106,8 +106,17 @@ a { color: var(--navy-3); }
 .drop { border: 2px dashed rgba(14,27,69,.25); border-radius: 14px; padding: 22px; text-align: center; color: var(--muted); background: rgba(255,255,255,.6); cursor: pointer; display: block; }
 .drop strong { color: var(--navy); }
 .drop.ueber { border-color: var(--rot); background: #fff; }
-.zeilen-edit { display: grid; grid-template-columns: 1fr 1.3fr auto; gap: 8px; align-items: center; margin-top: 8px; }
-.zeilen-edit input { font-size: 15px; padding: 9px 10px; border: 1px solid rgba(14,27,69,.22); border-radius: 9px; min-width: 0; }
+.zeilen-edit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) auto; gap: 8px; align-items: start; margin-top: 8px; }
+.zeilen-edit input, .zeilen-edit textarea { font-size: 15px; padding: 9px 10px; border: 1px solid rgba(14,27,69,.22); border-radius: 9px; min-width: 0; width: 100%; background: #fff; }
+.zeilen-edit textarea { resize: vertical; line-height: 1.4; min-height: 0; field-sizing: content; }
+.spalte { container-type: inline-size; }
+@container (max-width: 660px) {
+  /* Schmale Spalte (Handy oder neben der Vorschau): Bezeichnung über dem Wert, beide in voller Breite – nichts wird abgeschnitten */
+  .zeilen-edit { grid-template-columns: minmax(0, 1fr) auto; padding-top: 10px; border-top: 1px solid var(--line); }
+  .zeilen-edit [name=label] { grid-column: 1; grid-row: 1; }
+  .zeilen-edit [name=wert] { grid-column: 1; grid-row: 2; }
+  .zeilen-edit [data-zeile-weg] { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+}
 
 /* Modal + Toast */
 .modal { position: fixed; inset: 0; background: rgba(14,27,69,.5); z-index: 60; display: grid; place-items: center; padding: 16px; }
@@ -121,7 +130,7 @@ a { color: var(--navy-3); }
 
 @media (max-width: 1180px) { .main { grid-template-columns: minmax(0, 1fr); } .vorschau { display: none; } }
 @media (max-width: 820px) {
-  .shell { grid-template-columns: 1fr; }
+  .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }   /* sonst verteilt min-height: 100vh die Resthöhe auch auf die Leiste */
   .nav { position: sticky; top: 0; z-index: 20; height: auto; flex-direction: row; overflow-x: auto; padding: 8px; gap: 4px; -webkit-overflow-scrolling: touch; }
   .marke { display: none; }
   .nav > button { white-space: nowrap; width: auto; padding: 9px 12px; }
@@ -132,4 +141,46 @@ a { color: var(--navy-3); }
   .form-2 { grid-template-columns: 1fr; }
   .liste li { flex-wrap: wrap; }
   .liste .knoepfe { width: 100%; justify-content: flex-end; }
+}
+
+/* ===================================================================== Lesbarkeit
+   Wie im Hafen-Manager und in der Getränkekasse: Grundschrift 16 px, Knöpfe mind. 40–42 px hoch,
+   keine winzigen Großbuchstaben-Etiketten. „Schrift größer“ (html.schrift-gross, Schalter unten in
+   der Leiste, gleicher Schlüssel wie in den Apps) legt noch einmal rund 12 % drauf. Nur am Bildschirm. */
+@media screen {
+  body { font-size: 16px; line-height: 1.55; }
+  .btn { font-size: 15px; min-height: 42px; }
+  .btn.klein { font-size: 14px; padding: 8px 12px; min-height: 40px; }
+  .btn.icon { width: 42px; height: 42px; min-height: 42px; font-size: 17px; }
+  .feld { font-size: 15px; }
+  .feld small { font-size: 14px; color: var(--muted); }
+  .feld.check { font-size: 16px; }
+  .nav > button, .nav-unten a, .nav-unten button { font-size: 15.5px; min-height: 44px; }
+  .marke strong { font-size: 16px; }
+  .marke span { font-size: 13px; letter-spacing: .02em; text-transform: none; opacity: .75; }
+  .vorschau-kopf { font-size: 13px; letter-spacing: .02em; text-transform: none; font-weight: 600; }
+  .kachel span { font-size: 15px; }
+  .liste .text small { font-size: 14.5px; }
+  .datum-chip i { font-size: 12px; letter-spacing: .04em; }
+  .tag { font-size: 13px; }
+  .hinweis { font-size: 15px; line-height: 1.55; }
+  .kopf p { font-size: 16px; }
+  .galerie-raster figcaption { font-size: 14.5px; }
+  .galerie-raster .knoepfe { gap: 6px; }
+  .bildwahl .platz { font-size: 14px; }
+  .zeilen-edit input, .zeilen-edit textarea { font-size: 16px; }
+
+  html.schrift-gross body { font-size: 18px; }
+  html.schrift-gross .btn { font-size: 16.5px; min-height: 46px; } html.schrift-gross .btn.klein { font-size: 15.5px; min-height: 42px; }
+  html.schrift-gross .btn.icon { width: 46px; height: 46px; }
+  html.schrift-gross .feld { font-size: 16.5px; } html.schrift-gross .feld small { font-size: 15.5px; }
+  html.schrift-gross .feld input, html.schrift-gross .feld select, html.schrift-gross .feld textarea,
+  html.schrift-gross .zeilen-edit input, html.schrift-gross .zeilen-edit textarea { font-size: 18px; }
+  html.schrift-gross .feld.check { font-size: 17.5px; }
+  html.schrift-gross .nav > button, html.schrift-gross .nav-unten a, html.schrift-gross .nav-unten button { font-size: 17px; }
+  html.schrift-gross .kopf h1 { font-size: 34px; } html.schrift-gross .kopf p { font-size: 17.5px; }
+  html.schrift-gross .kachel strong { font-size: 22px; } html.schrift-gross .kachel span { font-size: 16.5px; }
+  html.schrift-gross .liste .text small { font-size: 16px; } html.schrift-gross .hinweis { font-size: 16.5px; }
+  html.schrift-gross .galerie-raster figcaption { font-size: 16px; } html.schrift-gross .vorschau-kopf { font-size: 14.5px; }
+  html.schrift-gross .modal-karte h2 { font-size: 27px; }
 }

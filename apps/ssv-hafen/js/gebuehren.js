@@ -76,11 +76,13 @@
         const faktor = periode === 'sommer' ? Math.pow(2, Math.max(0, (bel.sommer_an_land_jahr || 1) - 1)) : 1;
         const zusatz = faktor > 1 ? ' (' + bel.sommer_an_land_jahr + '. Sommer an Land, ×' + faktor + ')' : '';
         const was = periode === 'sommer' ? 'Sommerstellplatz an Land' : 'Winterlager';
-        if (lp.art === 'palette') pos(m.id, P(was + ', ' + lp.bez + zusatz + bootTxt, 1, 'Halbjahr', gb.palette_halbjahr * faktor));
+        // Platzname wie im Hafenplan (P13, A1, H4), die Art davor – nicht mehr „Palette 13“
+        const platzTxt = ({ palette: 'Palette ', aussen: 'Außenlager ', halle: 'Halle ' }[lp.art] || '') + lp.id;
+        if (lp.art === 'palette') pos(m.id, P(was + ', ' + platzTxt + zusatz + bootTxt, 1, 'Halbjahr', gb.palette_halbjahr * faktor));
         else {
           const m2 = flaeche(d, bel, boot);
           const satz = lp.art === 'halle' ? gb.land_halle_m2 : gb.land_aussen_m2;
-          pos(m.id, P(was + ', ' + lp.bez + zusatz + bootTxt, m2, 'm²', satz * faktor));
+          pos(m.id, P(was + ', ' + platzTxt + zusatz + bootTxt, m2, 'm²', satz * faktor));
         }
       }
     });
@@ -91,7 +93,7 @@
       const boot = d.boote.find((x) => x.id === k.boot_id); if (!boot) return;
       const std = Math.max(1, Math.ceil(k.minuten / 60));
       const preis = k.art === 'mast' ? gb.mastenkran_std : gb.schiffskran_std;
-      const p = P((k.art === 'mast' ? 'Mastenkran' : 'Schiffskran') + ' am ' + new Date(k.datum + 'T12:00:00').toLocaleDateString('de-DE') + ' (' + k.minuten + ' Min.)' + ' · „' + boot.name + '“', std, 'angef. Std.', preis);
+      const p = P((k.art === 'mast' ? 'Mastenkran' : 'Schiffskran') + ' am ' + new Date(k.datum + 'T12:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' (' + k.minuten + ' Min.)' + ' · „' + boot.name + '“', std, 'angef. Std.', preis);
       p.kran_id = k.id;
       pos(boot.eigner_id, p);
     });

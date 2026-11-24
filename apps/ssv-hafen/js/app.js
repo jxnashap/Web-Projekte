@@ -145,8 +145,10 @@
       .sort((a, b) => (a.art === 'frei' ? 0 : 1) - (b.art === 'frei' ? 0 : 1) || a.p.max_laenge - b.p.max_laenge);
   }
 
+  const STATUS_TAG = { belegt: '', unterwegs: 'gruen', gast: 'gast', saisongast: 'lila', frei: 'ok', gesperrt: 'rot' };   // Farbe des Status-Schilds je Wasserplatz
   /* ============================================================ Übersicht */
   const V = {};
+  let sprung = null;   // Ziel in der nächsten Seite (Selektor): Kästchen wird angehakt, Feld ins Bild gerollt und gewählt
   V.uebersicht = (main) => {
     const st = {}; if (imSommer) d.liegeplaetze.forEach((p) => { const s2 = Q.statusWasser(p, SAISON, heute); st[s2] = (st[s2] || 0) + 1; });
     const versProbleme = d.boote.filter((b) => ['abgelaufen', 'bald', 'fehlt'].includes(Q.versicherungsStatus(b, heute)));
@@ -173,7 +175,7 @@
     }).filter(Boolean);
     const ankuenfte = d.gaeste.filter((g) => g.ankunft === heute && g.status !== 'storniert');
     if (darf('gaeste')) konflikte.forEach(({ g, grund }) => add(heuteL, 'gaeste', 'Konflikt ' + platzName(g.platz_id) + ': Gast „' + esc(g.bootsname) + '“ – ' + esc(grund), 'rot', 'data-gast="' + g.id + '"'));
-    if (anfragen.length) add(heuteL, 'gaeste', anfragen.length + (anfragen.length > 1 ? ' Gäste liegen' : ' Gast liegt') + ' ohne bestätigten Platz (selbst angemeldet) – bitte prüfen', 'gast');
+    if (anfragen.length && darf('gaeste')) add(heuteL, 'gaeste', anfragen.length + (anfragen.length > 1 ? ' Gäste liegen' : ' Gast liegt') + ' ohne bestätigten Platz (selbst angemeldet) – bitte prüfen', 'gast');
     const zahlPruef = d.gaeste.filter((g) => g.zahlung_gemeldet && !g.bezahlt_am && g.status !== 'storniert');
     if (zahlPruef.length && darf('gaeste')) add(anst, 'gaeste', zahlPruef.length + ' Gast-Zahlung' + (zahlPruef.length > 1 ? 'en' : '') + ' vom Gast gemeldet, noch nicht geprüft – Eingang bestätigen (' + zahlPruef.map((g) => esc(ZAHLART[g.zahlung] || g.zahlung)).join(', ') + ')', 'gast');
     if (ankuenfte.length && darf('gaeste')) add(heuteL, 'gaeste', ankuenfte.length + (ankuenfte.length === 1 ? ' Gast kommt' : ' Gäste kommen') + ' heute an: ' + ankuenfte.map((g) => '„' + esc(g.bootsname) + '“').join(', '), 'gast');
@@ -193,16 +195,16 @@
     const kaZuletzt = e.kontoauszug_zuletzt; const kaAlt = !kaZuletzt || kaZuletzt < tagVor(heute, 30);
     if (darf('kontoauszug') && kaAlt && (offeneRe.length || d.sepa_laeufe.length)) add(anst, 'kontoauszug', 'Kontoauszug abgleichen – ' + (kaZuletzt ? 'zuletzt am ' + H.datum(kaZuletzt) : 'noch nie eingelesen') + ' (' + offeneRe.length + ' Rechnungen offen)', 'gast');
     if (sepaOffen.length && darf('abrechnung')) add(anst, 'abrechnung', sepaOffen.length + ' Rechnungen warten auf die Lastschrift-Datei für die Bank', 'warn');
-    if (nachweise.length && darf('boote')) add(anst, 'boote', nachweise.length + ' Versicherungsnachweis' + (nachweise.length > 1 ? 'e' : '') + ' prüfen', 'gast');
-    if (versProbleme.length && darf('boote')) add(anst, 'boote', versProbleme.length + ' Boote: Versicherung abgelaufen, fehlt oder läuft in 30 Tagen ab', 'warn');
-    if (zuSchwer.length && darf('boote')) add(anst, 'boote', zuSchwer.length + (zuSchwer.length > 1 ? ' Boote' : ' Boot') + ' über ' + Q.maxTxt('kran') + ' – ' + (zuSchwer.length > 1 ? 'werden' : 'wird') + ' nicht gekrant' + (zuSchwerSteg.length ? ', davon ' + zuSchwerSteg.length + ' über ' + Q.maxTxt('steg') + ' (auch kein Wasserliegeplatz)' : ''), 'warn');
+    if (nachweise.length && darf('boote')) add(anst, 'boote', nachweise.length + ' Versicherungsnachweis' + (nachweise.length > 1 ? 'e' : '') + ' prüfen', 'gast', 'data-sprung="#probl"');
+    if (versProbleme.length && darf('boote')) add(anst, 'boote', versProbleme.length + ' Boote: Versicherung abgelaufen, fehlt oder läuft in 30 Tagen ab', 'warn', 'data-sprung="#probl"');
+    if (zuSchwer.length && darf('boote')) add(anst, 'boote', zuSchwer.length + (zuSchwer.length > 1 ? ' Boote' : ' Boot') + ' über ' + Q.maxTxt('kran') + ' – ' + (zuSchwer.length > 1 ? 'werden' : 'wird') + ' nicht gekrant' + (zuSchwerSteg.length ? ', davon ' + zuSchwerSteg.length + ' über ' + Q.maxTxt('steg') + ' (auch kein Wasserliegeplatz)' : ''), 'warn', 'data-sprung="#probl"');
     const normal = schaeden.filter((t) => !dringend.includes(t));
     if (normal.length && darf('aufgaben')) add(anst, 'aufgaben', normal.length + ' offene Schäden/Wartungen', 'warn');
-    if (!e.steuer_hinweis && darf('einstellungen')) add(einr, 'einstellungen', 'Steuerhinweis für Rechnungen festlegen (mit dem Steuerberater klären)', 'warn');
-    if (darf('einstellungen') && !(SEPA.ibanGueltig(e.iban) && SEPA.glaeubigerGueltig(e.glaeubiger_id))) add(einr, 'einstellungen', 'Vereinskonto und Gläubiger-ID für die Lastschrift eintragen', 'warn');
-    if (!e.arbeitsdienst_bestaetigt && rolle === 'vorstand') add(einr, 'einstellungen', 'Regeln für den Arbeitsdienst beschließen (Soll, Befreiungen, Übertrag, Ersatz)', 'warn');
+    if (!e.steuer_hinweis && darf('einstellungen')) add(einr, 'einstellungen', 'Steuerhinweis für Rechnungen festlegen (mit dem Steuerberater klären)', 'warn', 'data-sprung="[name=steuer_hinweis]"');
+    if (darf('einstellungen') && !(SEPA.ibanGueltig(e.iban) && SEPA.glaeubigerGueltig(e.glaeubiger_id))) add(einr, 'einstellungen', 'Vereinskonto und Gläubiger-ID für die Lastschrift eintragen', 'warn', 'data-sprung="[name=glaeubiger_id]"');
+    if (!e.arbeitsdienst_bestaetigt && rolle === 'vorstand') add(einr, 'einstellungen', 'Regeln für den Arbeitsdienst beschließen (Soll, Befreiungen, Übertrag, Ersatz)', 'warn', 'data-sprung="[name=arbeitsdienst_soll]"');
     if (planAnnahme() && darf('belegung')) add(einr, 'plaetze', 'Boxmaße, Brücken und Wassertiefen eintragen und bestätigen', 'warn');
-    if (!naechste && darf('einstellungen')) add(einr, 'einstellungen', 'Saisontermine ' + (SAISON + 1) + ' (Auslagern/Einlagern) eintragen', 'warn');
+    if (!naechste && darf('einstellungen')) add(einr, 'einstellungen', 'Saisontermine ' + (SAISON + 1) + ' (Auslagern/Einlagern) eintragen', 'warn', 'data-sprung="[name=aus_' + (SAISON + 1) + ']"');
     const warte = d.warteliste.filter((w) => w.status === 'wartend').length;
     const yy = String(SAISON + 1).slice(2);
     const karten = imSommer
@@ -217,7 +219,7 @@
     // Etikett = Thema (nicht Farbe): Gäste, Arbeitsdienst, Boote …; Farbe zeigt die Dringlichkeit
     const THEMA = { gaeste: 'Gäste', arbeitsdienst: 'Arbeitsdienst', boote: 'Boote', abrechnung: 'Geld', antraege: 'Anträge', aufgaben: 'Schäden', einstellungen: 'Einrichtung', plaetze: 'Liegeplätze', veranstaltungen: 'Termine', kontoauszug: 'Geld' };
     const MAX = 5;
-    const zeilen = (l) => '<table class="tab todo"><tbody>' + l.map((x, i) => '<tr class="klickbar' + (i >= MAX ? ' todo-mehr' : '') + '" data-gehe="' + x.tab + '" ' + x.extra + (i >= MAX ? ' hidden' : '') + '><td><span class="tag ' + x.art + '">' + (THEMA[x.tab] || 'offen') + '</span></td><td>' + x.txt + '</td><td class="r">' + (darf(x.tab) ? '→' : '') + '</td></tr>').join('') + '</tbody></table>' +
+    const zeilen = (l) => '<table class="tab todo"><tbody>' + l.map((x, i) => '<tr class="' + (darf(x.tab) ? 'klickbar' : '') + (i >= MAX ? ' todo-mehr' : '') + '"' + (darf(x.tab) ? ' data-gehe="' + x.tab + '" ' + x.extra : '') + (i >= MAX ? ' hidden' : '') + '><td><span class="tag ' + x.art + '">' + (THEMA[x.tab] || 'offen') + '</span></td><td>' + x.txt + '</td><td class="r">' + (darf(x.tab) ? '→' : '') + '</td></tr>').join('') + '</tbody></table>' +
       (l.length > MAX ? '<button class="btn klein todo-weitere" type="button">+ ' + (l.length - MAX) + ' weitere anzeigen</button>' : '');
     // Dringendes zuerst (rot vor warn vor Hinweis)
     const RANG = { rot: 0, warn: 1, gast: 2 }; [heuteL, anst, einr].forEach((l) => l.sort((a, b) => (RANG[a.art] ?? 3) - (RANG[b.art] ?? 3)));
@@ -232,6 +234,7 @@
       (darf('abrechnung') ? '<div class="kz"><small>Offene Rechnungen · Hafen & Beiträge</small><strong>' + H.geld(offeneRe.reduce((s, r) => s + Q.rest(r), 0)) + '</strong><span>' + offeneRe.length + (offeneRe.length === 1 ? ' Rechnung' : ' Rechnungen') + ' · Getränke siehe Kasse</span></div>' : '') + '</div>';
     main.querySelectorAll('[data-gast]').forEach((z) => z.addEventListener('click', (ev) => { ev.stopPropagation(); gastForm(d.gaeste.find((g) => g.id === z.dataset.gast)); }, true));
     main.querySelectorAll('[data-ver-oeffnen]').forEach((z) => z.addEventListener('click', () => { verAuswahl = z.dataset.verOeffnen; }, true));   // danach führt data-gehe zur Teilnehmerliste
+    main.querySelectorAll('[data-sprung]').forEach((z) => z.addEventListener('click', () => { sprung = z.dataset.sprung; }, true));   // danach führt data-gehe zur passenden Stelle (Filter/Feld)
     main.querySelectorAll('.todo-weitere').forEach((k) => k.addEventListener('click', () => { k.previousElementSibling.querySelectorAll('.todo-mehr').forEach((z) => { z.hidden = false; }); k.remove(); }));
   };
 
@@ -269,7 +272,7 @@
       '<label class="feld">Ausschnitt<select name="ansicht"><option value="gesamt">Ganzer Hafen</option>' + (jetzt ? '<option value="jetzt">So wie gerade am Bildschirm</option>' : '') + '<option value="ost">Ostbrücke</option><option value="west">Westbrücke</option><option value="schwimm">Schwimmbrücke</option><option value="land"' + (planStand.modus === 'winter' ? ' selected' : '') + '>Lager an Land</option></select></label>' +
       '<label class="feld">Papier<select name="papier"><option value="A4">A4 quer</option><option value="A3">A3 quer</option></select></label>' +
       '<label class="feld">Farben<select name="farbe"><option value="hell">Hell (spart Tinte)</option><option value="voll">Kräftig wie am Bildschirm</option></select></label>' +
-      '<label class="feld voll check-zeile"><span><input type="checkbox" name="liste" checked> Belegungsliste (Platz · Boot · Eigner) auf einem zweiten Blatt</span></label></form>' +
+      '<label class="feld check voll"><input type="checkbox" name="liste" checked> Belegungsliste (Platz · Boot · Eigner) auf einem zweiten Blatt</label></form>' +
       '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="pd-ok">Drucken</button></div>');
     $('#pd-ok').addEventListener('click', () => { const f = new FormData($('#pdf')); const o = { modus: f.get('modus'), ansicht: f.get('ansicht') === 'jetzt' ? jetzt : f.get('ansicht'), papier: f.get('papier'), hell: f.get('farbe') === 'hell', liste: !!f.get('liste') }; zu(); planDrucken(pl, o); });
   }
@@ -286,15 +289,23 @@
     document.body.appendChild(seite);
     const plan = pl ? planVoll(pl.plan) : undefined;
     const sv = PLAN.zeichnen(seite.querySelector('#pd-plan'), { plan, entwurf: !!pl, namen: true, schweb: false, intro: false, modus: winter ? 'winter' : 'sommer', saison: SAISON, datum: planStand.datum, ansicht: o.ansicht,
-      wasser: leer ? (() => ({ status: 'leer' })) : undefined, land: leer ? (() => 'frei') : undefined });
+      wasser: leer ? (() => ({ status: 'leer' })) : undefined, land: leer ? (() => 'frei') : undefined, idPraefix: 'pd-' });   // eigene IDs: Verläufe/Muster des Bildschirmplans sind beim Drucken ausgeblendet
+    PLAN.massstabInAnsicht(sv);   // Maßstab und Nordpfeil auch im Ausschnitt sichtbar
     sv.classList.add('nah', 'druck'); sv.classList.toggle('druck-hell', o.hell); if (leer) sv.classList.add('ohne-bojen');
     if (o.liste && !leer) {   // zweites Blatt: wer liegt wo
       const P = plan || PLAN.aktiv(); const nrn = PLAN.plaetzeVon(P).plaetze.map((x) => x.nr).concat((P.laengs || []).map((x) => String(x.nr)));
-      const zeilen = winter ? PLAN.lagerVon(P).map((g) => { const bel = Q.belegungPlatz(SAISON, per, g.id); const b = bel && Q.boot(bel.boot_id); return [g.id, b ? '„' + b.name + '“' + (b.typ ? ' · ' + b.typ : '') : '– frei –', b ? Q.name(Q.mitglied(b.eigner_id)) : '', b ? masse(b) : '']; })
+      // Winter: alle Lagerplätze aus dem Plan, dazu belegte Landplätze, die (noch) nicht im Plan sind (z. B. Halle H1–H4) – damit kein Boot fehlt
+      const imPlan = PLAN.lagerVon(P).map((g) => ({ id: g.id, nr: g.id }));
+      const ohnePlan = winter ? (d.landplaetze || []).filter((lp) => !imPlan.some((g) => g.id === lp.id) && Q.belegungPlatz(SAISON, per, lp.id)).map((lp) => ({ id: lp.id, nr: lp.id + (lp.art === 'halle' ? ' Halle' : '') })) : [];
+      const zeilen = winter ? imPlan.concat(ohnePlan).map((g) => { const bel = Q.belegungPlatz(SAISON, per, g.id); const b = bel && Q.boot(bel.boot_id); return [g.nr, b ? '„' + b.name + '“' + (b.typ ? ' · ' + b.typ : '') : '– frei –', b ? Q.name(Q.mitglied(b.eigner_id)) : '', b ? masse(b) : '']; })
         : nrn.map((nr) => { const lp = d.liegeplaetze.find((x) => String(x.nr) === nr); if (!lp) return [nr, '– neu –', '', '']; const st = Q.statusWasser(lp, SAISON, planStand.datum); const bel = Q.belegungPlatz(SAISON, 'sommer', lp.id); const b = bel && Q.boot(bel.boot_id); const g = Q.gastAm(lp.id, planStand.datum);
           return [nr, b ? '„' + b.name + '“' + (b.typ ? ' · ' + b.typ : '') : '– frei –', b ? Q.name(Q.mitglied(b.eigner_id)) : '', (g ? 'Gast „' + g.bootsname + '“' : st === 'unterwegs' ? 'grünes Schild bis ' + H.kurz(Q.abwesendAm(lp.id, planStand.datum).bis) : st === 'gesperrt' ? 'gesperrt' : '')]; });
-      const drittel = Math.ceil(zeilen.length / 3); const tab = (z) => '<table class="tab pd-tab"><thead><tr><th>Platz</th><th>Boot</th><th>Eigner</th><th>' + (winter ? 'Maße' : 'Hinweis') + '</th></tr></thead><tbody>' + z.map((r) => '<tr><td><strong>' + esc(r[0]) + '</strong></td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td><td>' + (winter ? r[3] : esc(r[3])) + '</td></tr>').join('') + '</tbody></table>';
-      const blatt = document.createElement('div'); blatt.className = 'pd-blatt2'; blatt.innerHTML = druckKopf() + '<div class="pd-titel"><h1>Belegungsliste · ' + esc(winter ? 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) : 'Sommer ' + SAISON + ' · Stand ' + H.datum(planStand.datum)) + '</h1></div><div class="pd-zwei">' + tab(zeilen.slice(0, drittel)) + tab(zeilen.slice(drittel, 2 * drittel)) + tab(zeilen.slice(2 * drittel)) + '</div>';
+      // A4: zwei Tabellen nebeneinander, A3: drei – so bleiben Platz, Boot und Eigner ganz lesbar (lange Namen brechen um)
+      const spalten = o.papier === 'A3' ? 3 : 2; const je = Math.ceil(zeilen.length / spalten);
+      const tab = (z) => '<table class="tab pd-tab"><thead><tr><th>Platz</th><th>Boot</th><th>Eigner</th><th>' + (winter ? 'Maße' : 'Hinweis') + '</th></tr></thead><tbody>' + z.map((r) => '<tr><td><strong>' + esc(r[0]) + '</strong></td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td><td>' + (winter ? r[3] : esc(r[3])) + '</td></tr>').join('') + '</tbody></table>';
+      const blatt = document.createElement('div'); blatt.className = 'pd-blatt2'; blatt.style.setProperty('--pd-sp', spalten);
+      blatt.innerHTML = druckKopf() + '<div class="pd-titel"><h1>Belegungsliste · ' + esc(winter ? 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) : 'Sommer ' + SAISON + ' · Stand ' + H.datum(planStand.datum)) + '</h1></div><div class="pd-zwei">' +
+        Array.from({ length: spalten }, (_, i) => zeilen.slice(i * je, (i + 1) * je)).filter((z) => z.length).map(tab).join('') + '</div>';
       seite.appendChild(blatt);
     }
     const st = document.createElement('style'); st.id = 'plan-druck-seite'; st.textContent = '@page { size: ' + o.papier + ' landscape; margin: 9mm; }'; document.head.appendChild(st);
@@ -419,7 +430,7 @@
     el.innerHTML = '<h2>' + (p.box === 'L' ? 'Längsseits ' : 'Platz ') + esc(p.nr) + '</h2><p class="unter">' + H.BRUECKE[p.bruecke] + ' · ' + (p.box === 'L' ? 'Sondertarif' : 'Box ' + p.box) + ' · max. ' + H.zahl(p.max_laenge, 1) + ' × ' + H.zahl(p.max_breite, 1) + ' m' + (p.tiefe ? ' · Wassertiefe ' + H.zahl(p.tiefe, 1) + ' m' : '') + (p.strom ? ' · Strom' : '') + '</p>' +
       (planStand.modus === 'sommer' && tagX !== heute ? '<p class="hinweis" style="margin:0 0 8px">Status am ' + H.datum(tagX) + ' (' + stichtagText(tagX) + ')</p>' : '') +
       (d.aufgaben || []).filter((t) => t.platz_id === id && t.status !== 'erledigt').map((t) => '<p class="hinweis warn">' + esc(t.titel) + ' <small>(' + ({ offen: 'offen', in_arbeit: 'in Arbeit' })[t.status] + ')</small></p>').join('') +
-      '<p><span class="tag ' + ({ belegt: '', unterwegs: 'gruen', gast: 'gast', saisongast: 'lila', frei: 'ok', gesperrt: 'rot' })[Q.statusWasser(p, SAISON, tagX)] + '">' + esc(status) + '</span></p>' +
+      '<p><span class="tag ' + (STATUS_TAG[Q.statusWasser(p, SAISON, tagX)] || '') + '">' + esc(status) + '</span></p>' +
       (p.gesperrt ? '<p class="hinweis warn">' + esc(p.notiz || 'Gesperrt') + '</p>' : '') +
       (b ? '<dl><dt>Boot</dt><dd>' + bootTxt(b) + '</dd><dt>Maße</dt><dd>' + masse(b) + ' · Tiefgang ' + H.zahl(b.tiefgang) + ' m</dd><dt>Gewicht</dt><dd>' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">über ' + Q.maxTxt() + ' (Kran)</span>' : '') + '</dd>' +
         '<dt>Versicherung</dt><dd>' + versTag(b) + '</dd><dt>Eigner</dt><dd>' + esc(Q.name(m)) + ' <span class="tag">' + H.ART[m.art] + '</span></dd><dt>Telefon</dt><dd><a href="tel:' + esc((m.tel || '').replace(/\s/g, '')) + '">' + esc(m.tel) + '</a></dd></dl>' +
@@ -460,7 +471,7 @@
         const txt = (p.nr + ' ' + (b ? b.name : '') + ' ' + (m ? Q.name(m) : '')).toLowerCase();
         if (f && !txt.includes(f)) return '';
         return '<tr class="klickbar" data-p="' + p.id + '"><td><strong>' + esc(p.nr) + '</strong></td><td>' + H.BRUECKE[p.bruecke] + '</td><td>' + (p.box === 'L' ? 'Sonder' : p.box) + '</td><td class="r">' + H.zahl(p.max_laenge, 1) + ' × ' + H.zahl(p.max_breite, 1) + '</td><td class="r">' + (p.tiefe ? H.zahl(p.tiefe, 1) + ' m' : '–') + '</td>' +
-          '<td>' + (b ? esc(b.name) + (Q.passt(b, p).length ? ' <span class="tag warn">passt nicht</span>' : '') : '') + '</td><td>' + (m ? esc(Q.name(m)) : '') + '</td><td><span class="tag ' + ({ unterwegs: 'gruen', gast: 'gast', saisongast: 'lila', frei: 'ok', gesperrt: 'rot' })[s] + '">' + PLAN.STATUS_TEXT[s].replace(' – grünes Schild', '') + '</span></td>' + (darf('belegung') ? '<td class="r"><button class="btn klein" data-masse="' + p.id + '">Maße</button></td>' : '') + '</tr>';
+          '<td>' + (b ? esc(b.name) + (Q.passt(b, p).length ? ' <span class="tag warn">passt nicht</span>' : '') : '') + '</td><td>' + (m ? esc(Q.name(m)) : '') + '</td><td><span class="tag ' + (STATUS_TAG[s] || '') + '">' + PLAN.STATUS_TEXT[s].replace(' – grünes Schild', '') + '</span></td>' + (darf('belegung') ? '<td class="r"><button class="btn klein" data-masse="' + p.id + '">Maße</button></td>' : '') + '</tr>';
       }).join('');
     };
     render(); $('#such').addEventListener('input', render); $('#br').addEventListener('change', render);
@@ -535,7 +546,7 @@
   /* ============================================================ Boote */
   V.boote = (main) => {
     main.innerHTML = kopf('Boote', d.boote.length + ' Boote im Verein', '<button class="btn primaer" id="neu">+ Boot anmelden</button>') +
-      '<div class="filter"><input class="suche" id="such" placeholder="Name, Typ, Segelnummer, Eigner …"><label class="feld check"><input type="checkbox" id="probl"> nur mit Handlungsbedarf</label></div>' +
+      '<div class="filter"><input class="suche" id="such" placeholder="Boot, Segelnr., Eigner …" aria-label="Boot, Typ, Segelnummer oder Eigner suchen"><label class="feld check"><input type="checkbox" id="probl"> nur mit Handlungsbedarf</label></div>' +
       '<div class="panel"><table class="tab"><thead><tr><th>Boot</th><th>Typ</th><th class="r">L × B</th><th class="r">Gewicht</th><th>Eigner</th><th>Platz Sommer</th><th>Versicherung</th></tr></thead><tbody id="tb"></tbody></table></div>';
     const render = () => {
       const f = $('#such').value.toLowerCase(), nurP = $('#probl').checked;
@@ -953,7 +964,7 @@
     const ohne = d.boote.filter((b) => !Q.belegungBoot(SAISON, per, b.id));
     main.innerHTML = kopf('Belegung', (per === 'sommer' ? 'Sommer ' + SAISON + ': Wasserliegeplätze (und Boote, die an Land bleiben)' : 'Winter ' + SAISON + '/' + String(SAISON + 1).slice(2) + ': Paletten, Halle, Außenlager'),
       '<button class="btn' + (per === 'sommer' ? ' aktiv' : '') + '" data-per="sommer">Sommer</button><button class="btn' + (per === 'winter' ? ' aktiv' : '') + '" data-per="winter">Winter</button>') +
-      (ohne.length ? '<p class="hinweis warn">' + ohne.length + ' Boote haben in dieser Periode noch keinen Platz: ' + ohne.slice(0, 8).map((b) => esc(b.name)).join(', ') + (ohne.length > 8 ? ' …' : '') + '</p>' : '') +
+      (ohne.length ? '<div class="hinweis warn">' + ohne.length + (ohne.length === 1 ? ' Boot hat' : ' Boote haben') + ' in dieser Periode noch keinen Platz: ' + ohne.slice(0, 8).map((b) => esc(b.name)).join(', ') + (ohne.length > 8 ? '<span class="ohne-komma">,</span> <details class="ohne-mehr"><summary>+ ' + (ohne.length - 8) + ' weitere anzeigen</summary>' + ohne.slice(8).map((b) => esc(b.name)).join(', ') + '</details>' : '') + '</div>' : '') +
       '<div class="panel"><table class="tab"><thead><tr><th>Platz</th><th>Art</th><th>Boot</th><th>Eigner</th><th class="r">' + (per === 'winter' ? 'Fläche' : 'Box') + '</th><th>Hinweis</th><th></th></tr></thead><tbody>' +
       plaetze.map((p) => {
         const bel = Q.belegungPlatz(SAISON, per, p.id); const b = bel && Q.boot(bel.boot_id); const m = b && Q.mitglied(b.eigner_id);
@@ -1034,7 +1045,7 @@
     main.innerHTML = kopf('Karte & Kalender', 'Wer liegt wann wo? Zeitraum wählen – grüne Bojen sind frei. Platz antippen und Gast eintragen.', darf('gaeste') ? '<button class="btn primaer" id="gk-neu">+ Gast eintragen</button>' : '') +
       '<div class="gk-leiste panel"><label class="feld">Anreise<input type="date" id="gk-von" value="' + S.von + '" min="' + sd.auslagern + '" max="' + tagVor(sd.einlagern, 1) + '"></label>' +
       '<div class="feld"><span>Nächte</span><div class="gk-zahl"><button type="button" class="btn" id="gk-m" aria-label="Eine Nacht weniger">−</button><input type="number" id="gk-n" min="1" max="60" value="' + S.n + '" aria-label="Nächte"><button type="button" class="btn" id="gk-p" aria-label="Eine Nacht mehr">+</button></div></div>' +
-      '<div class="feld"><span>Schnellwahl</span><div class="gk-schnell">' + (imSommer ? '<button type="button" class="btn klein" data-gk-tag="' + heute + '">Heute</button><button type="button" class="btn klein" data-gk-tag="' + tagNach(heute, 1) + '">Morgen</button>' : '') + '<button type="button" class="btn klein" data-gk-schieb="-1">‹ Tag</button><button type="button" class="btn klein" data-gk-schieb="1">Tag ›</button></div></div>' +
+      '<div class="feld"><span>Schnellwahl</span><div class="gk-schnell">' + (imSommer ? '<button type="button" class="btn klein" data-gk-tag="' + heute + '">Heute</button><button type="button" class="btn klein" data-gk-tag="' + tagNach(heute, 1) + '">Morgen</button>' : '') + '<button type="button" class="btn klein" data-gk-schieb="-1" title="Anreise einen Tag früher">‹ Vortag</button><button type="button" class="btn klein" data-gk-schieb="1" title="Anreise einen Tag später">Folgetag ›</button></div></div>' +
       '<details class="gk-boot"' + (S.l || S.b ? ' open' : '') + '><summary>Passt das Boot? Maße eingeben</summary><div class="gk-masse"><label class="feld">Länge (m)<input id="gk-l" inputmode="decimal" value="' + esc(S.l) + '" placeholder="z. B. 9,5"></label><label class="feld">Breite (m)<input id="gk-b" inputmode="decimal" value="' + esc(S.b) + '" placeholder="z. B. 3,1"></label></div></details>' +
       '<div class="gk-sicht" role="tablist"><button type="button" class="btn' + (S.sicht === 'karte' ? ' aktiv' : '') + '" data-gk-sicht="karte" role="tab" aria-selected="' + (S.sicht === 'karte') + '">Karte</button><button type="button" class="btn' + (S.sicht === 'kalender' ? ' aktiv' : '') + '" data-gk-sicht="kalender" role="tab" aria-selected="' + (S.sicht === 'kalender') + '">Kalender</button></div></div>' +
       '<p class="gk-summe" id="gk-summe"><strong>' + zeitraum + ':</strong> <span class="pk-st gruen">' + zahl(['frei', 'unterwegs']) + ' frei</span> (davon ' + zahl(['unterwegs']) + ' mit grünem Schild)' + (zahl(['zuklein']) ? ' · ' + zahl(['zuklein']) + ' frei, aber zu klein' : '') +
@@ -1130,7 +1141,7 @@
 
   V.abwesenheiten = (main) => {
     const liste = d.abwesenheiten.slice().sort((a, b) => b.von.localeCompare(a.von));
-    main.innerHTML = kopf('Abwesenheiten', 'Das digitale „grüne Schild“ (Hafenbetriebsordnung 2.2.3): Solange der Eigner unterwegs ist, kann der Platz an Gäste gehen.', '<button class="btn gruen" id="neu">+ Abwesenheit</button>') +
+    main.innerHTML = kopf('Grünes Schild', 'Wer mit dem Boot unterwegs ist, hängt das grüne Schild (Hafenbetriebsordnung 2.2.3). Solange der Eigner unterwegs ist, kann der Platz an Gäste gehen.', '<button class="btn gruen" id="neu">+ Grünes Schild eintragen</button>') +
       '<div class="panel"><table class="tab"><thead><tr><th>Zeitraum</th><th>Platz</th><th>Boot</th><th>Eigner</th><th>Ziel / Notiz</th><th>Status</th><th></th></tr></thead><tbody>' +
       liste.map((a) => { const b = Q.boot(a.boot_id); const m = b && Q.mitglied(b.eigner_id); const jetzt = a.von <= heute && a.bis >= heute;
         return '<tr' + (a.bis < heute && !jetzt ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(platzName(a.platz_id)) + '</td><td>' + (b ? esc(b.name) : '') + '</td><td>' + esc(Q.name(m)) + '</td><td>' + esc(a.notiz || '') + '</td>' +
@@ -1144,7 +1155,7 @@
     }));
   };
   function abwesenheitForm(a) {
-    const el = modal('<h2>Abwesenheit eintragen</h2><p class="hinweis ok">Der Platz wird für diesen Zeitraum im Hafenplan grün und kann an Gäste vergeben werden.</p><form id="f" class="form">' +
+    const el = modal('<h2>Grünes Schild eintragen</h2><p class="hinweis ok">Der Platz wird für diesen Zeitraum im Hafenplan grün und kann an Gäste vergeben werden.</p><form id="f" class="form">' +
       '<label class="feld voll">Boot<select name="boot_id" required><option value="">bitte wählen</option>' + d.boote.filter((b) => { const bl = Q.belegungBoot(SAISON, 'sommer', b.id); return bl && bl.platz_typ === 'wasser'; }).map((b) => '<option value="' + b.id + '"' + (b.id === a.boot_id ? ' selected' : '') + '>' + esc(b.name) + ' – ' + esc(platzName(Q.belegungBoot(SAISON, 'sommer', b.id).platz_id)) + '</option>').join('') + '</select></label>' +
       '<label class="feld">von<input name="von" type="date" required value="' + (a.von || (imSommer ? heute : planStand.datum)) + '"></label><label class="feld">bis (Rückkehr)<input name="bis" type="date" required value="' + (a.bis || '') + '"></label>' +
       '<label class="feld voll">Ziel / Notiz<input name="notiz" placeholder="z. B. Dänische Südsee"></label></form><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn gruen" id="ok">Grünes Schild setzen</button></div>');
@@ -1208,8 +1219,8 @@
       if (!l.offen.includes('abreise') && g.status !== 'abgereist' && g.status !== 'storniert' && g.ankunft <= heute) menue.push('<button class="zm-punkt" data-weg="' + g.id + '">Als abgereist markieren</button>');
       return (haupt ? HAUPT[haupt](g) : '<button class="btn klein" data-bearb="' + g.id + '">Bearbeiten</button>') + ' ' + zeilenMenue(menue); };
     const zeile = (g) => { const l = L.get(g.id);
-      return '<tr' + (l.ansicht === 'archiv' ? ' class="blass"' : '') + ' data-gid="' + g.id + '"><td><strong>„' + esc(g.bootsname) + '“</strong><br><small style="color:var(--muted)">' + H.zahl(g.laenge, 1) + (g.breite ? ' × ' + H.zahl(g.breite, 1) : '') + ' m' + (g.tiefgang ? ' · Tg. ' + H.zahl(g.tiefgang, 1) + ' m' : '') + ' · ' + esc(g.skipper) + (g.tel ? ' · <a href="tel:' + esc(g.tel) + '">' + esc(g.tel) + '</a>' : '') + (g.quelle === 'qr' ? ' · QR' : '') + '</small></td>' +
-        '<td><span class="tag ' + l.auf.c + '">' + l.auf.t + '</span><br><small>' + H.datum(g.ankunft) + ' · ' + g.naechte + (g.naechte === 1 ? ' Nacht' : ' Nächte') + '</small></td>' +
+      return '<tr' + (l.ansicht === 'archiv' ? ' class="blass"' : '') + ' data-gid="' + g.id + '"><td><strong>„' + esc(g.bootsname) + '“</strong><br><small style="color:var(--muted)"><span class="nw">' + H.zahl(g.laenge, 1) + (g.breite ? ' × ' + H.zahl(g.breite, 1) : '') + ' m</span>' + (g.tiefgang ? ' · <span class="nw">Tg. ' + H.zahl(g.tiefgang, 1) + ' m</span>' : '') + (g.quelle === 'qr' ? ' · QR' : '') + '<br><span class="nw">' + esc(g.skipper) + '</span>' + (g.tel ? '<br><a class="nw" href="tel:' + esc(g.tel) + '">' + esc(g.tel) + '</a>' : '') + '</small></td>' +
+        '<td><span class="tag ' + l.auf.c + '">' + l.auf.t + '</span><br><small class="nw">' + H.datum(g.ankunft) + ' · ' + g.naechte + (g.naechte === 1 ? '&nbsp;Nacht' : '&nbsp;Nächte') + '</small></td>' +
         '<td><span class="tag ' + l.platz.c + '">' + l.platz.t + '</span>' + (l.platz.pruefen && g.platz_hinweis ? '<br><small>' + esc(g.platz_hinweis) + '</small>' : '') + '</td>' +
         '<td><span class="tag ' + l.zahl.c + '">' + l.zahl.t + '</span><br><small>' + H.geld(g.betrag) + (g.zahlung && !g.zahlung_gemeldet && g.zahlung !== 'offen' ? ' · ' + esc(ZAHLART[g.zahlung] || g.zahlung) : '') + '</small></td>' +
         '<td class="r aktion">' + aktionen(g) + '</td></tr>'; };
@@ -1238,7 +1249,7 @@
     }));
   };
   // Toilettencode für Gäste: eigener Wert (der Hafenmeister wechselt ihn selbst), Regel wann Gäste ihn sehen
-  const WC_REGEL = { '': 'Gäste sehen keinen Code', gemeldet: 'Gäste sehen ihn, sobald sie „bezahlt“ melden – vom Gast gemeldet, noch nicht geprüft', bestaetigt: 'Gäste sehen ihn erst, wenn der Eingang bestätigt ist' };
+  const WC_REGEL = { '': 'Gäste sehen keinen Code', gemeldet: 'Gäste sehen ihn gleich nach ihrer Zahlungsmeldung – auch bevor der Eingang geprüft ist', bestaetigt: 'Gäste sehen ihn erst, wenn der Eingang bestätigt ist' };
   const wcPanel = () => { const t = d.toilette || {};
     return '<div class="panel wc-panel"><div><small>Toilettencode für Gäste</small><strong>' + (t.code ? esc(t.code) : '–') + '</strong></div><p>' + esc(t.code ? WC_REGEL[t.regel || ''] : 'Noch kein Code hinterlegt.') + (t.hinweis ? '<br><small>' + esc(t.hinweis) + '</small>' : '') + '</p>' +
       '<button class="btn klein" id="wc-aendern">Code ändern</button></div>'; };
@@ -1299,7 +1310,7 @@
         wahl = '';
       }
       $('#platzwahl', el).innerHTML = '<option value="">– noch keinen –</option>' + vf.map((v) => '<option value="' + v.p.id + '"' + (v.p.id === wahl ? ' selected' : '') + '>' + esc(platzName(v.p.id)) + ' · ' + H.BRUECKE[v.p.bruecke] + ' · bis ' + H.zahl(v.p.max_laenge, 1) + ' m · ' + (v.art === 'frei' ? 'frei' : 'grünes Schild') + '</option>').join('');
-      $('#platzinfo', el).textContent = vf.length ? vf.length + ' passende Plätze für den ganzen Zeitraum (frei oder Eigner unterwegs)' : 'Kein Platz passt für diesen Zeitraum und diese Maße – Gast kann ohne Platz gespeichert werden.';
+      $('#platzinfo', el).textContent = vf.length ? (vf.length === 1 ? '1 passender Platz' : vf.length + ' passende Plätze') + ' für den ganzen Zeitraum (frei oder Eigner unterwegs)' : 'Kein Platz passt für diesen Zeitraum und diese Maße – Gast kann ohne Platz gespeichert werden.';
       if (warn) $('#platzwarn', el).innerHTML = warn;
       knopf();
     };
@@ -1775,7 +1786,7 @@
       per === 'beitrag' ? [e.arbeitsdienst_bestaetigt ? 'ok' : 'info', 'Ersatz für fehlenden Arbeitsdienst', e.arbeitsdienst_bestaetigt ? (Number(e.arbeitsdienst_satz) ? H.geld(e.arbeitsdienst_satz) + ' je Fehlstunde' : 'kein Betrag festgelegt') : 'Regeln noch nicht beschlossen – wird nicht berechnet', 'einstellungen'] : null
     ].filter(Boolean);
     const schritte = [
-      ['Prüfen', pruef.some((x) => x[0] === 'warn') ? 'warn' : 'ok', pruef.filter((x) => x[0] === 'warn').length ? pruef.filter((x) => x[0] === 'warn').length + ' Hinweise' : 'alles da'],
+      ['Prüfen', pruef.some((x) => x[0] === 'warn') ? 'warn' : 'ok', pruef.filter((x) => x[0] === 'warn').length ? pruef.filter((x) => x[0] === 'warn').length + (pruef.filter((x) => x[0] === 'warn').length === 1 ? ' Hinweis' : ' Hinweise') : 'alles da'],
       ['Erstellen', offen.length ? 'aktiv' : rsP.length ? 'ok' : 'leer', offen.length ? offen.length + ' offen' : rsP.length ? rsP.length + ' erstellt' : 'nichts abzurechnen'],
       ['Zustellen', !rsP.length ? 'offen' : zugestellt ? 'ok' : 'aktiv', zugestellt ? 'am ' + H.kurz(zugestellt) : rsP.length ? 'Mein SSV / PDF' : ''],
       ['Lastschrift', !rsP.length ? 'offen' : !sepaP.length ? 'leer' : einzugOffen.length ? 'aktiv' : 'ok', !sepaP.length ? (rsP.length ? 'keine Mandate' : '') : einzugOffen.length ? einzugOffen.length + ' bereit' : 'an Bank'],
@@ -1796,10 +1807,10 @@
       (offen.length ? '<p>' + offen.length + ' Mitglieder · <strong>' + H.geld(offen.reduce((s, x) => s + x.summe, 0)) + '</strong>' + (vs.length > offen.length ? ' · ' + (vs.length - offen.length) + ' bereits abgerechnet' : '') + '</p>' : '<p class="hinweis ok">' + label + ' ist vollständig abgerechnet.</p>') +
       (ohneMandat.length ? '<p class="hinweis warn">' + ohneMandat.length + ' ohne SEPA-Mandat – ihre Rechnung nennt die Bankverbindung zur Überweisung.</p>' : '') +
       (offen.length ? '<details class="vorschau"' + (offen.length <= 12 ? ' open' : '') + '><summary>Vorschau je Mitglied anzeigen (' + offen.length + ')</summary><table class="tab"><thead><tr><th>Mitglied</th><th>Art</th><th>Positionen</th><th class="r">Betrag</th></tr></thead><tbody>' + offen.map((x) =>
-        '<tr><td>' + esc(Q.name(x.m)) + '</td><td><span class="tag">' + H.ART[x.m.art] + '</span></td><td style="font-size:12.5px;color:var(--muted)">' + x.positionen.map((p) => esc(p.text.split(' · ')[0].replace(/ \(wird an den Segler-Verband weitergegeben\)/, '')) + (per === 'beitrag' ? ' · ' + H.geld(p.betrag) : '')).join('<br>') + '</td><td class="r">' + H.geld(x.summe) + '</td></tr>').join('') +
+        '<tr><td>' + esc(Q.name(x.m)) + '</td><td><span class="tag">' + H.ART[x.m.art] + '</span></td><td style="font-size:15px;color:var(--muted)">' + x.positionen.map((p) => esc(p.text.split(' · ')[0].replace(/ \(wird an den Segler-Verband weitergegeben\)/, '')) + (per === 'beitrag' ? ' · ' + H.geld(p.betrag) : '')).join('<br>') + '</td><td class="r">' + H.geld(x.summe) + '</td></tr>').join('') +
         '</tbody><tfoot><tr><td colspan="3">Summe</td><td class="r">' + H.geld(offen.reduce((s, x) => s + x.summe, 0)) + '</td></tr></tfoot></table></details>' +
         '<div class="filter" style="margin-top:14px"><label class="feld">Rechnungsdatum<input type="date" id="rdat" value="' + abrStand.datum + '"></label><button class="btn primaer" id="los">' + offen.length + ' Rechnungen erstellen</button></div>' : '') + '</div>' +
-      zustellHtml + '<div class="panel" id="abl-4"><div class="kopf" style="margin-bottom:8px"><h2 style="margin:0">4 · Lastschrift an die Bank · 5 · Zahlungseingang</h2><div class="aktionen"><button class="btn dunkel" id="sepa"' + (sepaBereit.length && sepaOk ? '' : ' disabled') + '>SEPA-Datei erzeugen (' + sepaBereit.length + ')</button><button class="btn" id="csvr">Rechnungsliste CSV</button></div></div>' +
+      zustellHtml + '<div class="panel" id="abl-4"><div class="kopf" style="margin-bottom:8px"><h2 style="margin:0">4&nbsp;·&nbsp;Lastschrift an die Bank<br>5&nbsp;·&nbsp;Zahlungseingang</h2><div class="aktionen"><button class="btn dunkel" id="sepa"' + (sepaBereit.length && sepaOk ? '' : ' disabled') + '>SEPA-Datei erzeugen (' + sepaBereit.length + ')</button><button class="btn" id="csvr">Rechnungsliste CSV</button></div></div>' +
       (!sepaOk ? '<p class="hinweis warn">Für die Lastschrift-Datei fehlen gültige Vereinsdaten (IBAN und Gläubiger-ID) unter Einstellungen.</p>' : '<p class="hinweis">Erzeugt eine Sammellastschrift im aktuellen Bankformat <strong>pain.008.001.08</strong> (Pflicht ab November 2026). Die Datei im Online-Banking des Vereins hochladen; Einzug am Fälligkeitstag der Rechnungen.</p>') +
       (d.sepa_laeufe.length ? '<table class="tab laeufe"><thead><tr><th>Lastschrift-Datei</th><th>erzeugt</th><th>Einzug am</th><th class="r">Posten</th><th class="r">Summe</th><th>Stand</th><th></th></tr></thead><tbody>' +
         d.sepa_laeufe.slice().sort((a, b) => (b.datum || '').localeCompare(a.datum || '') || b.id.localeCompare(a.id)).map((l) => { const rs = d.rechnungen.filter((r) => r.sepa_lauf === l.id && !r.storniert_am);
@@ -1807,7 +1818,7 @@
           const stand = !rs.length ? '<span class="tag">keine offenen Posten</span>' : !offenL.length ? '<span class="tag ok">gutgeschrieben</span>' : (l.faellig || l.datum) > heute ? '<span class="tag gast">Einzug am ' + H.kurz(l.faellig || l.datum) + '</span>' : '<span class="tag warn">Gutschrift prüfen</span>';
           return '<tr><td><strong>' + esc(l.id) + '</strong></td><td>' + H.datum(l.datum) + '</td><td>' + H.datum(l.faellig || l.datum) + '</td><td class="r">' + l.anzahl + '</td><td class="r">' + H.geld(l.summe) + '</td><td>' + stand + (rueckL ? ' <span class="tag rot">' + rueckL + ' Rücklastschrift' + (rueckL > 1 ? 'en' : '') + '</span>' : '') + '</td>' +
             '<td class="r aktion">' + (offenL.length ? '<button class="btn klein' + ((l.faellig || l.datum) <= heute ? ' primaer' : '') + '" data-gutschrift="' + esc(l.id) + '" title="Sammellastschrift ist auf dem Vereinskonto – alle Posten als bezahlt buchen">Gutschrift ist da</button>' : '') + '</td></tr>'; }).join('') + '</tbody></table>' : '') +
-      '<h3 style="margin:18px 0 8px">Rechnungen (' + res.length + ')</h3>' + ketteKopf(res) + '<div class="filter"><input class="suche" id="r-such" placeholder="Name, Mitgliedsnr. oder Rechnungsnr. …" value="' + esc(abrStand.such) + '">' +
+      '<h3 style="margin:18px 0 8px">Rechnungen (' + res.length + ')</h3>' + ketteKopf(res) + '<div class="filter"><input class="suche" id="r-such" placeholder="Name oder Nummer …" aria-label="Name, Mitgliedsnummer oder Rechnungsnummer suchen" value="' + esc(abrStand.such) + '">' +
       '<select class="suche" id="r-art" style="min-width:0"><option value="">alle Arten</option><option value="beitrag">Beitrag</option><option value="sommer">Sommer</option><option value="winter">Winter</option><option value="veranstaltung">Veranstaltung</option></select>' +
       '<select class="suche" id="r-jahr" style="min-width:0"><option value="">alle Jahre</option>' + jahre.map((j) => '<option>' + j + '</option>').join('') + '</select>' +
       '<select class="suche" id="r-status" style="min-width:0"><option value="">jeder Stand</option><option value="nicht_bezahlt">noch nicht bezahlt</option>' + Object.entries(RSTATUS).map(([k, [t]]) => '<option value="' + k + '">' + t + '</option>').join('') + '</select></div>' +
@@ -1822,9 +1833,9 @@
       const zeig = abrStand.mehr ? l : l.slice(0, 40);
       $('#r-summe').textContent = l.length + ' Rechnungen · ' + H.geld(l.reduce((s, r) => s + (r.storniert_am ? 0 : r.summe), 0)) + ' · davon offen ' + H.geld(l.reduce((s, r) => s + Q.rest(r), 0));
       $('#r-liste').innerHTML = zeig.map((r) => { const st = Q.rstatus(r, heute); const rest = Q.rest(r); const z = r.zahlungen || [];
-        return '<tr' + (r.storniert_am ? ' class="blass"' : '') + '><td><strong style="white-space:nowrap">' + esc(r.nr) + '</strong></td><td>' + H.datum(r.datum) + '</td><td>' + esc(r.empfaenger.vorname + ' ' + r.empfaenger.nachname) + ' <small style="color:var(--muted)">' + esc(r.empfaenger.nr || '') + '</small></td><td>' + H.periodeText(r) + '</td>' +
-          '<td class="r">' + H.geld(r.summe) + (rest > 0 && rest < r.summe ? '<br><small>offen ' + H.geld(rest) + '</small>' : '') + '</td><td>' + (r.sepa ? 'Lastschrift' + (r.sepa_lauf ? ' <small style="color:var(--muted)">' + esc(r.sepa_lauf) + '</small>' : '') : 'Überweisung') + '</td>' +
-          '<td>' + kette(r) + '<span class="tag ' + STUFE[stufe(r)][1] + '">' + (st === 'ueberfaellig' || st === 'teilbezahlt' || st === 'ruecklastschrift' ? RSTATUS[st][0] : STUFE[stufe(r)][0]) + '</span>' + (r.bezahlt_am ? ' <small style="color:var(--muted)">' + H.kurz(r.bezahlt_am) + '</small>' : '') + (versandVon('hafen', r.id) ? ' <small class="mv-gesendet" title="per E-Mail an ' + esc(versandVon('hafen', r.id).email) + '">✉ ' + H.kurz(String(versandVon('hafen', r.id).gesendet).slice(0, 10)) + '</small>' : '') + (z.length > 1 ? ' <small style="color:var(--muted)" title="' + esc(z.map((x) => H.datum(x.datum) + ' ' + (x.art === 'ruecklastschrift' ? 'Rücklastschrift' : 'Eingang') + ' ' + H.geld(x.betrag) + (x.notiz ? ' – ' + x.notiz : '')).join('\n')) + '">(' + z.length + ' Buchung' + (z.length > 1 ? 'en' : '') + ')</small>' : '') + '</td>' +
+        return '<tr' + (r.storniert_am ? ' class="blass"' : '') + '><td><strong style="white-space:nowrap">' + esc(r.nr) + '</strong></td><td>' + H.datum(r.datum) + '</td><td>' + esc(r.empfaenger.vorname + ' ' + r.empfaenger.nachname) + ' <small style="color:var(--muted)">' + esc(r.empfaenger.nr || '') + '</small></td><td class="nw">' + H.periodeText(r) + '</td>' +
+          '<td class="r nw">' + H.geld(r.summe) + (rest > 0 && rest < r.summe ? '<br><small>offen ' + H.geld(rest) + '</small>' : '') + '</td><td>' + (r.sepa ? 'Lastschrift' + (r.sepa_lauf ? ' <small class="nw" style="color:var(--muted)">' + esc(r.sepa_lauf) + '</small>' : '') : 'Überweisung') + '</td>' +
+          '<td>' + kette(r) + '<span class="tag ' + STUFE[stufe(r)][1] + '">' + (st === 'ueberfaellig' || st === 'teilbezahlt' || st === 'ruecklastschrift' ? RSTATUS[st][0] : STUFE[stufe(r)][0]) + '</span>' + (r.bezahlt_am ? ' <small class="nw" style="color:var(--muted)">' + H.kurz(r.bezahlt_am) + '</small>' : '') + (versandVon('hafen', r.id) ? ' <small class="mv-gesendet" title="per E-Mail an ' + esc(versandVon('hafen', r.id).email) + '">✉ ' + H.kurz(String(versandVon('hafen', r.id).gesendet).slice(0, 10)) + '</small>' : '') + (z.length > 1 ? ' <small style="color:var(--muted)" title="' + esc(z.map((x) => H.datum(x.datum) + ' ' + (x.art === 'ruecklastschrift' ? 'Rücklastschrift' : 'Eingang') + ' ' + H.geld(x.betrag) + (x.notiz ? ' – ' + x.notiz : '')).join('\n')) + '">(' + z.length + ' Buchung' + (z.length > 1 ? 'en' : '') + ')</small>' : '') + '</td>' +
           '<td class="r aktion">' + (r.storniert_am ? '<button class="btn klein" data-zeige="' + r.id + '">Ansehen</button>' : '<button class="btn klein' + (rest > 0 ? ' primaer' : '') + '" data-zahl="' + r.id + '">Zahlung</button> ' +
             zeilenMenue(['<button class="zm-punkt" data-zeige="' + r.id + '">Rechnung ansehen</button>', '<button class="zm-punkt" data-mail1="' + r.id + '">Per E-Mail senden</button>'].concat(!r.bezahlt_am && !Q.gezahlt(r) ? ['<button class="zm-punkt gefahr" data-storno="' + r.id + '">Stornieren</button>'] : []))) + '</td></tr>'; }).join('') || '<tr><td colspan="8" class="leer">Keine Rechnung passt zu den Filtern.</td></tr>';
       $('#r-mehr').innerHTML = l.length > zeig.length ? '<button class="btn klein" style="margin-top:10px">Alle ' + l.length + ' anzeigen</button>' : '';
@@ -1965,7 +1976,7 @@
         '<div class="karten ka-karten"><div class="kz"><small>Eingänge</small><strong>' + H.geld(summeEin) + '</strong><span>' + ein.length + ' Umsätze</span></div>' +
         '<div class="kz"><small>Zugeordnet</small><strong>' + nSicher + '</strong><span>' + (nVor ? nVor + ' Vorschl' + (nVor === 1 ? 'ag' : 'äge') + ' zum Prüfen' : 'sicher erkannt') + '</span></div>' +
         '<div class="kz"><small>Klärliste</small><strong' + (klaer.length ? ' style="color:#8a5e05"' : '') + '>' + klaer.length + '</strong><span>' + (klaer.length ? 'von Hand zuordnen oder klären' : 'nichts offen') + '</span></div>' +
-        '<div class="kz"><small>Gebucht</small><strong>' + s.gebucht.size + '</strong><span>' + rest.filter((x) => x.z.art === 'doppelt').length + ' schon früher · ' + rest.filter((x) => x.z.art === 'ausgabe').length + ' Ausgaben</span></div></div>' +
+        '<div class="kz"><small>Gebucht</small><strong>' + s.gebucht.size + '</strong><span>' + rest.filter((x) => x.z.art === 'doppelt').length + ' schon früher · ' + rest.filter((x) => x.z.art === 'ausgabe').length + (rest.filter((x) => x.z.art === 'ausgabe').length === 1 ? ' Ausgabe' : ' Ausgaben') + '</span></div></div>' +
         (zug.length ? '<div class="panel"><h2>Zugeordnet</h2>' + tab(zug, false) + '</div>' : '') +
         (klaer.length ? '<div class="panel"><h2>Klärliste</h2><p class="hinweis" style="margin-top:0">Diese Eingänge passen zu keiner Rechnung. Von Hand zuordnen – oder nachfragen (z. B. Spende, falscher Verwendungszweck, doppelt überwiesen).</p>' + tab(klaer, true) + '</div>' : '') +
         (rest.length ? '<details class="panel"><summary><h2 style="display:inline">Ausgaben und schon Gebuchtes (' + rest.length + ')</h2></summary>' + tab(rest, false) + '</details>' : '') +
@@ -2307,7 +2318,7 @@
     const push = DB && d.einstellungen.push_aktiv;
     main.innerHTML = kopf('Mitteilungen', 'Kurze Nachrichten an die Mitglieder – erscheinen in „Mein SSV“ ganz oben' + (push ? ', auf Wunsch als Push aufs Handy' : '') + '. Wichtige Mitteilungen an alle zeigt auch die Getränkekasse.', '<button class="btn primaer" id="neu">+ Mitteilung</button>') +
       '<div class="panel"><table class="tab"><tbody>' + (l.map((x) => '<tr' + (aktuell(x) ? '' : ' class="blass"') + '><td>' + (x.wichtig ? '<span class="tag rot">wichtig</span> ' : '') + '<strong>' + esc(x.titel) + '</strong><br><small style="color:var(--muted)">' + esc(x.text || '') + '</small></td>' +
-        '<td><small>' + esc(ZIEL[x.zielgruppe] || x.zielgruppe) + '<br>' + (x.gueltig_bis ? 'bis ' + H.datum(x.gueltig_bis) : 'ohne Ende') + (x.push_gesendet ? '<br>Push gesendet' : '') + '</small></td><td class="r nw"><small style="color:var(--muted)">' + new Date(x.erstellt).toLocaleDateString('de-DE') + ' · ' + esc(x.erstellt_von || '') + '</small><br><button class="btn klein gefahr" data-weg="' + x.id + '">Löschen</button></td></tr>').join('') || '<tr><td class="leer">Noch keine Mitteilungen.</td></tr>') + '</tbody></table></div>' +
+        '<td class="nw"><small>' + esc(ZIEL[x.zielgruppe] || x.zielgruppe) + '<br>' + (x.gueltig_bis ? 'bis ' + H.datum(x.gueltig_bis) : 'ohne Ende') + (x.push_gesendet ? '<br>Push gesendet' : '') + '</small></td><td class="r nw"><small style="color:var(--muted)">' + new Date(x.erstellt).toLocaleDateString('de-DE') + ' · ' + esc(x.erstellt_von || '') + '</small><br><button class="btn klein gefahr" data-weg="' + x.id + '">Löschen</button></td></tr>').join('') || '<tr><td class="leer">Noch keine Mitteilungen.</td></tr>') + '</tbody></table></div>' +
       (DB ? '' : '<p class="hinweis">In der Demo erscheinen Mitteilungen in „Mein SSV“ und an der Kasse dieses Browsers. Push-Nachrichten aufs Handy gibt es nur mit der Vereinsdatenbank.</p>');
     main.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => { if (!confirm('Mitteilung löschen?')) return; d.mitteilungen = d.mitteilungen.filter((x) => x.id !== b.dataset.weg); speichern('Gelöscht.'); zeige(tab); }));
     $('#neu').addEventListener('click', () => {
@@ -2390,7 +2401,7 @@
       '<label class="feld">Anmeldung bis<input name="anmeldung_bis" type="date" value="' + esc(v.anmeldung_bis || '') + '"><small>leer = bis zum Tag selbst</small></label>' +
       '<label class="feld">Plätze höchstens<input name="max_personen" type="number" min="1" max="2000" value="' + (v.max_personen || '') + '"><small>leer = unbegrenzt; Begleitung zählt mit</small></label>' +
       '<label class="feld">Begleitung je Mitglied<select name="begleitung">' + [0, 1, 2, 3, 4, 5].map((n) => '<option value="' + n + '"' + (Number(v.begleitung) === n ? ' selected' : '') + '>' + (n === 0 ? 'keine' : n === 1 ? '1 Person' : 'bis zu ' + n + ' Personen') + '</option>').join('') + '</select></label>' +
-      '<label class="feld">Kosten je Person (€)<input name="kosten" type="number" min="0" step="0.5" value="' + (v.kosten == null ? '' : v.kosten) + '"><small>leer = kostenlos</small></label>' +
+      '<label class="feld">Kosten je Person (€)<input name="kosten" inputmode="decimal" autocomplete="off" value="' + (v.kosten == null ? '' : String(v.kosten).replace('.', ',')) + '" placeholder="z. B. 12,50"><small>leer = kostenlos</small></label>' +
       '<label class="feld voll">Hinweis zu den Kosten<input name="kosten_hinweis" maxlength="80" value="' + esc(v.kosten_hinweis || '') + '" placeholder="z. B. bar vor Ort"></label>' +
       (neu ? '<label class="feld check voll"><input type="checkbox" name="ankuendigen" checked> in „Mein SSV“ zusätzlich als Mitteilung ankündigen (oben auf der Seite)</label>' +
         (push ? '<label class="feld check voll"><input type="checkbox" name="push"> dazu als Push-Nachricht aufs Handy senden</label>' : '') : '') +
@@ -2399,8 +2410,10 @@
       const fm = $('#f', el); if (!fm.reportValidity()) return; const x = Object.fromEntries(new FormData(fm));
       if (x.anmeldung_bis && x.anmeldung_bis > x.datum) return toast('Die Anmeldefrist liegt nach der Veranstaltung.', 'fehler');
       if (x.ende && x.beginn && x.ende < x.beginn) return toast('Das Ende liegt vor dem Beginn.', 'fehler');
+      const kosten = x.kosten.trim() === '' ? null : Math.round(H.dez(x.kosten) * 100) / 100;   // „12,50“ und „12.50“ – Number('12,50') wäre NaN
+      if (kosten !== null && !(kosten >= 0)) { $('[name=kosten]', fm).focus(); return toast('Bitte bei den Kosten einen Betrag wie 12,50 eingeben.', 'fehler'); }
       const felder = { titel: x.titel.trim(), datum: x.datum, beginn: x.beginn, ende: x.ende, ort: x.ort.trim(), text: x.text.trim(), anmeldung_bis: x.anmeldung_bis, max_personen: x.max_personen ? Number(x.max_personen) : null,
-        begleitung: Number(x.begleitung) || 0, kosten: x.kosten === '' ? null : Number(x.kosten), kosten_hinweis: x.kosten_hinweis.trim() };
+        begleitung: Number(x.begleitung) || 0, kosten: kosten || null, kosten_hinweis: x.kosten_hinweis.trim() };
       if (!neu && felder.max_personen && verStand(v).pers > felder.max_personen && !confirm('Es haben schon ' + verStand(v).pers + ' Personen zugesagt – mehr als die neue Grenze. Trotzdem speichern?')) return;
       let m = null;
       if (neu) {
@@ -2439,7 +2452,7 @@
     $('#v-zurueck').addEventListener('click', () => { verAuswahl = null; zeige('veranstaltungen'); });
     $('#v-druck').addEventListener('click', () => window.print());
     $('#v-csv').addEventListener('click', () => download('ssv-teilnehmer-' + v.datum + '.csv', csv([['Veranstaltung', v.titel, H.datum(v.datum)], ['Mitgliedsnr', 'Name', 'Antwort', 'Personen', 'Hinweis', 'geantwortet am', 'eingetragen']].concat(
-      ja.concat(nein).map((z) => { const m = Q.mitglied(z.mitglied_id) || {}; return [m.nr || '', name(z.mitglied_id), z.antwort === 'ja' ? 'Zusage' : 'Absage', z.personen, z.bemerkung || '', z.geaendert ? new Date(z.geaendert).toLocaleString('de-DE') : '', z.quelle === 'verein' ? 'vom Verein' : z.quelle === 'kasse' ? 'Getränke-iPad' : 'Mein SSV']; }))), 'text/csv'));
+      ja.concat(nein).map((z) => { const m = Q.mitglied(z.mitglied_id) || {}; return [m.nr || '', name(z.mitglied_id), z.antwort === 'ja' ? 'Zusage' : 'Absage', z.personen, z.bemerkung || '', z.geaendert ? new Date(z.geaendert).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '', z.quelle === 'verein' ? 'vom Verein' : z.quelle === 'kasse' ? 'Getränke-iPad' : 'Mein SSV']; }))), 'text/csv'));
     $('#v-eintragen').addEventListener('click', () => zusageForm(v, null));
     const vabr = $('#v-abr'); if (vabr) vabr.addEventListener('click', () => verAbrechnenDialog(v));
     const vm = $('#v-mail'); if (vm) vm.addEventListener('click', () => mailVersandDialog('hafen', reVon, v.titel + ' · ' + H.datum(v.datum), () => zeige('veranstaltungen', true)));
@@ -2515,15 +2528,58 @@
   const BEREICH = { mitglieder: 'Mitglied', mitglieder_bank: 'Bankdaten', boote: 'Boot', belegungen: 'Belegung', abwesenheiten: 'Abwesenheit', gaeste: 'Gastlieger', warteliste: 'Warteliste', kran: 'Kran', arbeitsdienst: 'Arbeitsdienst',
     hafen_rechnungen: 'Rechnung', sepa_laeufe: 'Lastschrift-Lauf', arbeitseinsaetze: 'Arbeitseinsatz', mitteilungen: 'Mitteilung', veranstaltungen: 'Veranstaltung', zusagen: 'Zu-/Absage', antraege: 'Aufnahmeantrag', liegeplaetze: 'Liegeplatz', gebuehren: 'Gebühren', hafen_einstellungen: 'Einstellungen', funktionen: 'Zugang/Rolle', aufgaben: 'Schaden/Wartung', dokumente: 'Dokument' };
   const AKTION = { neu: ['neu', 'ok'], geaendert: ['geändert', ''], geloescht: ['gelöscht', 'rot'] };
-  const wertText = (v) => v == null || v === '' ? '–' : typeof v === 'object' ? JSON.stringify(v).slice(0, 60) : String(v);
+  // Änderungsverlauf lesbar: Feldnamen in Alltagssprache, Werte als Datum/Betrag/ja-nein, Listen (z. B. Zahlungen) als einzelne Einträge – nie rohes JSON
+  const FELDNAME = { bezahlt_am: 'bezahlt am', zahlungen: 'Zahlungen', summe: 'Summe', betrag: 'Betrag', datum: 'Datum', faellig: 'fällig', sepa_lauf: 'Lastschrift-Datei', storniert_am: 'storniert am', platz_id: 'Platz', boot_id: 'Boot', eigner_id: 'Eigner', mitglied_id: 'Mitglied',
+    vorname: 'Vorname', nachname: 'Nachname', strasse: 'Straße', plz: 'PLZ', ort: 'Ort', email: 'E-Mail', telefon: 'Telefon', iban: 'IBAN', bic: 'BIC', kontoinhaber: 'Kontoinhaber', mandat_datum: 'Mandat vom', mandat_ref: 'Mandatsreferenz', art: 'Art', status: 'Stand',
+    laenge: 'Länge', breite: 'Breite', tiefgang: 'Tiefgang', gewicht_t: 'Gewicht (t)', max_laenge: 'Boxlänge', max_breite: 'Boxbreite', tiefe: 'Wassertiefe', von: 'von', bis: 'bis', ankunft: 'Ankunft', naechte: 'Nächte', notiz: 'Notiz', titel: 'Titel', text: 'Text',
+    stunden: 'Stunden', personen: 'Personen', antwort: 'Antwort', kosten: 'Kosten', vers_status: 'Versicherung', vers_bis: 'versichert bis', eintritt: 'Eintritt', austritt: 'Austritt', geburtsdatum: 'Geburtsdatum', zahlung: 'Zahlweg', zahlung_gemeldet: 'Zahlung gemeldet',
+    verein_name: 'Vereinsname', verein_strasse: 'Straße des Vereins', verein_ort: 'Ort des Vereins', verein_email: 'E-Mail des Vereins', glaeubiger_id: 'Gläubiger-ID', steuer_hinweis: 'Steuerhinweis', zahlungsziel_tage: 'Zahlungsziel (Tage)', kontoauszug_zuletzt: 'Kontoauszug zuletzt',
+    abrechnung_zugestellt: 'Zustell-Vermerk', lageplan: 'Lageplan', lageplan_planungen: 'Planungen', karte_oeffentlich: 'Hafenkarte öffentlich', karte_tage: 'Tage voraus', kran_max_t: 'Kran höchstens (t)', max_gewicht_t: 'Steg höchstens (t)',
+    quelle: 'Quelle', geaendert: 'geändert', gueltig_bis: 'gültig bis', zielgruppe: 'Zielgruppe', wichtig: 'wichtig', erstellt: 'erstellt', erstellt_von: 'erstellt von', begleitung: 'Begleitung', abgesagt: 'abgesagt',
+    anmeldung_bis: 'Anmeldung bis', max_personen: 'Plätze höchstens', beginn: 'Beginn', ende: 'Ende', bemerkung: 'Bemerkung', name: 'Name', nr: 'Nummer', typ: 'Typ', segelnummer: 'Segelnummer', periode: 'Zeitraum', saison: 'Saison', bezahlt: 'bezahlt', push_gesendet: 'Push gesendet' };
+  const feldName = (k) => FELDNAME[k] || String(k).replace(/_/g, ' ');
+  const GELD_FELD = /^(betrag|summe|kosten|einzelpreis|preis|rest|arbeitsdienst_satz)$|_eur$|_preis$/;
+  const eintragText = (o) => {   // ein Listeneintrag, z. B. eine Zahlung
+    if (o == null || typeof o !== 'object') return wertText(o);
+    if ('betrag' in o && ('datum' in o || 'art' in o)) return (o.art === 'ruecklastschrift' ? 'Rücklastschrift' : 'Zahlung') + (o.datum ? ' ' + H.datum(o.datum) : '') + ' · ' + H.geld(o.betrag) + (o.art && o.art !== 'ruecklastschrift' ? ' · ' + (o.art === 'eingang' ? 'Eingang' : o.art) : '') + (o.notiz ? ' · ' + o.notiz : '');
+    if (Array.isArray(o)) return o.length + (o.length === 1 ? ' Eintrag' : ' Einträge');
+    return Object.entries(o).filter(([k, v]) => v != null && v !== '' && typeof v !== 'object' && k !== 'id').slice(0, 4).map(([k, v]) => feldName(k) + ' ' + wertText(v, k)).join(', ') || 'Eintrag';
+  };
+  const wertText = (v, k) => {
+    if (v == null || v === '') return '–';
+    if (typeof v === 'boolean') return v ? 'ja' : 'nein';
+    if (typeof v === 'number') return k && GELD_FELD.test(k) ? H.geld(v) : String(v).replace('.', ',');
+    if (Array.isArray(v)) return !v.length ? 'keine' : v.every((x) => x == null || typeof x !== 'object') ? v.join(', ') : v.length === 1 ? eintragText(v[0]) : v.length + ' Einträge';
+    if (typeof v === 'object') { const n = Object.keys(v).length; return n + (n === 1 ? ' Angabe' : ' Angaben'); }
+    const t = String(v);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return H.datum(t);
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(t)) return new Date(t).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return t.length > 80 ? t.slice(0, 80) + ' …' : t;
+  };
+  const istObj = (v) => v != null && typeof v === 'object' && !Array.isArray(v);
+  const diffZeilen = (k, alt, neu) => {   // eine Zeile je geänderter Angabe: „Feld: alt → neu“
+    if (istObj(alt) && istObj(neu)) {   // z. B. Einstellungen: nur die geänderten Unterfelder
+      return Object.keys({ ...alt, ...neu }).filter((u) => JSON.stringify(alt[u]) !== JSON.stringify(neu[u])).flatMap((u) => diffZeilen(u, alt[u], neu[u]).map(([f, t]) => [k === 'daten' ? f : feldName(k) + ' › ' + f, t]));
+    }
+    if (Array.isArray(alt) && Array.isArray(neu) && (alt.concat(neu).some((x) => x != null && typeof x === 'object'))) {   // Listen: hinzugekommene/entfernte Einträge
+      const j = (x) => JSON.stringify(x); const dazu = neu.filter((x) => !alt.some((y) => j(y) === j(x))), weg = alt.filter((x) => !neu.some((y) => j(y) === j(x)));
+      return dazu.map((x) => [feldName(k), 'neu: ' + eintragText(x)]).concat(weg.map((x) => [feldName(k), 'entfernt: ' + eintragText(x)]));
+    }
+    return [[feldName(k), wertText(alt, k) + ' → ' + wertText(neu, k)]];
+  };
   const aenderungText = (x) => {
     const a = x.aenderung || {};
-    if (x.aktion === 'geaendert') return Object.entries(a).map(([k, v]) => '<span class="feldname">' + esc(k) + '</span> ' + (Array.isArray(v) ? esc(wertText(v[0])) + ' → ' + esc(wertText(v[1])) : esc(JSON.stringify(v).slice(0, 120))) ).join('<br>');
-    return esc(Object.entries(a).filter(([k, v]) => v != null && v !== '' && !['id', 'positionen', 'empfaenger', 'daten'].includes(k)).slice(0, 6).map(([k, v]) => k + ': ' + wertText(v)).join(' · '));
+    if (x.aktion === 'geaendert') {
+      // Demo: { feld: [alt, neu] }; Datenbank: ebenso, bei „daten“ schon { unterfeld: [alt, neu] }
+      const z = Object.entries(a).flatMap(([k, v]) => Array.isArray(v) && v.length === 2 ? diffZeilen(k, v[0], v[1]) : istObj(v) ? Object.entries(v).flatMap(([u, w]) => Array.isArray(w) && w.length === 2 ? diffZeilen(u, w[0], w[1]) : [[feldName(u), wertText(w, u)]]) : [[feldName(k), wertText(v, k)]]);
+      const MAXZ = 8;
+      return z.slice(0, MAXZ).map(([f, t]) => '<span class="feldname">' + esc(f) + ':</span> ' + esc(t)).join('<br>') + (z.length > MAXZ ? '<br><small>… und ' + (z.length - MAXZ) + ' weitere Angaben</small>' : '');
+    }
+    return esc(Object.entries(a).filter(([k, v]) => v != null && v !== '' && !(Array.isArray(v) && !v.length) && !istObj(v) && !['id', 'positionen', 'empfaenger', 'daten'].includes(k) && !(/_id$/.test(k) && k !== 'platz_id')).slice(0, 6).map(([k, v]) => feldName(k) + ': ' + wertText(v, k)).join(' · '));
   };
   const verlaufTabelle = (l) => '<table class="tab verlauf"><thead><tr><th>Wann</th><th>Wer</th><th>Was</th><th>Änderung</th></tr></thead><tbody>' + (l.map((x) =>
     '<tr><td class="nw">' + new Date(x.zeit).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) + '</td><td>' + esc(x.wer || '–') + '</td>' +
-    '<td><span class="tag ' + AKTION[x.aktion][1] + '">' + AKTION[x.aktion][0] + '</span> ' + esc(BEREICH[x.tabelle] || x.tabelle) + (x.bezeichnung ? ' <strong>' + esc(x.bezeichnung) + '</strong>' : '') + '</td><td style="font-size:12.5px">' + aenderungText(x) + '</td></tr>').join('') ||
+    '<td><span class="tag ' + AKTION[x.aktion][1] + '">' + AKTION[x.aktion][0] + '</span> ' + esc(BEREICH[x.tabelle] || x.tabelle) + (x.bezeichnung ? ' <strong>' + esc(x.bezeichnung) + '</strong>' : '') + '</td><td class="vl-aenderung">' + aenderungText(x) + '</td></tr>').join('') ||
     '<tr><td colspan="4" class="leer">Noch keine Änderungen.</td></tr>') + '</tbody></table>';
   const verlaufStand = { tabelle: '', such: '' };
   V.verlauf = (main) => {
@@ -2746,13 +2802,13 @@
     root.querySelectorAll('.hinweis').forEach((h) => {
       if (h.closest('details.erklaer, .modal, .demo-band') || /\b(warn|ok|fehler|stichtag|offen)\b/.test(h.className)) return;
       if (h.querySelector('button, input, select, textarea, form') || h.textContent.trim().length < 170) return;
-      const det = document.createElement('details'); det.className = 'erklaer';
+      const det = document.createElement('details'); det.className = 'erklaer' + (h.classList.contains('voll') ? ' voll' : '');
       det.innerHTML = '<summary>Erklärung anzeigen</summary>'; h.replaceWith(det); det.appendChild(h);
       det.addEventListener('toggle', () => { det.firstChild.textContent = det.open ? 'Erklärung ausblenden' : 'Erklärung anzeigen'; });
     });
     const p = root.querySelector('.kopf > div > p');
     if (p && !p.children.length && p.textContent.length > 120) {
-      const voll = p.textContent; const m = voll.match(/^(.{30,110}?[.:!?])\s/) || voll.match(/^(.{30,110}?)\s·\s/);
+      const voll = p.textContent; const m = voll.match(/^(.{30,110}?[.!?])\s/) || voll.match(/^(.{30,110}?)\s·\s/);
       if (m) { p.textContent = m[1] + ' '; const k = document.createElement('button'); k.type = 'button'; k.className = 'kopf-mehr'; k.textContent = 'mehr'; k.setAttribute('aria-label', 'Ganzen Text zeigen');
         k.addEventListener('click', () => { p.textContent = voll; }); p.appendChild(k); }
     }
@@ -2762,8 +2818,13 @@
     document.body.classList.remove('plan-vollbild'); if (t !== 'plan') planStand.voll = false;
     if (t !== 'veranstaltungen') verAuswahl = null;
     const y = window.scrollY; const vorher = tab; tab = t; zuletzt[bereichVon(t)] = t; nav(); V[t]($('#main')); einklappen($('#main'));
-    const r = unterNav(); if (r) $('#main').insertAdjacentHTML('afterbegin', r);
+    const r = unterNav(); if (r) { $('#main').insertAdjacentHTML('afterbegin', r);
+      // gewählten Reiter ins Bild rollen (scrollLeft statt scrollIntoView, damit die Seite nicht senkrecht springt)
+      const rl = $('#main .reiter-liste'), ra = rl && rl.querySelector('.aktiv'); if (ra && rl.scrollWidth > rl.clientWidth) rl.scrollLeft = ra.offsetLeft - rl.offsetLeft - (rl.clientWidth - ra.offsetWidth) / 2; }
     window.scrollTo(0, ruhig ? y : 0); schnellknopf();
+    if (sprung) { const z = $('#main').querySelector(sprung); sprung = null;
+      if (z && z.type === 'checkbox') { if (!z.checked) { z.checked = true; z.dispatchEvent(new Event('change', { bubbles: true })); } }
+      else if (z) { z.scrollIntoView({ block: 'center' }); z.focus({ preventScroll: true }); } }
     // neuer Bereich/Reiter → eigener Verlaufseintrag, damit die Zurück-Taste funktioniert
     try { if (location.hash.slice(1) !== t) history[!ruhig && vorher && vorher !== t ? 'pushState' : 'replaceState'](null, '', '#' + t); } catch (e) { /* egal */ }
   }

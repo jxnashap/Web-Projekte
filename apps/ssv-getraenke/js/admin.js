@@ -35,7 +35,32 @@
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = dateiname; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
+  function dateiDownload(dateiname, text, typ) {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: typ })); a.download = dateiname; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
   const zahl = (v) => Number(v).toFixed(2).replace('.', ',');
+  // Zeitraum kurz und ohne Umbruch: „01.–31.10.2026“, „01.10.–15.11.2026“
+  function zeitraumKurz(von, bis) {
+    const a = H.datum(von), b = H.datum(bis);
+    const kurz = a === b ? a : von.slice(0, 7) === bis.slice(0, 7) ? a.slice(0, 3) + '–' + b : von.slice(0, 4) === bis.slice(0, 4) ? a.slice(0, 6) + '–' + b : a + '–' + b;
+    return '<span style="white-space:nowrap">' + kurz + '</span>';
+  }
+  // ⋯-Menü je Zeile (wie im Hafen-Manager): eine Hauptaktion sichtbar, der Rest im Menü
+  const zeilenMenue = (knoepfe) => !knoepfe.length ? '' : '<span class="zm"><button type="button" class="a-btn klein zm-knopf" aria-haspopup="true" aria-expanded="false" title="Weitere Aktionen" aria-label="Weitere Aktionen">⋯</button><span class="zm-liste" role="menu" hidden>' + knoepfe.join('') + '</span></span>';
+  const zmLegen = (zk, l) => { const r = zk.getBoundingClientRect(); const w = l.offsetWidth, h = l.offsetHeight;
+    l.style.left = Math.max(8, Math.min(r.right - w, innerWidth - w - 8)) + 'px'; l.style.top = (r.bottom + 4 + h > innerHeight ? Math.max(8, r.top - h - 4) : r.bottom + 4) + 'px'; };
+  const zuMenues = () => document.querySelectorAll('.zm-liste:not([hidden])').forEach((l) => { l.hidden = true; const k = l.previousElementSibling; if (k) k.setAttribute('aria-expanded', 'false'); });
+  document.addEventListener('click', (e) => {
+    const zk = e.target.closest('.zm-knopf');
+    if (zk) { const l = zk.nextElementSibling; const war = !l.hidden; zuMenues(); if (!war) { l.hidden = false; zk.setAttribute('aria-expanded', 'true'); zmLegen(zk, l);
+      const erst = l.querySelector('button'); if (erst && e.detail === 0) erst.focus(); } return; }
+    if (e.target.closest('.zm-liste')) setTimeout(zuMenues, 0); else zuMenues();
+  });
+  window.addEventListener('scroll', () => document.querySelectorAll('.zm-liste:not([hidden])').forEach((l) => { const k = l.previousElementSibling; const r = k.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight) zuMenues(); else zmLegen(k, l); }), true);
+  window.addEventListener('resize', zuMenues);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.querySelector('.zm-liste:not([hidden])')) { e.stopPropagation(); zuMenues(); } }, true);
   const monatsAnfang = (d = new Date()) => H.tag(new Date(d.getFullYear(), d.getMonth(), 1));
   const monatsEnde = (d = new Date()) => H.tag(new Date(d.getFullYear(), d.getMonth() + 1, 0));
   function kopf(titel, unter, aktionen) {
@@ -72,9 +97,9 @@
       '<button class="a-btn primaer" data-gehe="abrechnung">Abrechnung erstellen</button>') +
       '<div class="a-karten">' +
       '<div class="a-karte"><small>Umsatz ' + esc(monatName) + '</small><strong>' + H.geld(H.eur(umsatz)) + '</strong><span>' + monat.filter(gueltig).length + ' Buchungen</span></div>' +
-      '<div class="a-karte"><small>Noch nicht abgerechnet</small><strong>' + H.geld(H.eur(offenSumme)) + '</strong><span>' + proMitglied.size + ' Mitglieder</span></div>' +
+      '<div class="a-karte"><small>Noch nicht abgerechnet</small><strong>' + H.geld(H.eur(offenSumme)) + '</strong><span>' + proMitglied.size + (proMitglied.size === 1 ? ' Mitglied' : ' Mitglieder') + '</span></div>' +
       '<div class="a-karte"><small>Offene Rechnungen</small><strong>' + H.geld(H.eur(unbezahltSumme)) + '</strong><span>' + unbezahlt.length + ' unbezahlt</span></div>' +
-      '<div class="a-karte"><small>Aktive Mitglieder mit PIN</small><strong>' + cache.mitglieder.filter((m) => m.aktiv && m.hat_pin).length + '</strong><span>von ' + cache.mitglieder.filter((m) => m.aktiv).length + ' aktiven</span></div>' +
+      '<div class="a-karte"><small>Aktive Mitglieder mit Code</small><strong>' + cache.mitglieder.filter((m) => m.aktiv && m.hat_pin).length + '</strong><span>von ' + cache.mitglieder.filter((m) => m.aktiv).length + ' aktiven</span></div>' +
       '</div><div class="a-zwei">' +
       '<div class="a-panel"><h2>Meistgebucht im ' + esc(new Date().toLocaleDateString('de-DE', { month: 'long' })) + ' (Stück)</h2>' +
       (top.length ? top.map(([n, v]) => '<div class="a-balken"><span>' + esc(n) + '</span><i style="width:' + Math.round(v / max * 60) + '%"></i><b>' + v + '</b></div>').join('') : '<p class="k-sub">Noch keine Buchungen in diesem Monat.</p>') +
@@ -103,12 +128,12 @@
     const offenProM = new Map();
     offen.forEach((b) => { if (!b.storniert_am && !b.rechnung_id) offenProM.set(b.mitglied_id, (offenProM.get(b.mitglied_id) || 0) + H.ct(b.betrag)); });
     const ohnePin = cache.mitglieder.filter((m) => m.aktiv && !m.hat_pin).length;
-    main.innerHTML = kopf('Mitglieder', cache.mitglieder.filter((m) => m.aktiv).length + ' aktiv · ' + ohnePin + ' ohne PIN',
+    main.innerHTML = kopf('Mitglieder', cache.mitglieder.filter((m) => m.aktiv).length + ' aktiv · ' + ohnePin + ' ohne Code',
       '<button class="a-btn" id="m-import">CSV importieren</button>' +
-      (ohnePin ? '<button class="a-btn dunkel" id="m-pins">PINs für ' + ohnePin + ' vergeben</button>' : '') +
+      (ohnePin ? '<button class="a-btn dunkel" id="m-pins">Codes für ' + ohnePin + ' vergeben</button>' : '') +
       '<button class="a-btn primaer" id="m-neu">+ Neues Mitglied</button>') +
       '<div class="a-filter"><input class="a-suche" id="m-suche" type="search" placeholder="Suchen …" value="' + esc(suche) + '"></div>' +
-      '<div class="a-panel"><table class="a-tab"><thead><tr><th>Nr.</th><th>Name</th><th>Ort</th><th>Lastschrift</th><th>PIN</th><th class="r">Offen</th><th></th></tr></thead><tbody id="m-liste"></tbody></table></div>';
+      '<div class="a-panel"><table class="a-tab"><thead><tr><th>Nr.</th><th>Name</th><th>Ort</th><th>Lastschrift</th><th>Code</th><th class="r">Offen</th><th></th></tr></thead><tbody id="m-liste"></tbody></table></div>';
     const render = () => {
       const f = $('#m-suche').value.trim().toLowerCase();
       $('#m-liste').innerHTML = cache.mitglieder.filter((m) => !f || (m.vorname + ' ' + m.nachname + ' ' + (m.nr || '') + ' ' + (m.ort || '')).toLowerCase().includes(f))
@@ -119,7 +144,7 @@
             '<td>' + (gesperrt ? '<span class="a-tag rot">gesperrt</span>' : m.hat_pin ? '<span class="a-tag ok">✓</span>' : '<span class="a-tag warn">fehlt</span>') + '</td>' +
             '<td class="r">' + H.geld(H.eur(offenProM.get(m.id) || 0)) + '</td>' +
             '<td class="r">' + (m.hat_pin ? '<button class="a-btn klein" data-reset="' + m.id + '" title="Code löschen – das Mitglied legt an der Kasse selbst einen neuen fest">Code zurücksetzen</button> ' : '') +
-            '<button class="a-btn klein" data-pin="' + m.id + '">Neue PIN</button> <button class="a-btn klein" data-edit="' + m.id + '">Bearbeiten</button></td></tr>';
+            '<button class="a-btn klein" data-pin="' + m.id + '" title="Neuen Code auslosen und als Zettel drucken">Neuen Code vergeben</button> <button class="a-btn klein" data-edit="' + m.id + '">Bearbeiten</button></td></tr>';
         }).join('');
     };
     render();
@@ -154,7 +179,7 @@
       '<label class="a-feld check voll"><input type="checkbox" name="aktiv"' + (m.aktiv !== false ? ' checked' : '') + '> Aktiv (erscheint an der Kasse)</label>' +
       '<label class="a-feld voll">Notiz<textarea name="notiz" rows="2">' + esc(m.notiz || '') + '</textarea></label>' +
       '</form><div class="a-modal-fuss">' + (neu ? '' : '<button class="a-btn gefahr" id="mf-del" style="margin-right:auto">Entfernen</button>') +
-      '<button class="a-btn" data-zu>Abbrechen</button><button class="a-btn primaer" id="mf-ok">' + (neu ? 'Anlegen &amp; PIN vergeben' : 'Speichern') + '</button></div>');
+      '<button class="a-btn" data-zu>Abbrechen</button><button class="a-btn primaer" id="mf-ok">' + (neu ? 'Anlegen &amp; Code vergeben' : 'Speichern') + '</button></div>');
     $('#mf-ok', el).addEventListener('click', async () => {
       const f = $('#mf', el); if (!f.reportValidity()) return;
       const d = Object.fromEntries(new FormData(f)); d.sepa = f.sepa.checked; d.aktiv = f.aktiv.checked;
@@ -175,9 +200,9 @@
     const pin = H.zufallsPin();
     await S.pinSetzen(m.id, pin);
     sessionStorage.setItem('ssvg-pinzettel', JSON.stringify([{ vorname: m.vorname, nachname: m.nachname, nr: m.nr, pin }]));
-    const el = modal('<h2>PIN für ' + esc(name(m)) + '</h2><div class="a-pin-gross">' + pin + '</div>' +
-      '<p class="a-hinweis" style="margin-top:16px">Diese PIN wird nur jetzt angezeigt und ist danach nur noch verschlüsselt gespeichert. Bitte dem Mitglied mitteilen oder den PIN-Zettel drucken. Vergessene PINs einfach neu vergeben.</p>' +
-      '<div class="a-modal-fuss"><button class="a-btn" id="pz">PIN-Zettel drucken</button><button class="a-btn primaer" data-zu>Fertig</button></div>');
+    const el = modal('<h2>Code für ' + esc(name(m)) + '</h2><div class="a-pin-gross">' + pin + '</div>' +
+      '<p class="a-hinweis" style="margin-top:16px">Dieser Code wird nur jetzt angezeigt und ist danach nur noch verschlüsselt gespeichert. Bitte dem Mitglied mitteilen oder den Code-Zettel drucken. Vergessene Codes einfach neu vergeben.</p>' +
+      '<div class="a-modal-fuss"><button class="a-btn" id="pz">Code-Zettel drucken</button><button class="a-btn primaer" data-zu>Fertig</button></div>');
     $('#pz', el).addEventListener('click', () => drucken('pins'));
     cache.mitglieder = await S.mitglieder();
     if (tab === 'mitglieder') { const s = $('#m-suche') ? $('#m-suche').value : ''; await mitgliederTab($('#main'), s); }
@@ -191,11 +216,11 @@
   }
   async function alleOhnePin() {
     const liste = cache.mitglieder.filter((m) => m.aktiv && !m.hat_pin);
-    if (!confirm('Für ' + liste.length + ' Mitglieder jetzt zufällige PINs erzeugen?')) return;
+    if (!confirm('Für ' + liste.length + (liste.length === 1 ? ' Mitglied jetzt einen zufälligen Code' : ' Mitglieder jetzt zufällige Codes') + ' erzeugen?')) return;
     const z = await pinsVergeben(liste);
-    const el = modal('<h2>' + z.length + ' PINs vergeben</h2><p class="a-hinweis">Die PINs werden nur jetzt angezeigt. Am einfachsten: PIN-Zettel drucken, ausschneiden und verteilen.</p>' +
+    const el = modal('<h2>' + z.length + (z.length === 1 ? ' Code' : ' Codes') + ' vergeben</h2><p class="a-hinweis">Die Codes werden nur jetzt angezeigt. Am einfachsten: Code-Zettel drucken, ausschneiden und verteilen.</p>' +
       '<table class="a-tab"><tbody>' + z.map((x) => '<tr><td>' + esc(x.nachname + ', ' + x.vorname) + '</td><td class="r"><strong>' + x.pin + '</strong></td></tr>').join('') + '</tbody></table>' +
-      '<div class="a-modal-fuss"><button class="a-btn primaer" id="pz">PIN-Zettel drucken</button><button class="a-btn" data-zu>Schließen</button></div>');
+      '<div class="a-modal-fuss"><button class="a-btn primaer" id="pz">Code-Zettel drucken</button><button class="a-btn" data-zu>Schließen</button></div>');
     $('#pz', el).addEventListener('click', () => drucken('pins'));
     zeigeTab('mitglieder');
   }
@@ -207,7 +232,7 @@
       '<label class="a-feld">Datei<input type="file" id="csv-datei" accept=".csv,text/csv,text/comma-separated-values,text/plain,application/vnd.ms-excel"></label>' +
       '<label class="a-feld" style="margin-top:12px">… oder hier einfügen<textarea id="csv-text" rows="6" placeholder="Vorname;Nachname;Mitgliedsnummer;E-Mail&#10;Anna;Albers;1001;anna@beispiel.de"></textarea></label>' +
       '<p class="k-sub" id="csv-vorschau"></p>' +
-      '<label class="a-feld check"><input type="checkbox" id="csv-pins"> Allen neuen Mitgliedern direkt eine PIN vergeben (sonst legen sie ihren Code selbst fest)</label>' +
+      '<label class="a-feld check"><input type="checkbox" id="csv-pins"> Allen neuen Mitgliedern direkt einen Code vergeben (sonst legen sie ihren Code selbst fest)</label>' +
       '<div class="a-modal-fuss"><button class="a-btn" data-zu>Abbrechen</button><button class="a-btn primaer" id="csv-ok" disabled>Importieren</button></div>');
     let zeilen = [];
     const parse = (text) => {
@@ -254,7 +279,7 @@
       cache.mitglieder = await S.mitglieder();
       if ($('#csv-pins', el).checked && neu.length) {
         await pinsVergeben(neu);
-        zu(); toast(neu.length + ' importiert' + (doppelt ? ', ' + doppelt + ' schon vorhanden' : '') + '. PIN-Zettel öffnen sich.');
+        zu(); toast(neu.length + ' importiert' + (doppelt ? ', ' + doppelt + ' schon vorhanden' : '') + '. Code-Zettel öffnen sich.');
         drucken('pins');
       } else { zu(); toast(neu.length + ' importiert' + (doppelt ? ', ' + doppelt + ' schon vorhanden' : '') + '.'); }
       zeigeTab('mitglieder');
@@ -409,13 +434,13 @@
       box.innerHTML = (!pr.eingerichtet ? '<p class="a-hinweis warn">Der E-Mail-Versand ist noch nicht eingerichtet (Mail-Dienst und Absender fehlen). Prüfen geht trotzdem.</p>' : '') +
         (pr.demo ? '<p class="a-hinweis">Demo: Es wird keine echte E-Mail verschickt – der Versand wird nur in diesem Browser vermerkt.</p>' : '') +
         '<p><span class="a-tag ok">' + n('bereit') + ' bereit</span> ' + (n('keine_email') + n('ungueltig') ? '<span class="a-tag warn">' + (n('keine_email') + n('ungueltig')) + ' ohne gültige Adresse</span> ' : '') + (n('schon_gesendet') ? '<span class="a-tag">' + n('schon_gesendet') + ' schon gesendet</span>' : '') + '</p>' +
-        '<div class="mv-liste"><table class="a-tab"><thead><tr><th>Rechnung</th><th>Mitglied</th><th class="r">Betrag</th><th>geht an</th></tr></thead><tbody>' +
-        l.map((x) => '<tr><td>' + esc(x.nr || '–') + '</td><td>' + esc(x.mitglied ? x.mitglied.name : '–') + '</td><td class="r">' + H.geld(x.betrag || 0) + '</td><td>' + (x.email ? '<strong>' + esc(x.email) + '</strong> ' : '') +
+        '<div class="mv-liste"><table class="a-tab"><thead><tr><th>Rechnung</th><th>Mitglied · geht an</th><th class="r">Betrag</th><th>Stand</th></tr></thead><tbody>' +
+        l.map((x) => '<tr><td><strong>' + esc(x.nr || '–') + '</strong></td><td>' + esc(x.mitglied ? x.mitglied.name : '–') + (x.email ? '<br><strong class="mv-adresse">' + esc(x.email) + '</strong>' : '') + '</td><td class="r">' + H.geld(x.betrag || 0) + '</td><td>' +
           '<span class="a-tag ' + MST[x.status][1] + '">' + MST[x.status][0] + (x.gesendet ? ' ' + H.datum(String(x.gesendet).slice(0, 10)) : '') + '</span></td></tr>').join('') + '</tbody></table></div>' +
         (n('keine_email') + n('ungueltig') ? '<p class="a-hinweis warn">Ohne gültige Adresse geht nichts raus – diese Rechnungen bitte ausdrucken oder die Adresse unter „Mitglieder“ nachtragen.</p>' : '') +
-        (n('schon_gesendet') ? '<label class="a-feld" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="mv-erneut"' + (erneut ? ' checked' : '') + '> Schon gesendete noch einmal senden</label>' : '') +
+        (n('schon_gesendet') ? '<label class="a-feld check"><input type="checkbox" id="mv-erneut"' + (erneut ? ' checked' : '') + '> Schon gesendete noch einmal senden</label>' : '') +
         '<p class="a-hinweis">Jede Rechnung geht <strong>nur an die Adresse, die beim jeweiligen Mitglied eingetragen ist</strong> – einzeln, mit genau dieser einen Rechnung als PDF. Ändert sich eine Adresse nach dem Prüfen, bleibt diese Rechnung liegen.</p>' +
-        '<label class="a-feld" style="flex-direction:row;align-items:center;gap:8px;font-size:15px;color:var(--ink)"><input type="checkbox" id="mv-geprueft"> Ich habe die Liste geprüft – Mitglieder und Adressen passen.</label>' +
+        '<label class="a-feld check" style="font-size:15px"><input type="checkbox" id="mv-geprueft"> Ich habe die Liste geprüft – Mitglieder und Adressen passen.</label>' +
         '<div class="a-modal-fuss"><button class="a-btn" id="mv-test" style="margin-right:auto"' + (pr.eingerichtet && raus.length ? '' : ' disabled') + '>Test-Mail an mich</button><button class="a-btn" data-zu>Abbrechen</button><button class="a-btn primaer" id="mv-los" disabled>' + raus.length + ' Rechnung' + (raus.length === 1 ? '' : 'en') + ' senden</button></div>';
       const er = el.querySelector('#mv-erneut'); if (er) er.addEventListener('change', zeichnen);
       const gp = el.querySelector('#mv-geprueft'), los = el.querySelector('#mv-los');
@@ -459,6 +484,8 @@
     const status = (r) => r.storniert_am ? '<span class="a-tag rot">storniert</span>' : r.bezahlt_am ? '<span class="a-tag ok">bezahlt ' + H.datum(r.bezahlt_am) + '</span>'
       : (r.faellig && r.faellig < heute()) ? '<span class="a-tag rot">überfällig</span>' : '<span class="a-tag warn">offen</span>';
     const offeneRe = rechnungen.filter((r) => !r.storniert_am && !r.bezahlt_am);
+    const laeufe = e.sepa_laeufe || [];
+    const inLastschrift = (id) => { const l = laeufe.find((x) => (x.ids || []).includes(id)); return l ? ' <span class="a-tag" title="in der Lastschrift-Datei ' + esc(l.id) + ' vom ' + H.datum(l.datum) + '">in SEPA-Datei</span>' : ''; };
 
     main.innerHTML = kopf('Abrechnung', 'Aus offenen Buchungen werden Rechnungen pro Mitglied – fortlaufend nummeriert, jede Buchung genau einmal.') +
       '<div class="a-panel"><h2>1 · Zeitraum wählen</h2><div class="a-filter">' +
@@ -466,7 +493,7 @@
       '<label class="a-feld">Von<input type="date" id="a-von" value="' + aZeitraum.von + '"></label>' +
       '<label class="a-feld">Bis<input type="date" id="a-bis" value="' + aZeitraum.bis + '"></label>' +
       '<label class="a-feld">Rechnungsdatum<input type="date" id="a-datum" value="' + aZeitraum.datum + '"></label></div>' +
-      '<h2 style="margin-top:8px">2 · Vorschau: ' + vorschau.length + ' Rechnungen über ' + H.geld(H.eur(gesamt)) + '</h2>' +
+      '<h2 style="margin-top:8px">2 · Vorschau: ' + (vorschau.length === 1 ? '1 Rechnung' : vorschau.length + ' Rechnungen') + ' über ' + H.geld(H.eur(gesamt)) + '</h2>' +
       (ohneMandat ? '<p class="a-hinweis warn">' + ohneMandat + ' Mitglieder ohne SEPA-Mandat – ihre Rechnung nennt statt des Einzugs die Bankverbindung zur Überweisung.</p>' : '') +
       (!e.glaeubiger_id ? '<p class="a-hinweis warn">Bitte unter Einstellungen die Gläubiger-ID eintragen – sie gehört auf jede Lastschrift-Ankündigung.</p>' : '') +
       (ohneAdresse ? '<p class="a-hinweis warn">' + ohneAdresse + ' Mitglieder ohne vollständige Anschrift – die Rechnung entsteht trotzdem, ggf. vorher unter „Mitglieder" ergänzen.</p>' : '') +
@@ -474,18 +501,19 @@
         vorschau.map((x) => '<tr><td>' + esc(name(x.m)) + '</td><td>' + (x.m && x.m.sepa ? 'Lastschrift' : '<span class="a-tag warn">kein Mandat</span>') + '</td><td class="r">' + x.n + '</td><td class="r">' + H.geld(H.eur(x.c)) + '</td></tr>').join('') +
         '</tbody><tfoot><tr><td colspan="3">Summe</td><td class="r">' + H.geld(H.eur(gesamt)) + '</td></tr></tfoot></table>'
         : '<p class="k-sub">Keine offenen Buchungen in diesem Zeitraum.</p>') +
-      '<div class="a-modal-fuss"><button class="a-btn primaer" id="a-los"' + (vorschau.length ? '' : ' disabled') + '>3 · ' + vorschau.length + ' Rechnungen erstellen</button></div></div>' +
+      '<h2 style="margin-top:20px">3 · Rechnungen erstellen</h2>' +
+      '<div class="a-modal-fuss" style="margin-top:0;justify-content:flex-start"><button class="a-btn primaer" id="a-los"' + (vorschau.length ? '' : ' disabled') + '>' + (vorschau.length === 1 ? '1 Rechnung' : vorschau.length + ' Rechnungen') + ' erstellen</button></div></div>' +
       '<div class="a-panel"><div class="a-kopf" style="margin-bottom:8px"><h2 style="margin:0">Rechnungen</h2><div class="a-aktionen">' +
       '<button class="a-btn primaer" id="r-mail"' + (ungesendet.length ? '' : ' disabled') + '>Per E-Mail senden (' + ungesendet.length + ')</button>' +
       '<button class="a-btn" id="r-druck-offen"' + (offeneRe.length ? '' : ' disabled') + '>Alle offenen drucken (' + offeneRe.length + ')</button>' +
-      '<button class="a-btn" id="r-sepa">SEPA-Liste (CSV)</button><button class="a-btn" id="r-csv">Rechnungsliste (CSV)</button></div></div>' +
-      (rechnungen.length ? '<table class="a-tab"><thead><tr><th>Nr.</th><th>Datum</th><th>Mitglied</th><th>Zeitraum</th><th class="r">Betrag</th><th>Zahlart</th><th>Status</th><th></th></tr></thead><tbody>' +
+      '<button class="a-btn" id="r-sepa">Lastschrift (SEPA-Datei)</button><button class="a-btn" id="r-csv">Rechnungsliste (CSV)</button></div></div>' +
+      (rechnungen.length ? '<table class="a-tab"><thead><tr><th>Nr.</th><th>Datum</th><th>Mitglied</th><th>Zeitraum</th><th class="r">Betrag</th><th>Status</th><th></th></tr></thead><tbody>' +
         rechnungen.map((r) => '<tr class="' + (r.storniert_am ? 'storniert' : '') + '"><td><strong>' + esc(r.nr) + '</strong></td><td>' + H.datum(r.datum) + '</td><td>' + esc(r.empfaenger.vorname + ' ' + r.empfaenger.nachname) + '</td>' +
-          '<td>' + H.datum(r.von) + ' – ' + H.datum(r.bis) + '</td><td class="r">' + H.geld(r.summe) + '</td><td>' + (r.sepa ? 'Lastschrift' : 'Überweisung') + '</td><td>' + status(r) + gesendetAm(r.id) + '</td>' +
-          '<td class="r" style="white-space:nowrap"><button class="a-btn klein" data-druck="' + r.id + '">Ansehen</button> ' +
-          (!r.storniert_am ? '<button class="a-btn klein" data-mail="' + r.id + '">E-Mail</button> ' : '') +
-          (!r.storniert_am ? (r.bezahlt_am ? '<button class="a-btn klein" data-unbezahlt="' + r.id + '">Offen</button> ' : '<button class="a-btn klein" data-bezahlt="' + r.id + '">Bezahlt</button> ') +
-            '<button class="a-btn klein gefahr" data-rstorno="' + r.id + '">Storno</button>' : '') + '</td></tr>').join('') + '</tbody></table>'
+          '<td>' + zeitraumKurz(r.von, r.bis) + '</td><td class="r">' + H.geld(r.summe) + '<br><small style="color:var(--ink-2);font-size:14px">' + (r.sepa ? 'Lastschrift' : 'Überweisung') + '</small></td><td>' + status(r) + gesendetAm(r.id) + inLastschrift(r.id) + '</td>' +
+          '<td class="r aktion"><button class="a-btn klein" data-druck="' + r.id + '">Ansehen</button> ' +
+          zeilenMenue(r.storniert_am ? [] : ['<button class="zm-punkt" role="menuitem" data-mail="' + r.id + '">Per E-Mail senden</button>',
+            r.bezahlt_am ? '<button class="zm-punkt" role="menuitem" data-unbezahlt="' + r.id + '">Wieder auf „offen“ setzen</button>' : '<button class="zm-punkt" role="menuitem" data-bezahlt="' + r.id + '">Als bezahlt markieren</button>',
+            '<button class="zm-punkt gefahr" role="menuitem" data-rstorno="' + r.id + '">Stornieren</button>']) + '</td></tr>').join('') + '</tbody></table>'
         : '<p class="k-sub">Noch keine Rechnungen erstellt.</p>') + '</div>';
 
     const neuLaden = () => { aZeitraum = { von: $('#a-von').value, bis: $('#a-bis').value, datum: $('#a-datum').value }; abrechnungTab(main); };
@@ -495,11 +523,11 @@
     ['#a-von', '#a-bis', '#a-datum'].forEach((s) => $(s).addEventListener('change', neuLaden));
     $('#a-los').addEventListener('click', async (ev) => {
       const knopf = ev.currentTarget; if (knopf.disabled) return;   // Schutz gegen Doppelklick
-      if (!confirm(vorschau.length + ' Rechnungen über ' + H.geld(H.eur(gesamt)) + ' erstellen?\nDie enthaltenen Buchungen gelten danach als abgerechnet.')) return;
+      if (!confirm((vorschau.length === 1 ? '1 Rechnung' : vorschau.length + ' Rechnungen') + ' über ' + H.geld(H.eur(gesamt)) + ' erstellen?\nDie enthaltenen Buchungen gelten danach als abgerechnet.')) return;
       knopf.disabled = true;
       try {
         const n = await S.rechnungenErstellen(aZeitraum.von, aZeitraum.bis, aZeitraum.datum);
-        toast(n + ' Rechnungen erstellt.'); await abrechnungTab(main);
+        toast((n === 1 ? '1 Rechnung' : n + ' Rechnungen') + ' erstellt.'); await abrechnungTab(main);
         const neu = (await S.rechnungen()).filter((r) => r.datum === aZeitraum.datum && !r.storniert_am && !r.bezahlt_am).slice(0, n);
         if (neu.length && confirm('Rechnungen jetzt zum Drucken / als PDF öffnen?')) drucken('rechnung', neu.map((r) => r.id));
       } catch (err) { toast(err.message, 'fehler'); knopf.disabled = false; }
@@ -521,12 +549,74 @@
     $('#r-csv').addEventListener('click', () => csvDownload('rechnungen.csv', [['Rechnungsnr', 'Datum', 'Fällig', 'Mitgliedsnr', 'Name', 'Von', 'Bis', 'Betrag', 'Zahlart', 'Bezahlt am', 'Storniert']]
       .concat(rechnungen.map((r) => [r.nr, H.datum(r.datum), H.datum(r.faellig), r.empfaenger.nr, r.empfaenger.vorname + ' ' + r.empfaenger.nachname, H.datum(r.von), H.datum(r.bis),
         zahl(r.summe), r.sepa ? 'Lastschrift' : 'Überweisung', H.datum(r.bezahlt_am), r.storniert_am ? 'ja' : '']))));
-    $('#r-sepa').addEventListener('click', () => {
-      const s = rechnungen.filter((r) => r.sepa && !r.storniert_am && !r.bezahlt_am);
-      if (!s.length) return toast('Keine offenen SEPA-Rechnungen.');
-      csvDownload('sepa-einzug.csv', [['Mitgliedsnr', 'Name', 'Mandatsreferenz', 'Betrag', 'Verwendungszweck', 'Einzug am']]
-        .concat(s.map((r) => [r.empfaenger.nr, r.empfaenger.vorname + ' ' + r.empfaenger.nachname, r.empfaenger.mandatsreferenz || r.empfaenger.nr, zahl(r.summe), 'Getraenke ' + r.nr, H.datum(r.faellig)])));
-    });
+    $('#r-sepa').addEventListener('click', () => lastschriftDialog(rechnungen, e, () => abrechnungTab(main)));
+  }
+
+  /* Lastschrift für Getränkerechnungen: SEPA-Datei pain.008.001.08 wie im Hafen-Manager (../ssv-hafen/js/sepa.js).
+     IBAN, BIC und Mandatsdatum stehen nur im gemeinsamen Mitgliederstamm (Hafen-Manager, Tabelle mitglieder_bank).
+     Welche Rechnungen schon in einer Datei waren, merkt sich die Kasse in den Einstellungen (sepa_laeufe) – nichts wird doppelt eingezogen. */
+  async function lastschriftDialog(rechnungen, e, nachher) {
+    const SEPA = window.HAFEN_SEPA;
+    const alle = rechnungen.filter((r) => r.sepa && !r.storniert_am && !r.bezahlt_am);
+    if (!alle.length) return toast('Keine offenen Lastschrift-Rechnungen.');
+    if (!SEPA) return toast('Die SEPA-Bausteine des Hafen-Managers fehlen (../ssv-hafen/js/sepa.js).', 'fehler');
+    const el = modal('<h2>Lastschrift für Getränkerechnungen</h2><div id="ls"><p class="k-sub">Bankdaten werden geladen …</p></div>');
+    el.querySelector('.a-modal-card').classList.add('breit');
+    const box = el.querySelector('#ls');
+    let bank;
+    try { bank = await S.bankdaten([...new Set(alle.map((r) => r.mitglied_id))]); } catch (er) { box.innerHTML = '<p class="a-hinweis warn">Bankdaten nicht lesbar: ' + esc(er.message) + '</p>'; return; }
+    const bv = new Map(bank.mitglieder.map((b) => [b.mitglied_id, b]));
+    const hv = bank.verein || {};
+    // Vereinskonto und Gläubiger-ID: aus den Kassen-Einstellungen, sonst wie im Hafen-Manager eingetragen
+    const verein = { name: e.verein_name, iban: e.iban || hv.iban || '', bic: e.iban ? e.bic : hv.bic, glaeubiger_id: SEPA.glaeubigerGueltig(e.glaeubiger_id) ? e.glaeubiger_id : (hv.glaeubiger_id || e.glaeubiger_id || '') };
+    const vereinFehlt = [!SEPA.ibanGueltig(verein.iban) ? 'IBAN des Vereinskontos' : '', !SEPA.glaeubigerGueltig(verein.glaeubiger_id) ? 'Gläubiger-ID' : ''].filter(Boolean);
+    const laeufe = e.sepa_laeufe || [];
+    const inDatei = new Map(); laeufe.forEach((l) => (l.ids || []).forEach((id) => inDatei.set(id, l)));
+    const kurzIban = (i) => { i = String(i || '').replace(/\s/g, ''); return i ? i.slice(0, 4) + ' … ' + i.slice(-4) : ''; };
+    const posten = alle.map((r) => {
+      const b = bv.get(r.mitglied_id) || {}; const ref = r.empfaenger.mandatsreferenz || '';
+      const fehlt = [!b.iban ? 'IBAN fehlt' : !SEPA.ibanGueltig(b.iban) ? 'IBAN ungültig' : '', !ref ? 'Mandatsreferenz fehlt' : '', !b.mandat_datum ? 'Mandatsdatum fehlt' : ''].filter(Boolean);
+      return { r, b, ref, fehlt, lauf: inDatei.get(r.id) };
+    }).sort((a, b) => a.r.nr.localeCompare(b.r.nr));
+    const zeichnen = () => {
+      const erneut = !!(el.querySelector('#ls-erneut') && el.querySelector('#ls-erneut').checked);
+      const raus = posten.filter((p) => !p.fehlt.length && (!p.lauf || erneut));
+      const summe = raus.reduce((x, p) => x + H.ct(p.r.summe), 0);
+      const schon = posten.filter((p) => p.lauf).length, ohne = posten.filter((p) => p.fehlt.length).length;
+      box.innerHTML = '<p class="a-hinweis">Die Datei wird im Online-Banking als <strong>Sammellastschrift</strong> hochgeladen (SEPA-XML, Format pain.008.001.08 – wie bei Hafen- und Beitragsrechnungen). Die Getränkerechnung ist zugleich die Ankündigung des Einzugs.</p>' +
+        (vereinFehlt.length ? '<p class="a-hinweis warn">Es fehlt: <strong>' + vereinFehlt.join(' und ') + '</strong>. Bitte unter „Einstellungen“ eintragen – ohne diese Angaben nimmt die Bank die Datei nicht an.</p>' : '') +
+        '<p><span class="a-tag ok">' + raus.length + ' bereit</span> ' + (ohne ? '<span class="a-tag warn">' + ohne + ' ohne vollständige Bankdaten</span> ' : '') + (schon ? '<span class="a-tag">' + schon + ' schon in einer Datei</span>' : '') + '</p>' +
+        '<div class="mv-liste"><table class="a-tab"><thead><tr><th>Rechnung</th><th>Mitglied · Konto</th><th class="r">Betrag</th><th>Einzug am</th><th>Stand</th></tr></thead><tbody>' +
+        posten.map((p) => '<tr><td><strong>' + esc(p.r.nr) + '</strong></td><td>' + esc(p.b.kontoinhaber || (p.r.empfaenger.vorname + ' ' + p.r.empfaenger.nachname)) + (p.b.iban ? '<br><small>' + esc(kurzIban(p.b.iban)) + (p.ref ? ' · Mandat ' + esc(p.ref) : '') + '</small>' : '') + '</td>' +
+          '<td class="r">' + H.geld(p.r.summe) + '</td><td>' + H.datum(p.r.faellig) + '</td><td>' +
+          (p.fehlt.length ? '<span class="a-tag warn">' + esc(p.fehlt.join(', ')) + '</span>' : p.lauf ? '<span class="a-tag">schon in ' + esc(p.lauf.id) + '</span>' : '<span class="a-tag ok">bereit</span>') + '</td></tr>').join('') + '</tbody></table></div>' +
+        (ohne ? '<p class="a-hinweis warn">Rechnungen ohne vollständige Bankdaten bleiben draußen. IBAN, Mandatsreferenz und Mandatsdatum pflegen Vorstand oder Kassenwart im Hafen-Manager beim Mitglied.</p>' : '') +
+        (schon ? '<label class="a-feld check"><input type="checkbox" id="ls-erneut"' + (erneut ? ' checked' : '') + '> Rechnungen, die schon in einer Datei waren, noch einmal aufnehmen (nur wenn die Bank die alte Datei nicht angenommen hat)</label>' : '') +
+        '<div class="a-modal-fuss"><button class="a-btn" id="ls-csv" style="margin-right:auto">Liste mit Bankdaten (CSV)</button><button class="a-btn" data-zu>Abbrechen</button>' +
+        '<button class="a-btn primaer" id="ls-los"' + (raus.length && !vereinFehlt.length ? '' : ' disabled') + '>SEPA-Datei für ' + (raus.length === 1 ? '1 Rechnung' : raus.length + ' Rechnungen') + ' (' + H.geld(H.eur(summe)) + ')</button></div>';
+      const er = el.querySelector('#ls-erneut'); if (er) er.addEventListener('change', zeichnen);
+      el.querySelector('#ls-csv').addEventListener('click', () => csvDownload('getraenke-lastschrift.csv', [['Rechnung', 'Mitgliedsnr', 'Kontoinhaber', 'IBAN', 'BIC', 'Mandatsreferenz', 'Mandatsdatum', 'Betrag', 'Verwendungszweck', 'Einzug am', 'Hinweis']]
+        .concat(posten.map((p) => [p.r.nr, p.r.empfaenger.nr, p.b.kontoinhaber || p.r.empfaenger.vorname + ' ' + p.r.empfaenger.nachname, String(p.b.iban || '').replace(/\s/g, ''), p.b.bic || '', p.ref, H.datum(p.b.mandat_datum), zahl(p.r.summe),
+          'Getraenke ' + p.r.nr, H.datum(p.r.faellig), p.fehlt.join(', ') || (p.lauf ? 'schon in ' + p.lauf.id : '')]))));
+      el.querySelector('#ls-los').addEventListener('click', async (ev) => {
+        const k = ev.currentTarget; if (k.disabled) return; k.disabled = true;
+        if (!confirm('Lastschrift-Datei für ' + raus.length + (raus.length === 1 ? ' Rechnung' : ' Rechnungen') + ' über ' + H.geld(H.eur(summe)) + ' erstellen?\n\nDanach im Online-Banking als Sammellastschrift hochladen.')) { k.disabled = false; return; }
+        const heuteT = heute(); const nachTag = new Map();
+        raus.forEach((p) => { const t = p.r.faellig < heuteT ? heuteT : p.r.faellig; if (!nachTag.has(t)) nachTag.set(t, []); nachTag.get(t).push(p); });
+        const neu = [];
+        nachTag.forEach((liste, faellig) => {   // je Einzugstag eine Datei, damit der Termin stimmt
+          const id = 'SSV-G-SEPA-' + heuteT + '-' + (laeufe.length + neu.length + 1);
+          const xml = SEPA.erzeugen(verein, liste.map((p) => ({ betrag: p.r.summe, mandat_ref: p.ref, mandat_datum: p.b.mandat_datum, name: p.b.kontoinhaber || (p.r.empfaenger.vorname + ' ' + p.r.empfaenger.nachname),
+            iban: p.b.iban, bic: p.b.bic, zweck: 'Getraenke ' + p.r.nr + ' ' + H.datum(p.r.von) + '-' + H.datum(p.r.bis), e2e: p.r.nr })), faellig, id);
+          dateiDownload(id + '.xml', xml, 'application/xml');
+          neu.push({ id, datum: heuteT, faellig, anzahl: liste.length, summe: H.eur(liste.reduce((x, p) => x + H.ct(p.r.summe), 0)), ids: liste.map((p) => p.r.id) });
+        });
+        try { await S.einstellungenSpeichern({ sepa_laeufe: laeufe.concat(neu) }); } catch (x) { toast('Datei erstellt, aber nicht vermerkt: ' + x.message, 'fehler'); }
+        zu(); toast(raus.length + (raus.length === 1 ? ' Lastschrift' : ' Lastschriften') + ' in ' + neu.length + (neu.length === 1 ? ' Datei' : ' Dateien') + ' erstellt.');
+        if (nachher) nachher();
+      });
+    };
+    zeichnen();
   }
 
   /* ---------------------------------------------------------- Einstellungen */

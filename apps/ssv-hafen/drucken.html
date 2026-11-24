@@ -18,7 +18,9 @@
   .r-verein { text-align: right; font-size: 9pt; color: #444; } .r-verein strong { display: block; font-size: 13pt; color: var(--navy); }
   .r-absender { font-size: 7.5pt; color: #666; text-decoration: underline; margin: 9mm 0 2mm; }
   .r-adresse { min-height: 26mm; font-size: 10.5pt; }
-  .r-meta { display: grid; grid-template-columns: auto auto; gap: 1mm 6mm; justify-content: end; margin: -24mm 0 8mm; font-size: 9.5pt; } .r-meta span { color: #555; }
+  /* Rechnungsangaben rechts neben der Anschrift – feste Höchstbreite, lange Werte (z. B. Veranstaltungstitel) brechen in der rechten Spalte um */
+  .r-meta { display: grid; grid-template-columns: auto minmax(0, 58mm); gap: 1mm 6mm; justify-content: end; max-width: 90mm; margin: -24mm 0 8mm auto; font-size: 9.5pt; } .r-meta span { color: #555; } .r-meta > * { overflow-wrap: anywhere; }
+  .nw { white-space: nowrap; }
   .blatt h1 { font-size: 17pt; margin: 0 0 4mm; }
   .r-tab { width: 100%; border-collapse: collapse; margin: 4mm 0; }
   .r-tab th { text-align: left; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .06em; color: #555; border-bottom: 1px solid #333; padding: 2mm 1.5mm; }
@@ -52,9 +54,14 @@
   .bereich .b-erl td { color: #666; } .bereich .b-erl strong { font-weight: 600; text-decoration: line-through; text-decoration-color: rgba(0,0,0,.35); }
   .bereich .b-anz { font-family: "Inter", sans-serif; font-size: 8.5pt; color: #888; font-weight: 400; }
   .b-kauf { list-style: none; margin: 1mm 0 2mm; padding: 0; columns: 2; column-gap: 8mm; } .b-kauf li { padding: 1mm 0; break-inside: avoid; } .b-kauf small { color: #666; }
+  .bereich .b-tab + .b-klein { break-before: avoid; } .b-ende { break-inside: avoid; }   /* Fußnote bleibt an der Tabelle, Fußzeile nie allein auf einem Blatt */
   .b-box { display: inline-block; width: 3.2mm; height: 3.2mm; border: 1px solid #333; border-radius: .6mm; margin-right: 2.2mm; vertical-align: -.4mm; }
   /* Lange Listen laufen über mehrere Seiten: dann mit Seitenrand oben/unten, Fußzeile am Ende */
-  @media print { @page lang { margin: 12mm 0 14mm; } .blatt.mehrseitig { page: lang; min-height: 0; padding-top: 1mm; padding-bottom: 4mm; } .blatt.mehrseitig .r-fuss { position: static; margin-top: 8mm; } .b-tab thead { display: table-header-group; } }
+  @media print { @page lang { margin: 12mm 0 14mm; } .blatt.mehrseitig { page: lang; min-height: 0; padding-top: 1mm; padding-bottom: 4mm; } .blatt.mehrseitig .r-fuss { position: static; margin-top: 8mm; } .b-tab thead { display: table-header-group; }
+    /* Querformat (Belegungsplan Winterlager): eigene Seite A4 quer mit Rand oben/unten */
+    @page quer { size: A4 landscape; margin: 12mm 0 14mm; } .blatt.quer.mehrseitig { page: quer; min-height: 0; }
+    /* Rechnung mit sehr vielen Positionen: läuft mit Rand und wiederholtem Spaltenkopf auf weitere Blätter, Blatt 1 bleibt wie gewohnt (Anschrift im Fenster) */
+    .blatt.mehrseitig.r-lang { padding-top: 6mm; } .r-lang .r-tab thead { display: table-header-group; } .r-lang .r-tab tr { break-inside: avoid; } .r-lang .r-tab tfoot { display: table-row-group; } .r-lang .r-zahlung, .r-lang .r-zahlung ~ p { break-inside: avoid; } .r-lang .r-zahlung ~ p + p { break-before: avoid; } }
   @media print { @page { margin: 0; } body { background: #fff; } .leiste { display: none; } .blatt { margin: 0; box-shadow: none; page-break-after: always; } .blatt:last-child { page-break-after: auto; } }
   @media screen and (max-width: 840px) { .blatt { zoom: .5; } }
 </style>

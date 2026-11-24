@@ -49,7 +49,7 @@
     const l = (d.mitteilungen || []).filter((x) => (!x.gueltig_bis || x.gueltig_bis >= heute) && (x.zielgruppe === 'alle' || (x.zielgruppe === 'bootseigner' && eigner) || (x.zielgruppe === 'liegeplatz' && lieger)) && !ausgeblendet().includes(x.id))
       .sort((x, y) => (y.wichtig ? 1 : 0) - (x.wichtig ? 1 : 0) || String(y.erstellt).localeCompare(String(x.erstellt)));
     return l.map((x) => '<div class="mitteilung' + (x.wichtig ? ' wichtig' : '') + '" role="' + (x.wichtig ? 'alert' : 'status') + '"><div><strong>' + (x.wichtig ? '⚠ ' : '') + esc(x.titel) + '</strong>' + (x.text ? '<p>' + esc(x.text) + '</p>' : '') +
-      '<small>' + new Date(x.erstellt).toLocaleDateString('de-DE') + (x.erstellt_von ? ' · ' + esc(x.erstellt_von) : '') + '</small></div><button class="btn klein" data-mweg="' + x.id + '" aria-label="Mitteilung ausblenden">Gelesen</button></div>').join('');
+      '<small>' + H.datum(x.erstellt) + (x.erstellt_von ? ' · ' + esc(x.erstellt_von) : '') + '</small></div><button class="btn klein" data-mweg="' + x.id + '" aria-label="Mitteilung ausblenden">Gelesen</button></div>').join('');
   }
   document.addEventListener('click', (e) => { const b = e.target.closest('[data-mweg]'); if (!b) return; try { localStorage.setItem(WEG, JSON.stringify(ausgeblendet().concat([b.dataset.mweg]).slice(-50))); } catch (x) { /* egal */ } b.closest('.mitteilung').remove(); });
   /* Veranstaltungen: zu- oder absagen bis zur Anmeldefrist (Regeln wie in der Datenbank, siehe HAFEN.zusageSetzen) */
@@ -172,7 +172,10 @@
     const b = boote[0]; const sommer = b && Q.belegungBoot(SAISON, 'sommer', b.id); const winter = b && Q.belegungBoot(SAISON, 'winter', b.id);
     const platzS = sommer && Q.platz(sommer.platz_id); const platzW = winter && Q.platz(winter.platz_id);
     const aw = d.abwesenheiten.filter((a) => b && a.boot_id === b.id).sort((x, y) => y.von.localeCompare(x.von));
-    const awAktuell = aw.find((a) => a.bis >= heute);
+    // laufende Abwesenheit (heute zwischen von und bis), sonst die nächste geplante – aw ist absteigend nach „von“ sortiert
+    const awLaufend = aw.find((a) => a.von <= heute && a.bis >= heute);
+    const awGeplant = aw.slice().reverse().find((a) => a.von > heute);
+    const awAktuell = awLaufend || awGeplant;
     const res = d.rechnungen.filter((r) => r.mitglied_id === mid && !r.storniert_am);
     const warte = d.warteliste.filter((w) => w.status === 'wartend').sort((x, y) => x.datum.localeCompare(y.datum));
     let meinW = warte.findIndex((w) => w.mitglied_id === mid);
@@ -208,14 +211,14 @@
     const meineStunden = (d.arbeitsdienst || []).filter((a) => a.mitglied_id === mid && String(a.datum).startsWith(String(SAISON))).sort((x, y) => y.datum.localeCompare(x.datum));
     const kommend = (d.arbeitseinsaetze || []).filter((x) => x.datum >= heute).sort((x, y) => x.datum.localeCompare(y.datum));
     const STAND = { eingereicht: ['wird geprüft', 'gast'], abgelehnt: ['nicht anerkannt', 'rot'] };
-    // Eigene Arbeitsbereiche (Kran, Steg …) mit Aufgaben und Ansprechpartner – Datenbank liefert sie fertig, die Demo rechnet selbst
+    // Eigene Arbeitsgruppen (intern „Arbeitsbereiche“: Kran, Steg …) mit Aufgaben und Ansprechpartner – Datenbank liefert sie fertig, die Demo rechnet selbst
     const meineBereiche = d.meine_bereiche || (d.arbeitsbereich_mitglieder || []).filter((z) => z.mitglied_id === mid).map((z) => {
       const b = (d.arbeitsbereiche || []).find((x) => x.id === z.bereich_id); if (!b || b.aktiv === false) return null;
       const leitung = d.arbeitsbereich_mitglieder.filter((y) => y.bereich_id === b.id && y.rolle === 'leitung').map((y) => Q.mitglied(y.mitglied_id)).filter(Boolean).map((x) => ({ name: x.vorname + ' ' + x.nachname, tel: x.tel }));
       return { ...b, rolle: z.rolle, leitung };
     }).filter(Boolean);
     const telLink = (t) => { t = String(t || '').replace(/[^\d+]/g, ''); return t.startsWith('0') ? '+49' + t.slice(1) : t; };
-    const bereicheHtml = meineBereiche.length ? '<h3 style="margin:14px 0 6px;font-size:15px">Deine Arbeitsbereiche</h3>' + meineBereiche.map((b) =>
+    const bereicheHtml = meineBereiche.length ? '<h3 style="margin:14px 0 6px;font-size:16px">Deine Arbeitsgruppen</h3>' + meineBereiche.map((b) =>
       '<div class="mein-bereich"><div class="mein-bereich-kopf"><strong>' + esc(b.name) + '</strong>' + (b.rolle === 'leitung' ? ' <span class="tag ok">du leitest</span>' : '') + '</div>' +
       ((b.leitung || []).length && b.rolle !== 'leitung' ? '<p>Ansprechpartner: ' + b.leitung.map((l) => esc(l.name) + (l.tel ? ' · <a href="tel:' + esc(telLink(l.tel)) + '">' + esc(l.tel) + '</a>' : '')).join(', ') + '</p>' : '') +
       (b.treffpunkt ? '<p><small>' + esc(b.treffpunkt) + '</small></p>' : '') +
@@ -239,9 +242,9 @@
         '<dt>Versicherung</dt><dd>' + esc(b.versicherung || '–') + (b.vers_bis ? ', bis ' + H.datum(b.vers_bis) : '') + '<br><span class="tag ' + nw[1] + '">' + nw[0] + '</span></dd><dt>Kfz</dt><dd>' + esc(m.kfz || '–') + '</dd></dl></div>' +
         (platzS && !platzS.bez ? '<div id="miniplan" class="plan-flaeche mini-plan"></div><p style="font-size:12px;color:var(--muted);margin:4px 0 0">' + (inSaisonF() ? 'Hafenplan heute' : 'Dein Sommerplatz ' + SAISON + ' (Saison beendet)') + '</p>' : '') +
         '<div class="aktionen" style="margin-top:12px"><button class="btn primaer" id="nachweis">Versicherungsnachweis hochladen</button><button class="btn" id="daten">Daten aktualisieren</button></div>' : '';
-    const awTabelle = aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td>' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : a.bis >= heute ? '<button class="btn klein" data-weg="' + a.id + '">Früher zurück</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '';
+    const awTabelle = aw.length ? '<table class="tab" style="margin-top:12px"><tbody>' + aw.map((a) => '<tr' + (a.bis < heute ? ' class="blass"' : '') + '><td class="nw">' + H.kurz(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.notiz || '') + '</td><td class="r">' + (a.von > heute ? '<button class="btn klein gefahr" data-weg="' + a.id + '">Löschen</button>' : a.bis >= heute ? '<button class="btn klein" data-weg="' + a.id + '">Früher zurück</button>' : '') + '</td></tr>').join('') + '</tbody></table>' : '';
     const schildInhalt = wasser && !inSaison ? '<p style="margin:0">Das grüne Schild gibt es, solange die Boote im Wasser sind – wieder ab dem Auslagern' + (auslagernNeu ? ' am ' + H.datum(auslagernNeu) : '') + '. ' + (platzW ? 'Dein Boot steht gerade im Winterlager (' + esc(platzW.bez) + ').' : 'Im Winter ' + SAISON + '/' + yy + ' hast du bei uns keinen Landplatz gebucht.') + '</p>' + (aw.some((a) => a.bis >= heute) ? awTabelle.replace(/<tr class="blass">.*?<\/tr>/g, '') : '') : wasser ? '<p style="margin-top:0;color:var(--muted)">Unterwegs? Dann wird dein Platz grün und der Hafenmeister kann ihn an Gäste geben. Bitte trotzdem das Schild am Steg drehen.</p>' +
-        '<form id="awf" class="form"><label class="feld">ab<input type="date" name="von" required value="' + heute + '"></label><label class="feld">zurück am<input type="date" name="bis" required></label><label class="feld voll">Ziel (optional)<input name="notiz" placeholder="z. B. Dänische Südsee"></label></form>' +
+        '<form id="awf" class="form"><label class="feld">ab<input type="date" name="von" required min="' + heute + '" value="' + heute + '"></label><label class="feld">zurück am<input type="date" name="bis" required min="' + heute + '"></label><label class="feld voll">Ziel (optional)<input name="notiz" placeholder="z. B. Dänische Südsee"></label></form>' +
         '<div class="aktionen" style="margin-top:10px"><button class="btn gruen" id="awok">Abwesenheit melden</button></div>' +
         awTabelle : '';
 
@@ -250,7 +253,7 @@
       mitteilungenHtml(!!b, !!wasser) +
       (vs !== 'ok' && b ? '<p class="hinweis warn">Deine Bootsversicherung ' + (vs === 'bald' ? 'läuft am ' + H.datum(b.vers_bis) + ' ab' : vs === 'fehlt' ? 'ist noch nicht hinterlegt' : 'ist am ' + H.datum(b.vers_bis) + ' abgelaufen') + '. Bitte unter „Mein Boot“ einen neuen Nachweis hochladen.</p>' : '') +
       '<div class="blick">' + kachel('rechnungen', 'Rechnungen', '…', 'wird geladen …', 'k-offen') +
-        (b && !inSaison && platzW ? kachel('boot', 'Winterlager', esc(platzW.bez), SAISON + '/' + yy) : platzS ? kachel(wasser ? 'schild' : 'boot', 'Liegeplatz', platzText, !inSaison ? 'Sommer ' + SAISON + ' (beendet)' : awAktuell ? 'grün bis ' + H.kurz(awAktuell.bis) : (platzS.bez ? 'an Land' : H.BRUECKE[platzS.bruecke])) : meinW >= 0 ? kachel('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), 'seit ' + H.datum(warte[meinW].datum)) : kachel('rechnungen', 'Mitglied seit', m.eintritt ? m.eintritt.slice(0, 4) : '–', H.ART[m.art])) +
+        (b && !inSaison && platzW ? kachel('boot', 'Winterlager', esc(platzW.bez), SAISON + '/' + yy) : platzS ? kachel(wasser ? 'schild' : 'boot', 'Liegeplatz', platzText, !inSaison ? 'Sommer ' + SAISON + ' (beendet)' : awLaufend ? 'grün bis ' + H.kurz(awLaufend.bis) : awGeplant ? 'grün ab ' + H.kurz(awGeplant.von) : (platzS.bez ? 'an Land' : H.BRUECKE[platzS.bruecke])) : meinW >= 0 ? kachel('warteliste', 'Warteliste', 'Platz ' + (meinW + 1), 'seit ' + H.datum(warte[meinW].datum)) : kachel('rechnungen', 'Mitglied seit', m.eintritt ? m.eintritt.slice(0, 4) : '–', H.ART[m.art])) +
         (KASSE ? kachel('kasse', 'Verbrauch ' + new Date().toLocaleDateString('de-DE', { month: 'long' }), '…', 'Getränke · noch nicht abgerechnet', 'k-getraenke') : '') + '</div>' +
       '<div class="mein-raster"><div>' +
       (b ? sektion('boot', 'Mein Boot', '„' + esc(b.name) + '“' + (platzText ? ' · ' + platzText : ''), bootInhalt) : '') +
@@ -263,13 +266,13 @@
         (DBM && d.einstellungen.push_aktiv ? '<h3 style="margin:16px 0 6px;font-size:15px">Benachrichtigungen</h3><div id="push-box"><p class="leer">…</p></div>' : '') +
         '<p class="hinweis" style="margin-top:12px">Neue Bankverbindung oder Fragen zu Rechnungen? Schreib an <a href="mailto:' + esc(d.einstellungen.verein_email) + '">' + esc(d.einstellungen.verein_email) + '</a> – für ein neues Konto braucht es ein neues Lastschriftmandat.</p>') +
       '</div><div>' +
-      (wasser ? sektion('schild', 'Grünes Schild', awAktuell ? 'unterwegs ' + H.kurz(awAktuell.von) + '–' + H.kurz(awAktuell.bis) : 'Platz frei melden', schildInhalt, 'gruen-box') : '') +
+      (wasser ? sektion('schild', 'Grünes Schild', awLaufend ? 'unterwegs ' + H.kurz(awLaufend.von) + '–' + H.kurz(awLaufend.bis) : awGeplant ? 'geplant ' + H.kurz(awGeplant.von) + '–' + H.kurz(awGeplant.bis) : 'Platz frei melden', schildInhalt, 'gruen-box') : '') +
       (vers.length ? sektion('veranstaltungen', 'Veranstaltungen', vUnbeantwortet.length ? '<span class="tag warn">' + (vUnbeantwortet.length === 1 ? '1 Einladung' : vUnbeantwortet.length + ' Einladungen') + ' offen</span>' : esc(vers[0].titel) + ' ' + H.kurz(vers[0].datum),
         vers.map(vKarte).join('') + '<p class="hinweis" style="margin-top:12px">Zu- und Absagen gehen bis zur Anmeldefrist. Der Verein sieht, wer kommt; andere Mitglieder sehen nur die Zahl.</p>', '', vUnbeantwortet.length ? 'immer' : false) : '') +
       sektion('rechnungen', 'Meine Rechnungen', '', '<div id="rechnungen"></div><p class="hinweis" style="margin-top:12px">Mit Lastschriftmandat wird alles eingezogen – du musst nichts tun. Fragen? Einfach den Kassenwart ansprechen.</p>', '', true) +
-      (termine.length ? sektion('termine', 'Meine Termine', esc(termine[0][1]) + ' ' + H.kurz(termine[0][0]), '<table class="tab"><tbody>' + termine.map(([t, txt, zus]) => '<tr><td class="nw">' + H.datum(t) + '</td><td>' + esc(txt) + (zus ? '<br><small style="color:var(--muted)">' + esc(zus) + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>') : '') +
+      (termine.length ? sektion('termine', 'Meine Termine', H.kurz(termine[0][0]) + ' · ' + esc(termine[0][1]), '<table class="tab"><tbody>' + termine.map(([t, txt, zus]) => '<tr><td class="nw">' + H.datum(t) + '</td><td>' + esc(txt) + (zus ? '<br><small style="color:var(--muted)">' + esc(zus) + '</small>' : '') + '</td></tr>').join('') + '</tbody></table>') : '') +
       (ad ? sektion('arbeitsdienst', 'Arbeitsdienst ' + SAISON, ad.befreit ? 'befreit' : H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' von ' + ad.soll + ' Std.', adInhalt) : '') +
-      (!ad && meineBereiche.length ? sektion('arbeitsbereiche', 'Meine Arbeitsbereiche', meineBereiche.map((b) => b.name).join(', '), bereicheHtml.replace('<h3 style="margin:14px 0 6px;font-size:15px">Deine Arbeitsbereiche</h3>', '')) : '') +
+      (!ad && meineBereiche.length ? sektion('arbeitsbereiche', 'Meine Arbeitsgruppen', meineBereiche.map((b) => b.name).join(', '), bereicheHtml.replace('<h3 style="margin:14px 0 6px;font-size:16px">Deine Arbeitsgruppen</h3>', '')) : '') +
       sektion('schaden', 'Schaden melden', 'Steg, Strom, Kran …', '<p style="margin-top:0">Etwas kaputt im Hafen? Kurz melden – die Funktionsträger sehen es sofort und kümmern sich.</p><div class="aktionen"><button class="btn" id="schaden">Schaden melden</button></div>') +
       '</div></div>';
 
@@ -312,7 +315,7 @@
     if (KASSE) kasseZeigen(m, rechnungenZeigen);
     pushStand().catch(() => {});
     // Schnellknopf am Handy: in der Saison „Platz frei melden“, sonst „Stunden melden“ (nur wenn passend)
-    let sk = $('#schnell'); const aktion = wasser && inSaison && !awAktuell ? ['Platz frei melden', 'schild'] : ad && !ad.befreit ? ['Stunden melden', 'stunden'] : null;
+    let sk = $('#schnell'); const aktion = wasser && inSaison && !awLaufend ? ['Platz frei melden', 'schild'] : ad && !ad.befreit ? ['Stunden melden', 'stunden'] : null;
     if (!aktion) { if (sk) sk.remove(); } else {
       if (!sk) { sk = document.createElement('button'); sk.id = 'schnell'; sk.className = 'schnell'; sk.type = 'button'; document.body.appendChild(sk); }
       sk.textContent = aktion[0]; sk.onclick = () => { if (aktion[1] === 'stunden') return stundenDialog('');
@@ -320,7 +323,7 @@
     }
     // Unterlagen, die der Verein für mich hinterlegt hat (Verträge, Nachweise)
     HF.dok.liste({ mitglied_id: mid }).then((l) => { const box = $('#meine-dok'); if (!box || !l.length) return;
-      box.innerHTML = '<h3 style="margin:16px 0 6px;font-size:15px">Meine Unterlagen</h3><table class="tab"><tbody>' + l.map((x) => '<tr><td>' + esc(x.name) + '<br><small style="color:var(--muted)">' + new Date(x.hochgeladen).toLocaleDateString('de-DE') + '</small></td><td class="r"><button class="btn klein" data-dok="' + x.id + '">Ansehen</button></td></tr>').join('') + '</tbody></table>';
+      box.innerHTML = '<h3 style="margin:16px 0 6px;font-size:15px">Meine Unterlagen</h3><table class="tab"><tbody>' + l.map((x) => '<tr><td>' + esc(x.name) + '<br><small style="color:var(--muted)">' + H.datum(x.hochgeladen) + '</small></td><td class="r"><button class="btn klein" data-dok="' + x.id + '">Ansehen</button></td></tr>').join('') + '</tbody></table>';
       box.addEventListener('click', (e) => { const a = e.target.closest('[data-dok]'); if (a) HF.datei.oeffnen(a.dataset.dok).catch((x) => toast(x.message)); });
     }).catch(() => {});
 
@@ -328,42 +331,87 @@
       const svg = PLAN.zeichnen($('#miniplan'), { modus: 'sommer', saison: SAISON, datum: heute >= sd.auslagern && heute < sd.einlagern ? heute : (DBM ? H.tag(new Date(new Date(sd.einlagern + 'T12:00:00').getTime() - 864e5)) : '2026-08-15'), ansicht: platzS.bruecke === 'laengs' ? 'gesamt' : platzS.bruecke, markiere: platzS.id });
       svg.style.pointerEvents = 'none';
     }
-    const awok = $('#awok'); if (awok) awok.addEventListener('click', () => {
-      const f = $('#awf'); if (!f.reportValidity()) return; const x = Object.fromEntries(new FormData(f));
-      if (x.bis < x.von) return toast('Das Rückkehrdatum liegt vor der Abfahrt.');
-      d.abwesenheiten.push({ id: H.uid('AW'), boot_id: b.id, platz_id: sommer.platz_id, von: x.von, bis: x.bis, notiz: x.notiz, gemeldet: 'Mitglied (Mein SSV)' });
-      HF.sichern().then(() => toast('Gemeldet – gute Fahrt!'), (e) => toast('Nicht gespeichert: ' + e.message)); zeigen();
-    });
+    const awok = $('#awok'); if (awok) {
+      const awf = $('#awf'); awf.von.addEventListener('change', () => { awf.bis.min = awf.von.value > heute ? awf.von.value : heute; });
+      awok.addEventListener('click', async () => {
+        const x = Object.fromEntries(new FormData(awf));
+        const ueber = x.von && x.bis ? aw.find((a) => a.von <= x.bis && a.bis >= x.von) : null;
+        if (!feldPruefen(awf, {
+          von: !x.von ? 'Bitte angeben, ab wann du unterwegs bist.' : x.von < heute ? 'Das Datum liegt in der Vergangenheit – bitte ab heute angeben.' : '',
+          bis: !x.bis ? 'Bitte angeben, wann du zurück bist.' : x.bis < heute ? 'Der Zeitraum liegt in der Vergangenheit.' : x.bis < x.von ? 'Das Rückkehrdatum liegt vor der Abfahrt.'
+            : ueber ? 'Für diese Tage ist schon eine Abwesenheit gemeldet (' + H.kurz(ueber.von) + ' – ' + H.datum(ueber.bis) + '). Bitte die vorhandene löschen oder andere Tage wählen.' : ''
+        })) return;
+        const neu = { id: H.uid('AW'), boot_id: b.id, platz_id: sommer.platz_id, von: x.von, bis: x.bis, notiz: x.notiz, gemeldet: 'Mitglied (Mein SSV)' };
+        awok.disabled = true; d.abwesenheiten.push(neu);
+        try { await HF.sichern(); } catch (e) { d.abwesenheiten = d.abwesenheiten.filter((a) => a !== neu); awok.disabled = false; return toast('Nicht gespeichert: ' + e.message); }
+        AUF.schild = true; toast('Gemeldet – gute Fahrt!'); zeigen();
+      });
+    }
     document.querySelectorAll('[data-weg]').forEach((btn) => btn.addEventListener('click', () => abwesenheitBeenden(aw.find((a) => a.id === btn.dataset.weg))));
     $('#meine-daten').addEventListener('click', () => {
-      const el = modal('<h2>Meine Daten ändern</h2><form id="mf" class="form">' +
+      const el = modal('<h2>Meine Daten ändern</h2><form id="mf" class="form" novalidate>' +
         '<label class="feld voll">Straße und Hausnummer<input name="strasse" autocomplete="street-address" value="' + esc(m.strasse || '') + '"></label>' +
-        '<label class="feld">PLZ<input name="plz" inputmode="numeric" maxlength="5" autocomplete="postal-code" value="' + esc(m.plz || '') + '"></label><label class="feld">Ort<input name="ort" autocomplete="address-level2" value="' + esc(m.ort || '') + '"></label>' +
+        '<label class="feld">PLZ<input name="plz" inputmode="numeric" maxlength="5" pattern="[0-9]{4,5}" autocomplete="postal-code" value="' + esc(m.plz || '') + '"></label><label class="feld">Ort<input name="ort" autocomplete="address-level2" value="' + esc(m.ort || '') + '"></label>' +
         '<label class="feld">Telefon<input name="tel" type="tel" autocomplete="tel" value="' + esc(m.tel || '') + '"></label><label class="feld">E-Mail<input name="email" type="email" autocomplete="email" value="' + esc(m.email || '') + '"></label></form>' +
         '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="mok">Speichern</button></div>');
-      $('#mok', el).addEventListener('click', async () => {
-        const x = Object.fromEntries(new FormData($('#mf', el)));
-        if (DBM) { try { await HF.meinDatenAendern(x); } catch (e) { return toast('Nicht gespeichert: ' + e.message); } }
-        Object.assign(m, x); if (!DBM) HF.sichern();
+      const f = $('#mf', el); const knopf = $('#mok', el);
+      knopf.addEventListener('click', async () => {
+        const x = Object.fromEntries(Object.entries(Object.fromEntries(new FormData(f))).map(([k, v]) => [k, String(v).trim()]));
+        if (!feldPruefen(f, { plz: plzFehler(x.plz), email: mailFehler(x.email, m.email) })) return;
+        const alt = { strasse: m.strasse, plz: m.plz, ort: m.ort, tel: m.tel, email: m.email };
+        knopf.disabled = true;
+        try {
+          if (DBM) await HF.meinDatenAendern(x);
+          Object.assign(m, x);
+          if (!DBM) await HF.sichern();
+        } catch (e) { Object.assign(m, alt); knopf.disabled = false; return toast('Nicht gespeichert: ' + e.message); }
         $('#modal').innerHTML = ''; toast('Gespeichert – danke!'); zeigen();
       });
     });
     const dat = $('#daten'); if (dat) dat.addEventListener('click', () => {
-      const el = modal('<h2>Daten aktualisieren</h2><form id="df" class="form">' +
-        '<label class="feld">Gewicht (t)<input name="gewicht_t" inputmode="decimal" value="' + b.gewicht_t + '"></label><label class="feld">Kfz-Kennzeichen<input name="kfz" value="' + esc(m.kfz || '') + '"></label>' +
+      const el = modal('<h2>Daten aktualisieren</h2><form id="df" class="form" novalidate>' +
+        '<label class="feld">Gewicht (t)<input name="gewicht_t" inputmode="decimal" required value="' + esc(H.zahl(b.gewicht_t, 1)) + '"></label><label class="feld">Kfz-Kennzeichen<input name="kfz" value="' + esc(m.kfz || '') + '"></label>' +
         '<label class="feld">Telefon<input name="tel" type="tel" value="' + esc(m.tel || '') + '"></label><label class="feld">E-Mail<input name="email" type="email" value="' + esc(m.email || '') + '"></label></form>' +
         '<p class="hinweis">Bankverbindung ändern? Bitte formlos an den Kassenwart – dafür braucht es ein neues SEPA-Mandat.</p><div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="dok">Speichern</button></div>');
-      $('#dok', el).addEventListener('click', async () => {
-        const x = Object.fromEntries(new FormData($('#df', el)));
-        if (DBM) {   // Mitglieder ändern nur über die Datenbank-Funktion (nur eigene Kontakt- und Bootsdaten)
-          try { await HF.meinDatenAendern({ tel: x.tel, email: x.email, kfz: x.kfz, boot_id: b.id, gewicht_t: x.gewicht_t }); }
-          catch (e) { return toast('Nicht gespeichert: ' + e.message); }
-        }
-        b.gewicht_t = Number(String(x.gewicht_t).replace(',', '.')) || b.gewicht_t; m.kfz = x.kfz; m.tel = x.tel; m.email = x.email;
-        if (!DBM) HF.sichern();
+      const f = $('#df', el); const knopf = $('#dok', el);
+      knopf.addEventListener('click', async () => {
+        const x = Object.fromEntries(Object.entries(Object.fromEntries(new FormData(f))).map(([k, v]) => [k, String(v).trim()]));
+        const g = Number(x.gewicht_t.replace(/\s/g, '').replace(',', '.'));
+        if (!feldPruefen(f, {
+          gewicht_t: !x.gewicht_t ? 'Bitte das Gewicht deines Boots in Tonnen angeben, z. B. 4,5.' : !(g > 0 && g <= 60) ? 'Bitte das Gewicht in Tonnen angeben – eine Zahl zwischen 0,1 und 60, z. B. 4,5.' : '',
+          email: mailFehler(x.email, m.email)
+        })) return;
+        const alt = { gewicht_t: b.gewicht_t, kfz: m.kfz, tel: m.tel, email: m.email };
+        knopf.disabled = true;
+        try {
+          // Mitglieder ändern nur über die Datenbank-Funktion (nur eigene Kontakt- und Bootsdaten)
+          if (DBM) await HF.meinDatenAendern({ tel: x.tel, email: x.email, kfz: x.kfz, boot_id: b.id, gewicht_t: String(g) });
+          b.gewicht_t = g; m.kfz = x.kfz; m.tel = x.tel; m.email = x.email;
+          if (!DBM) await HF.sichern();
+        } catch (e) { b.gewicht_t = alt.gewicht_t; Object.assign(m, { kfz: alt.kfz, tel: alt.tel, email: alt.email }); knopf.disabled = false; return toast('Nicht gespeichert: ' + e.message); }
         $('#modal').innerHTML = ''; toast('Gespeichert.'); zeigen();
       });
     });
+    document.querySelectorAll('.sek-info').forEach((x) => { if (x.textContent) x.title = x.textContent; });
+  }
+  /* Eingaben prüfen: Meldung steht verständlich direkt unter dem Feld, gespeichert wird nur, wenn alles passt */
+  const MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const mailFehler = (v, vorher) => !v ? (vorher ? 'Bitte deine E-Mail-Adresse angeben – an sie schicken wir deine Rechnungen.' : '') : !MAIL.test(v) ? 'Das ist keine gültige E-Mail-Adresse. Bitte so schreiben: name@beispiel.de' : '';
+  const plzFehler = (v) => v && !/^[0-9]{4,5}$/.test(v) ? 'Die Postleitzahl besteht aus 5 Ziffern (im Ausland 4), z. B. 23611.' : '';
+  function feldPruefen(form, fehler) {
+    form.querySelectorAll('.feld-fehler').forEach((x) => x.remove());
+    let erstes = null;
+    Array.from(form.elements).forEach((i) => {
+      if (!i.name || !(i.name in fehler)) return;
+      const t = fehler[i.name] || ''; i.setCustomValidity(t);
+      if (!t) { i.removeAttribute('aria-invalid'); i.removeAttribute('aria-describedby'); return; }
+      const hinweis = document.createElement('small'); hinweis.className = 'feld-fehler'; hinweis.id = 'fehler-' + form.id + '-' + i.name; hinweis.setAttribute('role', 'alert'); hinweis.textContent = t;
+      i.setAttribute('aria-invalid', 'true'); i.setAttribute('aria-describedby', hinweis.id); i.insertAdjacentElement('afterend', hinweis);
+      if (!i.dataset.pruefung) { i.dataset.pruefung = '1'; i.addEventListener('input', () => { i.setCustomValidity(''); i.removeAttribute('aria-invalid'); const h = document.getElementById('fehler-' + form.id + '-' + i.name); if (h) h.remove(); }); }
+      erstes = erstes || i;
+    });
+    if (erstes) { erstes.focus(); return false; }
+    return true;
   }
   /* Früher zurück (oder geplante Abwesenheit löschen): ab heute ist der Platz wieder belegt.
    * Liegt dort noch ein Gast, wird der Hafenmeister gebraucht – das sagen wir deutlich. */
@@ -552,8 +600,8 @@
 
   // Änderungen aus anderen Fenstern (Verwaltung, Kasse, Gast-Anmeldung) übernehmen
   window.addEventListener('storage', (e) => {
-    if (e.key === 'ssv-hafen-demo-v1') { d = HF.laden(); zeigen(); }
-    else if (e.key === 'ssvg-demo-v1') zeigen();
+    if (e.key === 'ssv-hafen-demo-v1') { d = HF.laden(); if (!Q.mitglied(mid)) { location.reload(); return; } zeigen(); }   // Demo anderswo zurückgesetzt: Mitglied gibt es nicht mehr
+    else if (e.key === 'ssvg-demo-v1' && Q.mitglied(mid)) zeigen();
   });
   zeigen();
 })();

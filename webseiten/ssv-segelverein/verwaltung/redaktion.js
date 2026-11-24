@@ -163,7 +163,10 @@
   function vorschauNeu() { const f = $('#vorschau'); if (f) f.contentWindow.location.reload(); }
 
   function seite(titel, unter, aktionen, inhalt, mitVorschau = true) {
-    const m = $('#main'); m.classList.toggle('ohne-vorschau', !mitVorschau);
+    /* #main bei jedem Aufbau durch einen leeren Klon ersetzen: so fallen die Klick-/Speicher-
+       Behandlungen des vorigen Bereichs weg und wirken nicht doppelt (oder im falschen Bereich). */
+    const alt = $('#main'); const m = alt.cloneNode(false); alt.replaceWith(m);
+    m.classList.toggle('ohne-vorschau', !mitVorschau);
     m.innerHTML = '<div class="spalte"><div class="kopf"><div><h1>' + titel + '</h1>' + (unter ? '<p>' + unter + '</p>' : '') + '</div><div class="aktionen">' + (aktionen || '') + '</div></div>' + inhalt + '</div>' + (mitVorschau ? vorschauHtml() : '');
     return m;
   }
@@ -290,7 +293,7 @@
         '<button type="button" class="btn icon" data-hoch title="nach oben">↑</button><button type="button" class="btn icon" data-runter title="nach unten">↓</button></div>' +
         '<div data-zeilen>' + (z.zeilen || []).map((r) => zeile(r)).join('') + '</div>' +
         '<div class="modal-fuss"><button type="button" class="btn klein links" data-zeile-neu>+ Zeile</button><button type="button" class="btn klein gefahr" data-karte-weg>Karte löschen</button><button class="btn primaer" type="submit">Speichern</button></div></form>').join(''));
-    function zeile(r) { return '<div class="zeilen-edit"><input name="label" value="' + esc(r.label) + '" placeholder="z. B. Mittwoch" aria-label="Bezeichnung"><input name="wert" value="' + esc(r.wert) + '" placeholder="z. B. 18–22 Uhr" aria-label="Wert"><button type="button" class="btn icon gefahr" data-zeile-weg title="Zeile entfernen">×</button></div>'; }
+    function zeile(r) { return '<div class="zeilen-edit"><input name="label" value="' + esc(r.label) + '" placeholder="z. B. Mittwoch" aria-label="Bezeichnung"><textarea name="wert" rows="2" placeholder="z. B. 18–22 Uhr" aria-label="Wert">' + esc(r.wert) + '</textarea><button type="button" class="btn icon gefahr" data-zeile-weg title="Zeile entfernen">×</button></div>'; }
     $('#neu').addEventListener('click', async () => { (I.zeiten = I.zeiten || []).push({ id: uid(), titel: 'Neue Karte', zeilen: [{ label: 'Bezeichnung', wert: 'Wert' }] }); await speichern('zeiten', 'Karte angelegt'); zeige('zeiten'); });
     m.addEventListener('click', async (e) => {
       const f = e.target.closest('form[data-z]'); if (!f) return; const i = Number(f.dataset.z);
@@ -303,7 +306,7 @@
     m.addEventListener('submit', async (e) => {
       e.preventDefault(); const f = e.target, i = Number(f.dataset.z);
       I.zeiten[i].titel = f.titel.value.trim();
-      I.zeiten[i].zeilen = [...f.querySelectorAll('.zeilen-edit')].map((z) => ({ label: z.children[0].value.trim(), wert: z.children[1].value.trim() })).filter((r) => r.label || r.wert);
+      I.zeiten[i].zeilen = [...f.querySelectorAll('.zeilen-edit')].map((z) => ({ label: z.children[0].value.trim(), wert: z.children[1].value.replace(/\s*\n\s*/g, ' ').trim() })).filter((r) => r.label || r.wert);
       speichern('zeiten');
     });
   };
@@ -363,7 +366,7 @@
     const m = seite('Vorstand', 'Personen erscheinen in der Reihenfolge dieser Liste, gruppiert nach „Gruppe“. Nach der Jahreshauptversammlung einfach anpassen.', '<button class="btn primaer" id="neu">+ Person</button>',
       '<div class="karte"><ul class="liste">' + v.map((p, i) =>
         '<li>' + (p.bild ? '<img class="daumen" src="' + esc(bild(p.bild)) + '" alt="" style="width:44px;height:58px">' : '<span class="daumen" style="width:44px;height:58px"></span>') +
-        '<div class="text"><strong>' + esc(p.name) + '</strong><small>' + esc(p.rolle) + ' · ' + esc(p.gruppe) + '</small></div>' +
+        '<div class="text"><strong>' + esc(p.name) + '</strong><small>' + esc(p.rolle) + (p.gruppe && p.gruppe !== p.rolle ? ' · ' + esc(p.gruppe) : '') + '</small></div>' +
         '<div class="knoepfe"><button class="btn icon" data-hoch="' + i + '">↑</button><button class="btn icon" data-runter="' + i + '">↓</button><button class="btn klein" data-edit="' + i + '">Bearbeiten</button></div></li>').join('') + '</ul></div>');
     $('#neu').addEventListener('click', () => personForm({ id: uid(), gruppe: v.length ? v[0].gruppe : '', rolle: '', name: '', bild: '', zusatz: '' }, -1));
     m.addEventListener('click', async (e) => {
@@ -411,6 +414,19 @@
   }
   $('#nav').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) zeige(b.dataset.tab); });
   $('#abmelden').addEventListener('click', async () => { await SP.abmelden(); start(); });
+
+  /* „Schrift größer“ – gleicher Schlüssel wie Hafen-Manager, Mein SSV und Getränkekasse (gilt für dieses Gerät) */
+  const SCHRIFT = 'ssv-schrift-gross';
+  const schriftGross = () => { try { return localStorage.getItem(SCHRIFT) === '1'; } catch (e) { return false; } };
+  function schriftZeigen() {
+    const an = schriftGross(); document.documentElement.classList.toggle('schrift-gross', an);
+    const k = $('#schrift'); k.textContent = an ? 'Schrift normal' : 'Schrift größer'; k.setAttribute('aria-pressed', String(an));
+  }
+  $('#schrift').addEventListener('click', () => {
+    const an = !schriftGross(); try { localStorage.setItem(SCHRIFT, an ? '1' : '0'); } catch (e) { /* egal */ }
+    schriftZeigen(); toast(an ? 'Schrift ist jetzt größer.' : 'Schrift ist wieder normal.');
+  });
+  schriftZeigen();
   $('#login-form').addEventListener('submit', async (e) => {
     e.preventDefault(); $('#login-fehler').textContent = '';
     try { await SP.anmelden($('#login-email').value, $('#login-pw').value); start(); } catch (err) { $('#login-fehler').textContent = err.message; }

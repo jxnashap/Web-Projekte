@@ -313,7 +313,7 @@
       this.d.mitglieder = this.d.mitglieder.filter((m) => m.id !== id); this._sichern(); return 'geloescht';
     }
     async pinSetzen(id, pin) {
-      if (!/^\d{4}$/.test(pin)) throw new Error('PIN muss vierstellig sein');
+      if (!/^\d{4}$/.test(pin)) throw new Error('Code muss vierstellig sein');
       const m = this._m(id); m.pin = pin; m.fehlversuche = 0; m.gesperrt_bis = null; this._sichern();
     }
     /* Code löschen – das Mitglied legt beim nächsten Mal an der Kasse selbst einen neuen fest */
@@ -403,6 +403,15 @@
     async einstellungen() { return { ...STANDARD_EINSTELLUNGEN, ...this.d.einstellungen }; }
     async einstellungenSpeichern(e) { this.d.einstellungen = { ...this.d.einstellungen, ...e }; this._sichern(); }
     async kasseEinrichten() { return true; }
+    /* Bankdaten für die Lastschrift: stehen im gemeinsamen Mitgliederstamm des Hafen-Managers */
+    async bankdaten(ids) {
+      const HF = window.HAFEN; let hd = null;
+      try { hd = HF && (HF.d || HF.laden()); } catch (e) { hd = null; }
+      if (!hd) return { mitglieder: [], verein: {} };
+      const he = hd.einstellungen || {};
+      return { mitglieder: hd.mitglieder.filter((m) => ids.includes(m.id)).map((m) => ({ mitglied_id: m.id, iban: m.iban || '', bic: m.bic || '', kontoinhaber: m.kontoinhaber || '', mandat_datum: m.mandat_datum || '' })),
+        verein: { iban: he.iban || '', bic: he.bic || '', glaeubiger_id: he.glaeubiger_id || '' } };
+    }
 
     /* Sicherung (nur Demo) */
     async sicherungExport() { return JSON.stringify(this.d, null, 1); }
@@ -562,6 +571,14 @@
     async einstellungenSpeichern(e) {
       const alt = await this.einstellungen();
       await this._req('/rest/v1/einstellungen?id=eq.1', { method: 'PATCH', body: { daten: { ...alt, ...e } } });
+    }
+    /* Bankdaten für die Lastschrift (Vereinsdatenbank: mitglieder_bank, nur Vorstand/Kassenwart dürfen lesen) */
+    async bankdaten(ids) {
+      const [b, he] = await Promise.all([
+        ids.length ? this._req('/rest/v1/mitglieder_bank?select=mitglied_id,iban,bic,kontoinhaber,mandat_datum&mitglied_id=in.(' + ids.join(',') + ')') : [],
+        this._req('/rest/v1/hafen_einstellungen?select=daten&id=eq.1').catch(() => [])]);
+      const d = (he[0] && he[0].daten) || {};
+      return { mitglieder: b || [], verein: { iban: d.iban || '', bic: d.bic || '', glaeubiger_id: d.glaeubiger_id || '' } };
     }
     async kasseEinrichten(name) {
       const t = await this._rpc('admin_kasse_einrichten', { p_name: name });

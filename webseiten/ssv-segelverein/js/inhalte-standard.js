@@ -13,7 +13,7 @@ window.SSV_INHALTE_STANDARD = {
   "eyebrow": "Schwartauer Segler-Verein e.V. · Teerhofinsel Lübeck",
   "titel": "Gemeinsam segeln an der",
   "betont": "Trave.",
-  "text": "Rund 80 Liegeplätze am nördlichen Travearm, gegenüber ein Naturschutzgebiet – und ein Verein, der vom Mitmachen lebt."
+  "text": "54 Liegeplätze am nördlichen Travearm, gegenüber ein Naturschutzgebiet – und ein Verein, der vom Mitmachen lebt."
  },
  "aktuelles": [
   {
@@ -205,9 +205,9 @@ window.SSV_INHALTE_STANDARD = {
   },
   {
    "id": "z3",
-   "wert": 80,
+   "wert": 54,
    "suffix": "",
-   "label": "Liegeplätze (etwa)"
+   "label": "Liegeplätze"
   },
   {
    "id": "z4",

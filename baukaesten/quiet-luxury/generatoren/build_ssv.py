@@ -40,7 +40,7 @@ INHALTE = {
     "eyebrow": "Schwartauer Segler-Verein e.V. · Teerhofinsel Lübeck",
     "titel": "Gemeinsam segeln an der",
     "betont": "Trave.",
-    "text": "Rund 80 Liegeplätze am nördlichen Travearm, gegenüber ein Naturschutzgebiet – und ein Verein, der vom Mitmachen lebt."
+    "text": "54 Liegeplätze am nördlichen Travearm, gegenüber ein Naturschutzgebiet – und ein Verein, der vom Mitmachen lebt."
   },
   "aktuelles": [
     {"id": "n1", "datum": "2026-01-02", "titel": "Die Vereinstermine 2026",
@@ -87,7 +87,7 @@ INHALTE = {
   "zahlen": [
     {"id": "z1", "wert": 185, "label": "Mitglieder"},
     {"id": "z2", "wert": 97, "label": "Boote"},
-    {"id": "z3", "wert": 80, "suffix": "", "label": "Liegeplätze (etwa)"},
+    {"id": "z3", "wert": 54, "suffix": "", "label": "Liegeplätze"},
     {"id": "z4", "wert": 21231, "label": "Seemeilen pro Jahr"}
   ],
   "galerie": [
@@ -293,7 +293,8 @@ WELLE = '''<svg class="wave-svg icon-draw" data-draw viewBox="0 0 240 44" xmlns=
 
 ICO_HAND   = ico('<path class="dl" d="M14 34 L26 22 L36 28 L50 16"/><path class="dl dl-gold" d="M10 46 H54"/><path class="dl" d="M18 46 V56 M46 46 V56"/>')
 ICO_PINSEL = ico('<path class="dl" d="M40 10 L54 24 L30 48 L16 34 Z"/><path class="dl dl-gold" d="M16 34 C 10 40, 10 50, 8 56 C 14 54, 24 54, 30 48"/>')
-ICO_FEST   = ico('<path class="dl" d="M12 52 L24 12 L36 52"/><path class="dl dl-gold" d="M16 38 H32"/><path class="dl" d="M44 20 C 44 14, 54 14, 54 20 C 54 28, 44 28, 44 36 V40 M44 48 V50"/>')
+# Wimpelkette (Fest/Veranstaltung): durchhängende Leine mit vier Wimpeln
+ICO_FEST   = ico('<path class="dl" d="M6 22 Q32 38 58 22"/><path class="dl dl-gold" d="M12.5 26.4 L16.4 41 L20.4 27.9 Z M43.6 27.9 L47.6 41 L51.5 26.4 Z"/><path class="dl" d="M22.8 29.2 L26.8 44 L30.8 29.9 Z M33.2 29.9 L37.2 44 L41.2 29.2 Z"/>')
 ICO_JUGEND = ico('<path class="dl" d="M32 8 V48"/><path class="dl dl-gold" d="M32 10 C 46 20, 50 34, 50 44 H32"/><path class="dl" d="M10 52 C 20 58, 44 58, 54 52 L50 48 H14 Z"/>')
 
 
@@ -346,7 +347,7 @@ PAGES = {}
 # ======================================================================== START
 PAGES["index.html"] = {
   "title": "Schwartauer Segler-Verein e.V. · Segeln an der Trave in Lübeck",
-  "desc": "Der Schwartauer Segler-Verein e.V. am nördlichen Travearm bei der Teerhofinsel in Lübeck: rund 80 Liegeplätze, Jugendausbildung ab ca. 6 Jahren, Gastliegeplätze und ein Vereinsleben zum Mitmachen.",
+  "desc": "Der Schwartauer Segler-Verein e.V. am nördlichen Travearm bei der Teerhofinsel in Lübeck: 54 Liegeplätze, Jugendausbildung ab ca. 6 Jahren, Gastliegeplätze und ein Vereinsleben zum Mitmachen.",
   "active": "index.html", "cine": True,
   "body": '''
     <!-- 1 · HERO (Foto, Titel und Text pflegt die Redaktion) -->
@@ -484,7 +485,7 @@ PAGES["verein.html"] = {
   "desc": "Philosophie, Mitarbeit und Vorstand des Schwartauer Segler-Vereins e.V. in Lübeck – plus Mitgliedschaftsantrag, Beiträge und Satzung.",
   "active": "verein.html", "cine": True,
   "body": page_hero_cine("clubhaus.jpg", "Verein", "Ein Verein,<br>der vom <em>Mitmachen</em> lebt.",
-    "Am nördlichen Travearm bei der Teerhofinsel in Lübeck – mit etwa 80 Liegeplätzen und einem Naturschutzgebiet am anderen Ufer.") + '''
+    "Am nördlichen Travearm bei der Teerhofinsel in Lübeck – mit 54 Liegeplätzen und einem Naturschutzgebiet am anderen Ufer.") + '''
     <section class="section-tight">
       <div class="narrow">
         ''' + WELLE + '''

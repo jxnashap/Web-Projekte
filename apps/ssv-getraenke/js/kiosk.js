@@ -106,7 +106,7 @@
     $('#namen').innerHTML = liste.map((m) =>
       '<button role="listitem" class="k-name" data-id="' + m.id + '"><span class="k-ini">' + H.esc(m.vorname.charAt(0) + m.nachname.charAt(0)) + '</span>' +
       '<span><strong>' + H.esc(m.nachname) + '</strong>' + H.esc(m.vorname) +
-      (m.hat_pin === false && zustand.optionen.pin_selbst_festlegen ? '<br><span class="k-neu">Neu – Code festlegen</span>' : '') + '</span></button>').join('');
+      (m.hat_pin === false && zustand.optionen.pin_selbst_festlegen ? '<br><span class="k-neu" title="Beim ersten Mal legst du hier deinen Code fest">Code fehlt</span>' : '') + '</span></button>').join('');
     $('#namen-leer').hidden = liste.length > 0;
   }
   $('#suche').addEventListener('input', (e) => { zustand.filter = e.target.value; zustand.buchstabe = ''; renderNamen(); });
@@ -201,13 +201,15 @@
       const me = v.meine, offen = vOffen(v); const frei = v.max_personen ? Math.max(0, v.max_personen - (Number(v.belegt) || 0) + (me && me.antwort === 'ja' ? me.personen : 0)) : 99;
       const stand = v.abgesagt ? '<span class="k-v-stand rot">abgesagt</span>' : me ? (me.antwort === 'ja' ? '<span class="k-v-stand ok">✓ Du hast zugesagt' + (me.personen > 1 ? ' · ' + me.personen + ' Personen' : '') + '</span>' : '<span class="k-v-stand">Du hast abgesagt</span>') : offen ? '<span class="k-v-stand warn">Noch keine Antwort</span>' : '<span class="k-v-stand">Anmeldung geschlossen</span>';
       const maxP = Math.min(1 + (Number(v.begleitung) || 0), frei);
+      // Anzeige „noch n Plätze frei“: eigene Zusage ist schon abgezogen (frei oben zählt sie für die Auswahl „Wie viele kommen?“ wieder dazu)
+      const freiAnz = v.max_personen ? Math.max(0, v.max_personen - (Number(v.belegt) || 0)) : 99;
       const knoepfe = !offen ? '' : wahlId === v.id
         ? '<p class="k-v-frage">Wie viele kommen?</p><div class="k-v-knoepfe">' + Array.from({ length: Math.max(1, maxP) }, (_, i) => i + 1).map((n) => '<button class="k-btn k-btn-primary k-btn-xl" data-v-ja="' + v.id + '" data-p="' + n + '">' + (n === 1 ? 'Nur ich' : 'Ich + ' + (n - 1)) + '</button>').join('') + '<button class="k-btn k-btn-ghost" data-v-abbruch>Abbrechen</button></div>'
         : '<div class="k-v-knoepfe">' + (frei > 0 ? '<button class="k-btn k-btn-primary k-btn-xl" data-v-komme="' + v.id + '">' + (me && me.antwort === 'ja' ? 'Ändern' : 'Ich komme') + '</button>' : '<span class="k-v-stand">ausgebucht</span>') +
           (!me || me.antwort === 'ja' ? '<button class="k-btn k-btn-xl k-v-nein" data-v-nein="' + v.id + '">Ich komme nicht</button>' : '') + '</div>';
       return '<article class="k-v-karte' + (v.abgesagt ? ' abgesagt' : '') + '"><h3>' + H.esc(v.titel) + '</h3><p class="k-v-zeit">' + vDatum(v.datum) + (v.beginn ? ', ' + H.esc(v.beginn) + ' Uhr' : '') + (v.ort ? ' · ' + H.esc(v.ort) : '') + '</p>' + stand +
         (v.text ? '<p class="k-v-text">' + H.esc(v.text) + '</p>' : '') +
-        '<p class="k-v-info">' + [v.kosten ? 'Kosten: ' + H.geld(v.kosten) + (v.kosten_hinweis ? ' ' + H.esc(v.kosten_hinweis) : ' je Person') : '', v.max_personen && !v.abgesagt ? (frei > 0 ? 'noch ' + frei + (frei === 1 ? ' Platz' : ' Plätze') + ' frei' : 'ausgebucht') : '', v.anmeldung_bis && offen ? 'Anmeldung bis ' + vDatum(v.anmeldung_bis) : ''].filter(Boolean).join(' · ') + '</p>' + knoepfe + '</article>';
+        '<p class="k-v-info">' + [v.kosten ? 'Kosten: ' + H.geld(v.kosten) + (v.kosten_hinweis ? ' ' + H.esc(v.kosten_hinweis) : ' je Person') : '', v.max_personen && !v.abgesagt ? (freiAnz > 0 ? 'noch ' + freiAnz + (freiAnz === 1 ? ' Platz' : ' Plätze') + ' frei' : 'ausgebucht') : '', v.anmeldung_bis && offen ? 'Anmeldung bis ' + vDatum(v.anmeldung_bis) : ''].filter(Boolean).join(' · ') + '</p>' + knoepfe + '</article>';
     }).join('') || '<p class="k-sub">Gerade keine Veranstaltungen.</p>';
   }
   async function veranstAntworten(id, antwort, personen) {
@@ -216,7 +218,7 @@
     try {
       const r = await S.kasseZusage(zustand.aktiv.id, zustand.pin, { veranstaltung_id: id, antwort, personen });
       if (r && r.ok === false) { toast(r.fehler === 'pin' || r.fehler === 'gesperrt' ? 'Bitte neu anmelden.' : 'Speichern nicht möglich – bitte beim Kassenwart melden.', 'fehler'); return; }
-      toast(antwort === 'ja' ? 'Schön, dass du kommst! Bis zum ' + vDatum(v.datum) + '.' : 'Schade – deine Absage ist gespeichert.');
+      toast(antwort === 'ja' ? ('Schön, dass du kommst! Bis zum ' + vDatum(v.datum) + '.').replace(/\.\.$/, '.') : 'Schade – deine Absage ist gespeichert.');
       await veranstaltungenLaden(); veranstListe();
     } catch (e) { toast(e.message, 'fehler'); }
     finally { $('#k-veranst-liste').classList.remove('warten'); }

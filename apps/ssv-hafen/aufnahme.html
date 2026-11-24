@@ -16,24 +16,24 @@
   .auf-kopf p { margin: 0 auto; color: rgba(255,255,255,.78); max-width: 520px; }
   .karte { background: #fff; border-radius: 20px; padding: 22px; margin-bottom: 14px; }
   .karte h2 { font-size: 20px; margin: 0 0 4px; }
-  .karte > p.unter { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+  .karte > p.unter { margin: 0 0 14px; color: var(--muted); font-size: 15px; }
   .arten { display: grid; gap: 8px; }
   .art { display: flex; gap: 12px; align-items: flex-start; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; cursor: pointer; }
   .art:has(input:checked) { border-color: var(--navy); background: rgba(14,27,69,.04); }
-  .art input { margin-top: 4px; accent-color: var(--navy); }
+  .art input { flex: none; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--navy); }
   .art strong { display: block; color: var(--navy); }
-  .art span { font-size: 13.5px; color: var(--muted); }
+  .art span { font-size: 14.5px; color: var(--muted); }
   .art b { margin-left: auto; white-space: nowrap; color: var(--navy); font-weight: 650; }
   @media (max-width: 560px) {
     .auf { padding: 14px 12px 40px; } .auf-kopf h1 { font-size: 26px; } .auf-kopf p { font-size: 14px; }
     .karte { padding: 16px; border-radius: 16px; }
-    .art { flex-wrap: wrap; padding: 10px 12px; } .art > div { flex: 1 1 calc(100% - 32px); min-width: 0; } .art b { flex-basis: 100%; margin-left: 30px; font-size: 14px; } .art strong { overflow-wrap: anywhere; hyphens: auto; }
-    .mandat { font-size: 12px; }
+    .art { flex-wrap: wrap; padding: 10px 12px; } .art > div { flex: 1 1 0; min-width: 0; } .art b { flex-basis: 100%; margin-left: 32px; font-size: 15px; } .art strong { overflow-wrap: anywhere; hyphens: auto; }
+    .mandat { font-size: 14px; }
   }
-  .check { display: block; position: relative; padding-left: 28px; font-size: 14px; margin: 10px 0; overflow-wrap: anywhere; }
-  .check input { position: absolute; left: 0; top: 2px; margin: 0; width: 18px; height: 18px; accent-color: var(--navy); }
-  .mandat { font-size: 13px; color: var(--muted); background: var(--paper); border-radius: 12px; padding: 12px 14px; margin: 10px 0; }
-  .fehlertext { color: var(--rot); font-size: 13px; min-height: 1em; }
+  .check { display: block; position: relative; padding-left: 30px; font-size: 15px; margin: 10px 0; overflow-wrap: anywhere; }
+  .check input { position: absolute; left: 0; top: 2px; margin: 0; width: 20px; height: 20px; accent-color: var(--navy); }
+  .mandat { font-size: 14px; color: var(--muted); background: var(--paper); border-radius: 12px; padding: 12px 14px; margin: 10px 0; }
+  .fehlertext { color: var(--rot); font-size: 14.5px; font-weight: 600; min-height: 1em; }
   .danke { text-align: center; }
   .danke svg { width: 80px; height: 80px; }
   [hidden] { display: none !important; }

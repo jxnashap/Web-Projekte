@@ -176,7 +176,7 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 @media (max-width: 1200px) { .plan-layout { grid-template-columns: 1fr; } .detail { position: static; } }
 .nav-leiste { display: none; }
 .nav-inhalt { display: contents; }
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) {
   .shell { grid-template-columns: 1fr; }
   /* Handy: schmale Leiste mit aktuellem Bereich + „Menü“, die Liste klappt darunter auf */
   .nav { position: sticky; top: 0; z-index: 30; height: auto; padding: 0; overflow: visible; }
@@ -203,9 +203,12 @@ table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 /* Drucken aus der Verwaltung (z. B. Verbandsmeldung): nur der Inhalt */
 @media print {
   .shell { display: block; }
-  .nav, .kopf .aktionen, .demo-band, .toast, .modal { display: none !important; }
+  .nav, .kopf .aktionen, .demo-band, .toast, .modal, .schnell { display: none !important; }
   body { background: #fff; }
-  .panel { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+  /* kleine Kästen bleiben zusammen; Tabellen dürfen über die Seite laufen (Zeilen bleiben ganz, Spaltenkopf wiederholt sich) */
+  .panel { box-shadow: none; border: 1px solid #ccc; }
+  .panel:not(:has(table)) { break-inside: avoid; }
+  .panel table tr { break-inside: avoid; } .panel table thead { display: table-header-group; } .panel h2, .panel h3 { break-after: avoid; }
 }
 
 /* Barrierefreiheit (Gesamt-Check): Fehlerhinweise, Tastatur, Sprunglink, weniger Bewegung */
@@ -218,7 +221,7 @@ tr.klickbar:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 .saison-wahl { display: block; margin-top: 6px; } .saison-wahl select { margin-left: 6px; background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.35); border-radius: 6px; padding: 2px 4px; }
 .saison-wahl select option { color: var(--ink); }
-@media (max-width: 860px) { .nav.offen .rolle-chip { display: block; } }
+@media screen and (max-width: 860px) { .nav.offen .rolle-chip { display: block; } }
 
 /* ---- Handy (Gesamt-Check) ---- */
 .modal-x { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; border: 0; background: transparent; font-size: 26px; line-height: 1; color: var(--muted); cursor: pointer; border-radius: 10px; }
@@ -227,7 +230,7 @@ tr.klickbar:focus-visible { outline: 2px solid var(--navy); outline-offset: -2px
 .modal-fuss { position: sticky; bottom: -22px; background: #fff; padding-top: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
 body.modal-offen { overflow: hidden; }
 .toast { bottom: calc(22px + env(safe-area-inset-bottom)); }
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) {
   input, select, textarea { font-size: 16px !important; }   /* iOS zoomt sonst beim Antippen */
   .nav.offen .nav-inhalt { max-height: calc(100vh - 54px); max-height: calc(100dvh - 54px); overscroll-behavior: contain; }
   .main { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
@@ -269,7 +272,7 @@ table.todo tr[hidden] { display: none !important; }
 .masse-tab .geaendert { background: #fff6d6; border-color: #c7811b !important; }
 /* Schnellknopf: nur am Handy, eine Hauptaktion je Rolle */
 .schnell { display: none; }
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) {
   .schnell { display: inline-flex; align-items: center; position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 55; min-height: 52px; padding: 0 20px; border: 0; border-radius: 999px;
     background: var(--rot); color: #fff; font: 700 15px/1 inherit; font-family: inherit; box-shadow: 0 10px 26px -8px rgba(14,27,69,.55); cursor: pointer; }
   body.modal-offen .schnell, body.nav-auf .schnell { display: none; }
@@ -294,7 +297,7 @@ table.todo tr[hidden] { display: none !important; }
 .main > .panel, .main > .zwei, .main > details.panel { margin-bottom: 20px; }
 .panel > h2:first-child { padding-bottom: 10px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
 .kopf h1 { letter-spacing: -.01em; }
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) {
   .reiter { margin: 0 -12px 16px; padding: 0 12px 12px; gap: 6px; }
   .reiter-titel { display: none; }
   .reiter-liste { width: 100%; }
@@ -302,16 +305,16 @@ table.todo tr[hidden] { display: none !important; }
   .nav-bereiche button { padding: 13px 12px; font-size: 16px; }
 }
 
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) {
   /* Kopf-Knöpfe am Handy: kompakte Zeile zum Wischen statt mehrerer Reihen */
   .kopf .aktionen { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -12px; padding: 2px 12px 4px; width: calc(100% + 24px); }
   .kopf .aktionen::-webkit-scrollbar { display: none; }
-  .kopf .aktionen .btn { flex: none; padding: 9px 13px; font-size: 13.5px; }
+  .kopf .aktionen .btn { flex: none; padding: 9px 13px; }   /* Schrift wie alle Knöpfe (Lesbarkeits-Ebene) */
   body.schnell-doppelt .kopf .aktionen .btn.primaer { display: none; }
   .kopf p { font-size: 14px; }
 }
 /* Handy: Aktions-Listen ohne Spaltenkopf (Anmeldungen, Bestätigen …) als gestapelte Karten statt gequetschter Spalten */
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) {
   .panel table.tab:not(:has(thead)) tbody, .panel table.tab:not(:has(thead)) tr { display: block; }
   .panel table.tab:not(:has(thead)) tr { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
   .panel table.tab:not(:has(thead)) tr:last-child { border-bottom: 0; }
@@ -343,7 +346,7 @@ table.todo tr[hidden] { display: none !important; }
 .ab-treffer button { text-align: left; border: 0; background: var(--sand, #f3efe6); border-radius: 8px; padding: 9px 12px; font: inherit; cursor: pointer; min-height: 40px; }
 .ab-treffer button:hover, .ab-treffer button:focus { background: #e7e1d3; } .ab-treffer small { color: var(--muted); }
 .ab-wahl { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 12px; margin: 8px 0; }
-@media (max-width: 860px) { .ab-karten { grid-template-columns: 1fr; } }
+@media screen and (max-width: 860px) { .ab-karten { grid-template-columns: 1fr; } }
 /* Druck aus dem Programm: SSV-Briefkopf (Flagge oben links) */
 .druck-kopf { display: none; }
 @media print {
@@ -403,7 +406,7 @@ table.todo tr[hidden] { display: none !important; }
 .pe-mitte-griff { fill: rgba(255,255,255,.6); stroke: #ff7a1a; stroke-width: 1.5px; vector-effect: non-scaling-stroke; cursor: copy; }
 .pe-entwurf { fill: none; stroke: #ff7a1a; stroke-width: 2.5px; vector-effect: non-scaling-stroke; stroke-dasharray: 7 5; pointer-events: none; } .pe-entwurf-p { fill: #ff7a1a; pointer-events: none; } .pe-erster { fill: #fff; stroke: #ff7a1a; stroke-width: 2px; vector-effect: non-scaling-stroke; }
 .quelle-zeile { margin-left: auto; font-size: 11px; }
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) {
   .pe-mitte { flex-direction: column; } .pe-panel { width: auto; max-height: 40vh; border-top: 3px solid var(--navy); }
   .pe-leiste > strong { display: none; } .pe-leiste { gap: 6px; padding: 6px 8px; } .pe-wz { flex-basis: 100%; order: 2; } .pe-rechts { flex: 1; justify-content: space-between; flex-wrap: nowrap; }
   .pe-leiste button { font-size: 12.5px; padding: 6px 8px; min-height: 36px; } .pe-panel { max-height: 36vh; }
@@ -427,7 +430,7 @@ table.todo tr[hidden] { display: none !important; }
 .link-knopf { border: 0; background: none; padding: 0; font: inherit; color: var(--navy); text-decoration: underline; cursor: pointer; font-size: 13px; }
 #imp-text { width: 100%; font: 14px/1.4 ui-monospace, Menlo, monospace; padding: 10px; border: 1px solid #8A8FA3; border-radius: 10px; }
 #imp-vorschau table { margin-top: 8px; font-size: 13px; } #imp-vorschau { max-height: 40vh; overflow-y: auto; }
-@media (max-width: 860px) { .ab-liste thead { display: none; } .ab-schieb { max-width: 150px; } .ab-anzahl { margin-left: 0; } }
+@media screen and (max-width: 860px) { .ab-liste thead { display: none; } .ab-schieb { max-width: 150px; } .ab-anzahl { margin-left: 0; } }
 /* Zeilen-Menü „⋯“: eine Hauptaktion sichtbar, der Rest im Menü */
 .zm { display: inline-block; vertical-align: middle; }
 .zm-knopf { min-width: 34px; font-weight: 800; letter-spacing: .05em; }
@@ -438,7 +441,7 @@ table.todo tr[hidden] { display: none !important; }
 td.aktion { white-space: nowrap; }
 .gast-tab td { vertical-align: top; }
 .gast-tab small { color: var(--muted); }
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) {
   .gast-tab thead { display: none; }
   .gast-tab tbody, .gast-tab tr { display: block; }
   .gast-tab tr { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
@@ -465,14 +468,14 @@ td.aktion { white-space: nowrap; }
 .kette i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); display: block; }
 .kette i.an { background: var(--gruen); } .kette.rot i.an { background: var(--rot); }
 table.laeufe { margin: 6px 0 4px; }
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) {
   .kette-box { min-width: 0; flex: 1 1 40%; } .kette-weg { width: 100%; } .kette-pfeil { display: none; } .kette-neben { margin-left: 0; width: 100%; }
 }
 /* Finanzübersicht */
 .fin-tab tfoot td, .fin-monate tfoot td { font-weight: 700; }
 .fin-monate .balken-sp { width: 28%; }
 .balken { display: block; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--navy), #4a5a86); min-width: 0; }
-@media (max-width: 860px) { .fin-monate .balken-sp { display: none; } }
+@media screen and (max-width: 860px) { .fin-monate .balken-sp { display: none; } }
 /* Mitgliedsakte */
 .modal-karte.akte { max-width: 980px; }
 .akte-kopf { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -490,7 +493,7 @@ table.laeufe { margin: 6px 0 4px; }
 .akte-verlauf[open] > summary { margin-bottom: 8px; } .akte-verlauf[open] > summary::after { content: '▴'; }
 .hinweis-klein { font-size: 12.5px; color: var(--muted); }
 table.tab.kompakt td { padding: 5px 6px; font-size: 13.5px; }
-@media (max-width: 860px) { .akte-raster { grid-template-columns: 1fr; } }
+@media screen and (max-width: 860px) { .akte-raster { grid-template-columns: 1fr; } }
 /* Gebührenordnung in Fassungen */
 .geb-feld { min-width: 0 !important; width: 96px; text-align: right; }
 .geb-info { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; }
@@ -510,8 +513,8 @@ table.tab.kompakt td { padding: 5px 6px; font-size: 13.5px; }
 .pruefliste li a { margin-left: auto; white-space: nowrap; font-size: 13px; }
 .pl-icon { flex: none; width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 12px; font-weight: 800; background: var(--gruen); color: #fff; transform: translateY(3px); }
 .pruefliste li.warn .pl-icon { background: var(--warn); } .pruefliste li.info .pl-icon { background: #8a94b0; }
-@media (max-width: 860px) { .ablauf { grid-template-columns: 1fr 1fr; } .ablauf li:last-child { grid-column: 1 / -1; } .pruefliste li { flex-wrap: wrap; } }
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) { .ablauf { grid-template-columns: 1fr 1fr; } .ablauf li:last-child { grid-column: 1 / -1; } .pruefliste li { flex-wrap: wrap; } }
+@media screen and (max-width: 860px) {
   .akte table.kompakt, .akte table.kompakt tbody { display: block; }
   .akte table.kompakt tr { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
   .akte table.kompakt td { display: block; padding: 0; border: 0; }
@@ -520,15 +523,15 @@ table.tab.kompakt td { padding: 5px 6px; font-size: 13.5px; }
 
 /* ---------- Hafenplan: Kamera, Vollbild, Animationen ---------- */
 .plan-flaeche { position: relative; overflow: hidden; }
-@media (max-width: 860px) { .plan-flaeche { aspect-ratio: auto; height: min(68vh, 560px); } }
+@media screen and (max-width: 860px) { .plan-flaeche { aspect-ratio: auto; height: min(68vh, 560px); } }
 .plan-ctl { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 6px; z-index: 3; }
 .plan-ctl button { width: 38px; height: 38px; border-radius: 10px; border: 0; background: rgba(255,255,255,.94); color: var(--navy); font: 700 18px/1 "Inter", sans-serif; cursor: pointer;
   box-shadow: 0 2px 8px rgba(14,27,69,.22); transition: transform .15s, background .15s; display: grid; place-items: center; }
 .plan-ctl button:hover { background: #fff; transform: translateY(-1px); } .plan-ctl button:active { transform: scale(.94); }
 .plan-ctl button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
 @media (pointer: coarse) { .plan-ctl button { width: 44px; height: 44px; } }
-.plan-tipp { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: rgba(14,27,69,.86); color: #fff; font-size: 13px; padding: 8px 14px; border-radius: 99px;
-  pointer-events: none; white-space: nowrap; z-index: 3; animation: tipp 4.2s ease both; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
+.plan-tipp { position: absolute; left: 50%; bottom: 58px; transform: translateX(-50%); background: rgba(14,27,69,.86); color: #fff; font-size: 15px; padding: 8px 14px; border-radius: 14px;
+  pointer-events: none; white-space: normal; text-align: center; width: max-content; z-index: 4; animation: tipp 4.2s ease both; max-width: calc(100% - 24px); line-height: 1.35; }   /* bottom 58px: über der Maßstabs-Einblendung (.plan-mass) */
 @keyframes tipp { 0% { opacity: 0; transform: translate(-50%, 8px); } 10%, 82% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 4px); } }
 /* Vollbild */
 .plan-box.vollbild { position: fixed; inset: 0; z-index: 85; border-radius: 0; display: flex; flex-direction: column; }
@@ -562,7 +565,7 @@ body.plan-vollbild { overflow: hidden; }
   .wellen, .lp .rumpf, .markiert rect, .plan-tipp { animation: none !important; }
   .lp > rect, .land rect { transition: none; } .lp:hover > rect, .land:hover rect { transform: none; }
 }
-@media (max-width: 860px) {
+@media screen and (max-width: 860px) {
   .plan-leiste { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .plan-leiste::-webkit-scrollbar { display: none; }
   .plan-leiste > * { flex: none; }
@@ -696,7 +699,7 @@ body.plan-vollbild { overflow: hidden; }
 .ka-fuss { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 24px; position: sticky; bottom: 12px; }
 .ka-fuss .btn { box-shadow: var(--schatten); }
 .ka-knopf { cursor: pointer; }
-@media (max-width: 860px) { .ka-tab th:nth-child(4), .ka-tab td:nth-child(4) { display: none; } }
+@media screen and (max-width: 860px) { .ka-tab th:nth-child(4), .ka-tab td:nth-child(4) { display: none; } }
 
 /* ===================================================================== Lesbarkeit
    Für alle Altersgruppen: Grundschrift 16 px, Knöpfe mind. 40–44 px hoch, keine winzigen Großbuchstaben-Etiketten.
@@ -769,6 +772,62 @@ body.plan-vollbild { overflow: hidden; }
   html.schrift-gross .such-t { font-size: 18px; } html.schrift-gross .such-u { font-size: 15.5px; }
   html.schrift-gross .todo td { font-size: 17px; } html.schrift-gross details.erklaer > summary { font-size: 16.5px; }
 }
+/* Lesbarkeit – Nachtrag Prüfrunde Nov. 2026: Tabellen, Schilder, Etiketten, kleine Knöpfe */
+@media screen {
+  .nw { white-space: nowrap; }   /* Kennungen, Rechnungsnummern, Telefonnummern, Maße, Beträge nie mitten umbrechen */
+  .tab td { font-size: 16px; }
+  .tab th { font-size: 14.5px; }
+  .tab small, .panel small { font-size: 14.5px; }
+  .tag { font-size: 15px; }
+  .btn.klein { font-size: 15px; min-height: 40px; padding: 8px 13px; }
+  input[type=checkbox], input[type=radio] { flex: none; }
+  .feld.check input, .ab-ck input, .ka-cb input { width: 20px; height: 20px; min-width: 20px; }
+  .tab.verlauf td.vl-aenderung { font-size: 15px; line-height: 1.5; }
+  .feldname { font-family: inherit; font-size: 14.5px; font-weight: 600; background: none; padding: 0; margin-right: 2px; color: var(--navy); }
+  /* Kennzahl-Karten: Etiketten in normaler Schrift; Etikett, Zahl und Zusatz stehen je Reihe auf gleicher Höhe */
+  .kz small { font-size: 15px; letter-spacing: 0; text-transform: none; font-weight: 600; }
+  @supports (grid-template-rows: subgrid) {
+    .karten { grid-auto-rows: auto; }
+    .karten > .kz { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; align-content: start; }
+    .karten > .kz > strong { align-self: end; }
+  }
+  .ablauf strong { font-size: 15.5px; } .ablauf small { font-size: 14px; }
+  /* Arbeitsgruppen-Karte */
+  .ab-zahlen dt { font-size: 14.5px; text-transform: none; letter-spacing: 0; font-weight: 600; }
+  /* weitere kleine Großbuchstaben-Etiketten in normaler Schrift */
+  .kette-box small, .wc-panel > div > small, .reiter-titel { font-size: 14.5px; text-transform: none; letter-spacing: 0; font-weight: 600; }
+  .akte-teil h3, .such-erg h3, .pe-panel h3 { font-size: 15px; text-transform: none; letter-spacing: 0; }
+  .ab-zahlen > div { display: flex; flex-direction: column; justify-content: space-between; }
+  .ab-zahlen dd { font-size: 16px; }
+  .ab-aufgaben, .ab-text { font-size: 15.5px; } .ab-aufgaben .mehr { font-size: 15px; }
+  .link-knopf, .kopf-mehr { font-size: 15.5px; min-height: 40px; padding: 8px 4px; }
+  .ab-modus button, .chip-btn { font-size: 15px; min-height: 40px; }
+  .kopf-mehr { padding: 8px 6px; margin: -12px 0; vertical-align: middle; }   /* große Tippfläche, ohne die Zeile höher zu machen */
+  /* Gruppe bearbeiten: Kästchen-Spalte schmal, Aufgabentitel breit, Felder ≥ 40 px */
+  .ab-auf-tab td:first-child input, .ab-auf-tab .ab-ck input { min-width: 20px; width: 20px; }
+  .ab-auf-tab [name=a_titel] { min-width: 220px; }
+  .ab-auf-tab input:not([type=checkbox]) { min-height: 40px; font-size: 15.5px; padding: 6px 8px; border: 1px solid #8A8FA3; border-radius: 8px; }
+  /* Erklärung direkt unter Knöpfen: etwas Luft */
+  .aktionen + details.erklaer, .aktionen + .hinweis { margin-top: 12px; }
+  /* Karte & Kalender: Schnellwahl so hoch wie die Felder daneben */
+  .gk-leiste { align-items: flex-end; }
+  .gk-schnell .btn.klein { min-height: 48px; }
+  /* Prüfliste der Abrechnung: Text neben dem Symbol, „ändern →“ darunter rechts */
+  .pruefliste li { font-size: 15.5px; } .pruefliste li a { font-size: 15px; }
+  /* Belegung: weitere Boote ohne Platz zum Aufklappen */
+  .ohne-mehr { display: inline; } .ohne-mehr > summary { display: inline-flex; align-items: center; min-height: 40px; cursor: pointer; font-weight: 600; text-decoration: underline; list-style: none; }
+  .ohne-mehr > summary::-webkit-details-marker { display: none; } .ohne-mehr[open] > summary { display: none; }
+  /* Komma vor den aufgeklappten Booten nur zeigen, wenn die Liste offen ist (ohne :has bleibt es immer stehen) */
+  .hinweis:has(> .ohne-mehr:not([open])) > .ohne-komma { display: none; }
+}
+@media screen and (max-width: 860px) {
+  .btn, .btn.klein, .ab-modus button, .chip-btn, .link-knopf, .kopf-mehr { min-height: 44px; }
+  .kz small { font-size: 14px; }
+  .pruefliste li > span:not(.pl-icon) { flex: 1 1 0; min-width: 0; }
+  .pruefliste li a { flex-basis: 100%; text-align: right; padding: 6px 0; }
+  .nav .nav-leiste strong { white-space: normal; line-height: 1.15; overflow: visible; }   /* Bereichsname darf zweizeilig sein statt „Gäste & grünes …“ */
+}
+@media screen { html.schrift-gross .tab td { font-size: 17px; } html.schrift-gross .tag { font-size: 16px; } html.schrift-gross .kz small { font-size: 16px; } html.schrift-gross .btn.klein { font-size: 16px; min-height: 44px; } }
 @media screen and (min-width: 861px) { .shell { grid-template-columns: 264px 1fr; } }
 @media screen and (max-width: 860px) {
   .nav .such-knopf { display: none; }
@@ -788,7 +847,7 @@ body.plan-vollbild { overflow: hidden; }
   .nav .nav-leiste .such-knopf-m span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .nav .nav-leiste .such-knopf-m { padding: 8px 12px; min-width: 44px; justify-content: center; }
 }
-@media screen { .wc-panel p small { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 14px; display: block; margin-top: 4px; } .wc-panel > div > small { font-size: 12.5px; letter-spacing: .06em; } }
+@media screen { .wc-panel p small { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 14px; display: block; margin-top: 4px; } .wc-panel > div > small { font-size: 14.5px; letter-spacing: 0; text-transform: none; } }
 @media print { .such-knopf, .such-knopf-m, details.erklaer > summary { display: none !important; } details.erklaer > .hinweis { display: block; } }
 
 /* Rechnungen per E-Mail */
@@ -930,7 +989,16 @@ body.plan-vollbild { overflow: hidden; }
   .pd-legende .lg-boje { width: 3.2mm; height: 3.2mm; border-radius: 50%; } .pd-legende .lg-boje.gruen { background: #2ed47c; } .pd-legende .lg-boje.rot { background: #ee4a3b; }
   .pd-legende .lg-boot { width: 6mm; height: 2.8mm; border-radius: 1mm 60% 60% 1mm / 1mm 50% 50% 1mm; background: #fff; border: .35mm solid #1d2f5f; } .pd-legende .lg-boot.gast { background: #ffe9b0; border-color: #b9790c; } .pd-legende .lg-boot.saison { background: #e6daf6; border-color: #5c4190; } .pd-legende .lg-boot.plane { background: #c9d3df; border-color: #77859a; }
   .pd-legende .lg-feld { width: 5mm; height: 3.2mm; border: .35mm dashed #2fa36b; background: rgba(46,212,124,.25); } .pd-legende .lg-feld.leer { border-color: #8a8266; background: #fff; } .pd-legende .lg-feld.neu { border-color: #c9a400; background: rgba(255,217,74,.4); }
-  .pd-blatt2 { break-before: page; } .pd-zwei { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5mm; align-items: start; } .pd-tab { font-size: 7.6pt; width: 100%; line-height: 1.2; table-layout: fixed; } .pd-tab th:nth-child(1) { width: 11%; } .pd-tab th:nth-child(2) { width: 38%; } .pd-tab th:nth-child(3) { width: 26%; } .pd-tab td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .pd-tab td, .pd-tab th { padding: .6mm 1.5mm; } .pd-tab tr { break-inside: avoid; }
+  /* Belegungsliste: A4 zwei, A3 drei Tabellen nebeneinander (--pd-sp aus planDrucken); nichts wird abgeschnitten, lange Namen brechen um */
+  .pd-blatt2 { break-before: page; } .pd-zwei { display: grid; grid-template-columns: repeat(var(--pd-sp, 2), minmax(0, 1fr)); gap: 6mm; align-items: start; }
+  table.tab.pd-tab { font-size: 9pt; width: 100%; line-height: 1.15; table-layout: fixed; } .pd-tab th { letter-spacing: 0; font-size: 7.5pt; }
+  .pd-tab th:nth-child(1) { width: 12%; } .pd-tab th:nth-child(2) { width: 38%; } .pd-tab th:nth-child(3) { width: 27%; }
+  .pd-tab td { overflow-wrap: anywhere; vertical-align: top; } .pd-tab td:first-child { white-space: nowrap; overflow-wrap: normal; } .pd-tab td, .pd-tab th { padding: .35mm 1.2mm; }
+  .pd-tab tr { break-inside: avoid; } .pd-tab thead { display: table-header-group; }
+  /* Verläufe/Muster der Druckfassung tragen eigene IDs (PLAN.zeichnen idPraefix 'pd-'), damit Wasser auch bei „Kräftig“ blau ist */
+  .hafenplan.druck .pf-wasser { fill: url(#pd-wasser); } .hafenplan.druck .lp.st-gesperrt .box, .hafenplan.druck .land.st-gesperrt .box { fill: url(#pd-schraffur); }
+  /* Bojen in Druckfarben wie am Bildschirm/Legende: grün = frei, rot = belegt, grau = gesperrt/Winterpause */
+  .hafenplan.druck .bo-k { stroke-width: .35; } .hafenplan.druck .bo-gruen .bo-k { fill: #2ed47c; stroke: #0f6e3c; } .hafenplan.druck .bo-rot .bo-k { fill: #ee4a3b; stroke: #8f1b12; } .hafenplan.druck .bo-aus .bo-k { fill: #a9b0bf; stroke: #5d667d; }
   .hafenplan.druck .lp-nr, .hafenplan.druck .land .lp-nr { opacity: 1; } .hafenplan.druck .lp-boot { opacity: .95; }
   /* helle Fassung: wenig Tinte, klare Linien */
   .hafenplan.druck-hell .pf-wasser { fill: #e3eff6; } .hafenplan.druck-hell .tiefe.t1, .hafenplan.druck-hell .tiefe.t2 { display: none; } .hafenplan.druck-hell .tiefe.t3 { stroke: #cfe2ee; opacity: 1; } .hafenplan.druck-hell .tiefe.saum { stroke: #7fa3bd; opacity: 1; stroke-width: .8; }
@@ -972,7 +1040,7 @@ body.plan-vollbild { overflow: hidden; }
 .kal td { height: 34px; min-width: 30px; position: relative; padding: 0; } .kal td.klick { cursor: pointer; } .kal td.klick:hover { filter: brightness(.93); }
 .kal-name { position: absolute; left: 4px; top: 50%; transform: translateY(-50%); white-space: nowrap; font-size: 12.5px; font-weight: 700; z-index: 1; pointer-events: none; color: #4a3200; }
 .legende i.kz { width: 18px; height: 12px; border-radius: 3px; border: 0; }
-@media (max-width: 860px) { .gk-sicht { margin-left: 0; width: 100%; } .gk-sicht .btn { flex: 1; } .gk-nur { margin-left: 0; } }
+@media screen and (max-width: 860px) { .gk-sicht { margin-left: 0; width: 100%; } .gk-sicht .btn { flex: 1; } .gk-nur { margin-left: 0; } }
 /* In der Übersicht sind die Bojen größer, damit man frei/belegt auf einen Blick sieht */
 .bo-i { transition: transform .35s ease; } .hafenplan:not(.nah) .bo-i { transform: scale(1.75); }
 .kal td.start { z-index: 2; } .legende i.kz { width: 22px !important; height: 14px !important; display: inline-block; }
@@ -983,10 +1051,10 @@ body.plan-vollbild { overflow: hidden; }
 .plan-mass .pm-leiste { display: grid; gap: 3px; } .plan-mass .pm-leiste i { display: block; height: 6px; border: 1.5px solid var(--navy); border-top: 0; min-width: 20px; } .plan-mass .pm-leiste b { font-weight: 600; text-align: center; }
 @media print { .plan-mass { display: none; } }
 /* Zeichenfenster am Handy: die Knöpfe rechts dürfen umbrechen – „Schließen“ bleibt immer erreichbar */
-@media (max-width: 860px) { .pe-rechts { flex-wrap: wrap !important; justify-content: flex-start !important; } .pe-rechts #pe-planung { order: 5; } }
+@media screen and (max-width: 860px) { .pe-rechts { flex-wrap: wrap !important; justify-content: flex-start !important; } .pe-rechts #pe-planung { order: 5; } }
 /* Karte am Handy: Finger auf der Karte bewegen nur die Karte (nicht die Seite); der Rahmen ist quadratisch, damit der ganze Hafen hineinpasst */
 .plan-flaeche.mit-kamera { touch-action: none; overscroll-behavior: contain; }
-@media (max-width: 860px) { .plan-box:not(.vollbild) .plan-flaeche { aspect-ratio: 1 / 1; height: auto; } }
+@media screen and (max-width: 860px) { .plan-box:not(.vollbild) .plan-flaeche { aspect-ratio: 1 / 1; height: auto; } }
 /* Seiten stehen am Handy fest: kein Gummiband über den Seitenanfang oder das Seitenende hinaus, kein „Ziehen zum Neuladen“ */
 html, body { overscroll-behavior: none; }
 /* Grillplatz und Spielplatz im Hafenplan */

@@ -109,69 +109,94 @@ export async function pdfErzeugen(PDFLib, d) {
   const e = d.e;
   const doc = await PDFDocument.create();
   doc.setTitle('Rechnung ' + d.nr); doc.setAuthor(e.verein_name); doc.setCreator('SSV Hafen-Manager');
-  const seite = doc.addPage([595.28, 841.89]);
   const f = await doc.embedFont(StandardFonts.Helvetica), fb = await doc.embedFont(StandardFonts.HelveticaBold);
   const NAVY = rgb(0.075, 0.165, 0.42), ROT = rgb(0.83, 0.15, 0.17), GRAU = rgb(0.33, 0.33, 0.36), TINTE = rgb(0.07, 0.07, 0.09);
   const mm = (x) => x * 2.8346; const H = 841.89;
+  let seite = null;
   const text = (t, x, y, o = {}) => seite.drawText(sicher(t), { x, y: H - y, size: o.size || 10, font: o.bold ? fb : f, color: o.color || TINTE });
   const breite = (t, size, bold) => (bold ? fb : f).widthOfTextAtSize(sicher(t), size);
   const rechts = (t, xr, y, o = {}) => text(t, xr - breite(t, o.size || 10, o.bold), y, o);
-  const umbrechen = (t, max, size, bold) => { const w = sicher(t).split(' '); const z = []; let l = ''; w.forEach((x) => { const v = l ? l + ' ' + x : x; if (breite(v, size, bold) > max && l) { z.push(l); l = x; } else l = v; }); if (l) z.push(l); return z; };
-  const absatz = (t, x, y, max, o = {}) => { const s = o.size || 10, lh = s * 1.45; umbrechen(t, max, s, o.bold).forEach((z, i) => text(z, x, y + i * lh, o)); return y + umbrechen(t, max, s, o.bold).length * lh; };
+  // Zeilen höchstens max breit; ein Wort, das allein zu lang ist, wird hart getrennt
+  const umbrechen = (t, max, size, bold) => { const z = []; let l = '';
+    sicher(t).split(' ').forEach((x) => { while (breite(x, size, bold) > max && x.length > 1) { let n = x.length - 1; while (n > 1 && breite(x.slice(0, n), size, bold) > max) n--; if (l) { z.push(l); l = ''; } z.push(x.slice(0, n)); x = x.slice(n); }
+      const v = l ? l + ' ' + x : x; if (breite(v, size, bold) > max && l) { z.push(l); l = x; } else l = v; });
+    if (l) z.push(l); return z; };
+  const absatz = (t, x, y, max, o = {}) => { const s = o.size || 10, lh = s * 1.45; const z = umbrechen(t, max, s, o.bold); z.forEach((zz, i) => text(zz, x, y + i * lh, o)); return y + z.length * lh; };
+  const absatzHoehe = (t, max, size) => umbrechen(t, max, size).length * size * 1.45;
+  const xl = mm(22), xr = 595.28 - mm(18);
 
-  // Kopf: Stander oben links (Dreieck mit Kreuz wie das Vereinssymbol), Vereinsadresse rechts
-  const sx = mm(22), sy = mm(14), sk = mm(26) / 108;   // Stander-Ausschnitt 108 × 54 Einheiten (SVG viewBox 12 6 108 54)
-  const P = (x, y) => [sx + (x - 12) * sk, H - (sy + (y - 6) * sk)];
-  seite.drawSvgPath('M 2 2 L 106 27 L 2 52 Z', { x: sx, y: H - sy, scale: sk, color: NAVY });
-  const linie = (x1, y1, x2, y2, w, c) => { const [p1, q1] = P(x1, y1), [p2, q2] = P(x2, y2); seite.drawLine({ start: { x: p1, y: q1 }, end: { x: p2, y: q2 }, thickness: w * sk, color: c }); };
-  // Kreuz nur innerhalb des Dreiecks (Schnittpunkte mit den Dreieckskanten vorberechnet)
-  linie(14.5, 8.6, 58.1, 47.4, 8, rgb(1, 1, 1)); linie(14.5, 57.4, 58.1, 18.6, 8, rgb(1, 1, 1));
-  linie(14.5, 8.6, 58.1, 47.4, 4.5, ROT); linie(14.5, 57.4, 58.1, 18.6, 4.5, ROT);
-  const xr = 595.28 - mm(18);
-  rechts(e.verein_name, xr, mm(17), { bold: true, size: 12, color: NAVY });
-  rechts(e.verein_strasse, xr, mm(17) + 15, { size: 9, color: GRAU }); rechts(e.verein_ort, xr, mm(17) + 27, { size: 9, color: GRAU }); rechts(e.verein_email, xr, mm(17) + 39, { size: 9, color: GRAU });
-  seite.drawLine({ start: { x: mm(22), y: H - mm(36) }, end: { x: xr, y: H - mm(36) }, thickness: 1.2, color: NAVY });
+  // Kopf: Stander oben links (Dreieck mit Kreuz wie das Vereinssymbol), Vereinsadresse rechts; Fußzeile – auf jedem Blatt
+  const blattAnlegen = () => {
+    seite = doc.addPage([595.28, 841.89]);
+    const sx = mm(22), sy = mm(14), sk = mm(26) / 108;   // Stander-Ausschnitt 108 × 54 Einheiten (SVG viewBox 12 6 108 54)
+    const P = (x, y) => [sx + (x - 12) * sk, H - (sy + (y - 6) * sk)];
+    seite.drawSvgPath('M 2 2 L 106 27 L 2 52 Z', { x: sx, y: H - sy, scale: sk, color: NAVY });
+    const linie = (x1, y1, x2, y2, w, c) => { const [p1, q1] = P(x1, y1), [p2, q2] = P(x2, y2); seite.drawLine({ start: { x: p1, y: q1 }, end: { x: p2, y: q2 }, thickness: w * sk, color: c }); };
+    // Kreuz nur innerhalb des Dreiecks (Schnittpunkte mit den Dreieckskanten vorberechnet)
+    linie(14.5, 8.6, 58.1, 47.4, 8, rgb(1, 1, 1)); linie(14.5, 57.4, 58.1, 18.6, 8, rgb(1, 1, 1));
+    linie(14.5, 8.6, 58.1, 47.4, 4.5, ROT); linie(14.5, 57.4, 58.1, 18.6, 4.5, ROT);
+    rechts(e.verein_name, xr, mm(17), { bold: true, size: 12, color: NAVY });
+    rechts(e.verein_strasse, xr, mm(17) + 15, { size: 9, color: GRAU }); rechts(e.verein_ort, xr, mm(17) + 27, { size: 9, color: GRAU }); rechts(e.verein_email, xr, mm(17) + 39, { size: 9, color: GRAU });
+    seite.drawLine({ start: { x: mm(22), y: H - mm(36) }, end: { x: xr, y: H - mm(36) }, thickness: 1.2, color: NAVY });
+    seite.drawLine({ start: { x: xl, y: mm(20) }, end: { x: xr, y: mm(20) }, thickness: 0.5, color: GRAU });
+    text(d.fusszeile[0], xl, H - mm(15), { size: 7, color: GRAU });
+    if (d.fusszeile[1]) text(d.fusszeile[1], xl, H - mm(11), { size: 7, color: GRAU });
+  };
+  blattAnlegen();
 
   // Anschrift (Fenster) und Rechnungsangaben
-  const xl = mm(22);
   text(e.verein_name + ' · ' + e.verein_strasse + ' · ' + e.verein_ort, xl, mm(48), { size: 7, color: GRAU });
   const em = d.em; let ya = mm(55);
   [em.vorname + ' ' + em.nachname, em.strasse || '', ((em.plz || '') + ' ' + (em.ort || '')).trim()].filter(Boolean).forEach((z) => { text(z, xl, ya, { size: 11 }); ya += 15; });
   const meta = [['Rechnungsnummer', d.nr, true], ['Rechnungsdatum', datum(d.datum)], em.nr ? ['Mitgliedsnummer', String(em.nr)] : null, [d.metaLabel, d.metaWert]].filter(Boolean);
-  let ym = mm(52); meta.forEach(([k, v, b]) => { text(k, mm(120), ym, { size: 8.5, color: GRAU }); rechts(v, xr, ym, { size: 9.5, bold: !!b }); ym += 14; });
+  // Werte rechtsbündig in der Spalte ab 145 mm; was breiter ist (z. B. ein langer Veranstaltungstitel), bricht um –
+  // höchstens 3 Zeilen, der volle Titel steht ohnehin in der Positionszeile
+  const wertBreite = xr - mm(145);
+  let ym = mm(52); meta.forEach(([k, v, b]) => { text(k, mm(120), ym, { size: 8.5, color: GRAU });
+    let z = umbrechen(v, wertBreite, 9.5, !!b); if (z.length > 3) { z = z.slice(0, 3); const w = z[2].split(' '); while (w.length > 1 && breite(w.join(' ') + ' …', 9.5, !!b) > wertBreite) w.pop();
+      let l = w.join(' '); while (l.length > 1 && breite(l + ' …', 9.5, !!b) > wertBreite) l = l.slice(0, -1); z[2] = l.trimEnd() + ' …'; }
+    z.forEach((zz, i) => rechts(zz, xr, ym + i * 12, { size: 9.5, bold: !!b })); ym += 14 + (z.length - 1) * 12; });
 
   // Titel, Anrede, Text
-  let y = mm(98);
+  let y = Math.max(mm(98), ym + 16);
   text(d.titel, xl, y, { size: 17, bold: true, color: NAVY }); y += 26;
   text('Moin ' + d.vorname + ',', xl, y, { size: 10.5 }); y += 18;
   y = absatz(d.intro, xl, y, xr - xl, { size: 10.5 }) + 8;
 
-  // Tabelle
+  // Tabelle – läuft bei vielen Positionen auf weiteren Blättern weiter (mit Briefkopf und Spaltenkopf), nichts wird abgeschnitten
+  const UNTEN = H - mm(28);   // darunter beginnt die Fußzeile
   const sp = [xl, mm(118), mm(150), xr];
   const kopfzeile = () => { text(d.spalte, sp[0], y, { size: 8.5, bold: true, color: GRAU }); rechts('Menge', sp[1] + 30, y, { size: 8.5, bold: true, color: GRAU }); rechts('Einzelpreis', sp[2] + 40, y, { size: 8.5, bold: true, color: GRAU }); rechts('Betrag', sp[3], y, { size: 8.5, bold: true, color: GRAU });
     y += 6; seite.drawLine({ start: { x: xl, y: H - y }, end: { x: xr, y: H - y }, thickness: 0.6, color: GRAU }); y += 14; };
+  const folgeblatt = (mitTabelle) => { blattAnlegen(); y = mm(46); text('Rechnung ' + d.nr + ' – Fortsetzung', xl, y, { size: 10.5, bold: true, color: NAVY }); y += 22; if (mitTabelle) kopfzeile(); };
+  const platz = (h, mitTabelle) => { if (y + h > UNTEN) folgeblatt(mitTabelle); };
   kopfzeile();
+  // Leistungstext endet vor der breitesten Mengenangabe (z. B. „2 angef. Std.“), damit nichts übereinander steht
+  const textBreite = Math.min(sp[1] - sp[0] - 20, sp[1] + 30 - sp[0] - 10 - Math.max(0, ...d.positionen.map((p) => breite(p.menge, 9.5))));
   for (const p of d.positionen) {
-    if (y > H - mm(75)) { text('… weitere Positionen siehe „Mein SSV“', sp[0], y, { size: 9.5, color: GRAU }); y += 18; break; }   // sehr lange Listen
-    const zeilen = umbrechen(p.text, sp[1] - sp[0] - 20, 9.5);
+    const zeilen = umbrechen(p.text, textBreite, 9.5);
+    platz(zeilen.length * 13, true);
     zeilen.forEach((z, i) => text(z, sp[0], y + i * 13, { size: 9.5 }));
     rechts(p.menge, sp[1] + 30, y, { size: 9.5 }); rechts(geld(p.einzel), sp[2] + 40, y, { size: 9.5 }); rechts(geld(p.betrag), sp[3], y, { size: 9.5 });
     y += zeilen.length * 13 + 5;
   }
+  platz(20, false);
   seite.drawLine({ start: { x: xl, y: H - y + 6 }, end: { x: xr, y: H - y + 6 }, thickness: 1.2, color: TINTE }); y += 8;
   text('Zusammen', xl, y, { size: 10.5, bold: true }); rechts(geld(d.summe), xr, y, { size: 10.5, bold: true }); y += 24;
 
-  // Zahlung, Ansprechpartner, Gruß
+  // Zahlung, Ansprechpartner, Gruß – Gruß und Fußnote bleiben zusammen
+  platz(absatzHoehe(d.zahlung, xr - xl, 10.5), false);
   y = absatz(d.zahlung, xl, y, xr - xl, { size: 10.5 }) + 6;
-  y = absatz('Kommt dir etwas komisch vor? Dann sprich ' + (e.kassenwart_name || 'den Kassenwart') + ' einfach am Steg oder in der Messe an – oder schreib kurz an ' + e.verein_email + '.', xl, y, xr - xl, { size: 10.5 }) + 14;
+  const komisch = 'Kommt dir etwas komisch vor? Dann sprich ' + (e.kassenwart_name || 'den Kassenwart') + ' einfach am Steg oder in der Messe an – oder schreib kurz an ' + e.verein_email + '.';
+  platz(absatzHoehe(komisch, xr - xl, 10.5), false);
+  y = absatz(komisch, xl, y, xr - xl, { size: 10.5 }) + 14;
+  platz(28 + (e.kassenwart_name ? 14 : 0) + 18 + (d.fussnote ? absatzHoehe(d.fussnote, xr - xl, 7.5) : 0), false);
   text(e.fusstext, xl, y, { size: 10.5 }); y += 28;
   if (e.kassenwart_name) { text('Dein Kassenwart ' + e.kassenwart_name, xl, y, { size: 10.5 }); y += 14; }
   text('für den ' + e.verein_name, xl, y, { size: 9.5, color: GRAU }); y += 18;
   if (d.fussnote) absatz(d.fussnote, xl, y, xr - xl, { size: 7.5, color: GRAU });
 
-  // Fußzeile
-  seite.drawLine({ start: { x: xl, y: mm(20) }, end: { x: xr, y: mm(20) }, thickness: 0.5, color: GRAU });
-  text(d.fusszeile[0], xl, H - mm(15), { size: 7, color: GRAU });
-  if (d.fusszeile[1]) text(d.fusszeile[1], xl, H - mm(11), { size: 7, color: GRAU });
+  // Blattzahl, wenn es mehr als ein Blatt ist
+  const blaetter = doc.getPages(); if (blaetter.length > 1) blaetter.forEach((b, i) => { seite = b; rechts('Blatt ' + (i + 1) + ' von ' + blaetter.length, xr, H - mm(15), { size: 7, color: GRAU }); });
   return await doc.save();
 }

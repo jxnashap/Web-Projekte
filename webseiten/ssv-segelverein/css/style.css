@@ -1058,3 +1058,51 @@ body.cine .site-header:not(.solid) .header-mein, body.nav-open .header-mein { ba
 .hafenkarte-gross { margin-top: 18px; }
 @media (max-width: 760px) { .hafenkarte-rahmen iframe { height: 820px; } }
 @media print { .hafenkarte { display: none; } }
+
+/* ---- Lesbarkeit (Zielgruppe 50+): keine Mini-Großbuchstaben ----
+   Untergrenzen für die gesperrten Großbuchstaben-Etiketten des Baukastens: mind. ca. 12–14 px,
+   weniger Sperrung. Gestaltung (Großbuchstaben, Farben) bleibt. */
+.label, .eyebrow { font-size: .8rem; letter-spacing: .2em; }
+.btn { font-size: .875rem; letter-spacing: .08em; }
+.chip { font-size: .875rem; letter-spacing: .06em; }
+.link-gold { font-size: .82rem; letter-spacing: .12em; }
+.brand-sub { font-size: .7rem; letter-spacing: .24em; text-indent: .24em; max-height: 16px; }
+.mb-label { font-size: .8rem; letter-spacing: .14em; }
+.header-cta { font-size: .8rem; letter-spacing: .12em; }
+.header-mein { font-size: .8rem; letter-spacing: .1em; }
+.page-hero .breadcrumbs { font-size: .8rem; letter-spacing: .12em; }
+.main-nav .nl-num { font-size: .75rem; }
+.field label { font-size: .78rem; letter-spacing: .12em; }
+.contact-list li .cl-label, .site-footer h4 { font-size: .78rem; letter-spacing: .14em; }
+.gcard .gcat { font-size: .75rem; letter-spacing: .14em; }
+.kompass-koord { font-size: .8rem; letter-spacing: .16em; }
+.cms-news-meta { font-size: .78rem; letter-spacing: .12em; }
+.cms-zahl > span:last-child { font-size: .8rem; letter-spacing: .14em; }
+.cms-datum span { font-size: .75rem; letter-spacing: .1em; }
+.cms-monat h3 { font-size: .8rem; letter-spacing: .18em; }
+.cms-rolle { font-size: .78rem; letter-spacing: .14em; }
+.cms-zuletzt { font-size: .8rem; letter-spacing: .14em; color: var(--muted); }
+@media (max-width: 760px) {
+  .mb-label { font-size: .72rem; letter-spacing: .1em; }
+  .header-mein { font-size: .72rem; letter-spacing: .06em; }
+}
+@media (max-width: 380px) { .header-mein { letter-spacing: .03em; } }
+@media (max-width: 360px) { .btn { letter-spacing: .06em; } }
+
+/* ---- Titelbild: Kopfzeile auf hellem Himmel lesbar ----
+   Zweite Verlaufsschicht dunkelt den oberen Rand ab (Menü, „Mitglied werden“, Brotkrumen),
+   die Umriss-Knöpfe bekommen einen leichten dunklen Grund. */
+.hero-veil {
+  background: linear-gradient(180deg, rgba(14,27,69,.55) 0, rgba(14,27,69,0) 200px),
+              linear-gradient(102deg, rgba(14,27,69,0.82) 0%, rgba(14,27,69,0.58) 40%, rgba(14,27,69,0.16) 78%, rgba(14,27,69,0.06) 100%);
+}
+.page-hero-cine .hero-veil {
+  background: linear-gradient(180deg, rgba(14,27,69,.55) 0, rgba(14,27,69,0) 200px),
+              linear-gradient(100deg, rgba(14, 27, 69, 0.8) 0%, rgba(14, 27, 69, 0.52) 45%, rgba(14, 27, 69, 0.14) 82%, rgba(14, 27, 69, 0.05) 100%);
+}
+body.cine .site-header:not(.solid) .header-cta { background: rgba(14,27,69,.35); }
+body.cine .site-header:not(.solid) .header-cta:hover { background: var(--paper); }
+.page-hero-cine .breadcrumbs { color: rgba(244, 241, 234, 0.8) !important; }
+.page-hero-cine .breadcrumbs a { color: rgba(244, 241, 234, 0.92); }
+.page-hero-cine h1, .hero-cine h1 { text-shadow: 0 2px 24px rgba(14,27,69,.45); }
+.kompass-koord { color: rgba(244,241,234,.9); text-shadow: 0 1px 10px rgba(14,27,69,.6); }

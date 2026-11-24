@@ -11,6 +11,9 @@
   const steuer = (betrag) => e.steuer_hinweis === 'kleinunternehmer' ? 'Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.'
     : e.steuer_hinweis === 'ust19' ? 'Im Betrag von ' + H.geld(betrag) + ' sind 19 % Umsatzsteuer (' + H.geld(Math.round((betrag - betrag / 1.19) * 100) / 100) + ') enthalten.'
     : e.steuer_hinweis === 'frei' ? (e.steuer_text || '') : '';
+  const nw = (t) => '<span style="white-space:nowrap">' + esc(t) + '</span>';   // Angabe + Nummer bleiben in einer Zeile
+  // Landplatz einheitlich mit der Nummer aus dem Hafenplan (P13, A1); die Art steht davor: „Palette P13“, „Außenlager A1“, „Halle H4“
+  const landplatzName = (p) => p ? ({ palette: 'Palette ', aussen: 'Außenlager ', halle: 'Halle ' }[p.art] || '') + p.id : '';
   const kopf = '<div class="r-kopf">' + STANDER + '<div class="r-verein"><strong>' + esc(e.verein_name) + '</strong>' + esc(e.verein_strasse) + '<br>' + esc(e.verein_ort) + '<br>' + esc(e.verein_email) + '</div></div>';
 
   function rechnung(r) {
@@ -39,28 +42,29 @@
       '<p style="margin-top:7mm">' + esc(e.fusstext) + '<br><br>Dein Kassenwart ' + esc(e.kassenwart_name) + '<br><span style="color:#555">für den ' + esc(e.verein_name) + '</span></p>' +
       '<p style="margin-top:4mm;font-size:7.5pt;color:#777">' + (beitrag ? 'Beiträge laut Beitragsordnung des Vereins.' : ver ? 'Kostenbeitrag laut Einladung des Vereins. ' + esc(steuer(r.summe)) : 'Gebühren laut Gebührenordnung des Vereins. ' + esc(steuer(r.summe))) + '</p>' +
       '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort) + '</span><span>' +
-      (r.sepa ? 'Gläubiger-ID ' + esc(e.glaeubiger_id) + ' · Mandatsreferenz ' + esc(r.mandat_ref) + ' · ' : '') + (e.steuernummer ? 'Steuer-Nr. ' + esc(e.steuernummer) : '') + '</span></div></section>';
+      [r.sepa ? nw('Gläubiger-ID ' + e.glaeubiger_id) : '', r.sepa ? nw('Mandatsreferenz ' + r.mandat_ref) : '', e.steuernummer ? nw('Steuer-Nr. ' + e.steuernummer) : ''].filter(Boolean).join(' · ') + '</span></div></section>';
   }
 
   function quittung(g) {
     const gb = window.HAFEN_GEBUEHREN.gebuehrenFuer(d, Number(g.ankunft.slice(0, 4)));
     return '<section class="blatt klein">' + kopf + '<h1 style="margin-top:5mm">Quittung ' + esc(g.quittung_nr) + '</h1>' +
       '<table class="r-tab"><tbody><tr><td>Boot</td><td>„' + esc(g.bootsname) + '“ · ' + H.zahl(g.laenge, 1) + ' m</td></tr><tr><td>Skipper</td><td>' + esc(g.skipper) + (g.herkunft ? ', ' + esc(g.herkunft) : '') + '</td></tr>' +
-      '<tr><td>Liegeplatz</td><td>' + esc(g.platz_id ? (Q.platz(g.platz_id).box === 'L' ? 'Längsseits ' : 'Platz ') + Q.platz(g.platz_id).nr : '') + '</td></tr><tr><td>Zeitraum</td><td>ab ' + H.datum(g.ankunft) + ', ' + g.naechte + ' × ' + H.geld(gb.gast_nacht) + '</td></tr></tbody>' +
+      '<tr><td>Liegeplatz</td><td>' + esc(g.platz_id && Q.platz(g.platz_id) ? (Q.platz(g.platz_id).box === 'L' ? 'Längsseits ' : 'Platz ') + Q.platz(g.platz_id).nr : g.platz_angabe ? (/^\s*platz/i.test(g.platz_angabe) ? '' : 'Platz ') + String(g.platz_angabe).trim() + ' (laut Gast)' : '–') + '</td></tr>' +
+      '<tr><td>Zeitraum</td><td>ab ' + H.datum(g.ankunft) + ', ' + g.naechte + (Number(g.naechte) === 1 ? ' Nacht' : ' Nächte') + ' × ' + H.geld(gb.gast_nacht) + '</td></tr></tbody>' +
       '<tfoot><tr><td>Betrag</td><td class="r">' + H.geld(g.betrag) + '</td></tr></tfoot></table>' +
       '<p>' + (g.bezahlt_am ? (g.zahlung === 'bar' ? 'Betrag bar dankend erhalten am ' : g.zahlung === 'karte' ? 'Betrag per Karte erhalten am ' : g.zahlung === 'paypal' ? 'Betrag per PayPal erhalten am ' : 'Zahlung eingegangen am ') + H.datum(g.bezahlt_am) + '.' : '<strong>Noch nicht bezahlt.</strong>') + ' ' + esc(steuer(g.betrag)) + ' Gute Fahrt und willkommen zurück!</p>' +
-      '<p style="margin-top:10mm;border-top:1px solid #999;width:60mm;padding-top:1mm;font-size:8pt;color:#555">' + esc(e.hafenmeister_name) + ', Hafenmeister · ' + H.datum(g.ankunft) + '</p></section>';
+      '<p style="margin-top:10mm;border-top:1px solid #999;width:60mm;padding-top:1mm;font-size:8pt;color:#555">' + esc(e.hafenmeister_name) + ', Hafenmeister · ' + H.datum(g.bezahlt_am || H.tag(new Date())) + '</p></section>';
   }
 
   function belegungsplan() {
     const saison = HF.aktuelleSaison();
     const bel = Q.belegungen(saison, 'winter').slice().sort((a, b) => a.platz_id.localeCompare(b.platz_id));
-    return '<section class="blatt quer">' + kopf + '<h1 style="margin-top:5mm">Belegungsplan Winterlager ' + saison + '/' + String(saison + 1).slice(2) + '</h1>' +
+    return '<section class="blatt quer mehrseitig">' + kopf + '<h1 style="margin-top:5mm">Belegungsplan Winterlager ' + saison + '/' + String(saison + 1).slice(2) + '</h1>' +
       '<p style="font-size:9pt;color:#555">Reihenfolge beim Ein- und Auslagern nach Belegungsplan und Rangiermöglichkeiten. Boote über ' + Q.maxTxt('kran') + ' werden nicht gekrant.</p>' +
       '<table class="r-tab"><thead><tr><th>Landplatz</th><th>Boot</th><th>Typ</th><th class="r">L × B</th><th class="r">Gewicht</th><th>Eigner</th><th>Telefon</th><th>Hinweis</th><th>gekrant ✓</th></tr></thead><tbody>' +
       bel.map((b) => { const bt = Q.boot(b.boot_id); const m = Q.mitglied(bt.eigner_id);
-        return '<tr><td>' + esc(Q.platz(b.platz_id).bez) + '</td><td>' + esc(bt.name) + '</td><td>' + esc(bt.typ) + '</td><td class="r">' + H.zahl(bt.laenge) + ' × ' + H.zahl(bt.breite) + '</td><td class="r">' + H.zahl(bt.gewicht_t, 1) + ' t</td><td>' + esc(Q.name(m)) + '</td><td>' + esc(m.tel) + '</td><td>' + (b.nicht_kranen ? 'nicht kranen' : '') + (Q.zuSchwer(bt) ? ' über ' + Q.maxTxt() + ' – nicht kranen!' : '') + '</td><td>☐</td></tr>'; }).join('') +
-      '</tbody></table></section>';
+        return '<tr><td class="nw">' + esc(landplatzName(Q.platz(b.platz_id)) || b.platz_id) + '</td><td>' + esc(bt.name) + '</td><td>' + esc(bt.typ) + '</td><td class="r">' + H.zahl(bt.laenge) + ' × ' + H.zahl(bt.breite) + '</td><td class="r">' + H.zahl(bt.gewicht_t, 1) + ' t</td><td>' + esc(Q.name(m)) + '</td><td>' + esc(m.tel) + '</td><td>' + (b.nicht_kranen ? 'nicht kranen' : '') + (Q.zuSchwer(bt) ? ' über ' + Q.maxTxt() + ' – nicht kranen!' : '') + '</td><td>☐</td></tr>'; }).join('') +
+      '</tbody></table><div class="r-fuss"><span>' + esc(e.verein_name) + ' · Belegungsplan Winterlager</span><span>Stand ' + H.datum(H.tag(new Date())) + '</span></div></section>';
   }
 
   function plakat() {
@@ -103,7 +107,7 @@
       (b.beschreibung ? '<p class="b-lead">' + esc(b.beschreibung) + '</p>' : '') +
       '<div class="b-info"><div><span>Leitung</span>' + (leitung.length ? leitung.map((x) => '<strong>' + esc(Q.name(x.m)) + '</strong>' + (kontakt && x.m.tel ? ' · ' + esc(x.m.tel) : '')).join('<br>') : '<em>noch nicht festgelegt</em>') + '</div>' +
         (b.treffpunkt ? '<div><span>Treffpunkt / Hinweise</span>' + esc(b.treffpunkt) + '</div>' : '') +
-        '<div><span>Team</span>' + team.length + ' Mitglieder</div></div>' +
+        '<div><span>Team</span>' + team.length + (team.length === 1 ? ' Mitglied' : ' Mitglieder') + '</div></div>' +
       '<h2>Aufgaben</h2>' + (aufgaben.length ? '<table class="r-tab b-tab"><thead><tr><th style="width:6mm">Nr.</th><th>Aufgabe</th><th style="width:28mm">Wann</th><th class="r" style="width:10mm">Std.*</th><th style="width:25mm">erledigt am</th><th style="width:14mm">von</th></tr></thead><tbody>' +
         aufgaben.map((a, i) => '<tr' + (a.erledigt ? ' class="b-erl"' : '') + '><td>' + (i + 1) + '</td><td><strong>' + esc(a.titel) + '</strong>' + (a.hinweis ? '<br><small>' + esc(a.hinweis) + '</small>' : '') + '</td><td>' + esc(a.zeitraum || '') + '</td><td class="r">' + (a.stunden ? z1(Number(a.stunden)) : '') + '</td><td class="b-feld">' + (a.erledigt ? '✓ ' + H.datum(a.erledigt) : '') + '</td><td class="b-feld"></td></tr>').join('') +
         '</tbody>' + (summe ? '<tfoot><tr><td></td><td colspan="2">Richtwert gesamt</td><td class="r">' + z1(summe) + '</td><td colspan="2"></td></tr></tfoot>' : '') + '</table><p class="b-klein">* Richtwert für die Planung. Geleistete Stunden bitte wie gewohnt melden (QR-Code beim Einsatz oder „Mein SSV“).</p>'
@@ -114,8 +118,8 @@
           return '<tr><td>' + esc(Q.name(m)) + '</td><td>' + (z.rolle === 'leitung' ? '<strong>Leitung</strong>' : 'Mitglied') + '</td>' + (kontakt ? '<td>' + esc(m.tel || '') + '</td><td>' + esc(m.email || '') + '</td>' : '') +
             '<td class="r">' + z1(std(m.id, true)) + '</td><td class="r">' + z1(std(m.id, false)) + (a && !a.befreit && a.soll ? ' / ' + a.soll : a && a.befreit ? ' (befreit)' : '') + '</td></tr>'; }).join('') + '</tbody></table>'
         : '<p class="b-klein">Noch niemand zugeordnet.</p>') +
-      (einsaetze.length ? '<h2>Nächste Arbeitseinsätze</h2><table class="r-tab b-tab"><tbody>' + einsaetze.map((x) => '<tr><td style="width:28mm"><strong>' + H.datum(x.datum) + '</strong></td><td>' + esc(x.titel) + (x.bereich_id ? '' : ' <small>(für alle)</small>') + (x.notiz ? '<br><small>' + esc(x.notiz) + '</small>' : '') + '</td><td class="r">' + esc([x.beginn, x.ende].filter(Boolean).join('–')) + (x.beginn ? ' Uhr' : '') + '</td></tr>').join('') + '</tbody></table>' : '') +
-      '<div class="r-fuss"><span>' + (kontakt ? 'Enthält Kontaktdaten – nur für den Vereinsgebrauch, bitte nicht öffentlich aushängen.' : esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort)) + '</span><span>Stand ' + H.datum(heute) + '</span></div></section>';
+      '<div class="b-ende">' + (einsaetze.length ? '<h2>Nächste Arbeitseinsätze</h2><table class="r-tab b-tab"><tbody>' + einsaetze.map((x) => '<tr><td style="width:28mm"><strong>' + H.datum(x.datum) + '</strong></td><td>' + esc(x.titel) + (x.bereich_id ? '' : ' <small>(für alle)</small>') + (x.notiz ? '<br><small>' + esc(x.notiz) + '</small>' : '') + '</td><td class="r">' + esc([x.beginn, x.ende].filter(Boolean).join('–')) + (x.beginn ? ' Uhr' : '') + '</td></tr>').join('') + '</tbody></table>' : '') +
+      '<div class="r-fuss"><span>' + (kontakt ? 'Enthält Kontaktdaten – nur für den Vereinsgebrauch, bitte nicht öffentlich aushängen.' : esc(e.verein_name) + ' · ' + esc(e.verein_strasse) + ' · ' + esc(e.verein_ort)) + '</span><span>Stand ' + H.datum(heute) + '</span></div></div></section>';
   }
   function bereicheDrucken() {
     const id = q.get('id'); const kontakt = q.get('kontakt') !== '0';
@@ -136,8 +140,8 @@
     const gruppen = gruppenSortiert().filter((b) => id ? b.id === id : true).map((b) => ({ b, a: (b.aufgaben || []).filter((x) => x.art !== 'besorgen' && (status === 'alle' || (status === 'offen' ? !x.erledigt : !!x.erledigt))) })).filter((x) => x.a.length);
     titel('Aufgabenliste' + (id && gruppen[0] ? ' ' + gruppen[0].b.name : ''));
     ziel.innerHTML = '<section class="blatt bereich mehrseitig">' + kopf + '<p class="b-ober">Arbeitsdienst ' + HF.aktuelleSaison() + '</p><h1>Aufgabenliste' + (status === 'offen' ? ' – offen' : status === 'erledigt' ? ' – erledigt' : '') + '</h1>' +
-      (gruppen.length ? gruppen.map(({ b, a }) => '<h2>' + esc(b.name) + ' <small class="b-anz">' + a.length + '</small></h2><table class="r-tab b-tab"><thead><tr><th style="width:8mm">Nr.</th><th>Aufgabe</th><th style="width:28mm">Wann</th><th style="width:24mm">erledigt am</th><th style="width:18mm">von</th></tr></thead><tbody>' +
-        a.map((x) => '<tr' + (x.erledigt ? ' class="b-erl"' : '') + '><td>' + (++n) + '</td><td><strong>' + esc(x.titel) + '</strong>' + (x.hinweis ? '<br><small>' + esc(x.hinweis) + '</small>' : '') + '</td><td>' + esc(x.zeitraum || '') + '</td><td class="b-feld">' + (x.erledigt ? '✓ ' + H.datum(x.erledigt) : '') + '</td><td class="b-feld"></td></tr>').join('') + '</tbody></table>').join('')
+      (gruppen.length ? gruppen.map(({ b, a }) => '<h2>' + esc(b.name) + ' <small class="b-anz">' + a.length + '</small></h2><table class="r-tab b-tab"><thead><tr><th style="width:8mm">Nr.</th><th>Aufgabe</th><th style="width:28mm">Wann</th><th style="width:27mm">erledigt am</th><th style="width:18mm">von</th></tr></thead><tbody>' +
+        a.map((x) => '<tr' + (x.erledigt ? ' class="b-erl"' : '') + '><td>' + (++n) + '</td><td><strong>' + esc(x.titel) + '</strong>' + (x.hinweis ? '<br><small>' + esc(x.hinweis) + '</small>' : '') + '</td><td>' + esc(x.zeitraum || '') + '</td><td class="b-feld nw">' + (x.erledigt ? '✓ ' + H.datum(x.erledigt) : '') + '</td><td class="b-feld"></td></tr>').join('') + '</tbody></table>').join('')
         : '<p>Keine Aufgaben für diese Auswahl.</p>') +
       '<div class="r-fuss"><span>' + esc(e.verein_name) + ' · Aufgabenliste Arbeitsdienst</span><span>Stand ' + H.datum(heute) + '</span></div></section>';
   }
@@ -154,6 +158,8 @@
   if (art === 'rechnungen') {
     const ids = (q.get('ids') || '').split(','); const liste = d.rechnungen.filter((r) => ids.includes(r.id)).sort((a, b) => a.nr.localeCompare(b.nr));
     titel(liste.length === 1 ? 'Rechnung ' + liste[0].nr : liste.length + ' Rechnungen'); ziel.innerHTML = liste.map(rechnung).join('');
+    // Passt eine Rechnung nicht auf ein Blatt (sehr viele Positionen), läuft sie mit Seitenrand weiter – nichts wird abgeschnitten
+    ziel.querySelectorAll('.blatt').forEach((b) => { const r = b.getBoundingClientRect(); if (r.height / r.width * 210 > 297.5) b.classList.add('mehrseitig', 'r-lang'); });
   } else if (art === 'quittung') {
     const g = d.gaeste.find((x) => x.id === q.get('id')); titel('Quittung ' + (g ? g.quittung_nr : '')); ziel.innerHTML = g ? quittung(g) : '';
   } else if (art === 'belegungsplan') { titel('Belegungsplan Winterlager'); ziel.innerHTML = belegungsplan(); }

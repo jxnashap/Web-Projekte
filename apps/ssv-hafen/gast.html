@@ -31,22 +31,22 @@
   .zahlweg h3, .zahlweg summary { margin: 0 0 6px; font-size: 17px; font-family: inherit; font-weight: 700; color: var(--navy); }
   .zahlweg summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; margin: 0; min-height: 28px; }
   .zahlweg summary::-webkit-details-marker { display: none; } .zahlweg summary::after { content: '▾'; color: var(--muted); } .zahlweg[open] summary::after { content: '▴'; } .zahlweg[open] summary { margin-bottom: 6px; }
-  .zahlweg p { margin: 4px 0; font-size: 14px; }
+  .zahlweg p { margin: 4px 0; font-size: 15px; }
   .zahlweg .btn { width: 100%; padding: 13px; margin-top: 8px; font-size: 15px; }
   .kopier { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--sand, #f3efe6); border-radius: 10px; padding: 7px 8px 7px 12px; margin: 6px 0; }
-  .kopier span { min-width: 0; } .kopier small { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .kopier span { min-width: 0; } .kopier small { display: block; font-size: 13.5px; color: var(--muted); }
   .kopier b { font-size: 15px; font-weight: 600; color: var(--navy); overflow-wrap: anywhere; } .kopier button { flex: none; border: 0; background: #fff; border-radius: 8px; padding: 8px 10px; min-height: 40px; font-weight: 600; cursor: pointer; }
   .giro { border-color: var(--navy); }
   .epc { background: #fff; border: 1px solid var(--line); border-radius: 12px; width: min(260px, 100%); margin: 8px auto 4px; padding: 4px; }
   .epc svg { display: block; width: 100%; height: auto; }
   .epc-unter { text-align: center; font-size: 13.5px; color: var(--muted); } .epc-unter strong { color: var(--navy); font-size: 16px; }
-  .epc-tipp { font-size: 12.5px !important; color: var(--muted); text-align: center; margin-top: 2px !important; }
-  .manuell { margin: 8px 0 0; } .manuell summary { cursor: pointer; font-size: 14px; color: var(--navy); font-weight: 600; padding: 6px 0; min-height: 32px; }
+  .epc-tipp { font-size: 14px !important; color: var(--muted); text-align: center; margin-top: 2px !important; }
+  .manuell { margin: 8px 0 0; } .manuell summary { cursor: pointer; font-size: 15px; color: var(--navy); font-weight: 600; padding: 10px 0; min-height: 44px; box-sizing: border-box; }
   .wc-vorher { background: rgba(29,138,90,.08); color: #155f3f; border-radius: 12px; padding: 9px 12px; font-size: 14px; margin: 0 0 14px; }
   .wc { background: #0E1B45; color: #fff; border-radius: 16px; padding: 14px; margin: 12px 0; text-align: center; }
-  .wc small { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+  .wc small { display: block; font-size: 14px; opacity: .85; }
   .wc strong { display: block; font-size: 40px; letter-spacing: .18em; font-variant-numeric: tabular-nums; margin: 2px 0; }
-  .wc p { margin: 4px 0 0; font-size: 13.5px; opacity: .9; }
+  .wc p { margin: 4px 0 0; font-size: 15px; opacity: .9; }
   .wc.warten { background: rgba(214,154,31,.14); color: #6b4b06; } .wc.warten p { opacity: 1; }
   .platz-ok { background: rgba(29,138,90,.1); color: #155f3f; border-radius: 12px; padding: 10px 12px; text-align: center; font-weight: 600; }
   .platz-pruef { background: rgba(214,154,31,.14); color: #6b4b06; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
@@ -81,8 +81,8 @@
       <button class="btn primaer" style="width:100%;margin-top:4px;padding:14px;font-size:16px" data-t="senden">Anmelden &amp; bezahlen</button>
     </form>
   </div>
-  <p style="color:rgba(255,255,255,.6);text-align:center;font-size:12px;margin-top:16px" data-t="ds">Deine Angaben nutzen wir nur für die Liegeplatzvergabe und Abrechnung.</p>
-  <p style="text-align:center;font-size:12px;margin-top:6px"><a style="color:#fff" href="../website/datenschutz.html#gaeste">Datenschutz / Privacy</a> · <a style="color:#fff" href="../website/impressum.html">Impressum</a></p>
+  <p style="color:rgba(255,255,255,.7);text-align:center;font-size:14px;margin-top:16px" data-t="ds">Deine Angaben nutzen wir nur für die Liegeplatzvergabe und Abrechnung.</p>
+  <p style="text-align:center;font-size:14px;margin-top:6px"><a style="color:#fff;display:inline-block;padding:8px 2px" href="../website/datenschutz.html#gaeste">Datenschutz / Privacy</a> · <a style="color:#fff;display:inline-block;padding:8px 2px" href="../website/impressum.html">Impressum</a></p>
 </div>
 <div class="toast" id="toast"></div>
 <script src="js/config.js"></script>
@@ -114,7 +114,7 @@
       bild: 'Als Bild speichern', bildT: 'Nur ein Handy? Bild speichern und in der Banking-App bei „QR-Code/Foto-Überweisung“ aus den Fotos wählen.', manuell: 'Lieber von Hand eintippen',
       wcVor: 'Nach dem Bezahlen bekommst du hier den Code für WC & Duschen.', wcVorB: 'Sobald deine Zahlung bestätigt ist, bekommst du hier den Code für WC & Duschen.',
       wcCode: 'Code für WC & Duschen', wcWarten: 'Den Code für WC & Duschen siehst du hier, sobald der Hafenmeister deine Zahlung bestätigt hat – meist am selben Tag.', pruefen: 'Neu prüfen',
-      fertig: 'Danke – gute Zeit bei uns!', fertigT: 'Wir haben deine Zahlung vermerkt ({a}). Eine Quittung bekommst du beim Hafenmeister.', fragen: 'Fragen?', neu: 'Neue Anmeldung', wa: { paypal: 'PayPal', ueberweisung: 'Überweisung', bar: 'bar' } },
+      fertig: 'Danke – gute Zeit bei uns!', fertigT: 'Wir haben deine Zahlung vermerkt ({a}). Eine Quittung bekommst du beim Hafenmeister.', fragen: 'Fragen?', neu: 'Neue Anmeldung', wa: { paypal: 'PayPal', ueberweisung: 'Überweisung', bar: 'bar' }, platzW: 'Platz', hm: 'Hafenmeister', q: ['„', '“'] },
     en: { titel: 'Welcome aboard!', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', s1: 'Green sign? Just moor up.', s2: 'Register here – the berth number is on the sign.', s3: 'Pay right away. Done – no need to wait for anyone.',
       platz: 'Berth number (on the sign)', ph: 'e.g. 27 or L1', boot: 'Boat name', skipper: 'Skipper', hafen: 'Home port', tel: 'Phone', laenge: 'Length (m)', breite: 'Beam (m)', tiefgang: 'Draught (m)', ankunft: 'Arrival', naechte: 'Nights', senden: 'Register & pay',
       ds: 'Controller: Schwartauer Segler-Verein e.V. We only use your details for your berth and billing and delete contact details 12 months after departure.', fehler: 'That did not work – please try again or call the harbour master.',
@@ -125,7 +125,7 @@
       bild: 'Save as image', bildT: 'Only one phone? Save the image and open it in your banking app’s QR/photo transfer.', manuell: 'Type it in manually',
       wcVor: 'After paying you will see the code for toilets & showers here.', wcVorB: 'Once your payment is confirmed you will see the code for toilets & showers here.',
       wcCode: 'Code for toilets & showers', wcWarten: 'You will see the code for toilets & showers here as soon as the harbour master has confirmed your payment.', pruefen: 'Check again',
-      fertig: 'Thank you – enjoy your stay!', fertigT: 'We have noted your payment ({a}). Ask the harbour master for a receipt.', fragen: 'Questions?', neu: 'New registration', wa: { paypal: 'PayPal', ueberweisung: 'bank transfer', bar: 'cash' } },
+      fertig: 'Thank you – enjoy your stay!', fertigT: 'We have noted your payment ({a}). Ask the harbour master for a receipt.', fragen: 'Questions?', neu: 'New registration', wa: { paypal: 'PayPal', ueberweisung: 'bank transfer', bar: 'cash' }, platzW: 'Berth', hm: 'Harbour master', q: ['“', '”'] },
     da: { titel: 'Velkommen!', unter: 'Schwartauer Segler-Verein · Teerhofinsel, Lübeck', s1: 'Grønt skilt? Bare fortøj.', s2: 'Tilmeld dig her – pladsnummeret står på skiltet.', s3: 'Betal med det samme. Færdig – du skal ikke vente på nogen.',
       platz: 'Pladsnummer (på skiltet)', ph: 'f.eks. 27 eller L1', boot: 'Bådens navn', skipper: 'Skipper', hafen: 'Hjemhavn', tel: 'Telefon', laenge: 'Længde (m)', breite: 'Bredde (m)', tiefgang: 'Dybgang (m)', ankunft: 'Ankomst', naechte: 'Nætter', senden: 'Tilmeld & betal',
       ds: 'Dataansvarlig: Schwartauer Segler-Verein e.V. Vi bruger kun dine oplysninger til plads og afregning og sletter kontaktdata 12 måneder efter afrejse.', fehler: 'Det lykkedes ikke – prøv igen eller ring til havnefogeden.',
@@ -136,7 +136,7 @@
       bild: 'Gem som billede', bildT: 'Kun én telefon? Gem billedet og åbn det i bank-appens QR/foto-overførsel.', manuell: 'Indtast manuelt',
       wcVor: 'Efter betalingen får du her koden til toiletter & bad.', wcVorB: 'Når din betaling er bekræftet, får du her koden til toiletter & bad.',
       wcCode: 'Kode til toiletter & bad', wcWarten: 'Koden til toiletter & bad vises her, så snart havnefogeden har bekræftet din betaling.', pruefen: 'Tjek igen',
-      fertig: 'Tak – god fornøjelse!', fertigT: 'Vi har noteret din betaling ({a}). Kvittering får du hos havnefogeden.', fragen: 'Spørgsmål?', neu: 'Ny tilmelding', wa: { paypal: 'PayPal', ueberweisung: 'bankoverførsel', bar: 'kontant' } }
+      fertig: 'Tak – god fornøjelse!', fertigT: 'Vi har noteret din betaling ({a}). Kvittering får du hos havnefogeden.', fragen: 'Spørgsmål?', neu: 'Ny tilmelding', wa: { paypal: 'PayPal', ueberweisung: 'bankoverførsel', bar: 'kontant' }, platzW: 'Plads', hm: 'Havnefoged', q: ['»', '«'] }
   };
   // Sprache des Handys übernehmen (dänische und andere Gäste sehen nicht zuerst Deutsch)
   // Aus der Hafenkarte kommt der Gast mit Platz, Anreise und Nächten im Link (hafenplan.html → „Hier anmelden“)
@@ -208,7 +208,7 @@
   }
   const haken = '<svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="rgba(29,138,90,.1)" stroke="#1d8a5a" stroke-width="4"/><path d="M24 41l11 11 22-24" fill="none" stroke="#1d8a5a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const kopier = (label, wert, anzeige) => '<div class="kopier"><span><small>' + label + '</small><b>' + esc(anzeige || wert) + '</b></span><button type="button" data-kopie="' + esc(wert) + '">' + T[lang].kopieren + '</button></div>';
-  const kontakt = () => '<p style="text-align:center;margin-top:14px">' + T[lang].fragen + ' <strong>' + esc(e.hafenmeister_name) + '</strong>' + (e.hafenmeister_tel ? ' · <a href="tel:' + esc(telLink(e.hafenmeister_tel)) + '">' + esc(e.hafenmeister_tel) + '</a>' : '') + '</p>';
+  const kontakt = () => '<p style="text-align:center;margin-top:14px">' + T[lang].fragen + ' <strong>' + esc(e.hafenmeister_name && e.hafenmeister_name !== 'Hafenmeister' ? e.hafenmeister_name : T[lang].hm) + '</strong>' + (e.hafenmeister_tel ? ' · <a href="tel:' + esc(telLink(e.hafenmeister_tel)) + '">' + esc(e.hafenmeister_tel) + '</a>' : '') + '</p>';
   // ---------- Toilettencode (Demo rechnet wie die Datenbank-Funktion _gast_code)
   const toiletteRegel = () => SB ? (e.toilette || '') : ((d.toilette && d.toilette.code && d.toilette.regel) || '');
   function demoStatus() {
@@ -246,7 +246,7 @@
     const t = T[lang], a = anm;
     clearInterval(abfrage); abfrage = null;
     if (a.gemeldet) {
-      karte.innerHTML = '<div class="danke">' + haken + '<h2 style="margin:8px 0 6px">' + t.fertig + '</h2><p>„' + esc(a.boot) + '“ · ' + (a.platz ? 'Platz ' + esc(a.platz) + ' · ' : '') + H.geld(a.betrag) + '</p>' + wcBox(a, t) +
+      karte.innerHTML = '<div class="danke">' + haken + '<h2 style="margin:8px 0 6px">' + t.fertig + '</h2><p>' + t.q[0] + esc(a.boot) + t.q[1] + ' · ' + (a.platz ? t.platzW + ' ' + esc(a.platz) + ' · ' : '') + H.geld(a.betrag) + '</p>' + wcBox(a, t) +
         '<p>' + t.fertigT.replace('{a}', t.wa[a.gemeldet]) + '</p>' + kontakt() + '<p style="margin-top:14px"><button class="btn" id="neu-anm" type="button">' + t.neu + '</button></p></div>';
       document.getElementById('neu-anm').addEventListener('click', () => { clearInterval(abfrage); anm = null; merken(null); formular(); });
       const wn = document.getElementById('wc-neu'); if (wn) wn.addEventListener('click', statusHolen);
@@ -267,7 +267,7 @@
     wege.push('<div class="zahlweg"><h3>' + t.bar + '</h3><p>' + (lang === 'de' && e.gast_bar_hinweis ? esc(e.gast_bar_hinweis) : t.barT) + '</p><button class="btn" type="button" data-bezahlt="bar">' + t.barK + '</button></div>');
     const regel = toiletteRegel();
     karte.innerHTML = '<div class="' + (a.platz_ok ? 'platz-ok' : 'platz-pruef') + '" role="status">' + (a.platz_ok ? '✓ ' + t.angemeldet + ' · ' + t.platzOk.replace('{p}', esc(a.platz)) : (a.platz ? t.platzPruef.replace('{p}', esc(a.platz)) : t.platzOhne)) + '</div>' +
-      '<div class="betrag"><p style="margin:14px 0 0">' + t.gebuehr + ' „' + esc(a.boot) + '“ · ' + a.naechte + ' × ' + H.geld(a.betrag / a.naechte) + '</p><strong>' + H.geld(a.betrag) + '</strong></div>' +
+      '<div class="betrag"><p style="margin:14px 0 0">' + t.gebuehr + ' ' + t.q[0] + esc(a.boot) + t.q[1] + ' · ' + a.naechte + ' × ' + H.geld(a.betrag / a.naechte) + '</p><strong>' + H.geld(a.betrag) + '</strong></div>' +
       (regel ? '<p class="wc-vorher">🔑 ' + (regel === 'bestaetigt' ? t.wcVorB : t.wcVor) + '</p>' : '') +
       '<h2 style="font-size:19px;margin:0 0 10px">' + t.wie + '</h2><div class="zahlwege">' + wege.join('') + '</div><p class="hinweis fehler" id="zahl-fehler" role="alert" hidden></p>' + kontakt();
     karte.querySelectorAll('[data-kopie]').forEach((b) => b.addEventListener('click', async () => {

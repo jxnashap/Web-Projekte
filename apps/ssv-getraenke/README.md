@@ -1,7 +1,7 @@
 # SSV Getränkekasse
 
 iPad-Kasse für den Getränkekasten im Schwartauer Segler-Verein: Mitglied
-suchen → 4-stellige PIN → Getränk antippen → Menge oder ganzer Kasten →
+suchen → 4-stelliger Code → Getränk antippen → Menge oder ganzer Kasten →
 buchen. Der Kassenwart rechnet per Knopfdruck ab und bekommt fertige
 A4-Rechnungen, die zugleich als SEPA-Vorabankündigung dienen,
 SEPA-Liste und CSV-Export.
@@ -19,7 +19,7 @@ cd apps/ssv-getraenke && python3 -m http.server 8080
 # Kassenwart: http://localhost:8080/kassenwart.html   (kassenwart@demo / demo)
 ```
 
-Die Demo bringt 24 erfundene Mitglieder (PIN überall `1234`), 8 Getränke
+Die Demo bringt 24 erfundene Mitglieder (Code überall `1234`), 8 Getränke
 mit **Beispielpreisen [PLATZHALTER]** und rund 10 Wochen Buchungsverlauf
 mit.
 
@@ -41,9 +41,9 @@ Nach 60 Sekunden ohne Eingabe meldet sich die Kasse von allein ab.
 
 - **Übersicht:** Monatsumsatz, offene Beträge, meistgebuchte Getränke.
 - **Mitglieder:** anlegen, CSV-Import (z. B. Liste aus Excel, auch auf dem
-  iPad über die Dateien-App), Mandatsreferenz, PIN
-  vergeben oder „Code zurücksetzen“ (das Mitglied legt dann selbst einen neuen fest). Eine PIN wird nur einmal angezeigt und ist danach nur
-  verschlüsselt gespeichert. PIN-Zettel lassen sich drucken (10 pro A4-Seite).
+  iPad über die Dateien-App), Mandatsreferenz, Code
+  vergeben oder „Code zurücksetzen“ (das Mitglied legt dann selbst einen neuen fest). Ein Code wird nur einmal angezeigt und ist danach nur
+  verschlüsselt gespeichert. Code-Zettel lassen sich drucken (10 pro A4-Seite, mit Vereinskopf).
 - **Getränke & Preise:** Kacheln, Symbol, Farbe, Stück- und Kastenpreis.
 - **Buchungen:** Filter, Storno, Nachtragen, CSV-Export.
 - **Abrechnung:** Zeitraum wählen (letzter Monat, Quartal, Saison …),
@@ -53,8 +53,14 @@ Nach 60 Sekunden ohne Eingabe meldet sich die Kasse von allein ab.
   Mandatsreferenz, Gläubiger-ID. Mitglieder ohne Mandat bekommen stattdessen
   die Bankverbindung zur Überweisung.
   Danach: drucken oder als PDF sichern (mit Anlage der Einzelbuchungen),
-  als bezahlt markieren, stornieren, E-Mail-Entwurf öffnen, SEPA-Liste und
-  Rechnungsliste als CSV.
+  per E-Mail senden, als bezahlt markieren, stornieren (im ⋯-Menü der Zeile),
+  Rechnungsliste als CSV. **Lastschrift (SEPA-Datei):** offene Lastschrift-Rechnungen
+  als SEPA-XML (pain.008.001.08, mit `../ssv-hafen/js/sepa.js`) für die Sammellastschrift
+  im Online-Banking; IBAN/BIC/Mandatsdatum kommen aus dem gemeinsamen Mitgliederstamm
+  (Demo: Hafen-Manager, Datenbank: `mitglieder_bank`), Vereins-IBAN/Gläubiger-ID aus den
+  Kassen-Einstellungen, sonst aus dem Hafen-Manager. Schon eingereichte Rechnungen merkt
+  sich die Kasse (`einstellungen.sepa_laeufe`), damit nichts doppelt eingezogen wird.
+  Lange Rechnungen/Anlagen laufen im Druck auf Folgeseiten weiter; knapp zu lange werden etwas enger gesetzt und bleiben einseitig (nie eine Seite nur mit Fußzeile).
 - **Einstellungen:** Vereinsdaten, Bankverbindung, Steuerhinweis,
   Zahlungsziel, Storno- und Abmeldezeit, Code selbst festlegen (an/aus) und
   Mitgliedsnummer abfragen (an/aus).
@@ -80,8 +86,8 @@ Datenbank. `supabase/schema.sql` enthält das fertige, lokal mit PostgreSQL 16
 getestete Schema:
 
 - Die Kasse sieht nur Namen und darf nur buchen. Jede Anfrage braucht den
-  Geräteschlüssel des freigeschalteten iPads und die PIN des Mitglieds.
-- PINs werden als bcrypt-Hash gespeichert. Auch der Kassenwart sieht sie nie.
+  Geräteschlüssel des freigeschalteten iPads und den Code des Mitglieds.
+- Codes werden als bcrypt-Hash gespeichert. Auch der Kassenwart sieht sie nie.
 - Preise berechnet ausschließlich die Datenbank, nie das Gerät.
 - Rechnungen entstehen atomar, mit fortlaufender Nummer.
 
@@ -114,7 +120,7 @@ App festsetzen.
 ```
 index.html          Kasse (iPad)
 kassenwart.html     Verwaltung
-drucken.html        Rechnungen und PIN-Zettel (A4, Druck/PDF)
+drucken.html        Rechnungen und Code-Zettel (A4, Druck/PDF)
 js/config.js        Modus: demo oder supabase
 js/store.js         Datenschicht (Demo- und Datenbank-Speicher, gleiche Schnittstelle)
 js/kiosk.js         Kassen-Logik
