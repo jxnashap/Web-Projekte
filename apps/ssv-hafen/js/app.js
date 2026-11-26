@@ -99,6 +99,8 @@
       if (name) i.setAttribute('aria-label', name.trim());
     });
   }).observe(document.getElementById('main'), { childList: true, subtree: true });
+  // Bildschirm-Ansicht als PDF-Blatt im SSV-Briefkopf (ohne Knöpfe); iPad: „In Dateien sichern“
+  const pdfAusAnsicht = (el, titel) => window.SSV_PDF ? window.SSV_PDF.ausAnsicht(el, { titel: 'SSV ' + titel, ueberschrift: titel, kopfHtml: druckKopf() }) : toast('PDF-Baustein fehlt – bitte „Drucken“ nehmen.', 'fehler');
   function kopf(titel, unter, aktionen) { return '<div class="kopf"><div><h1>' + titel + '</h1>' + (unter ? '<p>' + unter + '</p>' : '') + '</div><div class="aktionen">' + (aktionen || '') + '</div></div>'; }
   const DEMO = DB ? '' : '<div class="demo-band"><strong>Demo:</strong> alle Daten sind erfunden und bleiben in diesem Browser.</div>';
   const planAnnahme = () => !d.einstellungen.plan_bestaetigt;
@@ -292,8 +294,9 @@
       '<label class="feld">Papier<select name="papier"><option value="A4">A4 quer</option><option value="A3">A3 quer</option></select></label>' +
       '<label class="feld">Farben<select name="farbe"><option value="hell">Hell (spart Tinte)</option><option value="voll">Kräftig wie am Bildschirm</option></select></label>' +
       '<label class="feld check voll"><input type="checkbox" name="liste" checked> Belegungsliste (Platz · Boot · Eigner) auf einem zweiten Blatt</label></form>' +
-      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn primaer" id="pd-ok">Drucken</button></div>');
-    $('#pd-ok').addEventListener('click', () => { const f = new FormData($('#pdf')); const o = { modus: f.get('modus'), ansicht: f.get('ansicht') === 'jetzt' ? jetzt : f.get('ansicht'), papier: f.get('papier'), hell: f.get('farbe') === 'hell', liste: !!f.get('liste') }; zu(); planDrucken(pl, o); });
+      '<div class="modal-fuss"><button class="btn" data-zu>Abbrechen</button><button class="btn" id="pd-pdf">Als PDF sichern</button><button class="btn primaer" id="pd-ok">Drucken</button></div>');
+    const wahl = (pdf) => { const f = new FormData($('#pdf')); const o = { modus: f.get('modus'), ansicht: f.get('ansicht') === 'jetzt' ? jetzt : f.get('ansicht'), papier: f.get('papier'), hell: f.get('farbe') === 'hell', liste: !!f.get('liste'), pdf }; zu(); planDrucken(pl, o); };
+    $('#pd-ok').addEventListener('click', () => wahl(false)); $('#pd-pdf').addEventListener('click', () => wahl(true));
   }
   function planDrucken(pl, o) {
     const alt = $('#plan-druckseite'); if (alt) alt.remove();
@@ -301,7 +304,8 @@
     const leer = o.modus === 'leer', winter = o.modus === 'winter'; const per = winter ? 'winter' : 'sommer';
     const titel = (pl ? 'Planung „' + pl.name + '“' : 'Hafenplan') + ' · ' + (leer ? 'Lageplan' : winter ? 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) : 'Sommer ' + SAISON + ' · Stand ' + H.datum(planStand.datum));
     seite.style.setProperty('--pd-h', o.papier === 'A3' ? '218mm' : '134mm');
-    seite.innerHTML = '<div class="pd-blatt1">' + druckKopf() + '<div class="pd-titel"><h1>' + esc(titel) + '</h1><span>gedruckt am ' + H.datum(heute) + ' · Maßstab siehe Leiste · Norden oben</span></div><div class="pd-plan" id="pd-plan"></div>' +
+    if (o.pdf) { seite.classList.add('pdf-modus'); seite.style.setProperty('--pd-w', o.papier === 'A3' ? '420mm' : '297mm'); }
+    seite.innerHTML = '<div class="pd-blatt1 pdf-eine-seite">' + druckKopf() + '<div class="pd-titel"><h1>' + esc(titel) + '</h1><span>gedruckt am ' + H.datum(heute) + ' · Maßstab siehe Leiste · Norden oben</span></div><div class="pd-plan" id="pd-plan"></div>' +
       '<div class="pd-legende">' + (leer ? '' : winter ? '<span><i class="lg-boot plane"></i>an Land belegt</span><span><i class="lg-feld leer"></i>frei</span>' :
         '<span><i class="lg-boje gruen"></i>frei für Gäste</span><span><i class="lg-boje rot"></i>belegt</span><span><i class="lg-boot"></i>Dauerlieger</span><span><i class="lg-boot gast"></i>Gastlieger</span><span><i class="lg-boot saison"></i>Saison-Gast</span><span><i class="lg-feld gruen"></i>grünes Schild</span>') +
       (pl ? '<span><i class="lg-feld neu"></i>neuer Platz (Planung)</span>' : '') + '<span class="pd-quelle">Grundlage: amtliches Luftbild · ' + esc(PLAN.QUELLE.replace('Luftbild: ', '')) + '</span></div></div>';
@@ -326,6 +330,11 @@
       blatt.innerHTML = druckKopf() + '<div class="pd-titel"><h1>Belegungsliste · ' + esc(winter ? 'Winterlager ' + SAISON + '/' + String(SAISON + 1).slice(2) : 'Sommer ' + SAISON + ' · Stand ' + H.datum(planStand.datum)) + '</h1></div><div class="pd-zwei">' +
         Array.from({ length: spalten }, (_, i) => zeilen.slice(i * je, (i + 1) * je)).filter((z) => z.length).map(tab).join('') + '</div>';
       seite.appendChild(blatt);
+    }
+    if (o.pdf) {   // echte PDF-Datei statt Druckfenster (iPad: „In Dateien sichern“)
+      if (!window.SSV_PDF) { seite.remove(); return toast('PDF-Baustein fehlt – bitte „Drucken“ nehmen.', 'fehler'); }
+      window.SSV_PDF.sichern(seite.querySelectorAll('.pd-blatt1, .pd-blatt2'), { titel: 'SSV ' + titel, quer: true, papier: o.papier }).finally(() => seite.remove());
+      return;
     }
     const st = document.createElement('style'); st.id = 'plan-druck-seite'; st.textContent = '@page { size: ' + o.papier + ' landscape; margin: 9mm; }'; document.head.appendChild(st);
     document.body.classList.add('druckt-plan');
@@ -1029,7 +1038,7 @@
     const nachArt = Object.keys(H.ART).filter((k) => k !== 'gast').map((k) => { const n = liste.filter((m) => m.art === k).length; return [H.ART[k], n, B[k] ? B[k].verband : 0, n * (B[k] ? B[k].verband : 0)]; }).filter((z) => z[1]);
     const luecken = liste.filter((m) => !m.geburtsdatum || !m.geschlecht);
     main.innerHTML = druckKopf() + kopf('Verbandsmeldung ' + jahr, 'Bestandserhebung zum Stichtag ' + H.datum(stichtag) + ' · ' + liste.length + ' Mitglieder (ohne Saison-Gäste)',
-      [SAISON, SAISON + 1].map((j) => '<button class="btn' + (j === jahr ? ' aktiv' : '') + '" data-vj="' + j + '">' + j + '</button>').join('') + '<button class="btn" id="vcsv">CSV</button><button class="btn" id="vdruck">Drucken</button>') +
+      [SAISON, SAISON + 1].map((j) => '<button class="btn' + (j === jahr ? ' aktiv' : '') + '" data-vj="' + j + '">' + j + '</button>').join('') + '<button class="btn" id="vcsv">CSV</button><button class="btn" id="vpdf">Als PDF sichern</button><button class="btn" id="vdruck">Drucken</button>') +
       '<div class="panel"><h2>Nach Alter und Geschlecht</h2><table class="tab"><thead><tr><th>Altersgruppe</th><th class="r">männlich</th><th class="r">weiblich</th><th class="r">divers</th><th class="r">ohne Angabe</th><th class="r">gesamt</th></tr></thead><tbody>' +
       tabelle.map((z) => '<tr><td>' + z[0] + '</td>' + z.slice(1).map((v, i) => '<td class="r">' + (i === 4 ? '<strong>' + v + '</strong>' : v || '–') + '</td>').join('') + '</tr>').join('') +
       '</tbody><tfoot><tr>' + summe.map((v, i) => '<td' + (i ? ' class="r"' : '') + '>' + v + '</td>').join('') + '</tr></tfoot></table>' +
@@ -1043,6 +1052,7 @@
     main.querySelectorAll('[data-vj]').forEach((b) => b.addEventListener('click', () => { verbandStand.jahr = Number(b.dataset.vj); zeige('verband'); }));
     main.querySelectorAll('[data-m]').forEach((r) => r.addEventListener('click', () => mitgliedAkte(Q.mitglied(r.dataset.m))));
     $('#vdruck').addEventListener('click', () => window.print());
+    $('#vpdf').addEventListener('click', () => pdfAusAnsicht(main, 'Bestandserhebung ' + jahr));
     $('#vcsv').addEventListener('click', () => download('ssv-bestandserhebung-' + jahr + '.csv', csv([['Bestandserhebung ' + jahr + ', Stichtag ' + H.datum(stichtag)], ['Altersgruppe', 'männlich', 'weiblich', 'divers', 'ohne Angabe', 'gesamt']]
       .concat(tabelle, [summe], [[]], [['Mitgliedsart', 'Anzahl', 'Verbandsbeitrag je Person', 'Verbandsbeitrag gesamt']], nachArt.map((z) => [z[0], z[1], H.zahl(z[2]), H.zahl(z[3])]))), 'text/csv'));
   };
@@ -1971,7 +1981,7 @@
     const ok = K.status === 'ok';
     const krUeber = K.re.filter((r) => !r.storniert_am && !r.bezahlt_am && r.faellig && r.faellig < heute);
     const frei = K.bu.filter((b) => !b.rechnung_id && !b.storniert_am);
-    const unbest = K.bu.filter((b) => !b.bestaetigt_am && !b.storniert_am);
+    const ohneFg = K.re.filter((r) => !r.storniert_am && !r.freigegeben_am);
     const kurzM = (mm) => { const n = FZ.MONATE[Number(mm.slice(5, 7)) - 1]; return (n.length > 4 ? n.slice(0, 3) + '.' : n) + ' ' + mm.slice(0, 4); };
     const zelle = (s, k, mm, l) => '<td class="r" data-l="' + l + '">' + (k === 'getraenke' && !ok ? kasseZeile(K, '') : fgeld(s[k])) + '</td>';
     const todo = laufend ? finTodo() : [];
@@ -1982,7 +1992,7 @@
         '<div class="kz"><small>Zu klären · Hafen</small><strong style="color:' + (kl.length + gm.length ? 'var(--rot)' : 'inherit') + '">' + (kl.length + gm.length) + '</strong><span>' + kl.length + ' überfällig oder Rücklastschrift · ' + gm.length + ' Gastzahlung' + (gm.length === 1 ? '' : 'en') + ' gemeldet</span></div></div>' +
       '<p class="fin-getr"><strong>Getränke:</strong> ' + (ok ? (krUeber.length ? krUeber.length + ' Monatsrechnung' + (krUeber.length === 1 ? '' : 'en') + ' überfällig' : 'keine Monatsrechnung überfällig') + ' · ' + H.geld(frei.reduce((x, b) => x + Number(b.betrag), 0)) + ' in ' + frei.length + ' Buchungen noch nicht abgerechnet'
         : K.status === 'laden' ? 'wird geladen …' : K.status === 'aus' ? 'Getränkekasse nicht verbunden' : 'nicht lesbar: ' + esc(K.fehler)) +
-        (ok && darf('getraenke') ? ' · <a href="#getraenke">' + (unbest.length ? '<span class="tag warn">' + unbest.length + ' unbestätigt</span> – Freigabe durch den Kassenwart' : '<span class="tag ok">alle bestätigt</span>') + '</a>' : '') + (KASSE() ? ' · <a href="' + KASSE_URL + '" target="_blank" rel="noopener">in der Getränkekasse klären ↗</a>' : '') + '</p>' +
+        (ok && darf('getraenke') ? ' · <a href="#getraenke">' + (ohneFg.length ? '<span class="tag warn">' + ohneFg.length + (ohneFg.length === 1 ? ' Rechnung' : ' Rechnungen') + ' nicht freigegeben</span> – Freigabe durch den Kassenwart' : '<span class="tag ok">alle Rechnungen freigegeben</span>') + '</a>' : '') + (KASSE() ? ' · <a href="' + KASSE_URL + '" target="_blank" rel="noopener">in der Getränkekasse klären ↗</a>' : '') + '</p>' +
       (laufend ? '<div class="panel"><h2>Diesen Monat zu tun</h2>' + (todo.length ? finTodoHtml(todo) : '<p class="leer">Nichts offen – alles abgeglichen.</p>') + '</div>' : '') +
       '<div class="panel"><h2>Eingänge nach Bereich</h2><p class="fin-wie">Gezählt nach Zahlungsdatum: Überweisung und Lastschrift am Tag der Buchung, Gäste am Tag der Zahlung, Getränke am „bezahlt am“. Rücklastschriften sind abgezogen.</p>' +
         '<table class="tab fin-tab fk"><thead><tr><th>Bereich</th><th class="r">' + kurzM(m) + '</th><th class="r">' + kurzM(vm) + '</th><th class="r">' + kurzM(vj) + '</th></tr></thead><tbody>' +
@@ -2562,54 +2572,62 @@
    * Liegegebühren (Sommer/Winter, nach Abrechnungsjahr) und Gastlieger nach Monat oder Saison.
    * Gäste zählen im Monat ihrer Ankunft (ein Aufenthalt über den Monatswechsel zählt ganz zum Ankunftsmonat). Barbestand gibt es hier nicht. */
   const hgStand = { modus: 'monat', monat: heute.slice(0, 7), saison: SAISON };
-  /* Finanzen → Getränke: alle Buchungen am Getränke-iPad mit Freigabe-Stand. Der Kassenwart bestätigt (auch hier),
-     der Vorstand sieht alles mit „unbestätigt“ / „bestätigt von … am …“ (Datenbank lässt nur den Kassenwart bestätigen, Nachtrag 20). */
-  const grStand = { monat: heute.slice(0, 7), freigabe: '', such: '' };
+  /* Finanzen → Getränke: alle Buchungen am Getränke-iPad je Monat (ohne Bestätigung) und die Monatsrechnungen mit Freigabe-Stand.
+     Der Kassenwart gibt die Rechnungen am Monatsende frei (auch hier), der Vorstand sieht „noch nicht freigegeben“ / „freigegeben von … am …“
+     (die Datenbank lässt nur den Kassenwart freigeben, Nachtrag 20). */
+  const grStand = { monat: heute.slice(0, 7), such: '' };
   V.getraenke = (main) => {
     const kasse = KASSE(); const monate = finMonate();
-    main.innerHTML = kopf('Getränke', 'Alle Buchungen am Getränke-iPad – mit Freigabe durch den Kassenwart.', KASSE() ? '<a class="btn" href="' + KASSE_URL + '" target="_blank" rel="noopener">Kassenwart-Bereich öffnen ↗</a>' : '') +
+    main.innerHTML = kopf('Getränke', 'Alle Buchungen am Getränke-iPad und die Monatsrechnungen – mit Freigabe durch den Kassenwart.', KASSE() ? '<a class="btn" href="' + KASSE_URL + '" target="_blank" rel="noopener">Kassenwart-Bereich öffnen ↗</a>' : '') +
       '<div class="fin-leiste"><div class="fin-wahl"><button type="button" class="btn klein fin-pfeil" data-grschritt="-1" aria-label="Monat davor">◀</button><select id="gr-monat" aria-label="Monat">' +
         monate.map((m) => '<option value="' + m + '"' + (m === grStand.monat ? ' selected' : '') + '>' + FZ.monatText(m) + '</option>').join('') + '</select><button type="button" class="btn klein fin-pfeil" data-grschritt="1" aria-label="Monat danach"' + (grStand.monat >= heute.slice(0, 7) ? ' disabled' : '') + '>▶</button></div>' +
-        '<label class="gr-filter">Freigabe <select id="gr-freigabe">' + [['', 'alle'], ['offen', 'unbestätigt'], ['ok', 'bestätigt']].map(([k, t]) => '<option value="' + k + '"' + (grStand.freigabe === k ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></label>' +
         '<input class="suche gr-such" id="gr-such" type="search" placeholder="Name oder Getränk …" aria-label="Suchen" value="' + esc(grStand.such) + '"></div>' +
       '<div id="gr-inhalt"><p class="leer">Wird geladen …</p></div>';
     main.querySelectorAll('[data-grschritt]').forEach((b) => b.addEventListener('click', () => { grStand.monat = FZ.monatPlus(grStand.monat, Number(b.dataset.grschritt)); zeige('getraenke', true); }));
     $('#gr-monat').addEventListener('change', (e) => { grStand.monat = e.target.value; zeige('getraenke', true); });
-    $('#gr-freigabe').addEventListener('change', (e) => { grStand.freigabe = e.target.value; malen(); });
     $('#gr-such').addEventListener('input', (e) => { grStand.such = e.target.value; malen(); });
     const ziel = $('#gr-inhalt');
     if (!kasse) { ziel.innerHTML = '<p class="hinweis warn">Die Getränkekasse ist nicht verbunden.</p>'; return; }
-    let bu = [], namen = new Map(), rnr = new Map(), darfOk = false;
+    let bu = [], re = [], namen = new Map(), darfOk = false;
     const nm = (id) => namen.get(id) || '–';
-    const grNorm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss');
+    const grNorm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ß/g, 'ss');
+    const zeit = (z) => H.datum(z) + ', ' + new Date(z).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
     const malen = () => {
       if (!ziel.isConnected) return;
-      const f = grNorm(grStand.such.trim()); const fr = grStand.freigabe;
-      const liste = bu.filter((b) => (!fr || (fr === 'offen' ? !b.bestaetigt_am && !b.storniert_am : !!b.bestaetigt_am)) && (!f || grNorm(nm(b.mitglied_id) + ' ' + b.produkt_name).includes(f)));
-      const gilt = bu.filter((b) => !b.storniert_am); const ok = gilt.filter((b) => b.bestaetigt_am); const unb = gilt.filter((b) => !b.bestaetigt_am);
-      const sum = (l) => l.reduce((x, b) => x + Number(b.betrag), 0);
+      const f = grNorm(grStand.such.trim()); const rnr = new Map(re.map((r) => [r.id, r.nr]));
+      const liste = bu.filter((b) => !f || grNorm(nm(b.mitglied_id) + ' ' + b.produkt_name).includes(f));
+      const gilt = bu.filter((b) => !b.storniert_am); const sum = (l, k) => l.reduce((x, y) => x + Number(y[k || 'betrag']), 0);
+      // Monatsrechnungen = Rechnungen, deren Zeitraum in diesem Monat beginnt
+      const mre = re.filter((r) => String(r.von).startsWith(grStand.monat) && (!f || grNorm(nm(r.mitglied_id) + ' ' + r.nr).includes(f)));
+      const offenFg = mre.filter((r) => !r.storniert_am && !r.freigegeben_am); const fg = mre.filter((r) => !r.storniert_am && r.freigegeben_am);
+      const fgTag = (r) => r.storniert_am ? '<span class="tag rot">storniert</span>' : r.freigegeben_am
+        ? '<span class="tag ok">✓ freigegeben</span> <small class="fin-leise">' + esc(r.freigegeben_von || 'Kassenwart') + ', ' + H.kurz(String(r.freigegeben_am).slice(0, 10)) + '</small>' : '<span class="tag warn">noch nicht freigegeben</span>';
       ziel.innerHTML = '<div class="karten fin-karten"><div class="kz"><small>Buchungen ' + FZ.monatText(grStand.monat) + '</small><strong>' + H.geld(sum(gilt)) + '</strong><span>' + gilt.length + ' Buchungen' + (bu.length - gilt.length ? ' · ' + (bu.length - gilt.length) + ' storniert' : '') + '</span></div>' +
-          '<div class="kz"><small>Bestätigt</small><strong style="color:var(--ok)">' + H.geld(sum(ok)) + '</strong><span>' + ok.length + ' vom Kassenwart geprüft</span></div>' +
-          '<div class="kz"><small>Unbestätigt</small><strong style="color:' + (unb.length ? '#8a5e05' : 'inherit') + '">' + H.geld(sum(unb)) + '</strong><span>' + unb.length + (unb.length === 1 ? ' Buchung wartet' : ' Buchungen warten') + ' auf den Kassenwart</span></div></div>' +
-        (darfOk && unb.length ? '<div class="hinweis warn gr-freigabe"><span><strong>Freigabe:</strong> ' + unb.length + (unb.length === 1 ? ' Buchung' : ' Buchungen') + ' in diesem Monat noch unbestätigt.</span><button class="btn primaer klein" id="gr-alle">Alle ' + unb.length + ' bestätigen</button></div>'
-          : !darfOk && unb.length ? '<p class="hinweis">Bestätigen kann nur der Kassenwart – hier siehst du den Stand.</p>' : '') +
-        '<div class="panel">' + (liste.length ? '<table class="tab fk gr-tab"><thead><tr><th>Zeit</th><th>Mitglied</th><th>Getränk</th><th class="r">Menge</th><th class="r">Betrag</th><th>Abrechnung</th><th>Freigabe</th>' + (darfOk ? '<th></th>' : '') + '</tr></thead><tbody>' +
-          liste.map((b) => '<tr' + (b.storniert_am ? ' class="blass"' : '') + '><td class="nw" data-l="Zeit">' + H.datum(b.zeit) + ', ' + new Date(b.zeit).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + '</td><td data-l="Mitglied">' + esc(nm(b.mitglied_id)) + '</td>' +
+          '<div class="kz"><small>Rechnungen freigegeben</small><strong style="color:var(--ok)">' + H.geld(sum(fg, 'summe')) + '</strong><span>' + fg.length + (fg.length === 1 ? ' Rechnung' : ' Rechnungen') + ' vom Kassenwart freigegeben</span></div>' +
+          '<div class="kz"><small>Noch nicht freigegeben</small><strong style="color:' + (offenFg.length ? '#8a5e05' : 'inherit') + '">' + H.geld(sum(offenFg, 'summe')) + '</strong><span>' + (mre.length ? offenFg.length + (offenFg.length === 1 ? ' Rechnung wartet' : ' Rechnungen warten') + ' auf den Kassenwart' : 'Monat noch nicht abgerechnet') + '</span></div></div>' +
+        '<div class="panel"><h2>Monatsrechnungen ' + FZ.monatText(grStand.monat) + '</h2>' +
+          (darfOk && offenFg.length ? '<div class="hinweis warn gr-freigabe"><span><strong>Freigabe:</strong> ' + offenFg.length + (offenFg.length === 1 ? ' Rechnung' : ' Rechnungen') + ' noch nicht freigegeben.</span><button class="btn primaer klein" id="gr-alle">Alle ' + offenFg.length + ' freigeben</button></div>'
+            : !darfOk && offenFg.length ? '<p class="hinweis">Freigeben kann nur der Kassenwart – hier siehst du den Stand.</p>' : '') +
+          (mre.length ? '<table class="tab fk gr-tab"><thead><tr><th>Nr.</th><th>Mitglied</th><th class="r">Betrag</th><th>Zahlung</th><th>Freigabe</th>' + (darfOk ? '<th></th>' : '') + '</tr></thead><tbody>' +
+            mre.map((r) => '<tr' + (r.storniert_am ? ' class="blass"' : '') + '><td class="nw" data-l="Nr.">' + esc(r.nr) + '</td><td data-l="Mitglied">' + esc(nm(r.mitglied_id)) + '</td><td class="r nw" data-l="Betrag">' + H.geld(r.summe) + '</td>' +
+              '<td data-l="Zahlung">' + (r.storniert_am ? '–' : r.bezahlt_am ? '<span class="tag ok">bezahlt</span>' : '<span class="tag">' + (r.sepa ? 'Lastschrift' : 'Überweisung') + ' offen</span>') + '</td><td data-l="Freigabe">' + fgTag(r) + '</td>' +
+              (darfOk ? '<td class="r aktion">' + (!r.storniert_am && !r.freigegeben_am ? '<button class="btn klein primaer" data-gr-fg="' + r.id + '">Freigeben</button>' : '') + '</td>' : '') + '</tr>').join('') + '</tbody></table>'
+            : '<p class="leer">Für ' + FZ.monatText(grStand.monat) + ' gibt es noch keine Rechnungen – der Kassenwart rechnet am Monatsende ab.</p>') + '</div>' +
+        '<div class="panel"><h2>Alle Buchungen</h2>' + (liste.length ? '<table class="tab fk gr-tab"><thead><tr><th>Zeit</th><th>Mitglied</th><th>Getränk</th><th class="r">Menge</th><th class="r">Betrag</th><th>Abrechnung</th></tr></thead><tbody>' +
+          liste.map((b) => '<tr' + (b.storniert_am ? ' class="blass"' : '') + '><td class="nw" data-l="Zeit">' + zeit(b.zeit) + '</td><td data-l="Mitglied">' + esc(nm(b.mitglied_id)) + '</td>' +
             '<td data-l="Getränk">' + esc(b.produkt_name) + (b.quelle === 'nachtrag' ? ' <span class="tag">Nachtrag</span>' : '') + '</td><td class="r" data-l="Menge">' + b.anzahl + ' ' + (b.einheit === 'kasten' ? 'Kasten' : 'Stk.') + '</td><td class="r nw" data-l="Betrag">' + H.geld(b.betrag) + '</td>' +
-            '<td data-l="Abrechnung">' + (b.storniert_am ? '<span class="tag rot">storniert</span>' : b.rechnung_id ? '<span class="tag ok">' + esc(rnr.get(b.rechnung_id) || 'abgerechnet') + '</span>' : '<span class="tag">noch nicht abgerechnet</span>') + '</td>' +
-            '<td data-l="Freigabe">' + (b.storniert_am ? '–' : b.bestaetigt_am ? '<span class="tag ok">✓ bestätigt</span> <small class="fin-leise">' + esc(b.bestaetigt_von || 'Kassenwart') + ', ' + H.kurz(b.bestaetigt_am.slice(0, 10)) + '</small>' : '<span class="tag warn">unbestätigt</span>') + '</td>' +
-            (darfOk ? '<td class="r aktion">' + (!b.storniert_am && !b.bestaetigt_am ? '<button class="btn klein primaer" data-gr-ok="' + b.id + '">Bestätigen</button>' : '') + '</td>' : '') + '</tr>').join('') +
-          '</tbody><tfoot><tr><td colspan="4">Summe (ohne Stornos)</td><td class="r">' + H.geld(sum(liste.filter((b) => !b.storniert_am))) + '</td><td colspan="' + (darfOk ? 3 : 2) + '"></td></tr></tfoot></table>'
-          : '<p class="leer">Keine Buchungen' + (fr || f ? ' für diese Auswahl' : ' im ' + FZ.monatText(grStand.monat)) + '.</p>') + '</div>';
-      const bestaetigen = async (ids) => { try { const n = await kasse.buchungenBestaetigen(ids); toast(n === 1 ? '1 Buchung bestätigt.' : n + ' Buchungen bestätigt.'); laden(); } catch (e) { toast(e.message, 'fehler'); } };
-      const alle = $('#gr-alle'); if (alle) alle.addEventListener('click', () => { if (confirm(unb.length + (unb.length === 1 ? ' Buchung' : ' Buchungen') + ' (' + H.geld(sum(unb)) + ') als geprüft bestätigen?')) bestaetigen(unb.map((b) => b.id)); });
-      ziel.querySelectorAll('[data-gr-ok]').forEach((k) => k.addEventListener('click', () => bestaetigen([k.dataset.grOk])));
+            '<td data-l="Abrechnung">' + (b.storniert_am ? '<span class="tag rot">storniert</span>' : b.rechnung_id ? '<span class="tag ok">' + esc(rnr.get(b.rechnung_id) || 'abgerechnet') + '</span>' : '<span class="tag">noch nicht abgerechnet</span>') + '</td></tr>').join('') +
+          '</tbody><tfoot><tr><td colspan="4">Summe (ohne Stornos)</td><td class="r">' + H.geld(sum(liste.filter((b) => !b.storniert_am))) + '</td><td></td></tr></tfoot></table>'
+          : '<p class="leer">Keine Buchungen' + (f ? ' für diese Suche' : ' im ' + FZ.monatText(grStand.monat)) + '.</p>') + '</div>';
+      const freigeben = async (ids) => { try { const n = await kasse.rechnungenFreigeben(ids); toast(n === 1 ? '1 Rechnung freigegeben.' : n + ' Rechnungen freigegeben.'); laden(); } catch (e) { toast(e.message, 'fehler'); } };
+      const alle = $('#gr-alle'); if (alle) alle.addEventListener('click', () => { if (confirm(offenFg.length + (offenFg.length === 1 ? ' Rechnung' : ' Rechnungen') + ' über ' + H.geld(sum(offenFg, 'summe')) + ' freigeben?')) freigeben(offenFg.map((r) => r.id)); });
+      ziel.querySelectorAll('[data-gr-fg]').forEach((k) => k.addEventListener('click', () => freigeben([k.dataset.grFg])));
     };
     const laden = async () => {
       try {
         const von = grStand.monat + '-01', bis = FZ.monatsEnde(grStand.monat);
-        const [b2, ml, rl, dk] = await Promise.all([kasse.buchungen({ von, bis }), kasse.mitglieder(), kasse.rechnungen(), rolle === 'kassenwart' && kasse.darfBestaetigen ? kasse.darfBestaetigen() : false]);
-        bu = b2 || []; namen = new Map((ml || []).map((x) => [x.id, x.nachname + ', ' + x.vorname])); rnr = new Map((rl || []).map((r) => [r.id, r.nr])); darfOk = !!dk;
+        const [b2, ml, rl, dk] = await Promise.all([kasse.buchungen({ von, bis }), kasse.mitglieder(), kasse.rechnungen(), rolle === 'kassenwart' && kasse.darfFreigeben ? kasse.darfFreigeben() : false]);
+        bu = b2 || []; re = rl || []; namen = new Map((ml || []).map((x) => [x.id, x.nachname + ', ' + x.vorname])); darfOk = !!dk;
         malen();
       } catch (e) { if (ziel.isConnected) ziel.innerHTML = '<p class="hinweis warn">Getränkekasse nicht lesbar: ' + esc(e.message) + '</p>'; }
     };
@@ -2683,7 +2701,7 @@
     const einzel = (titel, key, einheit) => '<tr><td>' + titel + '</td><td class="r" data-l="Betrag">' + wert(key, gb[key], einheit) + '</td></tr>';
     main.innerHTML = druckKopf() + kopf('Gebührenordnung', 'Jede Fassung gilt ab einer Saison bis zur nächsten. Bereits erstellte Rechnungen ändern sich nie.',
         edit ? '<button class="btn" id="geb-abbr">Abbrechen</button><button class="btn primaer" id="ok">Speichern</button>'
-          : '<button class="btn" id="geb-neu">+ Neue Fassung</button><button class="btn" id="geb-aendern">Diese Fassung ändern</button><button class="btn" id="geb-druck">Drucken</button>') +
+          : '<button class="btn" id="geb-neu">+ Neue Fassung</button><button class="btn" id="geb-aendern">Diese Fassung ändern</button><button class="btn" id="geb-pdf">Als PDF sichern</button><button class="btn" id="geb-druck">Drucken</button>') +
       '<div class="ab-modus geb-fassungen" role="tablist">' + f.map((j) => '<button type="button" role="tab" aria-selected="' + (j === jahr) + '" class="' + (j === jahr ? 'aktiv' : '') + '" data-fassung="' + j + '"' + (edit ? ' disabled' : '') + '>ab ' + j + (j === aktuell ? ' <span class="zahl-leise">gilt jetzt</span>' : j > SAISON ? ' <span class="zahl-leise">künftig</span>' : '') + '</button>').join('') + '</div>' +
       '<div class="panel geb-info' + (edit ? ' geb-edit' : '') + '"><div><strong>' + fassungText(jahr) + '</strong><br><small>Beiträge ab 1.1.' + jahr + ' · Sommerliegeplätze ab Sommer ' + jahr + ' · Winterlager ab Winter ' + jahr + '/' + String(jahr + 1).slice(2) + '</small></div>' +
         (edit ? '<label class="feld" style="margin:0;flex:1;min-width:220px">Beschluss / Stand<input id="geb-stand" value="' + esc(gb.stand || '') + '" placeholder="z. B. Beschluss JHV 14.03.2027"></label>'
@@ -2703,6 +2721,7 @@
     const ga = $('#geb-aendern'); if (ga) ga.addEventListener('click', () => { gebStand.bearbeiten = jahr; zeige('gebuehren', true); const i = main.querySelector('.geb-feld'); if (i) i.focus({ preventScroll: true }); });
     const gx = $('#geb-abbr'); if (gx) gx.addEventListener('click', () => { gebStand.bearbeiten = null; zeige('gebuehren', true); });
     const gd = $('#geb-druck'); if (gd) gd.addEventListener('click', () => window.print());
+    const gp = $('#geb-pdf'); if (gp) gp.addEventListener('click', () => pdfAusAnsicht(main, 'Gebührenordnung ab Saison ' + jahr));
     const ok = $('#ok'); if (ok) ok.addEventListener('click', () => {
       const neu = JSON.parse(JSON.stringify(gb)); let fehlt = false;
       main.querySelectorAll('[data-k]').forEach((i) => { const [k, b, c] = i.dataset.k.split('.'); const v = H.dez(i.value); if (v == null || isNaN(v) || v < 0 || String(i.value).trim() === '') { fehlt = true; i.setAttribute('aria-invalid', 'true'); return; } i.removeAttribute('aria-invalid'); if (c) neu[k][b][c] = v; else if (b) neu[k][b] = v; else neu[k] = v; });
@@ -3008,7 +3027,7 @@
     const wann = (z) => z.geaendert ? new Date(z.geaendert).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) : '';
     const menue = (z) => zeilenMenue(['<button class="zm-punkt" data-z-bearb="' + z.id + '">Ändern</button>', '<button class="zm-punkt gefahr" data-z-weg="' + z.id + '">Antwort löschen</button>']);
     main.innerHTML = druckKopf() + kopf(esc(v.titel) + (v.abgesagt ? ' <span class="tag rot">abgesagt</span>' : ''), H.datum(v.datum) + (verZeit(v) ? ' · ' + esc(verZeit(v)) : '') + (v.anmeldung_bis ? ' · Anmeldung bis ' + H.datum(v.anmeldung_bis) : ''),
-        '<button class="btn" id="v-zurueck">← Alle Veranstaltungen</button><button class="btn" id="v-eintragen">+ Antwort eintragen</button>' + (v.kosten && darfGeld && offenAbr.length ? '<button class="btn" id="v-abr">Kosten abrechnen (' + offenAbr.length + ')</button>' : '') + (darfGeld && reVon.length ? '<button class="btn" id="v-mail">Rechnungen per E-Mail</button>' : '') + '<button class="btn" id="v-csv">CSV</button><button class="btn primaer" id="v-druck">Drucken</button>') +
+        '<button class="btn" id="v-zurueck">← Alle Veranstaltungen</button><button class="btn" id="v-eintragen">+ Antwort eintragen</button>' + (v.kosten && darfGeld && offenAbr.length ? '<button class="btn" id="v-abr">Kosten abrechnen (' + offenAbr.length + ')</button>' : '') + (darfGeld && reVon.length ? '<button class="btn" id="v-mail">Rechnungen per E-Mail</button>' : '') + '<button class="btn" id="v-csv">CSV</button><button class="btn" id="v-pdf">Als PDF sichern</button><button class="btn primaer" id="v-druck">Drucken</button>') +
       '<div class="karten ver-karten"><div class="kz"><small>Personen zugesagt</small><strong>' + st.pers + (v.max_personen ? ' / ' + v.max_personen : '') + '</strong><span>' + ja.length + ' Mitglied' + (ja.length === 1 ? '' : 'er') + (st.pers > ja.length ? ' + ' + (st.pers - ja.length) + ' Begleitung' : '') + '</span></div>' +
         (frei !== null ? '<div class="kz"><small>Plätze frei</small><strong>' + Math.max(0, frei) + '</strong><span>' + (frei <= 0 ? 'ausgebucht' : 'Mitglieder sehen nur diese Zahl') + '</span></div>' : '') +
         '<div class="kz"><small>Absagen</small><strong>' + nein.length + '</strong><span>' + (d.mitglieder.length ? 'noch keine Antwort: ' + Math.max(0, d.mitglieder.filter((m) => m.art !== 'gast' && !(m.austritt && m.austritt <= heute)).length - st.z.length) : '') + '</span></div>' +
@@ -3021,6 +3040,7 @@
       (v.text ? '<p class="hinweis kein-druck">' + esc(v.text) + '</p>' : '');
     $('#v-zurueck').addEventListener('click', () => { verAuswahl = null; zeige('veranstaltungen'); });
     $('#v-druck').addEventListener('click', () => window.print());
+    $('#v-pdf').addEventListener('click', () => pdfAusAnsicht(main, 'Teilnehmerliste ' + v.titel + ' · ' + H.datum(v.datum)));
     $('#v-csv').addEventListener('click', () => download('ssv-teilnehmer-' + v.datum + '.csv', csv([['Veranstaltung', v.titel, H.datum(v.datum)], ['Mitgliedsnr', 'Name', 'Antwort', 'Personen', 'Hinweis', 'geantwortet am', 'eingetragen']].concat(
       ja.concat(nein).map((z) => { const m = Q.mitglied(z.mitglied_id) || {}; return [m.nr || '', name(z.mitglied_id), z.antwort === 'ja' ? 'Zusage' : 'Absage', z.personen, z.bemerkung || '', z.geaendert ? new Date(z.geaendert).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '', z.quelle === 'verein' ? 'vom Verein' : z.quelle === 'kasse' ? 'Getränke-iPad' : 'Mein SSV']; }))), 'text/csv'));
     $('#v-eintragen').addEventListener('click', () => zusageForm(v, null));
@@ -3242,7 +3262,7 @@
     ['Unterlagen für die Kassenprüfung', 'kassenpruefung kassenpruefer kassenbericht jahresabschluss jhv jahr eingaenge csv', 'finanzen', '#fin-jahr-knopf'],
     ['Hafengeld nach Monat oder Saison', 'hafengeld liegegebuehr gastlieger gaeste einnahmen bar monat saison naechte', 'hafengeld'],
     ['Gästeliste drucken (Hafengeld)', 'gaesteliste gastlieger liste drucken bar kasse hafengeld', 'hafengeld', '#hg-druck'],
-    ['Getränkebuchungen ansehen und bestätigen (Freigabe)', 'getraenke getraenkekasse buchungen freigabe bestaetigen unbestaetigt kassenwart bier kasse', 'getraenke'],
+    ['Getränke: Buchungen ansehen, Monatsrechnungen freigeben', 'getraenke getraenkekasse buchungen rechnungen freigabe freigeben monatsrechnung kassenwart bier kasse', 'getraenke'],
     ['Gebührenordnung ansehen oder ändern', 'gebuehrenordnung preise gebuehren beitrag hoehe aendern neue fassung', 'gebuehren'],
     ['Verbandsmeldung (Bestandserhebung)', 'verband meldung bestandserhebung statistik landessportverband mitgliederzahl jahresmeldung', 'verband'],
     ['Einstellungen (Verein, Bank, Kran)', 'einstellungen bank iban glaeubiger kran gewicht verein adresse paypal', 'einstellungen'],

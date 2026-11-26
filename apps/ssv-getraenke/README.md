@@ -45,8 +45,9 @@ Nach 60 Sekunden ohne Eingabe meldet sich die Kasse von allein ab.
   vergeben oder „Code zurücksetzen“ (das Mitglied legt dann selbst einen neuen fest). Ein Code wird nur einmal angezeigt und ist danach nur
   verschlüsselt gespeichert. Code-Zettel lassen sich drucken (10 pro A4-Seite, mit Vereinskopf).
 - **Getränke & Preise:** Kacheln, Symbol, Farbe, Stück- und Kastenpreis.
-- **Buchungen:** Filter (auch „Freigabe: unbestätigt/bestätigt“), Bestätigen einzeln oder alle, Storno, Nachtragen, CSV-Export.
-  Jede Buchung startet „unbestätigt“; nur der Kassenwart bestätigt (der Vorstand sieht den Stand im Hafen-Manager → Finanzen → Getränke).
+- **Buchungen:** Filter, Storno, Nachtragen, CSV-Export (keine Bestätigung je Buchung).
+- **Freigabe:** Am Monatsende gibt der Kassenwart unter „Abrechnung“ die Monatsrechnungen frei (einzeln oder „Alle freigeben“);
+  der Vorstand sieht den Stand im Hafen-Manager → Finanzen → Getränke. Jede Druckseite hat „Als PDF sichern“ (iPad: In Dateien sichern).
 - **Abrechnung:** Zeitraum wählen (letzter Monat, Quartal, Saison …),
   Vorschau prüfen, Rechnungen erstellen. Jede Buchung wird genau einmal
   abgerechnet, die Rechnungsnummern laufen fortlaufend (`SSV-G-2026-0001`).

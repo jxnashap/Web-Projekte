@@ -1022,6 +1022,73 @@ body.plan-vollbild { overflow: hidden; }
   .hafenplan.druck-hell .lp .box { stroke: #33415f; stroke-width: .45; } .hafenplan.druck-hell .lp .leine { stroke: #7d8aa6; } .hafenplan.druck-hell .lp.st-belegt .box, .hafenplan.druck-hell .lp.st-leer .box { fill: #fff; }
   .hafenplan.druck-hell .lp-nr { fill: #111; stroke: #fff; } .hafenplan.druck-hell .pl-label.wasser-text { fill: #55718a; } .hafenplan.druck-hell .lp.st-gesperrt .box { fill: #ddd; }
 }
+/* Plan als PDF (Bildschirm-Fassung der Druckregeln oben – gleiche Darstellung, nur außerhalb des sichtbaren Bereichs gerendert) */
+@media screen {
+  .plan-druckseite.pdf-modus { display: block; color: #111; }
+  .plan-druckseite.pdf-modus .druck-kopf { margin-bottom: 3mm; padding-bottom: 3mm; }
+  .plan-druckseite.pdf-modus .pd-titel { display: flex; justify-content: space-between; align-items: baseline; gap: 10mm; margin-bottom: 2.5mm; }
+  .plan-druckseite.pdf-modus .pd-titel h1 { font-size: 15pt; margin: 0; }
+  .plan-druckseite.pdf-modus .pd-titel span { font-size: 8.5pt; color: #555; }
+  .plan-druckseite.pdf-modus .pd-blatt1 { break-after: avoid; break-inside: avoid; }
+  .plan-druckseite.pdf-modus .pd-plan { border: .3mm solid #9aa2b3; height: var(--pd-h, 134mm); overflow: hidden; }
+  .plan-druckseite.pdf-modus .pd-plan svg { width: 100%; height: 100%; display: block; }
+  .plan-druckseite.pdf-modus .pd-legende { display: flex; flex-wrap: wrap; gap: 1.5mm 6mm; font-size: 8.5pt; margin-top: 2.5mm; align-items: center; }
+  .plan-druckseite.pdf-modus .pd-legende i { display: inline-block; margin-right: 1.5mm; vertical-align: -1px; }
+  .plan-druckseite.pdf-modus .pd-quelle { margin-left: auto; color: #666; font-size: 7.5pt; }
+  .plan-druckseite.pdf-modus .pd-legende .lg-boje { width: 3.2mm; height: 3.2mm; border-radius: 50%; }
+  .plan-druckseite.pdf-modus .pd-legende .lg-boje.gruen { background: #2ed47c; }
+  .plan-druckseite.pdf-modus .pd-legende .lg-boje.rot { background: #ee4a3b; }
+  .plan-druckseite.pdf-modus .pd-legende .lg-boot { width: 6mm; height: 2.8mm; border-radius: 1mm 60% 60% 1mm / 1mm 50% 50% 1mm; background: #fff; border: .35mm solid #1d2f5f; }
+  .plan-druckseite.pdf-modus .pd-legende .lg-boot.gast { background: #ffe9b0; border-color: #b9790c; }
+  .plan-druckseite.pdf-modus .pd-legende .lg-boot.saison { background: #e6daf6; border-color: #5c4190; }
+  .plan-druckseite.pdf-modus .pd-legende .lg-boot.plane { background: #c9d3df; border-color: #77859a; }
+  .plan-druckseite.pdf-modus .pd-legende .lg-feld { width: 5mm; height: 3.2mm; border: .35mm dashed #2fa36b; background: rgba(46,212,124,.25); }
+  .plan-druckseite.pdf-modus .pd-legende .lg-feld.leer { border-color: #8a8266; background: #fff; }
+  .plan-druckseite.pdf-modus .pd-legende .lg-feld.neu { border-color: #c9a400; background: rgba(255,217,74,.4); }
+  .plan-druckseite.pdf-modus .pd-blatt2 { break-before: page; }
+  .plan-druckseite.pdf-modus .pd-zwei { display: grid; grid-template-columns: repeat(var(--pd-sp, 2), minmax(0, 1fr)); gap: 6mm; align-items: start; }
+  .plan-druckseite.pdf-modus table.tab.pd-tab { font-size: 9pt; width: 100%; line-height: 1.15; table-layout: fixed; }
+  .plan-druckseite.pdf-modus .pd-tab th { letter-spacing: 0; font-size: 7.5pt; }
+  .plan-druckseite.pdf-modus .pd-tab th:nth-child(1) { width: 12%; }
+  .plan-druckseite.pdf-modus .pd-tab th:nth-child(2) { width: 38%; }
+  .plan-druckseite.pdf-modus .pd-tab th:nth-child(3) { width: 27%; }
+  .plan-druckseite.pdf-modus .pd-tab td { overflow-wrap: anywhere; vertical-align: top; }
+  .plan-druckseite.pdf-modus .pd-tab td:first-child { white-space: nowrap; overflow-wrap: normal; }
+  .plan-druckseite.pdf-modus .pd-tab td, .plan-druckseite.pdf-modus .pd-tab th { padding: .35mm 1.2mm; }
+  .plan-druckseite.pdf-modus .pd-tab tr { break-inside: avoid; }
+  .plan-druckseite.pdf-modus .pd-tab thead { display: table-header-group; }
+  .plan-druckseite.pdf-modus .hafenplan.druck .pf-wasser { fill: url(#pd-wasser); }
+  .plan-druckseite.pdf-modus .hafenplan.druck .lp.st-gesperrt .box, .plan-druckseite.pdf-modus .hafenplan.druck .land.st-gesperrt .box { fill: url(#pd-schraffur); }
+  .plan-druckseite.pdf-modus .hafenplan.druck .bo-k { stroke-width: .35; }
+  .plan-druckseite.pdf-modus .hafenplan.druck .bo-gruen .bo-k { fill: #2ed47c; stroke: #0f6e3c; }
+  .plan-druckseite.pdf-modus .hafenplan.druck .bo-rot .bo-k { fill: #ee4a3b; stroke: #8f1b12; }
+  .plan-druckseite.pdf-modus .hafenplan.druck .bo-aus .bo-k { fill: #a9b0bf; stroke: #5d667d; }
+  .plan-druckseite.pdf-modus .hafenplan.druck .lp-nr, .plan-druckseite.pdf-modus .hafenplan.druck .land .lp-nr { opacity: 1; }
+  .plan-druckseite.pdf-modus .hafenplan.druck .lp-boot { opacity: .95; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .pf-wasser { fill: #e3eff6; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .tiefe.t1, .plan-druckseite.pdf-modus .hafenplan.druck-hell .tiefe.t2 { display: none; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .tiefe.t3 { stroke: #cfe2ee; opacity: 1; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .tiefe.saum { stroke: #7fa3bd; opacity: 1; stroke-width: .8; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .wellen, .plan-druckseite.pdf-modus .hafenplan.druck-hell .b-schatten, .plan-druckseite.pdf-modus .hafenplan.druck-hell .steg-schatten, .plan-druckseite.pdf-modus .hafenplan.druck-hell .pf-schatten, .plan-druckseite.pdf-modus .hafenplan.druck-hell .halo { display: none; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .grund { fill: #fff; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .pf-gruen { fill: #eef4e4; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .pf-natur { fill: #e8efdc; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .pf-muster { opacity: .5; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .baeume { opacity: .45; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .pf-gebaeude { fill: #b9bfd0; stroke: #555; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .pf-first { display: none; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .pl-label.hell { fill: #111; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .lp .box { stroke: #33415f; stroke-width: .45; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .lp .leine { stroke: #7d8aa6; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .lp.st-belegt .box, .plan-druckseite.pdf-modus .hafenplan.druck-hell .lp.st-leer .box { fill: #fff; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .lp-nr { fill: #111; stroke: #fff; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .pl-label.wasser-text { fill: #55718a; }
+  .plan-druckseite.pdf-modus .hafenplan.druck-hell .lp.st-gesperrt .box { fill: #ddd; }
+  .plan-druckseite.pdf-modus { position: absolute; left: -10000px; top: 0; background: #fff; }
+  .plan-druckseite.pdf-modus .pd-blatt1, .plan-druckseite.pdf-modus .pd-blatt2 { background: #fff; padding: 9mm; box-sizing: border-box; width: var(--pd-w, 297mm); }
+  .plan-druckseite.pdf-modus .pd-blatt2 { margin-top: 0; }
+}
+
 /* Gäste: Karte & Kalender */
 .gk-leiste { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end; padding: 14px 16px; margin-bottom: 10px; }
 .gk-leiste .feld { margin: 0; } .gk-leiste .feld > span { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }

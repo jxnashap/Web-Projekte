@@ -84,17 +84,18 @@
           const a = vm(k); this._rechnungenErstellen(tag(a), ende(a), tag(new Date(a.getFullYear(), a.getMonth() + 1, 3)));
           if (k === 2) this.d.rechnungen.forEach((r) => { r.bezahlt_am = r.faellig; });
         });
-        // Was schon abgerechnet ist, hat der Kassenwart damals geprüft
-        this.d.buchungen.forEach((b) => { if (b.rechnung_id) { b.bestaetigt_am = b.zeit; b.bestaetigt_von = this.d.einstellungen.kassenwart_name || 'Kassenwart'; } });
+        // Die bezahlten Rechnungen (September) hat der Kassenwart damals freigegeben, die vom Oktober noch nicht
+        this.d.rechnungen.forEach((r) => { r.freigegeben_am = r.bezahlt_am ? r.datum + 'T18:00:00' : null; r.freigegeben_von = r.bezahlt_am ? this.d.einstellungen.kassenwart_name || 'Kassenwart' : null; });
         this._sichern();
       }
       this._abgleich();
       // Jugendschutz: Bier, Radler, Sekt erst ab 16 (ältere Demo-Daten nachrüsten)
       this.d.produkte.forEach((p) => { if (!('ab_alter' in p)) p.ab_alter = /Pils|Radler|Sekt|Bier|Wein/.test(p.name) ? 16 : null; });
-      // Freigabe durch den Kassenwart (ältere Demo-Daten nachrüsten: Abgerechnetes gilt als bestätigt, der Rest ist offen)
+      // Freigabe der Monatsrechnungen durch den Kassenwart (ältere Demo-Daten nachrüsten: bezahlte gelten als freigegeben)
       const kw = (this.d.einstellungen && this.d.einstellungen.kassenwart_name) || 'Kassenwart';
       let neu = false;
-      this.d.buchungen.forEach((b) => { if (!('bestaetigt_am' in b)) { neu = true; b.bestaetigt_am = b.rechnung_id ? b.zeit : null; b.bestaetigt_von = b.rechnung_id ? kw : null; } });
+      this.d.rechnungen.forEach((r) => { if (!('freigegeben_am' in r)) { neu = true; r.freigegeben_am = r.bezahlt_am ? r.datum + 'T18:00:00' : null; r.freigegeben_von = r.bezahlt_am ? kw : null; } });
+      this.d.buchungen.forEach((b) => { if ('bestaetigt_am' in b) { neu = true; delete b.bestaetigt_am; delete b.bestaetigt_von; } });   // frühere Freigabe je Buchung entfällt
       if (neu) this._sichern();
     }
     /* Gemeinsamer Mitgliederstamm: In der Demo kommen die Mitglieder aus dem Hafen-Manager
@@ -164,7 +165,7 @@
         buchungen.push({
           id: uuid(), mitglied_id: m.id, produkt_id: p.id, produkt_name: p.name, einheit: kasten ? 'kasten' : 'stk',
           anzahl, stueck: anzahl * (kasten ? p.kasten_groesse : 1), einzelpreis: ep, betrag: eur(ct(ep) * anzahl),
-          zeit: zeit.toISOString(), quelle: 'kasse', storniert_am: null, rechnung_id: null, bestaetigt_am: null, bestaetigt_von: null
+          zeit: zeit.toISOString(), quelle: 'kasse', storniert_am: null, rechnung_id: null
         });
       }
       buchungen.sort((a, b) => a.zeit.localeCompare(b.zeit));
@@ -212,7 +213,7 @@
         neu.push({
           id: uuid(), mitglied_id: mid, produkt_id: p.id, produkt_name: p.name, einheit: kasten ? 'kasten' : 'stk',
           anzahl, stueck: anzahl * (kasten ? p.kasten_groesse : 1), einzelpreis: ep, betrag: eur(ct(ep) * anzahl),
-          zeit: (zeit ? new Date(zeit) : new Date()).toISOString(), quelle, storniert_am: null, rechnung_id: null, bestaetigt_am: null, bestaetigt_von: null
+          zeit: (zeit ? new Date(zeit) : new Date()).toISOString(), quelle, storniert_am: null, rechnung_id: null
         });
         summe += ct(ep) * anzahl;
       });
@@ -392,16 +393,16 @@
       this._sichern(); return reihenfolge.length;
     }
     async rechnungBezahlt(id, datum) { const r = this.d.rechnungen.find((x) => x.id === id); r.bezahlt_am = datum; this._sichern(); }
-    /* Freigabe: nur der Kassenwart bestätigt Buchungen; der Vorstand sieht sie mit Stand.
+    /* Freigabe der Monatsrechnungen: nur der Kassenwart gibt frei; der Vorstand sieht den Stand.
        Demo: im Kassenwart-Bereich immer erlaubt, im Hafen-Manager nur in der Rolle „Kassenwart“. */
-    async darfBestaetigen() {
+    async darfFreigeben() {
       if (!/ssv-hafen\//.test(location.pathname)) return true;
       try { return sessionStorage.getItem('ssv-hafen-rolle') === 'kassenwart'; } catch (e) { return false; }
     }
-    async buchungenBestaetigen(ids) {
-      if (!(await this.darfBestaetigen())) throw new Error('Nur der Kassenwart kann Buchungen bestätigen.');
+    async rechnungenFreigeben(ids) {
+      if (!(await this.darfFreigeben())) throw new Error('Nur der Kassenwart kann Rechnungen freigeben.');
       this._laden(); const jetzt = new Date().toISOString(); const wer = this.d.einstellungen.kassenwart_name || 'Kassenwart'; let n = 0;
-      this.d.buchungen.forEach((b) => { if (ids.includes(b.id) && !b.bestaetigt_am && !b.storniert_am) { b.bestaetigt_am = jetzt; b.bestaetigt_von = wer; n++; } });
+      this.d.rechnungen.forEach((r) => { if (ids.includes(r.id) && !r.freigegeben_am && !r.storniert_am) { r.freigegeben_am = jetzt; r.freigegeben_von = wer; n++; } });
       this._sichern(); return n;
     }
     async rechnungStornieren(id) {
@@ -573,8 +574,8 @@
     async rechnungenLaden(ids) { return (await this._req('/rest/v1/rechnungen?select=*&id=in.(' + ids.join(',') + ')')).map(this._zahlen); }
     rechnungenErstellen(von, bis, datum) { return this._rpc('admin_rechnungen_erstellen', { p_von: von, p_bis: bis, p_datum: datum }); }
     rechnungBezahlt(id, datum) { return this._req('/rest/v1/rechnungen?id=eq.' + id, { method: 'PATCH', body: { bezahlt_am: datum } }); }
-    async darfBestaetigen() { try { return !!(await this._rpc('darf_buchungen_bestaetigen', {})); } catch (e) { return false; } }
-    async buchungenBestaetigen(ids) { return Number(await this._rpc('buchungen_bestaetigen', { p_ids: ids })); }
+    async darfFreigeben() { try { return !!(await this._rpc('darf_rechnungen_freigeben', {})); } catch (e) { return false; } }
+    async rechnungenFreigeben(ids) { return Number(await this._rpc('rechnungen_freigeben', { p_ids: ids })); }
     rechnungStornieren(id) { return this._rpc('admin_rechnung_stornieren', { p_id: id }); }
 
     async einstellungen() {

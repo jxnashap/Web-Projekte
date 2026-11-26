@@ -99,7 +99,7 @@
       '<div class="a-karte"><small>Umsatz ' + esc(monatName) + '</small><strong>' + H.geld(H.eur(umsatz)) + '</strong><span>' + monat.filter(gueltig).length + ' Buchungen</span></div>' +
       '<div class="a-karte"><small>Noch nicht abgerechnet</small><strong>' + H.geld(H.eur(offenSumme)) + '</strong><span>' + proMitglied.size + (proMitglied.size === 1 ? ' Mitglied' : ' Mitglieder') + '</span></div>' +
       '<div class="a-karte"><small>Offene Rechnungen</small><strong>' + H.geld(H.eur(unbezahltSumme)) + '</strong><span>' + unbezahlt.length + ' unbezahlt</span></div>' +
-      '<button class="a-karte a-karte-knopf' + (alle.some((b) => !b.bestaetigt_am && !b.storniert_am) ? ' warn' : '') + '" id="u-freigabe"><small>Freigabe</small><strong>' + alle.filter((b) => !b.bestaetigt_am && !b.storniert_am).length + '</strong><span>' + (cache.darf ? 'Buchungen warten auf deine Bestätigung' : 'Buchungen unbestätigt') + ' →</span></button>' +
+      '<button class="a-karte a-karte-knopf' + (rechnungen.some((r) => !r.freigegeben_am && !r.storniert_am) ? ' warn' : '') + '" id="u-freigabe"><small>Freigabe</small><strong>' + rechnungen.filter((r) => !r.freigegeben_am && !r.storniert_am).length + '</strong><span>' + (cache.darf ? 'Rechnungen warten auf deine Freigabe' : 'Rechnungen nicht freigegeben') + ' →</span></button>' +
       '<div class="a-karte"><small>Aktive Mitglieder mit Code</small><strong>' + cache.mitglieder.filter((m) => m.aktiv && m.hat_pin).length + '</strong><span>von ' + cache.mitglieder.filter((m) => m.aktiv).length + ' aktiven</span></div>' +
       '</div><div class="a-zwei">' +
       '<div class="a-panel"><h2>Meistgebucht im ' + esc(new Date().toLocaleDateString('de-DE', { month: 'long' })) + ' (Stück)</h2>' +
@@ -108,24 +108,22 @@
       (topOffen.length ? topOffen.map(([id, c]) => '<tr><td>' + esc(name(mitglied(id))) + '</td><td class="r">' + H.geld(H.eur(c)) + '</td></tr>').join('') : '<tr><td>Alles abgerechnet.</td></tr>') +
       '</tbody></table></div></div>' +
       '<div class="a-panel"><h2>Letzte Buchungen</h2>' + buchungsTabelle(alle.slice(0, 12), rechnungen, false) + '</div>';
-    $('#u-freigabe').addEventListener('click', () => { bFilter = { von: '', bis: heute(), mitglied_id: '', freigabe: 'offen' }; zeigeTab('buchungen'); });
+    $('#u-freigabe').addEventListener('click', () => zeigeTab('abrechnung'));
   }
 
-  /* Freigabe durch den Kassenwart: „unbestätigt“ bis zur Bestätigung, danach „bestätigt“ (wer/wann im Tooltip) */
-  const freigabeTag = (b) => b.storniert_am ? '' : b.bestaetigt_am
-    ? '<span class="a-tag ok" title="bestätigt von ' + esc(b.bestaetigt_von || 'Kassenwart') + ' am ' + H.datum(b.bestaetigt_am) + '">✓ bestätigt</span>'
-    : '<span class="a-tag warn">unbestätigt</span>';
+  /* Freigabe der Monatsrechnung durch den Kassenwart: „noch nicht freigegeben“ bis zur Freigabe (wer/wann im Tooltip) */
+  const freigabeTag = (r) => r.storniert_am ? '' : r.freigegeben_am
+    ? '<span class="a-tag ok" title="freigegeben von ' + esc(r.freigegeben_von || 'Kassenwart') + ' am ' + H.datum(r.freigegeben_am) + '">✓ freigegeben</span>'
+    : '<span class="a-tag warn">nicht freigegeben</span>';
   function buchungsTabelle(liste, rechnungen, mitAktion) {
     const rnr = new Map(rechnungen.map((r) => [r.id, r.nr]));
     if (!liste.length) return '<p class="k-sub">Keine Buchungen im gewählten Zeitraum.</p>';
-    const ok = mitAktion && cache.darf;
-    return '<table class="a-tab"><thead><tr><th>Zeit</th><th>Mitglied</th><th>Artikel</th><th class="r">Menge</th><th class="r">Betrag</th><th>Status</th><th>Freigabe</th>' + (mitAktion ? '<th></th>' : '') + '</tr></thead><tbody>' +
+    return '<table class="a-tab"><thead><tr><th>Zeit</th><th>Mitglied</th><th>Artikel</th><th class="r">Menge</th><th class="r">Betrag</th><th>Status</th>' + (mitAktion ? '<th></th>' : '') + '</tr></thead><tbody>' +
       liste.map((b) => '<tr class="' + (b.storniert_am ? 'storniert' : '') + '"><td>' + H.zeit(b.zeit) + '</td><td>' + esc(name(mitglied(b.mitglied_id))) + '</td>' +
         '<td>' + esc(b.produkt_name) + (b.quelle === 'nachtrag' ? ' <span class="a-tag">Nachtrag</span>' : '') + '</td><td class="r">' + b.anzahl + ' ' + H.einheitText(b) + (b.einheit === 'kasten' ? ' (' + b.stueck + ')' : '') + '</td>' +
         '<td class="r">' + H.geld(b.betrag) + '</td><td>' +
         (b.storniert_am ? '<span class="a-tag rot">storniert</span>' : b.rechnung_id ? '<span class="a-tag ok">' + esc(rnr.get(b.rechnung_id) || 'abgerechnet') + '</span>' : '<span class="a-tag warn">offen</span>') + '</td>' +
-        '<td>' + freigabeTag(b) + '</td>' +
-        (mitAktion ? '<td class="r nw">' + (ok && !b.storniert_am && !b.bestaetigt_am ? '<button class="a-btn klein primaer" data-ok="' + b.id + '">Bestätigen</button> ' : '') + (!b.storniert_am && !b.rechnung_id ? '<button class="a-btn klein gefahr" data-storno="' + b.id + '">Stornieren</button>' : '') + '</td>' : '') +
+        (mitAktion ? '<td class="r">' + (!b.storniert_am && !b.rechnung_id ? '<button class="a-btn klein gefahr" data-storno="' + b.id + '">Stornieren</button>' : '') + '</td>' : '') +
         '</tr>').join('') + '</tbody></table>';
   }
 
@@ -212,7 +210,7 @@
           (lieblinge.length ? '<p class="a-hinweis" style="margin:8px 0 0">Meist gebucht: ' + lieblinge.map(([n, z]) => esc(n) + ' (' + z + ')').join(', ') + '</p>' : '') + '</section>' +
         '<section class="a-profil-teil a-voll"><h3>Rechnungen</h3>' + (re.length ? '<table class="a-tab"><thead><tr><th>Nr.</th><th>Zeitraum</th><th class="r">Betrag</th><th>Stand</th><th></th></tr></thead><tbody>' +
           re.slice(0, 12).map((r) => '<tr class="' + (r.storniert_am ? 'storniert' : '') + '"><td>' + esc(r.nr) + '</td><td>' + zeitraumKurz(r.von, r.bis) + '</td><td class="r">' + H.geld(r.summe) + '</td><td>' +
-            (r.storniert_am ? '<span class="a-tag rot">storniert</span>' : r.bezahlt_am ? '<span class="a-tag ok">bezahlt</span>' : '<span class="a-tag warn">offen · fällig ' + H.datum(r.faellig) + '</span>') + '</td>' +
+            (r.storniert_am ? '<span class="a-tag rot">storniert</span>' : r.bezahlt_am ? '<span class="a-tag ok">bezahlt</span>' : '<span class="a-tag warn">offen · fällig ' + H.datum(r.faellig) + '</span>') + ' ' + freigabeTag(r) + '</td>' +
             '<td class="r"><button class="a-btn klein" data-pr-re="' + r.id + '">Ansehen</button></td></tr>').join('') + '</tbody></table>' : '<p class="k-sub">Noch keine Rechnungen.</p>') + '</section>' +
         '<section class="a-profil-teil a-voll"><h3>Buchungen</h3>' + buchungsTabelle(bu.slice(0, 20), re, true) + (bu.length > 20 ? '<p class="a-hinweis">… und ' + (bu.length - 20) + ' ältere unter „Buchungen“.</p>' : '') + '</section>' +
       '</div><div class="a-modal-fuss"><button class="a-btn" data-zu>Schließen</button></div>');
@@ -225,7 +223,6 @@
     });
     el.addEventListener('click', async (e) => {
       const r = e.target.closest('[data-pr-re]'); if (r) return drucken('rechnung', [r.dataset.prRe]);
-      const o = e.target.closest('[data-ok]'); if (o) { try { await S.buchungenBestaetigen([o.dataset.ok]); toast('Buchung bestätigt.'); mitgliedProfil(m); } catch (err) { toast(err.message, 'fehler'); } return; }
       const st = e.target.closest('[data-storno]');
       if (st) { if (!confirm('Buchung stornieren?')) return; try { await S.buchungStornieren(st.dataset.storno); toast('Storniert.'); mitgliedProfil(m); } catch (err) { toast(err.message, 'fehler'); } }
     });
@@ -408,40 +405,30 @@
   }
 
   /* -------------------------------------------------------------- Buchungen */
-  let bFilter = { von: monatsAnfang(), bis: heute(), mitglied_id: '', freigabe: '' };
+  let bFilter = { von: monatsAnfang(), bis: heute(), mitglied_id: '' };
   async function buchungenTab(main) {
-    const [alleZ, rechnungen] = await Promise.all([S.buchungen({ von: bFilter.von, bis: bFilter.bis, mitglied_id: bFilter.mitglied_id || undefined }), S.rechnungen()]);
-    const fr = bFilter.freigabe || '';
-    const liste = alleZ.filter((b) => !fr || (fr === 'offen' ? !b.bestaetigt_am && !b.storniert_am : !!b.bestaetigt_am));
+    const [liste, rechnungen] = await Promise.all([S.buchungen({ ...bFilter, mitglied_id: bFilter.mitglied_id || undefined }), S.rechnungen()]);
     const summe = liste.filter((b) => !b.storniert_am).reduce((s, b) => s + H.ct(b.betrag), 0);
-    const unb = liste.filter((b) => !b.bestaetigt_am && !b.storniert_am);
-    main.innerHTML = kopf('Buchungen', liste.length + ' Buchungen · ' + H.geld(H.eur(summe)) + ' (ohne Stornos) · ' + unb.length + ' unbestätigt',
-      '<button class="a-btn" id="b-csv">CSV exportieren</button>' + (cache.darf && unb.length ? '<button class="a-btn dunkel" id="b-alle-ok">Alle ' + unb.length + ' bestätigen</button>' : '') + '<button class="a-btn primaer" id="b-neu">+ Nachtragen</button>') +
-      (unb.length ? '<p class="a-hinweis' + (cache.darf ? ' warn' : '') + '">' + (cache.darf ? '<strong>Freigabe:</strong> ' + unb.length + (unb.length === 1 ? ' Buchung ist' : ' Buchungen sind') + ' noch unbestätigt. Bitte prüfen und bestätigen – der Vorstand sieht den Stand im Hafen-Manager unter Finanzen → Getränke.'
-        : unb.length + (unb.length === 1 ? ' Buchung wartet' : ' Buchungen warten') + ' auf die Bestätigung durch den Kassenwart.') + '</p>' : '') +
+    main.innerHTML = kopf('Buchungen', liste.length + ' Buchungen · ' + H.geld(H.eur(summe)) + ' (ohne Stornos)',
+      '<button class="a-btn" id="b-csv">CSV exportieren</button><button class="a-btn primaer" id="b-neu">+ Nachtragen</button>') +
       '<div class="a-filter"><label class="a-feld">Von<input type="date" id="b-von" value="' + bFilter.von + '"></label>' +
       '<label class="a-feld">Bis<input type="date" id="b-bis" value="' + bFilter.bis + '"></label>' +
-      '<label class="a-feld">Mitglied<select id="b-m"><option value="">Alle</option>' + cache.mitglieder.map((m) => '<option value="' + m.id + '"' + (m.id === bFilter.mitglied_id ? ' selected' : '') + '>' + esc(m.nachname + ', ' + m.vorname) + '</option>').join('') + '</select></label>' +
-      '<label class="a-feld">Freigabe<select id="b-fr">' + [['', 'Alle'], ['offen', 'Unbestätigt'], ['ok', 'Bestätigt']].map(([k, t]) => '<option value="' + k + '"' + (fr === k ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></label></div>' +
+      '<label class="a-feld">Mitglied<select id="b-m"><option value="">Alle</option>' + cache.mitglieder.map((m) => '<option value="' + m.id + '"' + (m.id === bFilter.mitglied_id ? ' selected' : '') + '>' + esc(m.nachname + ', ' + m.vorname) + '</option>').join('') + '</select></label></div>' +
       '<div class="a-panel">' + buchungsTabelle(liste, rechnungen, true) + '</div>';
-    ['#b-von', '#b-bis', '#b-m', '#b-fr'].forEach((s) => $(s).addEventListener('change', () => {
-      bFilter = { von: $('#b-von').value, bis: $('#b-bis').value, mitglied_id: $('#b-m').value, freigabe: $('#b-fr').value }; buchungenTab(main);
+    ['#b-von', '#b-bis', '#b-m'].forEach((s) => $(s).addEventListener('change', () => {
+      bFilter = { von: $('#b-von').value, bis: $('#b-bis').value, mitglied_id: $('#b-m').value }; buchungenTab(main);
     }));
-    const bestaetigen = async (ids) => { try { const n = await S.buchungenBestaetigen(ids); toast(n === 1 ? '1 Buchung bestätigt.' : n + ' Buchungen bestätigt.'); buchungenTab(main); } catch (err) { toast(err.message, 'fehler'); } };
-    if ($('#b-alle-ok')) $('#b-alle-ok').addEventListener('click', () => { if (confirm(unb.length + (unb.length === 1 ? ' Buchung' : ' Buchungen') + ' (' + H.geld(H.eur(unb.reduce((x, b) => x + H.ct(b.betrag), 0))) + ') als geprüft bestätigen?')) bestaetigen(unb.map((b) => b.id)); });
     main.querySelector('.a-panel').addEventListener('click', async (e) => {
-      const o = e.target.closest('[data-ok]'); if (o) return bestaetigen([o.dataset.ok]);
       const b = e.target.closest('[data-storno]'); if (!b) return;
       if (!confirm('Diese Buchung stornieren?')) return;
       try { await S.buchungStornieren(b.dataset.storno); toast('Storniert.'); buchungenTab(main); } catch (err) { toast(err.message, 'fehler'); }
     });
     $('#b-csv').addEventListener('click', () => {
       const rnr = new Map(rechnungen.map((r) => [r.id, r.nr]));
-      csvDownload('buchungen_' + bFilter.von + '_' + bFilter.bis + '.csv', [['Datum', 'Uhrzeit', 'Mitgliedsnr', 'Mitglied', 'Artikel', 'Einheit', 'Anzahl', 'Stück', 'Einzelpreis', 'Betrag', 'Status', 'Rechnung', 'Freigabe', 'Bestätigt von', 'Bestätigt am']]
+      csvDownload('buchungen_' + bFilter.von + '_' + bFilter.bis + '.csv', [['Datum', 'Uhrzeit', 'Mitgliedsnr', 'Mitglied', 'Artikel', 'Einheit', 'Anzahl', 'Stück', 'Einzelpreis', 'Betrag', 'Status', 'Rechnung']]
         .concat(liste.map((b) => { const m = mitglied(b.mitglied_id) || {}; const d = new Date(b.zeit);
           return [H.datum(b.zeit), d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }), m.nr, name(m), b.produkt_name, b.einheit === 'kasten' ? 'Kasten' : 'Stück',
-            b.anzahl, b.stueck, zahl(b.einzelpreis), zahl(b.betrag), b.storniert_am ? 'storniert' : b.rechnung_id ? 'abgerechnet' : 'offen', rnr.get(b.rechnung_id) || '',
-            b.storniert_am ? '' : b.bestaetigt_am ? 'bestätigt' : 'unbestätigt', b.bestaetigt_von || '', b.bestaetigt_am ? H.datum(b.bestaetigt_am) : '']; })));
+            b.anzahl, b.stueck, zahl(b.einzelpreis), zahl(b.betrag), b.storniert_am ? 'storniert' : b.rechnung_id ? 'abgerechnet' : 'offen', rnr.get(b.rechnung_id) || '']; })));
     });
     $('#b-neu').addEventListener('click', nachtragen);
   }
@@ -561,6 +548,7 @@
     const status = (r) => r.storniert_am ? '<span class="a-tag rot">storniert</span>' : r.bezahlt_am ? '<span class="a-tag ok">bezahlt ' + H.datum(r.bezahlt_am) + '</span>'
       : (r.faellig && r.faellig < heute()) ? '<span class="a-tag rot">überfällig</span>' : '<span class="a-tag warn">offen</span>';
     const offeneRe = rechnungen.filter((r) => !r.storniert_am && !r.bezahlt_am);
+    const ohneFreigabe = rechnungen.filter((r) => !r.storniert_am && !r.freigegeben_am);
     const laeufe = e.sepa_laeufe || [];
     const inLastschrift = (id) => { const l = laeufe.find((x) => (x.ids || []).includes(id)); return l ? ' <span class="a-tag" title="in der Lastschrift-Datei ' + esc(l.id) + ' vom ' + H.datum(l.datum) + '">in SEPA-Datei</span>' : ''; };
 
@@ -571,7 +559,6 @@
       '<label class="a-feld">Bis<input type="date" id="a-bis" value="' + aZeitraum.bis + '"></label>' +
       '<label class="a-feld">Rechnungsdatum<input type="date" id="a-datum" value="' + aZeitraum.datum + '"></label></div>' +
       '<h2 style="margin-top:8px">2 · Vorschau: ' + (vorschau.length === 1 ? '1 Rechnung' : vorschau.length + ' Rechnungen') + ' über ' + H.geld(H.eur(gesamt)) + '</h2>' +
-      ((() => { const u = offen.filter((b) => !b.storniert_am && !b.rechnung_id && !b.bestaetigt_am); return u.length ? '<p class="a-hinweis warn"><strong>Freigabe:</strong> ' + u.length + (u.length === 1 ? ' Buchung' : ' Buchungen') + ' in diesem Zeitraum ' + (u.length === 1 ? 'ist' : 'sind') + ' noch unbestätigt. Bitte vorher unter „Buchungen“ prüfen und bestätigen' + (cache.darf ? ' – <button type="button" class="a-btn klein" id="a-zur-freigabe">Zu den unbestätigten Buchungen</button>' : '') + '</p>' : ''; })()) +
       (ohneMandat ? '<p class="a-hinweis warn">' + ohneMandat + ' Mitglieder ohne SEPA-Mandat – ihre Rechnung nennt statt des Einzugs die Bankverbindung zur Überweisung.</p>' : '') +
       (!e.glaeubiger_id ? '<p class="a-hinweis warn">Bitte unter Einstellungen die Gläubiger-ID eintragen – sie gehört auf jede Lastschrift-Ankündigung.</p>' : '') +
       (ohneAdresse ? '<p class="a-hinweis warn">' + ohneAdresse + ' Mitglieder ohne vollständige Anschrift – die Rechnung entsteht trotzdem, ggf. vorher unter „Mitglieder" ergänzen.</p>' : '') +
@@ -582,13 +569,14 @@
       '<h2 style="margin-top:20px">3 · Rechnungen erstellen</h2>' +
       '<div class="a-modal-fuss" style="margin-top:0;justify-content:flex-start"><button class="a-btn primaer" id="a-los"' + (vorschau.length ? '' : ' disabled') + '>' + (vorschau.length === 1 ? '1 Rechnung' : vorschau.length + ' Rechnungen') + ' erstellen</button></div></div>' +
       '<div class="a-panel"><div class="a-kopf" style="margin-bottom:8px"><h2 style="margin:0">Rechnungen</h2><div class="a-aktionen">' +
+      (cache.darf && ohneFreigabe.length ? '<button class="a-btn dunkel" id="r-freigeben">Alle ' + ohneFreigabe.length + ' freigeben</button>' : '') +
       '<button class="a-btn primaer" id="r-mail"' + (ungesendet.length ? '' : ' disabled') + '>Per E-Mail senden (' + ungesendet.length + ')</button>' +
       '<button class="a-btn" id="r-druck-offen"' + (offeneRe.length ? '' : ' disabled') + '>Alle offenen drucken (' + offeneRe.length + ')</button>' +
       '<button class="a-btn" id="r-sepa">Lastschrift (SEPA-Datei)</button><button class="a-btn" id="r-csv">Rechnungsliste (CSV)</button></div></div>' +
       (rechnungen.length ? '<table class="a-tab"><thead><tr><th>Nr.</th><th>Datum</th><th>Mitglied</th><th>Zeitraum</th><th class="r">Betrag</th><th>Status</th><th></th></tr></thead><tbody>' +
         rechnungen.map((r) => '<tr class="' + (r.storniert_am ? 'storniert' : '') + '"><td><strong>' + esc(r.nr) + '</strong></td><td>' + H.datum(r.datum) + '</td><td>' + esc(r.empfaenger.vorname + ' ' + r.empfaenger.nachname) + '</td>' +
-          '<td>' + zeitraumKurz(r.von, r.bis) + '</td><td class="r">' + H.geld(r.summe) + '<br><small style="color:var(--ink-2);font-size:14px">' + (r.sepa ? 'Lastschrift' : 'Überweisung') + '</small></td><td>' + status(r) + gesendetAm(r.id) + inLastschrift(r.id) + '</td>' +
-          '<td class="r aktion"><button class="a-btn klein" data-druck="' + r.id + '">Ansehen</button> ' +
+          '<td>' + zeitraumKurz(r.von, r.bis) + '</td><td class="r">' + H.geld(r.summe) + '<br><small style="color:var(--ink-2);font-size:14px">' + (r.sepa ? 'Lastschrift' : 'Überweisung') + '</small></td><td>' + status(r) + ' ' + freigabeTag(r) + gesendetAm(r.id) + inLastschrift(r.id) + '</td>' +
+          '<td class="r aktion">' + (cache.darf && !r.storniert_am && !r.freigegeben_am ? '<button class="a-btn klein primaer" data-freigeben="' + r.id + '">Freigeben</button> ' : '') + '<button class="a-btn klein" data-druck="' + r.id + '">Ansehen</button> ' +
           zeilenMenue(r.storniert_am ? [] : ['<button class="zm-punkt" role="menuitem" data-mail="' + r.id + '">Per E-Mail senden</button>',
             r.bezahlt_am ? '<button class="zm-punkt" role="menuitem" data-unbezahlt="' + r.id + '">Wieder auf „offen“ setzen</button>' : '<button class="zm-punkt" role="menuitem" data-bezahlt="' + r.id + '">Als bezahlt markieren</button>',
             '<button class="zm-punkt gefahr" role="menuitem" data-rstorno="' + r.id + '">Stornieren</button>']) + '</td></tr>').join('') + '</tbody></table>'
@@ -599,7 +587,6 @@
       const v = vorlagen()[ev.target.value]; if (!v) return; $('#a-von').value = v[1]; $('#a-bis').value = v[2]; neuLaden();
     });
     ['#a-von', '#a-bis', '#a-datum'].forEach((s) => $(s).addEventListener('change', neuLaden));
-    if ($('#a-zur-freigabe')) $('#a-zur-freigabe').addEventListener('click', () => { bFilter = { von: aZeitraum.von, bis: aZeitraum.bis, mitglied_id: '', freigabe: 'offen' }; zeigeTab('buchungen'); });
     $('#a-los').addEventListener('click', async (ev) => {
       const knopf = ev.currentTarget; if (knopf.disabled) return;   // Schutz gegen Doppelklick
       if (!confirm((vorschau.length === 1 ? '1 Rechnung' : vorschau.length + ' Rechnungen') + ' über ' + H.geld(H.eur(gesamt)) + ' erstellen?\nDie enthaltenen Buchungen gelten danach als abgerechnet.')) return;
@@ -625,9 +612,13 @@
     });
     $('#r-druck-offen').addEventListener('click', () => drucken('rechnung', offeneRe.map((r) => r.id)));
     $('#r-mail').addEventListener('click', () => mailDialog(ungesendet.map((r) => r.id), 'Getränkerechnungen, noch nicht per E-Mail gesendet', () => abrechnungTab(main)));
-    $('#r-csv').addEventListener('click', () => csvDownload('rechnungen.csv', [['Rechnungsnr', 'Datum', 'Fällig', 'Mitgliedsnr', 'Name', 'Von', 'Bis', 'Betrag', 'Zahlart', 'Bezahlt am', 'Storniert']]
+    $('#r-csv').addEventListener('click', () => csvDownload('rechnungen.csv', [['Rechnungsnr', 'Datum', 'Fällig', 'Mitgliedsnr', 'Name', 'Von', 'Bis', 'Betrag', 'Zahlart', 'Bezahlt am', 'Storniert', 'Freigegeben am', 'Freigegeben von']]
       .concat(rechnungen.map((r) => [r.nr, H.datum(r.datum), H.datum(r.faellig), r.empfaenger.nr, r.empfaenger.vorname + ' ' + r.empfaenger.nachname, H.datum(r.von), H.datum(r.bis),
-        zahl(r.summe), r.sepa ? 'Lastschrift' : 'Überweisung', H.datum(r.bezahlt_am), r.storniert_am ? 'ja' : '']))));
+        zahl(r.summe), r.sepa ? 'Lastschrift' : 'Überweisung', H.datum(r.bezahlt_am), r.storniert_am ? 'ja' : '', r.freigegeben_am ? H.datum(r.freigegeben_am) : '', r.freigegeben_von || '']))));
+    // Freigabe der Monatsrechnungen durch den Kassenwart (der Vorstand sieht den Stand im Hafen-Manager → Finanzen → Getränke)
+    const freigeben = async (ids) => { try { const n = await S.rechnungenFreigeben(ids); toast(n === 1 ? '1 Rechnung freigegeben.' : n + ' Rechnungen freigegeben.'); abrechnungTab(main); } catch (err) { toast(err.message, 'fehler'); } };
+    if ($('#r-freigeben')) $('#r-freigeben').addEventListener('click', () => { if (confirm(ohneFreigabe.length + (ohneFreigabe.length === 1 ? ' Rechnung' : ' Rechnungen') + ' über ' + H.geld(H.eur(ohneFreigabe.reduce((x, r) => x + H.ct(r.summe), 0))) + ' freigeben?')) freigeben(ohneFreigabe.map((r) => r.id)); });
+    main.querySelectorAll('[data-freigeben]').forEach((b) => b.addEventListener('click', () => freigeben([b.dataset.freigeben])));
     $('#r-sepa').addEventListener('click', () => lastschriftDialog(rechnungen, e, () => abrechnungTab(main)));
   }
 
@@ -768,7 +759,7 @@
     }
     cache.mitglieder = await S.mitglieder();
     cache.produkte = await S.produkte();
-    cache.darf = S.darfBestaetigen ? await S.darfBestaetigen().catch(() => false) : false;
+    cache.darf = S.darfFreigeben ? await S.darfFreigeben().catch(() => false) : false;
     const t = location.hash.slice(1);
     zeigeTab(TABS[t] ? t : 'uebersicht');
   }

@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="css/hafen.css">
 <style>
   body { background: #e9e6df; }
+  .leiste-knoepfe { display: flex; gap: 8px; flex-wrap: wrap; } .leiste .btn:not(.primaer) { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.35); }
   .leiste { position: sticky; top: 0; z-index: 5; background: var(--navy); color: #fff; padding: 11px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
   .blatt { width: 210mm; min-height: 297mm; margin: 18px auto; background: #fff; padding: 18mm 18mm 22mm 22mm; box-shadow: 0 4px 30px rgba(0,0,0,.15); font-size: 10pt; line-height: 1.45; color: #111; position: relative; }
   .blatt.quer { width: 297mm; min-height: 210mm; padding: 14mm; }
@@ -81,7 +82,7 @@
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="sc"><path d="M14 8L118 33L14 58Z"/></clipPath>
   <symbol id="stander" viewBox="12 6 108 54"><path d="M14 8L118 33L14 58Z" fill="#132a6b"/><g clip-path="url(#sc)"><path d="M14 8L70 58M14 58L70 8" stroke="#fff" stroke-width="8"/><path d="M14 8L70 58M14 58L70 8" stroke="#d3252c" stroke-width="4.5"/></g></symbol></defs></svg>
-<div class="leiste"><strong id="titel">Drucken</strong><button class="btn primaer" onclick="window.print()">Drucken / als PDF sichern</button></div>
+<div class="leiste"><strong id="titel">Drucken</strong><span class="leiste-knoepfe"><button class="btn primaer" type="button" data-pdf-sichern>Als PDF sichern</button><button class="btn" type="button" onclick="window.print()">Drucken</button></span></div>
 <div id="blaetter"></div>
 <script src="js/config.js"></script>
 <script src="js/sb.js"></script>
@@ -94,5 +95,12 @@
 <script src="../ssv-getraenke/js/config.js"></script>
 <script src="../ssv-getraenke/js/store.js"></script>
 <script src="js/druck-start.js"></script>
+<script src="js/pdf.js"></script>
+<script>
+  // „Als PDF sichern“: echte PDF-Datei (iPad: Teilen → „In Dateien sichern“), „Drucken“ wie bisher
+  document.addEventListener('click', (e) => { if (!e.target.closest('[data-pdf-sichern]')) return;
+    const quer = !!document.querySelector('#blaetter .blatt.quer');
+    window.SSV_PDF.sichern(document.querySelectorAll('#blaetter .blatt'), { titel: 'SSV ' + document.getElementById('titel').textContent, quer: quer || undefined }); });
+</script>
 </body>
 </html>

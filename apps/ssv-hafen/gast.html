@@ -71,10 +71,8 @@
       <label class="feld"><span data-t="skipper">Skipper</span><input name="skipper" required autocomplete="name"></label>
       <label class="feld"><span data-t="hafen">Heimathafen</span><input name="herkunft"></label>
       <label class="feld"><span data-t="tel">Telefon (für Rückfragen)</span><input name="tel" type="tel" autocomplete="tel"></label>
-      <div class="form"><label class="feld"><span data-t="laenge">Länge (m)</span><input name="laenge" type="number" step="0.1" min="2" max="20" required inputmode="decimal"></label>
-      <label class="feld"><span data-t="breite">Breite (m)</span><input name="breite" type="number" step="0.1" min="1" max="6" inputmode="decimal"></label>
-      <label class="feld"><span data-t="tiefgang">Tiefgang (m)</span><input name="tiefgang" type="number" step="0.1" min="0.2" max="4" inputmode="decimal"></label>
-      <label class="feld"><span data-t="ankunft">Ankunft</span><input name="ankunft" type="date" required></label>
+      <!-- Keine Bootsmaße: die Liegegebühr ist pauschal je Nacht, egal wie groß das Boot ist -->
+      <div class="form"><label class="feld"><span data-t="ankunft">Ankunft</span><input name="ankunft" type="date" required></label>
       <label class="feld"><span data-t="naechte">Nächte</span><input name="naechte" type="number" min="1" max="30" value="1" required></label></div>
       <p class="preis" id="preis" aria-live="polite"></p>
       <p class="hinweis fehler" id="gast-fehler" role="alert" hidden></p>
@@ -108,7 +106,7 @@
       platz: 'Platznummer (steht am Schild)', ph: 'z. B. 27 oder L1', boot: 'Bootsname', skipper: 'Skipper', hafen: 'Heimathafen', tel: 'Telefon (für Rückfragen)', laenge: 'Länge (m)', breite: 'Breite (m)', tiefgang: 'Tiefgang (m)', ankunft: 'Ankunft', naechte: 'Nächte', senden: 'Anmelden & bezahlen',
       ds: 'Verantwortlich: Schwartauer Segler-Verein e.V. Deine Angaben nutzen wir nur für Liegeplatz und Abrechnung; Kontaktdaten löschen wir 12 Monate nach der Abreise.', fehler: 'Das hat nicht geklappt – bitte noch einmal versuchen oder den Hafenmeister anrufen.',
       nacht: 'pro Nacht', naechteK: 'Nächte', angemeldet: 'Du bist angemeldet', platzOk: 'Platz {p} ist für dich eingetragen.', platzPruef: 'Danke! Platz {p} prüfen wir noch – du kannst liegen bleiben. Passt etwas nicht, meldet sich der Hafenmeister bei dir.', platzOhne: 'Danke! Den Platz trägt der Hafenmeister nach – du kannst liegen bleiben.',
-      gebuehr: 'Liegegebühr', wie: 'Wie möchtest du bezahlen?', paypal: 'PayPal', paypalT: 'Öffnet PayPal mit dem Betrag. Danach hier bestätigen.', paypalK: 'Mit PayPal zahlen', ueb: 'Überweisung', uebT: 'Am besten als Echtzeit-Überweisung in deiner Banking-App.', empf: 'Empfänger', zweck: 'Verwendungszweck', betragK: 'Betrag', kopieren: 'Kopieren', kopiert: 'Kopiert',
+      gebuehr: 'Liegegebühr', wie: 'Wie möchtest du bezahlen?', paypal: 'PayPal', paypalT: 'Code mit der Handykamera oder der PayPal-App scannen – oder den Knopf antippen. Der Betrag ist schon eingetragen. Danach hier bestätigen.', paypalQr: 'per PayPal', paypalK: 'Mit PayPal zahlen', ueb: 'Überweisung', uebT: 'Am besten als Echtzeit-Überweisung in deiner Banking-App.', empf: 'Empfänger', zweck: 'Verwendungszweck', betragK: 'Betrag', kopieren: 'Kopieren', kopiert: 'Kopiert',
       bar: 'Bar', barT: 'Betrag mit Bootsname in einen Umschlag und in den Briefkasten am Vereinsheim – oder direkt beim Hafenmeister.', bezahlt: 'Erledigt – ich habe bezahlt', barK: 'Ich zahle bar',
       giro: 'Überweisung mit GiroCode', giroT: 'Code mit der Banking-App scannen (z. B. Sparkasse, Volksbank, ING) – IBAN, Betrag und Verwendungszweck sind schon ausgefüllt. Am besten als Echtzeit-Überweisung.',
       bild: 'Als Bild speichern', bildT: 'Nur ein Handy? Bild speichern und in der Banking-App bei „QR-Code/Foto-Überweisung“ aus den Fotos wählen.', manuell: 'Lieber von Hand eintippen',
@@ -119,7 +117,7 @@
       platz: 'Berth number (on the sign)', ph: 'e.g. 27 or L1', boot: 'Boat name', skipper: 'Skipper', hafen: 'Home port', tel: 'Phone', laenge: 'Length (m)', breite: 'Beam (m)', tiefgang: 'Draught (m)', ankunft: 'Arrival', naechte: 'Nights', senden: 'Register & pay',
       ds: 'Controller: Schwartauer Segler-Verein e.V. We only use your details for your berth and billing and delete contact details 12 months after departure.', fehler: 'That did not work – please try again or call the harbour master.',
       nacht: 'per night', naechteK: 'nights', angemeldet: 'You are registered', platzOk: 'Berth {p} is booked for you.', platzPruef: 'Thank you! We still need to check berth {p} – you can stay. If anything is wrong, the harbour master will contact you.', platzOhne: 'Thank you! The harbour master will note your berth – you can stay.',
-      gebuehr: 'Harbour fee', wie: 'How would you like to pay?', paypal: 'PayPal', paypalT: 'Opens PayPal with the amount. Confirm here afterwards.', paypalK: 'Pay with PayPal', ueb: 'Bank transfer', uebT: 'Ideally as an instant transfer in your banking app.', empf: 'Recipient', zweck: 'Reference', betragK: 'Amount', kopieren: 'Copy', kopiert: 'Copied',
+      gebuehr: 'Harbour fee', wie: 'How would you like to pay?', paypal: 'PayPal', paypalT: 'Scan the code with your phone camera or the PayPal app – or tap the button. The amount is filled in. Confirm here afterwards.', paypalQr: 'via PayPal', paypalK: 'Pay with PayPal', ueb: 'Bank transfer', uebT: 'Ideally as an instant transfer in your banking app.', empf: 'Recipient', zweck: 'Reference', betragK: 'Amount', kopieren: 'Copy', kopiert: 'Copied',
       bar: 'Cash', barT: 'Put the amount with your boat name in an envelope into the letterbox at the clubhouse – or pay the harbour master.', bezahlt: 'Done – I have paid', barK: 'I will pay cash',
       giro: 'Bank transfer with QR code', giroT: 'Scan the code with your banking app – IBAN, amount and reference are filled in automatically (EPC/GiroCode, works with most European banks).',
       bild: 'Save as image', bildT: 'Only one phone? Save the image and open it in your banking app’s QR/photo transfer.', manuell: 'Type it in manually',
@@ -130,7 +128,7 @@
       platz: 'Pladsnummer (på skiltet)', ph: 'f.eks. 27 eller L1', boot: 'Bådens navn', skipper: 'Skipper', hafen: 'Hjemhavn', tel: 'Telefon', laenge: 'Længde (m)', breite: 'Bredde (m)', tiefgang: 'Dybgang (m)', ankunft: 'Ankomst', naechte: 'Nætter', senden: 'Tilmeld & betal',
       ds: 'Dataansvarlig: Schwartauer Segler-Verein e.V. Vi bruger kun dine oplysninger til plads og afregning og sletter kontaktdata 12 måneder efter afrejse.', fehler: 'Det lykkedes ikke – prøv igen eller ring til havnefogeden.',
       nacht: 'pr. nat', naechteK: 'nætter', angemeldet: 'Du er tilmeldt', platzOk: 'Plads {p} er noteret til dig.', platzPruef: 'Tak! Vi tjekker plads {p} – du kan blive liggende. Passer noget ikke, kontakter havnefogeden dig.', platzOhne: 'Tak! Havnefogeden noterer din plads – du kan blive liggende.',
-      gebuehr: 'Havnepenge', wie: 'Hvordan vil du betale?', paypal: 'PayPal', paypalT: 'Åbner PayPal med beløbet. Bekræft her bagefter.', paypalK: 'Betal med PayPal', ueb: 'Bankoverførsel', uebT: 'Helst som straksoverførsel i din bank-app.', empf: 'Modtager', zweck: 'Tekst', betragK: 'Beløb', kopieren: 'Kopiér', kopiert: 'Kopieret',
+      gebuehr: 'Havnepenge', wie: 'Hvordan vil du betale?', paypal: 'PayPal', paypalT: 'Scan koden med kameraet eller PayPal-appen – eller tryk på knappen. Beløbet er udfyldt. Bekræft her bagefter.', paypalQr: 'via PayPal', paypalK: 'Betal med PayPal', ueb: 'Bankoverførsel', uebT: 'Helst som straksoverførsel i din bank-app.', empf: 'Modtager', zweck: 'Tekst', betragK: 'Beløb', kopieren: 'Kopiér', kopiert: 'Kopieret',
       bar: 'Kontant', barT: 'Læg beløbet med bådens navn i en kuvert i postkassen ved klubhuset – eller betal havnefogeden.', bezahlt: 'Færdig – jeg har betalt', barK: 'Jeg betaler kontant',
       giro: 'Bankoverførsel med QR-kode', giroT: 'Scan koden med din bank-app – IBAN, beløb og tekst er udfyldt (EPC/GiroCode, virker med de fleste europæiske banker).',
       bild: 'Gem som billede', bildT: 'Kun én telefon? Gem billedet og åbn det i bank-appens QR/foto-overførsel.', manuell: 'Indtast manuelt',
@@ -193,9 +191,9 @@
     const n = Math.max(1, Number(x.naechte) || 1); const knopf = f.querySelector('button'); knopf.disabled = true;
     let r;
     try {
-      if (SB) r = await SB.rpc('gast_anmelden', { p: { platz: x.platz, bootsname: x.bootsname, skipper: x.skipper, herkunft: x.herkunft, tel: x.tel, laenge: x.laenge, breite: x.breite, tiefgang: x.tiefgang, ankunft: x.ankunft, naechte: n } }, true);
+      if (SB) r = await SB.rpc('gast_anmelden', { p: { platz: x.platz, bootsname: x.bootsname, skipper: x.skipper, herkunft: x.herkunft, tel: x.tel, ankunft: x.ankunft, naechte: n } }, true);
       else {
-        const g = { id: H.uid('G'), bootsname: x.bootsname.trim(), skipper: x.skipper.trim(), herkunft: x.herkunft.trim(), tel: x.tel.trim(), email: '', laenge: H.dez(x.laenge), breite: H.dez(x.breite) || 0, tiefgang: H.dez(x.tiefgang) || null,
+        const g = { id: H.uid('G'), bootsname: x.bootsname.trim(), skipper: x.skipper.trim(), herkunft: x.herkunft.trim(), tel: x.tel.trim(), email: '', laenge: null, breite: null, tiefgang: null,
           ankunft: x.ankunft, naechte: n, platz_id: '', platz_angabe: x.platz.trim(), platz_hinweis: '', betrag: n * gb.gast_nacht, zahlung: 'offen', bezahlt_am: '', zahlung_gemeldet: '', quittung_nr: '', status: 'angemeldet', quelle: 'qr', erstellt: new Date().toISOString() };
         const p = platzFinden(x.platz); const grund = p ? demoPruefen(p, g) : 'Platz „' + x.platz.trim() + '“ gibt es laut Hafenplan nicht';
         if (p && !grund) { g.platz_id = p.id; g.status = 'eingewiesen'; } else g.platz_hinweis = grund;
@@ -263,7 +261,15 @@
         '<details class="manuell"><summary>' + t.manuell + '</summary>' + kopier(t.empf, e.verein_name || 'Schwartauer Segler-Verein e.V.') +
         kopier('IBAN', iban, iban.replace(/(.{4})/g, '$1 ').trim()) + (e.bic ? kopier('BIC', e.bic) : '') + kopier(t.betragK, a.betrag.toFixed(2).replace('.', ','), H.geld(a.betrag)) + kopier(t.zweck, zweck) + '</details>' +
         '<button class="btn primaer" type="button" data-bezahlt="ueberweisung">' + t.bezahlt + '</button></div>'); }
-    if (pp) wege.push('<div class="zahlweg"><h3>' + t.paypal + '</h3><p>' + t.paypalT + '</p><a class="btn primaer" id="pp-los" target="_blank" rel="noopener" href="https://www.paypal.com/paypalme/' + encodeURIComponent(pp) + '/' + a.betrag.toFixed(2) + 'EUR">' + t.paypalK + ' · ' + H.geld(a.betrag) + '</a><button class="btn" type="button" data-bezahlt="paypal">' + t.bezahlt + '</button></div>');
+    // PayPal: Link mit Betrag + QR-Code dazu – scannt die Handykamera oder die PayPal-App (der GiroCode oben ist ein Bank-Code, den PayPal nicht liest)
+    const ppUrl = pp ? 'https://www.paypal.com/paypalme/' + encodeURIComponent(pp) + '/' + a.betrag.toFixed(2) + 'EUR' : '';
+    let ppQr = null; if (pp) { ppQr = qrcode(0, 'M'); ppQr.addData(ppUrl, 'Byte'); ppQr.make(); }
+    // Demo ohne eingetragenen PayPal.me-Namen: Block zeigen, aber ohne echten Link (kein Geld an Fremde)
+    if (!pp && !SB) { const dq = qrcode(0, 'M'); dq.addData('SSV-Demo: Hier steht später der PayPal-Link des Vereins mit Betrag.', 'Byte'); dq.make();
+      wege.push('<div class="zahlweg paypal"><h3>' + t.paypal + '</h3><p>' + t.paypalT + '</p><div class="epc pp-qr" aria-label="PayPal-QR-Code (Demo)">' + dq.createSvgTag({ cellSize: 4, margin: 4, scalable: true }) + '</div>' +
+        '<p class="epc-unter"><strong>' + H.geld(a.betrag) + '</strong> · ' + t.paypalQr + '</p><p class="hinweis">Demo: Im Echtbetrieb trägt der Verein seinen PayPal.me-Namen unter Einstellungen → Gastlieger ein – dann öffnet dieser Code PayPal mit dem Betrag.</p><button class="btn" type="button" data-bezahlt="paypal">' + t.bezahlt + '</button></div>'); }
+    if (pp) wege.push('<div class="zahlweg paypal"><h3>' + t.paypal + '</h3><p>' + t.paypalT + '</p><div class="epc pp-qr" aria-label="PayPal-QR-Code">' + ppQr.createSvgTag({ cellSize: 4, margin: 4, scalable: true }) + '</div>' +
+      '<p class="epc-unter"><strong>' + H.geld(a.betrag) + '</strong> · ' + t.paypalQr + '</p><a class="btn primaer" id="pp-los" target="_blank" rel="noopener" href="' + ppUrl + '">' + t.paypalK + ' · ' + H.geld(a.betrag) + '</a><button class="btn" type="button" data-bezahlt="paypal">' + t.bezahlt + '</button></div>');
     wege.push('<div class="zahlweg"><h3>' + t.bar + '</h3><p>' + (lang === 'de' && e.gast_bar_hinweis ? esc(e.gast_bar_hinweis) : t.barT) + '</p><button class="btn" type="button" data-bezahlt="bar">' + t.barK + '</button></div>');
     const regel = toiletteRegel();
     karte.innerHTML = '<div class="' + (a.platz_ok ? 'platz-ok' : 'platz-pruef') + '" role="status">' + (a.platz_ok ? '✓ ' + t.angemeldet + ' · ' + t.platzOk.replace('{p}', esc(a.platz)) : (a.platz ? t.platzPruef.replace('{p}', esc(a.platz)) : t.platzOhne)) + '</div>' +

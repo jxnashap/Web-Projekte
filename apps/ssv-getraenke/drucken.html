@@ -25,7 +25,8 @@
   <strong id="titel">Drucken</strong>
   <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
     <label id="anhang-wahl" style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="anhang" checked> Einzelbuchungen beilegen</label>
-    <button class="k-btn k-btn-primary" onclick="window.print()" style="padding:10px 18px">Drucken / als PDF sichern</button>
+    <button class="k-btn k-btn-primary" type="button" data-pdf-sichern style="padding:10px 18px">Als PDF sichern</button>
+    <button class="k-btn" type="button" onclick="window.print()" style="padding:10px 18px">Drucken</button>
   </div>
 </div>
 <div id="blaetter"></div>
@@ -35,5 +36,11 @@
 <script src="js/config.js"></script>
 <script src="js/store.js"></script>
 <script src="js/drucken.js"></script>
+<script src="../ssv-hafen/js/pdf.js"></script>
+<script>
+  // „Als PDF sichern“: echte PDF-Datei (iPad: Teilen → „In Dateien sichern“), „Drucken“ wie bisher
+  document.addEventListener('click', (e) => { if (!e.target.closest('[data-pdf-sichern]')) return;
+    window.SSV_PDF.sichern(document.querySelectorAll('#blaetter .r-blatt'), { titel: 'SSV ' + document.getElementById('titel').textContent }); });
+</script>
 </body>
 </html>

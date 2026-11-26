@@ -75,8 +75,9 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    Bug zur Messe). Löscht P49–P60, sofern kein Boot darauf eingetragen ist.
 19. `apps/ssv-hafen/supabase/nachtrag-19.sql` – Getränke-Code: jeder 4-stellige Code erlaubt (auch 1234), beim ersten Mal
    keine Mitgliedsnummer mehr – Namen antippen, Code zweimal eingeben, danach Namen erneut antippen und anmelden.
-20. `apps/ssv-hafen/supabase/nachtrag-20.sql` – Freigabe der Getränkebuchungen: jede Buchung ist zunächst „unbestätigt“, nur der
-   Kassenwart bestätigt (Kassenwart-Bereich → Buchungen bzw. Hafen-Manager → Finanzen → Getränke); der Vorstand sieht den Stand.
+20. `apps/ssv-hafen/supabase/nachtrag-20.sql` – Freigabe der Getränke-Monatsrechnungen: am Monatsende gibt der Kassenwart die
+   Rechnungen frei (Kassenwart-Bereich → Abrechnung bzw. Hafen-Manager → Finanzen → Getränke); Buchungen brauchen keine Bestätigung,
+   der Vorstand sieht den Stand. **PayPal für Gäste:** unter Einstellungen → Gastlieger den PayPal.me-Namen des Vereins eintragen.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 
