@@ -33,7 +33,7 @@ Acht Bereiche mit Reitern oben (`BEREICHE` in `js/app.js`):
 - **Mitglieder & Boote**: Mitglieder · Boote · Aufnahmeanträge
 - **Arbeitsdienst**: Stunden · Arbeitsgruppen · Schäden & Wartung
 - **Mitteilungen & Veranstaltungen**: Mitteilungen · Veranstaltungen
-- **Finanzen**: Auf einen Blick (Monat | Jahr, Monatsbericht, Unterlagen Kassenprüfung) · Abrechnen · Rechnungen & Offenes · Zahlungseingang (Kontoauszug) · Hafengeld (Monat | Saison, Liegegebühren + Gastlieger) · Gebührenordnung
+- **Finanzen**: Auf einen Blick (Monat | Jahr, Monatsbericht, Unterlagen Kassenprüfung) · Abrechnen · Rechnungen & Offenes · Zahlungseingang (Kontoauszug) · Hafengeld (Monat | Saison, Liegegebühren + Gastlieger) · Getränke (alle Buchungen mit Freigabe-Stand; bestätigen nur der Kassenwart) · Gebührenordnung
 - **Verwaltung**: Einstellungen (aufklappbare Abschnitte, Sicherung unten) · Verbandsmeldung · Änderungsverlauf
 
 | Rolle | sieht |

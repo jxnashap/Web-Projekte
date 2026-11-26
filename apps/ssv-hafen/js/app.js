@@ -14,7 +14,7 @@
     vorstand: { name: 'Vorstand', tabs: '*', bank: true },
     brueckenwart: { name: 'Brückenwartin', tabs: ['uebersicht', 'plan', 'plaetze', 'boote', 'eigner', 'belegung', 'abwesenheiten', 'gaeste', 'gastkarte', 'warteliste', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen'], bank: false },
     hafenmeister: { name: 'Hafenmeister', tabs: ['uebersicht', 'plan', 'plaetze', 'gaeste', 'gastkarte', 'abwesenheiten', 'lagern', 'aufgaben', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen'], bank: false },
-    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'finanzen', 'abrechnung', 'rechnungen', 'kontoauszug', 'hafengeld', 'gebuehren', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen', 'einstellungen', 'verlauf'], bank: true }
+    kassenwart: { name: 'Kassenwart', tabs: ['uebersicht', 'plan', 'eigner', 'antraege', 'verband', 'finanzen', 'abrechnung', 'rechnungen', 'kontoauszug', 'hafengeld', 'getraenke', 'gebuehren', 'arbeitsdienst', 'arbeitsbereiche', 'mitteilungen', 'veranstaltungen', 'einstellungen', 'verlauf'], bank: true }
   };
   // Acht Bereiche statt neunzehn Menüpunkte, jeder mit einem Thema; innerhalb eines Bereichs wechseln Reiter oben auf der Seite.
   // Die Reiter-IDs (#lagern, #verband …) bleiben gleich – alte Links und Lesezeichen funktionieren weiter.
@@ -35,7 +35,7 @@
     ['mitglieder', 'Mitglieder & Boote', [['eigner', 'Mitglieder'], ['boote', 'Boote'], ['antraege', 'Aufnahmeanträge']]],
     ['arbeit', 'Arbeitsdienst', [['arbeitsdienst', 'Stunden'], ['arbeitsbereiche', 'Arbeitsgruppen'], ['aufgaben', 'Schäden & Wartung']]],
     ['verein', 'Mitteilungen & Veranstaltungen', [['mitteilungen', 'Mitteilungen'], ['veranstaltungen', 'Veranstaltungen']]],
-    ['finanzen', 'Finanzen', [['finanzen', 'Auf einen Blick'], ['abrechnung', 'Abrechnen'], ['rechnungen', 'Rechnungen & Offenes'], ['kontoauszug', 'Zahlungseingang'], ['hafengeld', 'Hafengeld'], ['gebuehren', 'Gebührenordnung']]],
+    ['finanzen', 'Finanzen', [['finanzen', 'Auf einen Blick'], ['abrechnung', 'Abrechnen'], ['rechnungen', 'Rechnungen & Offenes'], ['kontoauszug', 'Zahlungseingang'], ['hafengeld', 'Hafengeld'], ['getraenke', 'Getränke'], ['gebuehren', 'Gebührenordnung']]],
     ['verwaltung', 'Verwaltung', [['einstellungen', 'Einstellungen'], ['verband', 'Verbandsmeldung'], ['verlauf', 'Änderungsverlauf']]]
   ];
   const TABS = BEREICHE.map(([, n, ts]) => [n, ts]);
@@ -1971,6 +1971,7 @@
     const ok = K.status === 'ok';
     const krUeber = K.re.filter((r) => !r.storniert_am && !r.bezahlt_am && r.faellig && r.faellig < heute);
     const frei = K.bu.filter((b) => !b.rechnung_id && !b.storniert_am);
+    const unbest = K.bu.filter((b) => !b.bestaetigt_am && !b.storniert_am);
     const kurzM = (mm) => { const n = FZ.MONATE[Number(mm.slice(5, 7)) - 1]; return (n.length > 4 ? n.slice(0, 3) + '.' : n) + ' ' + mm.slice(0, 4); };
     const zelle = (s, k, mm, l) => '<td class="r" data-l="' + l + '">' + (k === 'getraenke' && !ok ? kasseZeile(K, '') : fgeld(s[k])) + '</td>';
     const todo = laufend ? finTodo() : [];
@@ -1980,7 +1981,8 @@
         '<div class="kz"><small>Offen ' + (laufend ? 'heute' : 'am ' + H.datum(ende)) + '</small><strong>' + H.geld(off.summe) + '</strong><span>Hafen & Beiträge ' + H.geld(off.hafen) + ' · Gäste ' + H.geld(off.gast) + (ok ? ' · Getränke ' + H.geld(off.getraenke) : '') + '</span></div>' +
         '<div class="kz"><small>Zu klären · Hafen</small><strong style="color:' + (kl.length + gm.length ? 'var(--rot)' : 'inherit') + '">' + (kl.length + gm.length) + '</strong><span>' + kl.length + ' überfällig oder Rücklastschrift · ' + gm.length + ' Gastzahlung' + (gm.length === 1 ? '' : 'en') + ' gemeldet</span></div></div>' +
       '<p class="fin-getr"><strong>Getränke:</strong> ' + (ok ? (krUeber.length ? krUeber.length + ' Monatsrechnung' + (krUeber.length === 1 ? '' : 'en') + ' überfällig' : 'keine Monatsrechnung überfällig') + ' · ' + H.geld(frei.reduce((x, b) => x + Number(b.betrag), 0)) + ' in ' + frei.length + ' Buchungen noch nicht abgerechnet'
-        : K.status === 'laden' ? 'wird geladen …' : K.status === 'aus' ? 'Getränkekasse nicht verbunden' : 'nicht lesbar: ' + esc(K.fehler)) + (KASSE() ? ' · <a href="' + KASSE_URL + '" target="_blank" rel="noopener">in der Getränkekasse klären ↗</a>' : '') + '</p>' +
+        : K.status === 'laden' ? 'wird geladen …' : K.status === 'aus' ? 'Getränkekasse nicht verbunden' : 'nicht lesbar: ' + esc(K.fehler)) +
+        (ok && darf('getraenke') ? ' · <a href="#getraenke">' + (unbest.length ? '<span class="tag warn">' + unbest.length + ' unbestätigt</span> – Freigabe durch den Kassenwart' : '<span class="tag ok">alle bestätigt</span>') + '</a>' : '') + (KASSE() ? ' · <a href="' + KASSE_URL + '" target="_blank" rel="noopener">in der Getränkekasse klären ↗</a>' : '') + '</p>' +
       (laufend ? '<div class="panel"><h2>Diesen Monat zu tun</h2>' + (todo.length ? finTodoHtml(todo) : '<p class="leer">Nichts offen – alles abgeglichen.</p>') + '</div>' : '') +
       '<div class="panel"><h2>Eingänge nach Bereich</h2><p class="fin-wie">Gezählt nach Zahlungsdatum: Überweisung und Lastschrift am Tag der Buchung, Gäste am Tag der Zahlung, Getränke am „bezahlt am“. Rücklastschriften sind abgezogen.</p>' +
         '<table class="tab fin-tab fk"><thead><tr><th>Bereich</th><th class="r">' + kurzM(m) + '</th><th class="r">' + kurzM(vm) + '</th><th class="r">' + kurzM(vj) + '</th></tr></thead><tbody>' +
@@ -2560,6 +2562,59 @@
    * Liegegebühren (Sommer/Winter, nach Abrechnungsjahr) und Gastlieger nach Monat oder Saison.
    * Gäste zählen im Monat ihrer Ankunft (ein Aufenthalt über den Monatswechsel zählt ganz zum Ankunftsmonat). Barbestand gibt es hier nicht. */
   const hgStand = { modus: 'monat', monat: heute.slice(0, 7), saison: SAISON };
+  /* Finanzen → Getränke: alle Buchungen am Getränke-iPad mit Freigabe-Stand. Der Kassenwart bestätigt (auch hier),
+     der Vorstand sieht alles mit „unbestätigt“ / „bestätigt von … am …“ (Datenbank lässt nur den Kassenwart bestätigen, Nachtrag 20). */
+  const grStand = { monat: heute.slice(0, 7), freigabe: '', such: '' };
+  V.getraenke = (main) => {
+    const kasse = KASSE(); const monate = finMonate();
+    main.innerHTML = kopf('Getränke', 'Alle Buchungen am Getränke-iPad – mit Freigabe durch den Kassenwart.', KASSE() ? '<a class="btn" href="' + KASSE_URL + '" target="_blank" rel="noopener">Kassenwart-Bereich öffnen ↗</a>' : '') +
+      '<div class="fin-leiste"><div class="fin-wahl"><button type="button" class="btn klein fin-pfeil" data-grschritt="-1" aria-label="Monat davor">◀</button><select id="gr-monat" aria-label="Monat">' +
+        monate.map((m) => '<option value="' + m + '"' + (m === grStand.monat ? ' selected' : '') + '>' + FZ.monatText(m) + '</option>').join('') + '</select><button type="button" class="btn klein fin-pfeil" data-grschritt="1" aria-label="Monat danach"' + (grStand.monat >= heute.slice(0, 7) ? ' disabled' : '') + '>▶</button></div>' +
+        '<label class="gr-filter">Freigabe <select id="gr-freigabe">' + [['', 'alle'], ['offen', 'unbestätigt'], ['ok', 'bestätigt']].map(([k, t]) => '<option value="' + k + '"' + (grStand.freigabe === k ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></label>' +
+        '<input class="suche gr-such" id="gr-such" type="search" placeholder="Name oder Getränk …" aria-label="Suchen" value="' + esc(grStand.such) + '"></div>' +
+      '<div id="gr-inhalt"><p class="leer">Wird geladen …</p></div>';
+    main.querySelectorAll('[data-grschritt]').forEach((b) => b.addEventListener('click', () => { grStand.monat = FZ.monatPlus(grStand.monat, Number(b.dataset.grschritt)); zeige('getraenke', true); }));
+    $('#gr-monat').addEventListener('change', (e) => { grStand.monat = e.target.value; zeige('getraenke', true); });
+    $('#gr-freigabe').addEventListener('change', (e) => { grStand.freigabe = e.target.value; malen(); });
+    $('#gr-such').addEventListener('input', (e) => { grStand.such = e.target.value; malen(); });
+    const ziel = $('#gr-inhalt');
+    if (!kasse) { ziel.innerHTML = '<p class="hinweis warn">Die Getränkekasse ist nicht verbunden.</p>'; return; }
+    let bu = [], namen = new Map(), rnr = new Map(), darfOk = false;
+    const nm = (id) => namen.get(id) || '–';
+    const grNorm = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss');
+    const malen = () => {
+      if (!ziel.isConnected) return;
+      const f = grNorm(grStand.such.trim()); const fr = grStand.freigabe;
+      const liste = bu.filter((b) => (!fr || (fr === 'offen' ? !b.bestaetigt_am && !b.storniert_am : !!b.bestaetigt_am)) && (!f || grNorm(nm(b.mitglied_id) + ' ' + b.produkt_name).includes(f)));
+      const gilt = bu.filter((b) => !b.storniert_am); const ok = gilt.filter((b) => b.bestaetigt_am); const unb = gilt.filter((b) => !b.bestaetigt_am);
+      const sum = (l) => l.reduce((x, b) => x + Number(b.betrag), 0);
+      ziel.innerHTML = '<div class="karten fin-karten"><div class="kz"><small>Buchungen ' + FZ.monatText(grStand.monat) + '</small><strong>' + H.geld(sum(gilt)) + '</strong><span>' + gilt.length + ' Buchungen' + (bu.length - gilt.length ? ' · ' + (bu.length - gilt.length) + ' storniert' : '') + '</span></div>' +
+          '<div class="kz"><small>Bestätigt</small><strong style="color:var(--ok)">' + H.geld(sum(ok)) + '</strong><span>' + ok.length + ' vom Kassenwart geprüft</span></div>' +
+          '<div class="kz"><small>Unbestätigt</small><strong style="color:' + (unb.length ? '#8a5e05' : 'inherit') + '">' + H.geld(sum(unb)) + '</strong><span>' + unb.length + (unb.length === 1 ? ' Buchung wartet' : ' Buchungen warten') + ' auf den Kassenwart</span></div></div>' +
+        (darfOk && unb.length ? '<div class="hinweis warn gr-freigabe"><span><strong>Freigabe:</strong> ' + unb.length + (unb.length === 1 ? ' Buchung' : ' Buchungen') + ' in diesem Monat noch unbestätigt.</span><button class="btn primaer klein" id="gr-alle">Alle ' + unb.length + ' bestätigen</button></div>'
+          : !darfOk && unb.length ? '<p class="hinweis">Bestätigen kann nur der Kassenwart – hier siehst du den Stand.</p>' : '') +
+        '<div class="panel">' + (liste.length ? '<table class="tab fk gr-tab"><thead><tr><th>Zeit</th><th>Mitglied</th><th>Getränk</th><th class="r">Menge</th><th class="r">Betrag</th><th>Abrechnung</th><th>Freigabe</th>' + (darfOk ? '<th></th>' : '') + '</tr></thead><tbody>' +
+          liste.map((b) => '<tr' + (b.storniert_am ? ' class="blass"' : '') + '><td class="nw" data-l="Zeit">' + H.datum(b.zeit) + ', ' + new Date(b.zeit).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + '</td><td data-l="Mitglied">' + esc(nm(b.mitglied_id)) + '</td>' +
+            '<td data-l="Getränk">' + esc(b.produkt_name) + (b.quelle === 'nachtrag' ? ' <span class="tag">Nachtrag</span>' : '') + '</td><td class="r" data-l="Menge">' + b.anzahl + ' ' + (b.einheit === 'kasten' ? 'Kasten' : 'Stk.') + '</td><td class="r nw" data-l="Betrag">' + H.geld(b.betrag) + '</td>' +
+            '<td data-l="Abrechnung">' + (b.storniert_am ? '<span class="tag rot">storniert</span>' : b.rechnung_id ? '<span class="tag ok">' + esc(rnr.get(b.rechnung_id) || 'abgerechnet') + '</span>' : '<span class="tag">noch nicht abgerechnet</span>') + '</td>' +
+            '<td data-l="Freigabe">' + (b.storniert_am ? '–' : b.bestaetigt_am ? '<span class="tag ok">✓ bestätigt</span> <small class="fin-leise">' + esc(b.bestaetigt_von || 'Kassenwart') + ', ' + H.kurz(b.bestaetigt_am.slice(0, 10)) + '</small>' : '<span class="tag warn">unbestätigt</span>') + '</td>' +
+            (darfOk ? '<td class="r aktion">' + (!b.storniert_am && !b.bestaetigt_am ? '<button class="btn klein primaer" data-gr-ok="' + b.id + '">Bestätigen</button>' : '') + '</td>' : '') + '</tr>').join('') +
+          '</tbody><tfoot><tr><td colspan="4">Summe (ohne Stornos)</td><td class="r">' + H.geld(sum(liste.filter((b) => !b.storniert_am))) + '</td><td colspan="' + (darfOk ? 3 : 2) + '"></td></tr></tfoot></table>'
+          : '<p class="leer">Keine Buchungen' + (fr || f ? ' für diese Auswahl' : ' im ' + FZ.monatText(grStand.monat)) + '.</p>') + '</div>';
+      const bestaetigen = async (ids) => { try { const n = await kasse.buchungenBestaetigen(ids); toast(n === 1 ? '1 Buchung bestätigt.' : n + ' Buchungen bestätigt.'); laden(); } catch (e) { toast(e.message, 'fehler'); } };
+      const alle = $('#gr-alle'); if (alle) alle.addEventListener('click', () => { if (confirm(unb.length + (unb.length === 1 ? ' Buchung' : ' Buchungen') + ' (' + H.geld(sum(unb)) + ') als geprüft bestätigen?')) bestaetigen(unb.map((b) => b.id)); });
+      ziel.querySelectorAll('[data-gr-ok]').forEach((k) => k.addEventListener('click', () => bestaetigen([k.dataset.grOk])));
+    };
+    const laden = async () => {
+      try {
+        const von = grStand.monat + '-01', bis = FZ.monatsEnde(grStand.monat);
+        const [b2, ml, rl, dk] = await Promise.all([kasse.buchungen({ von, bis }), kasse.mitglieder(), kasse.rechnungen(), rolle === 'kassenwart' && kasse.darfBestaetigen ? kasse.darfBestaetigen() : false]);
+        bu = b2 || []; namen = new Map((ml || []).map((x) => [x.id, x.nachname + ', ' + x.vorname])); rnr = new Map((rl || []).map((r) => [r.id, r.nr])); darfOk = !!dk;
+        malen();
+      } catch (e) { if (ziel.isConnected) ziel.innerHTML = '<p class="hinweis warn">Getränkekasse nicht lesbar: ' + esc(e.message) + '</p>'; }
+    };
+    laden();
+  };
   const hgSaisonVon = (m) => Number(m.slice(5, 7)) < 4 ? Number(m.slice(0, 4)) - 1 : Number(m.slice(0, 4));   // Januar–März gehören zum Winter der Vorsaison
   function hgDaten(modus, wert) {
     const monat = modus === 'monat'; const S = monat ? hgSaisonVon(wert) : Number(wert);
@@ -3187,6 +3242,7 @@
     ['Unterlagen für die Kassenprüfung', 'kassenpruefung kassenpruefer kassenbericht jahresabschluss jhv jahr eingaenge csv', 'finanzen', '#fin-jahr-knopf'],
     ['Hafengeld nach Monat oder Saison', 'hafengeld liegegebuehr gastlieger gaeste einnahmen bar monat saison naechte', 'hafengeld'],
     ['Gästeliste drucken (Hafengeld)', 'gaesteliste gastlieger liste drucken bar kasse hafengeld', 'hafengeld', '#hg-druck'],
+    ['Getränkebuchungen ansehen und bestätigen (Freigabe)', 'getraenke getraenkekasse buchungen freigabe bestaetigen unbestaetigt kassenwart bier kasse', 'getraenke'],
     ['Gebührenordnung ansehen oder ändern', 'gebuehrenordnung preise gebuehren beitrag hoehe aendern neue fassung', 'gebuehren'],
     ['Verbandsmeldung (Bestandserhebung)', 'verband meldung bestandserhebung statistik landessportverband mitgliederzahl jahresmeldung', 'verband'],
     ['Einstellungen (Verein, Bank, Kran)', 'einstellungen bank iban glaeubiger kran gewicht verein adresse paypal', 'einstellungen'],

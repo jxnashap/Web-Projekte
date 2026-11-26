@@ -1383,3 +1383,10 @@ details.gast-aushang > .wc-panel { padding: 12px 0 14px; border-top: 1px solid v
   .profil-nav { flex-wrap: nowrap; overflow-x: auto; }   /* am Handy eine wischbare Zeile */
 }
 @media print { .profil-nav, .profil-aktionen { display: none; } }
+/* Finanzen → Getränke: Filterleiste und Freigabe-Hinweis */
+@media screen {
+  .gr-filter { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--muted); }
+  .gr-filter select { min-height: 40px; border-radius: 9px; border: 1px solid #8A8FA3; padding: 4px 10px; font: inherit; font-weight: 600; color: var(--navy); background: #fff; }
+  .gr-such { flex: 1 1 200px; min-width: 0; max-width: 320px; }
+  .gr-freigabe { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+}
