@@ -79,6 +79,8 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    Rechnungen frei (Kassenwart-Bereich → Abrechnung bzw. Hafen-Manager → Finanzen → Getränke); Buchungen brauchen keine Bestätigung,
    der Vorstand sieht den Stand. **PayPal für Gäste:** unter Einstellungen → Gastlieger den PayPal.me-Namen des Vereins eintragen.
 
+**Kurzweg für die Live-Datenbank (Stand Nachtrag 17):** `apps/ssv-hafen/supabase/nachtrag-18-bis-20.sql` enthält 18, 19 und 20 in einem Block (alles oder nichts).
+
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 
 **Löschfristen automatisch:** Database → Extensions → `pg_cron` aktivieren, dann einmal im SQL Editor:
