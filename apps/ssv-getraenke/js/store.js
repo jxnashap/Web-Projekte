@@ -37,10 +37,10 @@
     storno_minuten: 15,
     abmelden_sekunden: 60,
     pin_selbst_festlegen: true,   // Mitglieder legen ihren Code beim ersten Mal selbst fest
-    pin_erst_nr_pruefen: true     // … nachdem sie ihre Mitgliedsnummer eingegeben haben
+    pin_erst_nr_pruefen: false    // keine Mitgliedsnummer abfragen (Wunsch des Vereins, Nachtrag 19)
   };
 
-  /* Zu naheliegende Codes werden abgelehnt */
+  /* Mitglieder dürfen jeden 4-stelligen Code wählen (auch 1234). Nur der Zufalls-Code der Verwaltung meidet naheliegende Muster. */
   const SCHLECHTE_PIN = /^(\d)\1{3}$|^(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210|1212|2580|0000)$/;
   const pinZuEinfach = (p) => SCHLECHTE_PIN.test(p);
 
@@ -249,24 +249,17 @@
     }
     async kasseOptionen() {
       const e = { ...STANDARD_EINSTELLUNGEN, ...this.d.einstellungen };
-      return { pin_selbst_festlegen: !!e.pin_selbst_festlegen, pin_erst_nr_pruefen: !!e.pin_erst_nr_pruefen,
+      return { pin_selbst_festlegen: !!e.pin_selbst_festlegen, pin_erst_nr_pruefen: false,
         abmelden_sekunden: Number(e.abmelden_sekunden) || 60, storno_minuten: Number(e.storno_minuten) || 15 };
     }
-    /* Erstes Mal an der Kasse: Mitglied legt seinen Code selbst fest (ggf. nach Mitgliedsnummer) */
-    async kassePinFestlegen(mid, pin, nr) {
+    /* Erstes Mal an der Kasse: Mitglied legt seinen Code selbst fest (zweimal eingeben, keine Mitgliedsnummer) */
+    async kassePinFestlegen(mid, pin) {
       const o = await this.kasseOptionen(); const m = this._m(mid);
       if (!o.pin_selbst_festlegen) return { ok: false, fehler: 'aus' };
       if (!m || !m.aktiv) return { ok: false, fehler: 'mitglied' };
       if (m.pin) return { ok: false, fehler: 'schon_gesetzt' };
       if (m.gesperrt_bis && new Date(m.gesperrt_bis) > new Date()) return { ok: false, fehler: 'gesperrt', gesperrt_bis: m.gesperrt_bis };
-      if (o.pin_erst_nr_pruefen && String(nr || '').trim() !== String(m.nr || '').trim()) {
-        const n = m.fehlversuche + 1; m.fehlversuche = n;   // Sperre wird mit jeder Fehlerserie länger (5 → 15 → 45 Min. …)
-        m.gesperrt_bis = n % 5 === 0 ? new Date(Date.now() + Math.min(1440, 5 * Math.pow(3, n / 5 - 1)) * 60e3).toISOString() : null;
-        this._sichern();
-        return { ok: false, fehler: 'nr', rest: n % 5 ? 5 - n % 5 : 0 };
-      }
       if (!/^\d{4}$/.test(pin)) return { ok: false, fehler: 'format' };
-      if (pinZuEinfach(pin)) return { ok: false, fehler: 'einfach' };
       m.pin = pin; m.fehlversuche = 0; m.gesperrt_bis = null; this._sichern();
       return { ok: true, vorname: m.vorname, nachname: m.nachname, ...this._summen(mid) };
     }
@@ -334,7 +327,6 @@
       this._laden(); const m = this._m(mid);
       if (!m) throw new Error('Mitglied nicht gefunden.');
       if (!/^\d{4}$/.test(pin)) throw new Error('Der Code muss aus genau 4 Ziffern bestehen.');
-      if (pinZuEinfach(pin)) throw new Error('Dieser Code ist zu leicht zu erraten – bitte einen anderen wählen.');
       m.pin = pin; m.fehlversuche = 0; m.gesperrt_bis = null; this._sichern();
     }
     /* Eigene Rechnungen für die Druckansicht (nur die des Mitglieds) */
@@ -471,7 +463,7 @@
     }
     async kasseOptionen() {
       try { return await this._rpc('kasse_optionen', { p_token: this._tok }, false); }
-      catch (e) { return { pin_selbst_festlegen: false, pin_erst_nr_pruefen: true, abmelden_sekunden: 60, storno_minuten: 15 }; }
+      catch (e) { return { pin_selbst_festlegen: false, pin_erst_nr_pruefen: false, abmelden_sekunden: 60, storno_minuten: 15 }; }
     }
     async kassePinFestlegen(mid, pin, nr) { return this._zahlenSumme(await this._rpc('kasse_pin_festlegen', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p_nr: nr || null }, false)); }
     async kasseStorno(mid, pin, bid) { return this._zahlenSumme(await this._rpc('kasse_storno', { p_token: this._tok, p_mitglied: mid, p_pin: pin, p_buchung: bid }, false)); }
@@ -526,7 +518,7 @@
     }
     async mitgliedPinAendern(_mid, pin) {
       const r = await this._rpc('mitglied_pin_aendern', { p_pin: pin });
-      if (!r.ok) throw new Error(r.fehler === 'einfach' ? 'Dieser Code ist zu leicht zu erraten – bitte einen anderen wählen.' : 'Der Code muss aus genau 4 Ziffern bestehen.');
+      if (!r.ok) throw new Error('Der Code muss aus genau 4 Ziffern bestehen.');
     }
     async meineRechnungen(_mid, ids) { return (await this._req('/rest/v1/rechnungen?select=*&id=in.(' + ids.join(',') + ')')).map(this._zahlen); }
 

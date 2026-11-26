@@ -73,6 +73,8 @@ Supabase → Projekt „SSV Manager“ → **SQL Editor** → New query → Inha
    ohne Namen). Bleibt ohne Wirkung, bis der Vorstand die Karte einschaltet – siehe 6a4.
 18. `apps/ssv-hafen/supabase/nachtrag-18.sql` – Winterlager West: nur noch 8 große Plätze P41–P48 (zwei Reihen hintereinander,
    Bug zur Messe). Löscht P49–P60, sofern kein Boot darauf eingetragen ist.
+19. `apps/ssv-hafen/supabase/nachtrag-19.sql` – Getränke-Code: jeder 4-stellige Code erlaubt (auch 1234), beim ersten Mal
+   keine Mitgliedsnummer mehr – Namen antippen, Code zweimal eingeben, danach Namen erneut antippen und anmelden.
 
 Alle dürfen mehrfach ausgeführt werden. Für neue Projekte reicht `ssv-komplett.sql` (enthält alles).
 
@@ -121,7 +123,8 @@ Eine Person kann mehrere Rollen haben (eine Zeile je Rolle).
 Auf dem iPad in Safari `…/ssv-getraenke/kassenwart.html` öffnen, als Kassenwart anmelden →
 Einstellungen → **Dieses Gerät als Kasse einrichten**. Danach `…/ssv-getraenke/` öffnen,
 „Teilen → Zum Home-Bildschirm“, und mit **Geführter Zugriff** auf die Kasse festsetzen.
-Mitglieder legen ihren 4-stelligen Code beim ersten Mal selbst fest (mit Mitgliedsnummer).
+Mitglieder legen ihren 4-stelligen Code beim ersten Mal selbst fest (Namen antippen, Code zweimal eingeben, ohne Mitgliedsnummer –
+jeder Code erlaubt; dafür `nachtrag-19.sql` einspielen).
 
 ## 5a · Getränke mit Jugendschutz
 

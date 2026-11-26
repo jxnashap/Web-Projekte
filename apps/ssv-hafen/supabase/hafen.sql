@@ -664,7 +664,7 @@ begin
   if m.gesperrt_bis is not null and m.gesperrt_bis > now() then
     return jsonb_build_object('ok', false, 'fehler', 'gesperrt', 'gesperrt_bis', m.gesperrt_bis);
   end if;
-  if public._einstellung_bool('pin_erst_nr_pruefen', true) and (m.nr is null or btrim(coalesce(p_nr, '')) <> btrim(m.nr)) then
+  if public._einstellung_bool('pin_erst_nr_pruefen', false) and (m.nr is null or btrim(coalesce(p_nr, '')) <> btrim(m.nr)) then
     return jsonb_build_object('ok', false, 'fehler', 'nr') || public._fehlversuch(m.id);
   end if;
   if coalesce(p_pin, '') !~ '^[0-9]{4}$' then return jsonb_build_object('ok', false, 'fehler', 'format'); end if;
@@ -1850,3 +1850,13 @@ grant execute on function public.hafen_karte(date, int) to anon, authenticated;
 delete from public.landplaetze l
  where l.id in ('P49','P50','P51','P52','P53','P54','P55','P56','P57','P58','P59','P60')
    and not exists (select 1 from public.belegungen b where b.platz_id = l.id);
+
+-- ================================================================ Nachtrag 19 · Getränke-Code ohne Mitgliedsnummer, jeder Code erlaubt --
+-- siehe nachtrag-19.sql
+create or replace function public._pin_ok(p text) returns boolean
+language sql immutable as $$
+  select coalesce(p, '') ~ '^[0-9]{4}$';
+$$;
+update public.einstellungen
+   set daten = coalesce(daten, '{}'::jsonb) || '{"pin_erst_nr_pruefen": false, "pin_selbst_festlegen": true}'::jsonb
+ where id = 1;

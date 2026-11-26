@@ -9,8 +9,8 @@
   const zustand = {
     mitglieder: [], produkte: [], einstellungen: { abmelden_sekunden: 60, storno_minuten: 15 },
     filter: '', buchstabe: '', aktiv: null, pin: '', bon: [], buchtGerade: false,
-    optionen: { pin_selbst_festlegen: true, pin_erst_nr_pruefen: true },
-    // PIN-Bildschirm: 'login' | 'nr' (Mitgliedsnummer) | 'neu1' (Code ausdenken) | 'neu2' (Code wiederholen)
+    optionen: { pin_selbst_festlegen: true },
+    // PIN-Bildschirm: 'login' | 'neu1' (Code ausdenken) | 'neu2' (Code wiederholen) – ohne Mitgliedsnummer (Wunsch des Vereins)
     modus: 'login', nr: '', neuPin: ''
   };
   let inaktivTimer = null, fertigTimer = null;
@@ -123,23 +123,21 @@
     zustand.aktiv = m; zustand.pin = ''; zustand.nr = ''; zustand.neuPin = '';
     $('#pin-avatar').textContent = m.vorname.charAt(0) + m.nachname.charAt(0);
     $('#pin-name').textContent = m.vorname + ' ' + m.nachname;
-    setzeModus(m.hat_pin === false ? (zustand.optionen.pin_erst_nr_pruefen ? 'nr' : 'neu1') : 'login');
+    setzeModus(m.hat_pin === false ? 'neu1' : 'login');
     $('#suche').blur(); zeige('s-pin');
   });
 
-  /* Erstes Mal: Mitgliedsnummer → Code ausdenken → Code wiederholen */
+  /* Erstes Mal: Code ausdenken → Code wiederholen → gespeichert, zurück zur Namensliste → Name antippen → Code eingeben */
   const TEXTE = {
     login: 'Bitte deinen 4-stelligen Code eingeben',
-    nr: 'Willkommen! Du buchst zum ersten Mal. Gib zuerst deine Mitgliedsnummer ein – sie steht z. B. auf deiner Beitragsrechnung.',
-    neu1: 'Denk dir jetzt deinen persönlichen 4-stelligen Code aus.',
-    neu2: 'Bitte gib den Code zur Sicherheit noch einmal ein.'
+    neu1: 'Willkommen! Du hast noch keinen Code. Denk dir jetzt deinen 4-stelligen Code aus.',
+    neu2: 'Bitte gib denselben Code noch einmal ein.'
   };
   function setzeModus(modus, fehler) {
     zustand.modus = modus; zustand.pin = '';
-    const erst = zustand.optionen.pin_erst_nr_pruefen;
-    const schritt = { nr: 1, neu1: erst ? 2 : 1, neu2: erst ? 3 : 2 }[modus];
+    const schritt = { neu1: 1, neu2: 2 }[modus];
     $('#pin-schritt').hidden = !schritt;
-    if (schritt) $('#pin-schritt').textContent = 'Code festlegen · Schritt ' + schritt + ' von ' + (erst ? 3 : 2);
+    if (schritt) $('#pin-schritt').textContent = 'Code festlegen · Schritt ' + schritt + ' von 2';
     const h = $('#pin-hinweis'); h.textContent = fehler || TEXTE[modus]; h.classList.toggle('fehler', !!fehler);
     $('#pin-dots').hidden = modus === 'nr'; $('#pin-nr').hidden = modus !== 'nr'; $('#pin-weiter').hidden = modus !== 'nr';
     renderDots();
@@ -232,27 +230,24 @@
     if (b.dataset.vNein) return veranstAntworten(b.dataset.vNein, 'nein', 0);
     if (b.hasAttribute('data-v-abbruch')) return veranstListe();
   });
-  /* Neuer Code: lokal vorprüfen, zweimal eingeben, dann speichern und direkt anmelden */
+  /* Neuer Code: zweimal eingeben, speichern, zurück zur Namensliste – dann wie immer Name antippen und Code eingeben.
+     Jeder 4-stellige Code ist erlaubt (auch 1234). */
   async function neuPinWeiter() {
-    if (zustand.modus === 'neu1') {
-      if (H.pinZuEinfach(zustand.pin)) return pinFehler('Dieser Code ist zu leicht zu erraten (z. B. 1234 oder 1111) – bitte einen anderen.');
-      zustand.neuPin = zustand.pin; return setzeModus('neu2');
-    }
+    if (zustand.modus === 'neu1') { zustand.neuPin = zustand.pin; return setzeModus('neu2'); }
     if (zustand.pin !== zustand.neuPin) { zustand.neuPin = ''; setzeModus('neu1'); return pinFehler('Die beiden Eingaben waren unterschiedlich – bitte nochmal von vorn.'); }
     const keypad = $('#keypad'); keypad.classList.add('warten');
     try {
       const r = await S.kassePinFestlegen(zustand.aktiv.id, zustand.pin, zustand.nr);
       if (!r.ok) {
-        if (r.fehler === 'nr') { zustand.nr = ''; setzeModus('nr'); return pinFehler(r.rest > 0 ? 'Die Mitgliedsnummer passt nicht – noch ' + r.rest + (r.rest === 1 ? ' Versuch' : ' Versuche') + '. Im Zweifel beim Kassenwart nachfragen.' : '5× falsch – 5 Minuten gesperrt.'); }
-        if (r.fehler === 'gesperrt') { zustand.nr = ''; setzeModus(zustand.optionen.pin_erst_nr_pruefen ? 'nr' : 'neu1'); return pinFehler('Gesperrt bis ' + new Date(r.gesperrt_bis).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr'); }
-        if (r.fehler === 'einfach') { setzeModus('neu1'); return pinFehler('Dieser Code ist zu leicht zu erraten – bitte einen anderen.'); }
+        if (r.fehler === 'gesperrt') { setzeModus('neu1'); return pinFehler('Gesperrt bis ' + new Date(r.gesperrt_bis).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr'); }
         if (r.fehler === 'schon_gesetzt') { zustand.aktiv.hat_pin = true; return setzeModus('login', 'Für dich gibt es schon einen Code – bitte eingeben.'); }
         if (r.fehler === 'geraet') return zeige('s-setup');
         return pinFehler('Code festlegen ist gerade nicht möglich – bitte beim Kassenwart melden.');
       }
-      zustand.aktiv.hat_pin = true; zustand.modus = 'login';
-      toast('Dein Code ist gespeichert – gut merken! Ändern kannst du ihn jederzeit in „Mein SSV“.');
-      angemeldet(r);
+      const wer = zustand.mitglieder.find((x) => x.id === zustand.aktiv.id); if (wer) wer.hat_pin = true;
+      zustand.aktiv.hat_pin = true;
+      abmelden();   // zurück zur Namensliste: Name antippen und den neuen Code eingeben
+      toast('Dein Code ist gespeichert. Tipp jetzt auf deinen Namen und gib ihn ein.');
     } catch (e) { pinFehler(e.message); }
     finally { keypad.classList.remove('warten'); }
   }
@@ -262,7 +257,7 @@
       const r = await S.kasseLogin(zustand.aktiv.id, zustand.pin);
       if (!r.ok) {
         if (r.fehler === 'pin') pinFehler(r.rest > 0 ? 'Code falsch – noch ' + r.rest + (r.rest === 1 ? ' Versuch' : ' Versuche') + '. Vergessen? In „Mein SSV“ neu festlegen.' : 'Code 5× falsch – 5 Minuten gesperrt');
-        else if (r.fehler === 'kein_pin') { zustand.aktiv.hat_pin = false; setzeModus(zustand.optionen.pin_erst_nr_pruefen ? 'nr' : 'neu1'); }
+        else if (r.fehler === 'kein_pin') { zustand.aktiv.hat_pin = false; setzeModus('neu1'); }
         else if (r.fehler === 'gesperrt') pinFehler('Gesperrt bis ' + new Date(r.gesperrt_bis).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr');
         else if (r.fehler === 'geraet') { zeige('s-setup'); }
         else pinFehler('Anmeldung nicht möglich – bitte beim Kassenwart melden');
@@ -453,7 +448,7 @@
     if (S.modus !== 'demo') { try { localStorage.removeItem('ssv-session'); } catch (e) { /* egal */ } }
     if (S.modus === 'demo') {
       $('#modus-badge').hidden = false; $('#demo-pin').hidden = false;
-      $('#demo-pin').textContent = 'Demo: Beispiel-Mitglieder mit Code haben die 1234 · Mitglieder mit „Code festlegen“ probieren den ersten Besuch aus (die Mitgliedsnummer steht in „Mein SSV“ bzw. in der Verwaltung).';
+      $('#demo-pin').textContent = 'Demo: Beispiel-Mitglieder mit Code haben die 1234 · Bei Namen mit „Code festlegen“ den Code zweimal eingeben, dann Namen erneut antippen.';
     }
     const st = await S.kasseStatus();
     if (!st.eingerichtet) return zeige('s-setup');

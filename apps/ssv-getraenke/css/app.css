@@ -499,3 +499,31 @@ body.rechnung-seite { background: #e9e6df; }
 .k-v-nein { background: #fff; color: var(--navy); border: 2px solid rgba(14,27,69,.2); }
 .k-v-frage { margin: 14px 0 0; font-weight: 700; font-size: 17px; }
 #k-veranst-liste.warten { opacity: .55; pointer-events: none; }
+
+/* Mitgliedsprofil im Kassenwart-Bereich (wie eine Kundenakte) – nur Bildschirm */
+@media screen {
+  .a-modal-card.a-profil { width: min(960px, 100%); }
+  .a-tab tr.a-klick { cursor: pointer; }
+  .a-tab tr.a-klick:hover td, .a-tab tr.a-klick:focus-visible td { background: rgba(14,27,69,.04); }
+  .a-profil-kopf { display: flex; align-items: center; gap: 14px; padding-right: 8px; }
+  .a-profil-ava { width: 58px; height: 58px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--navy); color: #fff; font-weight: 700; font-size: 21px; }
+  .a-profil-titel { min-width: 0; }
+  .a-profil-titel h2 { margin: 0 !important; }
+  .a-profil-unter { margin: 4px 0 0; color: #5a6178; font-size: 15px; }
+  .a-profil-merkmale { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .a-profil-aktionen { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+  .a-kacheln { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0 0 14px; }
+  .a-kachel { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid rgba(14,27,69,.12); border-radius: 12px; min-width: 0; }
+  .a-kachel strong { font-size: 18px; color: var(--navy); overflow-wrap: anywhere; }
+  .a-kachel span { font-size: 14px; color: #5a6178; }
+  .a-kachel.warn { border-color: #E8C77A; background: #FFF8E6; }
+  .a-kachel.ok strong { color: #1F7A4D; }
+  .a-profil-raster { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .a-profil-teil { border: 1px solid rgba(14,27,69,.12); border-radius: 12px; padding: 12px 14px; min-width: 0; overflow-x: auto; }
+  .a-profil-teil.a-voll { grid-column: 1 / -1; }
+  .a-profil-teil h3 { margin: 0 0 8px; font-size: 15px; color: var(--navy); }
+  .a-dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 0; font-size: 15px; }
+  .a-dl dt { color: #5a6178; } .a-dl dd { margin: 0; overflow-wrap: anywhere; }
+}
+@media screen and (max-width: 860px) { .a-profil-raster { grid-template-columns: 1fr; } }
+@media screen and (max-width: 520px) { .a-kacheln { grid-template-columns: repeat(2, minmax(0, 1fr)); } .a-profil-ava { width: 48px; height: 48px; font-size: 18px; } }

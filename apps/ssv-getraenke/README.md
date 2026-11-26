@@ -29,7 +29,7 @@ mit.
 |---|---|
 | Wer bucht? | Namensliste mit A–Z-Leiste und Suchfeld |
 | Code | 4 Ziffern, nach 5 Fehlversuchen 5 Minuten gesperrt |
-| Erstes Mal | Wer noch keinen Code hat („Erstes Mal? Code festlegen“), gibt seine Mitgliedsnummer ein und legt den Code selbst fest (2× eingeben, 1234/1111 & Co. werden abgelehnt). Beides ist in den Einstellungen abschaltbar. |
+| Erstes Mal | Wer noch keinen Code hat („Erstes Mal? Code festlegen“), tippt auf seinen Namen und legt den Code selbst fest (2× eingeben, ohne Mitgliedsnummer; jeder 4-stellige Code ist erlaubt, auch 1234). Danach geht es zurück zur Namensliste: Namen antippen, neuen Code eingeben. In den Einstellungen abschaltbar. |
 | Getränke | Kacheln mit Preis; antippen → 1–6 Stück oder 1–2 Kästen |
 | Bon | Mehrere Getränke sammeln, dann „Jetzt buchen · 13,00 €“ |
 | Fertig | „Prost, Jan!“, Monatssumme, Abmeldung nach 6 s |
@@ -66,8 +66,7 @@ Nach 60 Sekunden ohne Eingabe meldet sich die Kasse von allein ab.
   mindestens einer Position auf der letzten Seite). Gemessen wird ohne die Handy-Verkleinerung, geprüft wird auch die Blatthöhe
   (≤ 297 mm) – so gibt es nie eine Seite nur mit Fußzeile oder Steuerhinweis und keine Seite ohne Fußzeile.
 - **Einstellungen:** Vereinsdaten, Bankverbindung, Steuerhinweis,
-  Zahlungsziel, Storno- und Abmeldezeit, Code selbst festlegen (an/aus) und
-  Mitgliedsnummer abfragen (an/aus).
+  Zahlungsziel, Storno- und Abmeldezeit, Code selbst festlegen (an/aus).
 
 ## Mein SSV (Mitgliederbereich)
 

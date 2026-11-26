@@ -702,26 +702,62 @@
     const gruppen = bereicheVon(m.id);
     const dl = (paare) => '<dl class="akte-dl">' + paare.filter(([, v]) => v).map(([k, v]) => '<dt>' + k + '</dt><dd>' + v + '</dd>').join('') + '</dl>';
     const offenSum = re.reduce((s, r) => s + Q.rest(r), 0);
-    const el = modal('<div class="akte-kopf"><div><h2>' + esc(Q.name(m)) + '</h2><p class="akte-unter">Nr. ' + esc(m.nr || '–') + ' · <span class="tag">' + (H.ART[m.art] || m.art) + '</span>' +
-        (m.eintritt ? ' · Mitglied seit ' + H.datum(m.eintritt) : '') + (aus ? ' · <span class="tag rot">ausgetreten ' + H.datum(m.austritt) + '</span>' : m.austritt ? ' · <span class="tag warn">Austritt zum ' + H.datum(m.austritt) + '</span>' : '') + '</p></div>' +
-        '<button class="btn primaer" id="akte-bearb">Bearbeiten</button></div>' +
+    // Profil wie eine Kundenakte: alles zum Mitglied auf einer Seite – Kopf, Kennzahlen, Sprungleiste, dann die Abschnitte
+    const per = (t) => d.belegungen.find((x) => bootIds.includes(x.boot_id) && x.saison === SAISON && x.periode === t);
+    const sPl = per('sommer'), wPl = per('winter');
+    const plTxt = (x) => x ? (x.platz_id ? esc(Q.platz(x.platz_id) && Q.platz(x.platz_id).bez ? x.platz_id : platzName(x.platz_id)) : esc(x.art || x.platz_typ || 'gebucht')) : '–';
+    const schilder = d.abwesenheiten.filter((a) => bootIds.includes(a.boot_id) && a.bis >= heute).sort((a, b) => a.von.localeCompare(b.von));
+    const zus = (d.zusagen || []).filter((z) => z.mitglied_id === m.id).map((z) => ({ z, v: (d.veranstaltungen || []).find((v) => v.id === z.veranstaltung_id) }))
+      .filter((x) => x.v).sort((a, b) => b.v.datum.localeCompare(a.v.datum));
+    const kachel = (wert, text, ziel, art) => '<a class="profil-kachel' + (art ? ' ' + art : '') + '" href="#' + ziel + '" data-sprung="' + ziel + '"><strong>' + wert + '</strong><span>' + text + '</span></a>';
+    const merkmal = (ok, text) => '<span class="tag ' + (ok ? 'ok' : 'warn') + '">' + text + '</span>';
+    const sprung = [['ak-kontakt', 'Kontakt'], ['ak-person', 'Persönliches'], bank ? ['ak-bank', 'Bank & Lastschrift'] : null, ['ak-boote', 'Boote & Plätze'], ['ak-schild', 'Grünes Schild'],
+      ['ak-arbeit', 'Arbeitsdienst'], ['ak-veranst', 'Veranstaltungen'], geld ? ['ak-rechnungen', 'Rechnungen'] : null, ['ak-dok', 'Dokumente'], verlaufErlaubt() ? ['ak-verlauf', 'Verlauf'] : null].filter(Boolean);
+    const el = modal('<div class="akte-kopf profil-kopf"><span class="profil-ava" aria-hidden="true">' + esc((m.vorname || '').charAt(0) + (m.nachname || '').charAt(0)) + '</span>' +
+        '<div class="profil-titel"><h2>' + esc(Q.name(m)) + '</h2><p class="akte-unter">Nr. ' + esc(m.nr || '–') + ' · <span class="tag">' + (H.ART[m.art] || m.art) + '</span>' +
+        (m.eintritt ? ' · Mitglied seit ' + H.datum(m.eintritt) : '') + (aus ? ' · <span class="tag rot">ausgetreten ' + H.datum(m.austritt) + '</span>' : m.austritt ? ' · <span class="tag warn">Austritt zum ' + H.datum(m.austritt) + '</span>' : '') + '</p>' +
+        '<p class="profil-merkmale">' + (bank || geld ? merkmal(m.iban && m.mandat_ref, m.iban && m.mandat_ref ? 'Lastschrift' : 'kein Lastschriftmandat') + ' ' : '') +
+          ('user_id' in m ? merkmal(!!m.user_id, m.user_id ? 'Mein SSV: angemeldet' : 'Mein SSV: noch nicht angemeldet') + ' ' : '') +
+          '<span id="akte-code"></span>' + (wl.some((w) => w.status === 'wartend') ? ' <span class="tag gast">auf der Warteliste</span>' : '') + '</p></div>' +
+        '<div class="profil-aktionen"><button class="btn primaer" id="akte-bearb">Bearbeiten</button>' +
+          (m.email ? '<a class="btn" href="mailto:' + esc(m.email) + '">E-Mail schreiben</a>' : '') + (m.tel ? '<a class="btn" href="tel:' + esc(String(m.tel).replace(/[^\d+]/g, '')) + '">Anrufen</a>' : '') + '</div></div>' +
+      '<div class="profil-kacheln">' +
+        (geld ? kachel(H.geld(offenSum), 'offen (Hafen & Beitrag)', 'ak-rechnungen', offenSum > 0 ? 'warn' : 'ok') : '') +
+        kachel(String(boote.length), boote.length === 1 ? 'Boot' : 'Boote', 'ak-boote') +
+        kachel(plTxt(sPl), 'Sommer ' + SAISON, 'ak-boote') + kachel(plTxt(wPl), 'Winter ' + SAISON + '/' + String(SAISON + 1).slice(2), 'ak-boote') +
+        (ad && !ad.befreit ? kachel(H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' / ' + ad.soll, 'Std. Arbeitsdienst', 'ak-arbeit', ad.fehl > 0 && ad.erfasst ? 'warn' : '') : '') +
+        (geld ? '<span id="akte-getr-kachel"></span>' : '') + '</div>' +
+      '<nav class="profil-nav" aria-label="Abschnitte der Akte">' + sprung.map(([id, t]) => '<a href="#' + id + '" data-sprung="' + id + '">' + t + '</a>').join('') + '</nav>' +
       '<div class="akte-raster">' +
-        '<section class="akte-teil"><h3>Kontakt</h3>' + dl([['E-Mail', m.email ? '<a href="mailto:' + esc(m.email) + '">' + esc(m.email) + '</a>' : ''], ['Telefon', m.tel ? '<a href="tel:' + esc(m.tel) + '">' + esc(m.tel) + '</a>' : ''],
+        '<section class="akte-teil" id="ak-kontakt"><h3>Kontakt</h3>' + dl([['E-Mail', m.email ? '<a href="mailto:' + esc(m.email) + '">' + esc(m.email) + '</a>' : ''], ['Telefon', m.tel ? '<a href="tel:' + esc(m.tel) + '">' + esc(m.tel) + '</a>' : ''],
           ['Anschrift', esc([m.strasse, [m.plz, m.ort].filter(Boolean).join(' ')].filter(Boolean).join(', '))], ['Geboren', m.geburtsdatum ? H.datum(m.geburtsdatum) + ' (' + Q.alterAm(m, heute) + ')' : ''], ['Kfz', esc(m.kfz || '')]]) +
           (bank ? '<p style="margin:8px 0 0">' + (m.iban && m.mandat_ref ? '<span class="tag ok">Lastschrift · Mandat ' + esc(m.mandat_ref) + '</span>' : '<span class="tag warn">kein Lastschriftmandat – zahlt per Überweisung</span>') + '</p>' : '') + '</section>' +
-        '<section class="akte-teil"><h3>Boote & Plätze</h3>' + (boote.length ? boote.map((b) => '<p style="margin:0 0 6px"><strong>„' + esc(b.name) + '“</strong> ' + esc(b.typ || '') + '<br><small>' + masse(b) + ' · ' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">über ' + Q.maxTxt() + ' (Kran)</span>' : '') + ' · Versicherung ' + versTag(b) + '</small></p>').join('') : '<p class="leer" style="margin:0">Kein Boot eingetragen.</p>') +
+        '<section class="akte-teil" id="ak-person"><h3>Persönliches</h3>' + dl([['Mitgliedsnr.', esc(m.nr || '')], ['Art', H.ART[m.art] || esc(m.art || '')], ['Geschlecht', H.GESCHLECHT[m.geschlecht] || ''],
+          ['Eintritt', m.eintritt ? H.datum(m.eintritt) : ''], ['Austritt', m.austritt ? H.datum(m.austritt) : ''], ['Arbeitsdienst', m.arbeitsdienst_befreit ? 'befreit: ' + esc(m.arbeitsdienst_befreit) : ''],
+          ['Notiz', m.notiz ? esc(m.notiz) : '']]) + '</section>' +
+        (bank ? '<section class="akte-teil" id="ak-bank"><h3>Bank & Lastschrift</h3>' + (m.iban ? dl([['IBAN', iban(m.iban)], ['BIC', esc(m.bic || '')], ['Kontoinhaber', esc(m.kontoinhaber || Q.name(m))],
+          ['Mandat', m.mandat_ref ? esc(m.mandat_ref) + (m.mandat_datum ? ' vom ' + H.datum(m.mandat_datum) : '') : '<span class="tag warn">fehlt</span>']]) : '<p class="leer" style="margin:0">Keine Bankverbindung – zahlt per Überweisung.</p>') + '</section>' : '') +
+        '<section class="akte-teil" id="ak-boote"><h3>Boote & Plätze</h3>' + (boote.length ? boote.map((b) => '<p style="margin:0 0 6px"><strong>„' + esc(b.name) + '“</strong> ' + esc(b.typ || '') + '<br><small>' + masse(b) + ' · ' + H.zahl(b.gewicht_t, 1) + ' t' + (Q.zuSchwer(b) ? ' <span class="tag rot">über ' + Q.maxTxt() + ' (Kran)</span>' : '') + ' · Versicherung ' + versTag(b) + '</small></p>').join('') : '<p class="leer" style="margin:0">Kein Boot eingetragen.</p>') +
           (bel.length ? '<table class="tab kompakt"><tbody>' + bel.slice(0, 4).map((x) => '<tr><td>' + (x.periode === 'sommer' ? 'Sommer ' + x.saison : 'Winter ' + x.saison + '/' + String(x.saison + 1).slice(2)) + '</td><td>' + esc(x.platz_id ? platzName(x.platz_id) : (x.art || x.platz_typ || '')) + '</td></tr>').join('') + '</tbody></table>' : '') +
           (wl.length ? '<p style="margin:8px 0 0">' + wl.map((w) => '<span class="tag ' + (w.status === 'wartend' ? 'gast' : '') + '">Warteliste seit ' + H.datum(w.datum) + ' · ' + esc(w.status) + '</span>').join(' ') + '</p>' : '') + '</section>' +
         '<section class="akte-teil"><h3>Arbeitsdienst ' + SAISON + '</h3>' + (ad ? (ad.befreit ? '<p style="margin:0"><span class="tag">befreit</span> ' + esc(ad.befreit) + '</p>' : '<p style="margin:0"><strong>' + H.zahl(ad.ist, ad.ist % 1 ? 1 : 0) + ' von ' + ad.soll + ' Std.</strong>' + (ad.gemeldet ? ' · ' + H.zahl(ad.gemeldet, 1) + ' Std. gemeldet, noch nicht bestätigt' : '') + (ad.fehl > 0 && ad.erfasst ? ' · <span class="tag warn">fehlen ' + H.zahl(ad.fehl, 1) + '</span>' : '') + '</p>') : '<p class="leer" style="margin:0">nicht arbeitspflichtig (' + (H.ART[m.art] || m.art) + ')</p>') +
-          (gruppen.length ? '<p style="margin:8px 0 0">' + gruppen.map(({ z, b }) => '<span class="tag' + (z.rolle === 'leitung' ? ' ok' : '') + '">' + esc(b.name) + (z.rolle === 'leitung' ? ' · Leitung' : '') + '</span>').join(' ') + '</p>' : '') + '</section>' +
-        (geld ? '<section class="akte-teil akte-breit"><h3>Rechnungen' + (offenSum > 0 ? ' · <span class="tag warn">offen ' + H.geld(offenSum) + '</span>' : '') + '</h3>' +
+          (gruppen.length ? '<p style="margin:8px 0 0">' + gruppen.map(({ z, b }) => '<span class="tag' + (z.rolle === 'leitung' ? ' ok' : '') + '">' + esc(b.name) + (z.rolle === 'leitung' ? ' · Leitung' : '') + '</span>').join(' ') + '</p>' : '') +
+          (stunden.length ? '<table class="tab kompakt"><tbody>' + stunden.slice().sort((a, b) => (b.datum || '').localeCompare(a.datum || '')).slice(0, 4).map((a) => '<tr><td class="nw">' + (a.datum ? H.datum(a.datum) : '') + '</td><td>' + esc(a.taetigkeit || a.notiz || '') + '</td><td class="r">' + H.zahl(a.stunden, a.stunden % 1 ? 1 : 0) + ' Std.</td></tr>').join('') + '</tbody></table>' : '') + '</section>' +
+        '<section class="akte-teil" id="ak-schild"><h3>Grünes Schild</h3>' + (schilder.length ? '<table class="tab kompakt"><tbody>' + schilder.slice(0, 4).map((a) => '<tr><td class="nw">' + H.datum(a.von) + ' – ' + H.datum(a.bis) + '</td><td>' + esc(a.platz_id ? platzName(a.platz_id) : '') + '</td><td>' + (a.von <= heute ? '<span class="tag gruen">jetzt frei</span>' : '<span class="tag">geplant</span>') + '</td></tr>').join('') + '</tbody></table>'
+          : '<p class="leer" style="margin:0">Kein grünes Schild gemeldet.</p>') + '</section>' +
+        '<section class="akte-teil" id="ak-veranst"><h3>Veranstaltungen</h3>' + (zus.length ? '<table class="tab kompakt"><tbody>' + zus.slice(0, 5).map(({ z, v }) => '<tr><td class="nw">' + H.datum(v.datum) + '</td><td>' + esc(v.titel) + '</td><td>' + (z.antwort === 'ja' ? '<span class="tag ok">zugesagt' + (z.personen > 1 ? ' · ' + z.personen + ' Pers.' : '') + '</span>' : '<span class="tag">abgesagt</span>') + '</td></tr>').join('') + '</tbody></table>'
+          : '<p class="leer" style="margin:0">Noch keine Zu- oder Absagen.</p>') + '</section>' +
+        (geld ? '<section class="akte-teil akte-breit" id="ak-rechnungen"><h3>Rechnungen' + (offenSum > 0 ? ' · <span class="tag warn">offen ' + H.geld(offenSum) + '</span>' : '') + '</h3>' +
           (re.length ? '<table class="tab kompakt"><tbody>' + re.slice(0, 8).map((r) => { const st = Q.rstatus(r, heute); return '<tr' + (r.storniert_am ? ' class="blass"' : '') + '><td class="nw">' + esc(r.nr) + '</td><td>' + H.periodeText(r) + '</td><td class="r">' + H.geld(r.summe) + '</td><td>' + kette(r) + '<span class="tag ' + STUFE[stufe(r)][1] + '">' + (['ueberfaellig', 'teilbezahlt', 'ruecklastschrift'].includes(st) ? RSTATUS[st][0] : STUFE[stufe(r)][0]) + '</span></td><td class="r"><button class="btn klein" data-akte-re="' + r.id + '" aria-label="Rechnung ' + esc(r.nr) + ' ansehen">Rechnung ansehen</button></td></tr>'; }).join('') + '</tbody></table>' + (re.length > 8 ? '<p class="hinweis" style="margin:6px 0 0">… ' + (re.length - 8) + ' ältere unter Finanzen.</p>' : '') : '<p class="leer" style="margin:0">Noch keine Hafen- oder Beitragsrechnung.</p>') +
           '<div id="akte-getraenke"></div></section>' : '') +
-        '<section class="akte-teil akte-breit"><h3>Dokumente und Verträge</h3><div id="m-dok"></div></section>' +
-        (verlaufErlaubt() ? '<details class="akte-teil akte-breit akte-verlauf"><summary><h3>Änderungsverlauf</h3><span class="hinweis-klein">Mitglied, Bankdaten, Boote, Plätze, Rechnungen, Stunden</span></summary><div id="akte-vl"><p class="leer">Wird geladen …</p></div></details>' : '') +
+        '<section class="akte-teil akte-breit" id="ak-dok"><h3>Dokumente und Verträge</h3><div id="m-dok"></div></section>' +
+        (verlaufErlaubt() ? '<details class="akte-teil akte-breit akte-verlauf" id="ak-verlauf"><summary><h3>Änderungsverlauf</h3><span class="hinweis-klein">Mitglied, Bankdaten, Boote, Plätze, Rechnungen, Stunden</span></summary><div id="akte-vl"><p class="leer">Wird geladen …</p></div></details>' : '') +
       '</div><div class="modal-fuss"><button class="btn" data-zu>Schließen</button></div>', true);
     el.querySelector('.modal-karte').classList.add('akte');
     $('#akte-bearb', el).addEventListener('click', () => mitgliedForm(m));
+    el.addEventListener('click', (e) => { const a = e.target.closest('[data-sprung]'); if (!a) return; e.preventDefault();
+      const z = el.querySelector('#' + a.dataset.sprung); if (!z) return; if (z.tagName === 'DETAILS' && !z.open) z.open = true;
+      z.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); });
     el.querySelectorAll('[data-akte-re]').forEach((b) => b.addEventListener('click', () => oeffnen('drucken.html?art=rechnungen&ids=' + b.dataset.akteRe)));
     dokumenteBereich($('#m-dok', el), { mitglied_id: m.id });
     const vl = el.querySelector('.akte-verlauf'); if (vl) vl.addEventListener('toggle', () => { if (!vl.open || vl.dataset.geladen) return; vl.dataset.geladen = '1';
@@ -729,8 +765,13 @@
       HF.verlauf({ datensaetze: ids, limit: 200 }).then((l) => { $('#akte-vl', el).innerHTML = verlaufTabelle(l); }).catch((e) => { $('#akte-vl', el).innerHTML = '<p class="hinweis warn">' + esc(e.message) + '</p>'; });
     });
     const kasse = KASSE(); const kg = $('#akte-getraenke', el);
+    // Getränke-Code: gesetzt oder nicht (der Code selbst ist nie sichtbar)
+    if (kasse && kasse.mitglieder && $('#akte-code', el)) kasse.mitglieder().then((ml) => { const km = (ml || []).find((x) => x.id === m.id); const c = $('#akte-code', el); if (!c || !km) return;
+      c.outerHTML = merkmal(km.hat_pin, km.hat_pin ? 'Getränke-Code festgelegt' : 'Getränke-Code fehlt'); }).catch(() => {});
     if (kg && kasse) Promise.all([kasse.rechnungen(), kasse.buchungen({ mitglied_id: m.id })]).then(([kr, kb]) => {
       const l = (kr || []).filter((r) => r.mitglied_id === m.id && !r.storniert_am).slice(0, 4); const frei = (kb || []).filter((b) => !b.rechnung_id && !b.storniert_am);
+      const kk = $('#akte-getr-kachel', el); const fs = frei.reduce((s, b) => s + Number(b.betrag), 0) + l.filter((r) => !r.bezahlt_am).reduce((s, r) => s + Number(r.summe), 0);
+      if (kk) kk.outerHTML = kachel(H.geld(fs), 'Getränke offen', 'ak-rechnungen', fs > 0 ? 'warn' : 'ok');
       kg.innerHTML = '<h4 style="margin:12px 0 4px">Getränkekasse</h4>' + (l.length ? '<table class="tab kompakt"><tbody>' + l.map((r) => '<tr><td class="nw">' + esc(r.nr) + '</td><td>' + H.datum(r.von) + ' – ' + H.datum(r.bis) + '</td><td class="r">' + H.geld(r.summe) + '</td><td>' + (r.bezahlt_am ? '<span class="tag ok">bezahlt</span>' : '<span class="tag warn">offen</span>') + '</td></tr>').join('') + '</tbody></table>' : '') +
         '<p class="hinweis" style="margin:6px 0 0">' + (frei.length ? frei.length + (frei.length === 1 ? ' Buchung (' : ' Buchungen (') + H.geld(frei.reduce((s, b) => s + Number(b.betrag), 0)) + ') noch nicht abgerechnet.' : 'Keine offenen Buchungen.') + '</p>';
     }).catch(() => { kg.innerHTML = ''; });
@@ -3375,6 +3416,9 @@
     if (!rolle) return;
     HF.wer = ROLLEN[rolle].name + (DB ? '' : ' (Demo)');
     const t = location.hash.slice(1); zeige(V[t] ? t : 'uebersicht');
+    // Direkt in eine Mitgliedsakte springen, z. B. aus der Getränkekasse: index.html?akte=<Mitglieds-ID>
+    try { const q = new URLSearchParams(location.search); const id = q.get('akte'); const m = id && d.mitglieder.find((x) => x.id === id);
+      if (m && darf('eigner')) { history.replaceState(null, '', location.pathname + '#eigner'); zeige('eigner'); mitgliedAkte(m); } } catch (e) { /* egal */ }
   }
   start();
 })();

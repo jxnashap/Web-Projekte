@@ -139,12 +139,13 @@
       $('#m-liste').innerHTML = cache.mitglieder.filter((m) => !f || (m.vorname + ' ' + m.nachname + ' ' + (m.nr || '') + ' ' + (m.ort || '')).toLowerCase().includes(f))
         .map((m) => {
           const gesperrt = m.gesperrt_bis && new Date(m.gesperrt_bis) > new Date();
-          return '<tr class="' + (m.aktiv ? '' : 'inaktiv') + '"><td>' + esc(m.nr || '') + '</td><td><strong>' + esc(m.nachname) + '</strong>, ' + esc(m.vorname) + (m.aktiv ? '' : ' <span class="a-tag">inaktiv</span>') + '</td>' +
+          return '<tr class="a-klick' + (m.aktiv ? '' : ' inaktiv') + '" data-profil="' + m.id + '" tabindex="0" title="Profil öffnen"><td>' + esc(m.nr || '') + '</td><td><strong>' + esc(m.nachname) + '</strong>, ' + esc(m.vorname) + (m.aktiv ? '' : ' <span class="a-tag">inaktiv</span>') + '</td>' +
             '<td>' + esc(m.ort || '') + '</td><td>' + (m.sepa ? '<span class="a-tag ok">Lastschrift</span>' : '<span class="a-tag warn">kein Mandat</span>') + '</td>' +
             '<td>' + (gesperrt ? '<span class="a-tag rot">gesperrt</span>' : m.hat_pin ? '<span class="a-tag ok">✓</span>' : '<span class="a-tag warn">fehlt</span>') + '</td>' +
             '<td class="r">' + H.geld(H.eur(offenProM.get(m.id) || 0)) + '</td>' +
-            '<td class="r">' + (m.hat_pin ? '<button class="a-btn klein" data-reset="' + m.id + '" title="Code löschen – das Mitglied legt an der Kasse selbst einen neuen fest">Code zurücksetzen</button> ' : '') +
-            '<button class="a-btn klein" data-pin="' + m.id + '" title="Neuen Code auslosen und als Zettel drucken">Neuen Code vergeben</button> <button class="a-btn klein" data-edit="' + m.id + '">Bearbeiten</button></td></tr>';
+            '<td class="r nw"><button class="a-btn klein primaer" data-profil-knopf="' + m.id + '">Profil</button> ' +
+            zeilenMenue(['<button class="zm-punkt" role="menuitem" data-edit="' + m.id + '">Bearbeiten</button>',
+              '<button class="zm-punkt" role="menuitem" data-pin="' + m.id + '" title="Neuen Code auslosen und als Zettel drucken">Neuen Code vergeben</button>'].concat(m.hat_pin ? ['<button class="zm-punkt" role="menuitem" data-reset="' + m.id + '" title="Code löschen – das Mitglied legt an der Kasse selbst einen neuen fest">Code zurücksetzen</button>'] : [])) + '</td></tr>';
         }).join('');
     };
     render();
@@ -152,7 +153,9 @@
     $('#m-neu').addEventListener('click', () => mitgliedForm({}));
     $('#m-import').addEventListener('click', csvImport);
     if ($('#m-pins')) $('#m-pins').addEventListener('click', alleOhnePin);
+    $('#m-liste').addEventListener('keydown', (e) => { const z = e.target.closest('tr[data-profil]'); if (z && (e.key === 'Enter' || e.key === ' ') && e.target === z) { e.preventDefault(); mitgliedProfil(mitglied(z.dataset.profil)); } });
     $('#m-liste').addEventListener('click', (e) => {
+      const pk = e.target.closest('[data-profil-knopf]'); if (pk) return mitgliedProfil(mitglied(pk.dataset.profilKnopf));
       const ed = e.target.closest('[data-edit]'); if (ed) return mitgliedForm(mitglied(ed.dataset.edit));
       const p = e.target.closest('[data-pin]'); if (p) return neuePin(mitglied(p.dataset.pin));
       const r = e.target.closest('[data-reset]');
@@ -160,7 +163,62 @@
         const m = mitglied(r.dataset.reset);
         if (!confirm('Code von ' + name(m) + ' löschen? ' + m.vorname + ' legt beim nächsten Mal an der Kasse (oder in „Mein SSV“) selbst einen neuen fest.')) return;
         S.pinZuruecksetzen(m.id).then(() => { toast('Code zurückgesetzt.'); mitgliederTab(main); }).catch((err) => toast(err.message, 'fehler'));
+        return;
       }
+      const z = e.target.closest('tr[data-profil]'); if (z && !e.target.closest('button,a,input,.zm')) mitgliedProfil(mitglied(z.dataset.profil));
+    });
+  }
+
+  /* Mitgliedsprofil: alles zu einer Person auf einen Blick – Kopf mit Merkmalen und Aktionen, Kennzahlen,
+     Kontakt & Lastschrift, Getränke-Code, Buchungen, Rechnungen; dazu der Sprung in die vollständige Akte im Hafen-Manager */
+  async function mitgliedProfil(m) {
+    if (!m) return;
+    const [bu, alleRe] = await Promise.all([S.buchungen({ mitglied_id: m.id }), S.rechnungen()]);
+    const re = alleRe.filter((r) => r.mitglied_id === m.id);
+    const aktiv = bu.filter((b) => !b.storniert_am);
+    const frei = aktiv.filter((b) => !b.rechnung_id); const freiSum = frei.reduce((x, b) => x + H.ct(b.betrag), 0);
+    const reOffen = re.filter((r) => !r.storniert_am && !r.bezahlt_am); const reOffenSum = reOffen.reduce((x, r) => x + H.ct(r.summe), 0);
+    const monat = heute().slice(0, 7); const imMonat = aktiv.filter((b) => H.tag(b.zeit).startsWith(monat)).reduce((x, b) => x + H.ct(b.betrag), 0);
+    const jahr = heute().slice(0, 4); const imJahr = aktiv.filter((b) => H.tag(b.zeit).startsWith(jahr)).reduce((x, b) => x + H.ct(b.betrag), 0);
+    const gesperrt = m.gesperrt_bis && new Date(m.gesperrt_bis) > new Date();
+    const lieblinge = [...aktiv.reduce((mp, b) => mp.set(b.produkt_name, (mp.get(b.produkt_name) || 0) + (b.stueck || b.anzahl || 1)), new Map())].sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const dl = (paare) => '<dl class="a-dl">' + paare.filter(([, v]) => v).map(([k, v]) => '<dt>' + k + '</dt><dd>' + v + '</dd>').join('') + '</dl>';
+    const kachel = (wert, text, art) => '<div class="a-kachel' + (art ? ' ' + art : '') + '"><strong>' + wert + '</strong><span>' + text + '</span></div>';
+    const hafen = '../ssv-hafen/index.html?akte=' + encodeURIComponent(m.id);
+    const el = modal('<div class="a-profil-kopf"><span class="a-profil-ava" aria-hidden="true">' + esc((m.vorname || '').charAt(0) + (m.nachname || '').charAt(0)) + '</span>' +
+        '<div class="a-profil-titel"><h2>' + esc(name(m)) + '</h2><p class="a-profil-unter">' + (m.nr ? 'Nr. ' + esc(m.nr) + ' · ' : '') + (m.aktiv ? 'aktiv – erscheint an der Kasse' : '<span class="a-tag">inaktiv</span>') + '</p>' +
+        '<p class="a-profil-merkmale">' + (m.sepa ? '<span class="a-tag ok">Lastschrift</span>' : '<span class="a-tag warn">kein Mandat – Überweisung</span>') +
+          (gesperrt ? '<span class="a-tag rot">Code gesperrt bis ' + new Date(m.gesperrt_bis).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr</span>' : m.hat_pin ? '<span class="a-tag ok">Code festgelegt</span>' : '<span class="a-tag warn">noch kein Code</span>') + '</p></div></div>' +
+      '<div class="a-profil-aktionen"><button class="a-btn primaer" id="pr-bearb">Bearbeiten</button>' +
+        (m.email ? '<a class="a-btn" href="mailto:' + esc(m.email) + '">E-Mail schreiben</a>' : '') +
+        (m.hat_pin ? '<button class="a-btn" id="pr-reset">Code zurücksetzen</button>' : '') + '<button class="a-btn" id="pr-pin">Neuen Code vergeben</button>' +
+        '<a class="a-btn" href="' + hafen + '" target="_blank" rel="noopener">Ganze Akte im Hafen-Manager</a></div>' +
+      '<div class="a-kacheln">' + kachel(H.geld(H.eur(freiSum)), 'noch nicht abgerechnet', freiSum ? 'warn' : '') + kachel(H.geld(H.eur(reOffenSum)), reOffen.length === 1 ? '1 Rechnung offen' : reOffen.length + ' Rechnungen offen', reOffenSum ? 'warn' : 'ok') +
+        kachel(H.geld(H.eur(imMonat)), 'diesen Monat') + kachel(H.geld(H.eur(imJahr)), 'seit Januar') + kachel(aktiv.length ? H.zeit(aktiv[0].zeit) : '–', 'letzte Buchung') + '</div>' +
+      '<div class="a-profil-raster">' +
+        '<section class="a-profil-teil"><h3>Kontakt & Daten</h3>' + dl([['E-Mail', m.email ? '<a href="mailto:' + esc(m.email) + '">' + esc(m.email) + '</a>' : '<span class="a-tag warn">fehlt – keine Rechnung per E-Mail</span>'],
+          ['Anschrift', esc([m.strasse, [m.plz, m.ort].filter(Boolean).join(' ')].filter(Boolean).join(', '))], ['Mitgliedsnr.', esc(m.nr || '')], ['Notiz', esc(m.notiz || '')]]) + '</section>' +
+        '<section class="a-profil-teil"><h3>Zahlung</h3>' + dl([['Zahlart', m.sepa ? 'SEPA-Lastschrift' : 'Überweisung'], ['Mandatsreferenz', esc(m.mandatsreferenz || '')]]) +
+          '<p class="a-hinweis" style="margin:8px 0 0">Die vollständige Bankverbindung (IBAN) steht in der Akte im Hafen-Manager.</p></section>' +
+        '<section class="a-profil-teil"><h3>Getränke-Code</h3><p style="margin:0">' + (gesperrt ? 'Nach mehreren falschen Eingaben kurz gesperrt.' : m.hat_pin ? 'Festgelegt. Den Code selbst sieht niemand – er ist nur verschlüsselt gespeichert.' : 'Noch keiner. Beim ersten Mal an der Kasse: Namen antippen, Code zweimal eingeben.') + '</p>' +
+          (lieblinge.length ? '<p class="a-hinweis" style="margin:8px 0 0">Meist gebucht: ' + lieblinge.map(([n, z]) => esc(n) + ' (' + z + ')').join(', ') + '</p>' : '') + '</section>' +
+        '<section class="a-profil-teil a-voll"><h3>Rechnungen</h3>' + (re.length ? '<table class="a-tab"><thead><tr><th>Nr.</th><th>Zeitraum</th><th class="r">Betrag</th><th>Stand</th><th></th></tr></thead><tbody>' +
+          re.slice(0, 12).map((r) => '<tr class="' + (r.storniert_am ? 'storniert' : '') + '"><td>' + esc(r.nr) + '</td><td>' + zeitraumKurz(r.von, r.bis) + '</td><td class="r">' + H.geld(r.summe) + '</td><td>' +
+            (r.storniert_am ? '<span class="a-tag rot">storniert</span>' : r.bezahlt_am ? '<span class="a-tag ok">bezahlt</span>' : '<span class="a-tag warn">offen · fällig ' + H.datum(r.faellig) + '</span>') + '</td>' +
+            '<td class="r"><button class="a-btn klein" data-pr-re="' + r.id + '">Ansehen</button></td></tr>').join('') + '</tbody></table>' : '<p class="k-sub">Noch keine Rechnungen.</p>') + '</section>' +
+        '<section class="a-profil-teil a-voll"><h3>Buchungen</h3>' + buchungsTabelle(bu.slice(0, 20), re, true) + (bu.length > 20 ? '<p class="a-hinweis">… und ' + (bu.length - 20) + ' ältere unter „Buchungen“.</p>' : '') + '</section>' +
+      '</div><div class="a-modal-fuss"><button class="a-btn" data-zu>Schließen</button></div>');
+    el.querySelector('.a-modal-card').classList.add('a-profil');
+    $('#pr-bearb', el).addEventListener('click', () => mitgliedForm(m));
+    $('#pr-pin', el).addEventListener('click', () => neuePin(m));
+    const rs = $('#pr-reset', el); if (rs) rs.addEventListener('click', async () => {
+      if (!confirm('Code von ' + name(m) + ' löschen? ' + m.vorname + ' legt beim nächsten Mal an der Kasse selbst einen neuen fest.')) return;
+      try { await S.pinZuruecksetzen(m.id); toast('Code zurückgesetzt.'); cache.mitglieder = await S.mitglieder(); mitgliedProfil(mitglied(m.id)); if (tab === 'mitglieder') mitgliederTab($('#main')); } catch (err) { toast(err.message, 'fehler'); }
+    });
+    el.addEventListener('click', async (e) => {
+      const r = e.target.closest('[data-pr-re]'); if (r) return drucken('rechnung', [r.dataset.prRe]);
+      const st = e.target.closest('[data-storno]');
+      if (st) { if (!confirm('Buchung stornieren?')) return; try { await S.buchungStornieren(st.dataset.storno); toast('Storniert.'); mitgliedProfil(m); } catch (err) { toast(err.message, 'fehler'); } }
     });
   }
 
@@ -629,8 +687,7 @@
       f('glaeubiger_id', 'Gläubiger-ID (SEPA)') + f('bank', 'Bank') + f('iban', 'IBAN (nur für Überweisungen ohne Mandat)') + f('bic', 'BIC') + f('rechnung_praefix', 'Rechnungsnummer-Präfix') + f('kassenwart_name', 'Name des Kassenwarts (Gruß auf der Rechnung)') +
       f('zahlungsziel_tage', 'Einzug nach Rechnungsdatum (Tage, mind. 14 für die Vorabankündigung)', ' type="number" min="0"') + f('storno_minuten', 'Selbst-Storno an der Kasse (Minuten)', ' type="number" min="0"') +
       f('abmelden_sekunden', 'Automatisch abmelden nach (Sekunden)', ' type="number" min="15"') +
-      '<label class="a-feld voll check"><input type="checkbox" name="pin_selbst_festlegen"' + (e.pin_selbst_festlegen ? ' checked' : '') + '> Mitglieder legen ihren 4-stelligen Code beim ersten Mal an der Kasse selbst fest</label>' +
-      '<label class="a-feld voll check"><input type="checkbox" name="pin_erst_nr_pruefen"' + (e.pin_erst_nr_pruefen ? ' checked' : '') + '> … vorher die eigene Mitgliedsnummer abfragen (schützt davor, dass jemand für andere einen Code anlegt)</label>' +
+      '<label class="a-feld voll check"><input type="checkbox" name="pin_selbst_festlegen"' + (e.pin_selbst_festlegen ? ' checked' : '') + '> Mitglieder legen ihren 4-stelligen Code beim ersten Mal an der Kasse selbst fest (Name antippen, Code zweimal eingeben – jeder Code erlaubt)</label>' +
       '<label class="a-feld voll">Steuerhinweis auf der Rechnung<textarea name="steuerhinweis" rows="2">' + esc(e.steuerhinweis) + '</textarea></label>' +
       '<label class="a-feld voll">Zusatz bei SEPA-Lastschrift<textarea name="sepa_text" rows="2">' + esc(e.sepa_text) + '</textarea></label>' +
       f('fusstext', 'Grußzeile', 'voll') +
@@ -645,7 +702,7 @@
     $('#ef-ok').addEventListener('click', async () => {
       const d = Object.fromEntries(new FormData($('#ef')));
       ['zahlungsziel_tage', 'storno_minuten', 'abmelden_sekunden'].forEach((k) => { d[k] = parseInt(d[k], 10) || 0; });
-      d.pin_selbst_festlegen = !!d.pin_selbst_festlegen; d.pin_erst_nr_pruefen = !!d.pin_erst_nr_pruefen;
+      d.pin_selbst_festlegen = !!d.pin_selbst_festlegen; d.pin_erst_nr_pruefen = false;
       await S.einstellungenSpeichern(d); toast('Gespeichert.');
     });
     if ($('#k-ok')) $('#k-ok').addEventListener('click', async () => {

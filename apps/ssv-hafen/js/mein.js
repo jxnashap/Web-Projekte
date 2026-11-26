@@ -602,7 +602,7 @@
       (u.gesperrt_bis ? '<p class="hinweis warn">Dein Code wurde nach 5 Fehlversuchen kurz gesperrt. Mit einem neuen Code bist du sofort wieder frei.</p>' : '') +
       '<p style="margin:0 0 10px">' + (u.hat_pin
         ? 'Dein Code fürs iPad ist festgelegt. Vergessen? Leg einfach einen neuen fest.'
-        : 'Du hast noch keinen Code fürs iPad. Leg ihn hier fest – oder beim ersten Mal an der Kasse mit deiner Mitgliedsnummer <strong>' + esc(m.nr) + '</strong>.') + '</p>' +
+        : 'Du hast noch keinen Code fürs iPad. Leg ihn hier fest – oder beim ersten Mal an der Kasse: Namen antippen und den Code zweimal eingeben.') + '</p>' +
       '<div class="aktionen"><button class="btn' + (u.hat_pin ? '' : ' primaer') + '" id="code">' + (u.hat_pin ? 'Code ändern' : 'Code festlegen') + '</button></div>' +
       (bs.length ? '<table class="tab" style="margin-top:12px"><thead><tr><th>Letzte Buchungen</th><th class="r">Betrag</th></tr></thead><tbody>' + bs.map((x) =>
         '<tr' + (x.storniert_am ? ' class="blass"' : '') + '><td>' + x.anzahl + ' ' + (x.einheit === 'kasten' ? (x.anzahl === 1 ? 'Kasten' : 'Kästen') : '×') + ' ' + esc(x.produkt_name) + (x.storniert_am ? ' (storniert)' : '') +

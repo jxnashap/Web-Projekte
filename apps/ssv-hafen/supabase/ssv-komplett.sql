@@ -219,8 +219,7 @@ end $$;
 -- Zu naheliegende Codes (1111, 1234, 2580 …) werden abgelehnt
 create or replace function public._pin_ok(p text) returns boolean
 language sql immutable as $$
-  select coalesce(p, '') ~ '^[0-9]{4}$' and p !~ '^(.)\1{3}$'
-     and p not in ('0123','1234','2345','3456','4567','5678','6789','9876','8765','7654','6543','5432','4321','3210','1212','2580');
+  select coalesce(p, '') ~ '^[0-9]{4}$';   -- jeder 4-stellige Code erlaubt (Wunsch des Vereins, Nachtrag 19)
 $$;
 
 create or replace function public._einstellung_bool(k text, standard boolean) returns boolean
@@ -239,7 +238,7 @@ begin
   select daten into e from public.einstellungen where id = 1;
   return jsonb_build_object(
     'pin_selbst_festlegen', public._einstellung_bool('pin_selbst_festlegen', true),
-    'pin_erst_nr_pruefen',  public._einstellung_bool('pin_erst_nr_pruefen', true),
+    'pin_erst_nr_pruefen',  public._einstellung_bool('pin_erst_nr_pruefen', false),
     'abmelden_sekunden',    coalesce((e->>'abmelden_sekunden')::int, 60),
     'storno_minuten',       coalesce((e->>'storno_minuten')::int, 15));
 end $$;
@@ -262,7 +261,7 @@ begin
   if m.gesperrt_bis is not null and m.gesperrt_bis > now() then
     return jsonb_build_object('ok', false, 'fehler', 'gesperrt', 'gesperrt_bis', m.gesperrt_bis);
   end if;
-  if public._einstellung_bool('pin_erst_nr_pruefen', true)
+  if public._einstellung_bool('pin_erst_nr_pruefen', false)
      and (m.nr is null or btrim(coalesce(p_nr, '')) <> btrim(m.nr)) then
     update public.mitglieder
        set fehlversuche = case when m.fehlversuche + 1 >= 5 then 0 else m.fehlversuche + 1 end,
@@ -1284,7 +1283,7 @@ begin
   if m.gesperrt_bis is not null and m.gesperrt_bis > now() then
     return jsonb_build_object('ok', false, 'fehler', 'gesperrt', 'gesperrt_bis', m.gesperrt_bis);
   end if;
-  if public._einstellung_bool('pin_erst_nr_pruefen', true) and (m.nr is null or btrim(coalesce(p_nr, '')) <> btrim(m.nr)) then
+  if public._einstellung_bool('pin_erst_nr_pruefen', false) and (m.nr is null or btrim(coalesce(p_nr, '')) <> btrim(m.nr)) then
     return jsonb_build_object('ok', false, 'fehler', 'nr') || public._fehlversuch(m.id);
   end if;
   if coalesce(p_pin, '') !~ '^[0-9]{4}$' then return jsonb_build_object('ok', false, 'fehler', 'format'); end if;
@@ -2470,3 +2469,13 @@ grant execute on function public.hafen_karte(date, int) to anon, authenticated;
 delete from public.landplaetze l
  where l.id in ('P49','P50','P51','P52','P53','P54','P55','P56','P57','P58','P59','P60')
    and not exists (select 1 from public.belegungen b where b.platz_id = l.id);
+
+-- ================================================================ Nachtrag 19 · Getränke-Code ohne Mitgliedsnummer, jeder Code erlaubt --
+-- siehe nachtrag-19.sql
+create or replace function public._pin_ok(p text) returns boolean
+language sql immutable as $$
+  select coalesce(p, '') ~ '^[0-9]{4}$';
+$$;
+update public.einstellungen
+   set daten = coalesce(daten, '{}'::jsonb) || '{"pin_erst_nr_pruefen": false, "pin_selbst_festlegen": true}'::jsonb
+ where id = 1;
